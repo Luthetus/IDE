@@ -1,0 +1,70 @@
+@using Clair.Ide.RazorLib.Terminals.Models;
+
+<div class="ci_ide_form">
+    <div class="ci_ide_form-group">
+        <div class="ci_ide_form-label">
+            Name:
+        </div>
+
+        <div class="ci_ide_form-value">
+            <input class="ci_ide_input ci_ide_input-text"
+                       style="height: 2em;"
+                       placeholder="Solution name"
+                       @bind="_solutionName"
+                       @bind:event="oninput"/>
+        </div>
+    </div>
+
+    <div class="ci_ide_form-group">
+        <div class="ci_ide_form-label">
+            Directory:
+        </div>
+
+        <div class="ci_ide_form-value"
+             style="display: flex;">
+
+            <input class="ci_ide_input ci_ide_input-text"
+                   style="height: 2em;"
+                   placeholder="Parent directory"
+                   @bind="_parentDirectoryName"
+                   @bind:event="oninput"/>
+
+            <button class="ci_button"
+                    @onclick="RequestInputFileForParentDirectory">
+                @IconRenderer.Render(IconKind.Folder, DotNetService.CommonService.Options_IconSizeCssValue, DotNetService.CommonService.Options_IconSizeCssValue)
+            </button>
+        </div>
+    </div>
+
+    <div>
+        Solution&nbsp;Name:
+        <div>
+            <em class="ci_em">
+                @DisplaySolutionName
+            </em>.sln
+        </div>
+    </div>
+
+    <div>
+        Directory&nbsp;Absolute&nbsp;File&nbsp;Path:
+        <div>
+            <em class="ci_em">
+                @DisplayParentDirectoryName
+            </em>
+        </div>
+    </div>
+
+    <div>
+        Command:
+        <div>
+            <em class="ci_em">
+                @FormattedCommandValue
+            </em>
+        </div>
+    </div>
+    
+    <button class="ci_button"
+            @onclick="StartNewDotNetSolutionCommandOnClick">
+        Run
+    </button>
+</div>

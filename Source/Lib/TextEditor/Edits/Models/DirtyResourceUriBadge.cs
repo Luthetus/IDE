@@ -1,0 +1,59 @@
+using Clair.Common.RazorLib.Dialogs.Models;
+using Clair.Common.RazorLib.Badges.Models;
+using Clair.Common.RazorLib.Keys.Models;
+using Clair.Common.RazorLib.Dynamics.Models;
+
+namespace Clair.TextEditor.RazorLib.Edits.Models;
+
+public class DirtyResourceUriBadge : IBadgeModel
+{
+    public static readonly Key<IBadgeModel> DirtyResourceUriBadgeKey = Key<IBadgeModel>.NewKey();
+    public static readonly Key<IDynamicViewModel> DialogRecordKey = Key<IDynamicViewModel>.NewKey();
+
+    private readonly TextEditorService _textEditorService;
+
+    public DirtyResourceUriBadge(TextEditorService textEditorService)
+    {
+        _textEditorService = textEditorService;
+    }
+    
+    private Func<Task>? _updateUiFunc;
+
+    public Key<IBadgeModel> Key => DirtyResourceUriBadgeKey;
+    public BadgeKind BadgeKind => BadgeKind.DirtyResourceUri;
+    public int Count => _textEditorService.GetDirtyResourceUriState().DirtyResourceUriList.Count;
+    
+    public void OnClick()
+    {
+        _textEditorService.CommonService.Dialog_ReduceRegisterAction(new DialogViewModel(
+            DialogRecordKey,
+            "Unsaved Files",
+            typeof(Clair.TextEditor.RazorLib.Edits.Displays.DirtyResourceUriViewDisplay),
+            null,
+            null,
+            true,
+            setFocusOnCloseElementId: null));
+    }
+    
+    public void AddSubscription(Func<Task> updateUiFunc)
+    {
+        _updateUiFunc = updateUiFunc;
+        _textEditorService.SecondaryChanged += DoSubscription;
+    }
+    
+    public async void DoSubscription(SecondaryChangedKind secondaryChangedKind)
+    {
+        if (secondaryChangedKind == SecondaryChangedKind.DirtyResourceUriStateChanged)
+        {
+            var localUpdateUiFunc = _updateUiFunc;
+            if (_updateUiFunc is not null)
+                await _updateUiFunc.Invoke();
+        }
+    }
+    
+    public void DisposeSubscription()
+    {
+        _textEditorService.SecondaryChanged -= DoSubscription;
+        _updateUiFunc = null;
+    }
+}

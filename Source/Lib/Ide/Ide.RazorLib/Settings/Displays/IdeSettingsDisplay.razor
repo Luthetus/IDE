@@ -1,0 +1,52 @@
+@using Clair.Ide.RazorLib.Terminals.Models
+
+<div class="ci_ide_ide-specific-settings">
+
+	<button class="ci_button"
+			@onclick="WriteClairDebugSomethingToConsole">
+		WriteClairDebugSomethingToConsole
+	</button>
+	
+	<table>
+    	<tr>
+    		<td>Max Command Count History:</td>
+    		<td>@($"{IdeFacts.MAX_COMMAND_COUNT:N0}")</td>
+    	</tr>
+    	<tr>
+	    	<td>Max Character Length History:</td>
+    		<td>@($"{IdeFacts.MAX_OUTPUT_LENGTH:N0}")</td>
+    	</tr>
+    	<tr>
+    		<td>When Cleared Keep Last Command If Length Smaller:</td>
+    		<td>@($"{IdeFacts.OUTPUT_LENGTH_PADDING:N0}")</td>
+    	</tr>
+    	<tr>
+    		<td>HomeDirectoryAbsolutePath:</td>
+    		<td>@CommonService.FileSystemProvider.HomeDirectoryAbsolutePath.Value</td>
+    	</tr>
+    	<tr>
+    		<td>RootDirectoryAbsolutePath:</td>
+            <td>@CommonService.FileSystemProvider.RootDirectoryAbsolutePath.Value</td>
+    	</tr>
+    	<tr>
+    		<td>SafeRoamingApplicationDataDirectoryAbsolutePath:</td>
+    		<td>@CommonService.FileSystemProvider.SafeRoamingApplicationDataDirectoryAbsolutePath.Value</td>
+    	</tr>
+    	<tr>
+    		<td>DriveExecutingFromNoDirectorySeparator:</td>
+            <td>@CommonService.FileSystemProvider.DriveExecutingFromNoDirectorySeparator</td>
+    	</tr>
+    	<tr>
+    		<td>DirectorySeparatorChar:</td>
+            <td>@CommonService.FileSystemProvider.DirectorySeparatorChar</td>
+    	</tr>
+    	<tr>
+    		<td>AltDirectorySeparatorChar:</td>
+            <td>@CommonService.FileSystemProvider.AltDirectorySeparatorChar</td>
+    	</tr>
+    	<tr>
+    		<td>AppDataService:</td>
+    		<td>@AppDataService.GetType().Name</td>
+    	</tr>
+    </table>
+</div>

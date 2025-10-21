@@ -1,0 +1,176 @@
+@using System.Reflection;
+
+<div class="ci_ide_info">
+
+	<div>
+        Source Code:
+        <a target="_blank"
+           href="https://github.com/anxietyandscreaming/anxietyandscreaming">
+            
+           anxietyandscreaming
+        </a>
+    </div>
+
+	<hr/>
+
+	<div>
+        Entry Assembly:
+		@{ var entryAssembly = System.Reflection.Assembly.GetEntryAssembly(); }
+		<div>
+			@{ var entryAssemblyName = entryAssembly.GetName(); }
+            v
+            <em class="ci_em" title="Version">
+                @(entryAssemblyName.Version)
+            </em>
+            ::
+			@if (AssemblyCustomAttributeIsDebug(entryAssembly))
+			{
+				@: Debug
+			}
+			else
+			{
+				@: Release
+			}
+			::
+            @entryAssemblyName.Name
+        </div>
+    </div>
+
+	<div class="ci_ide_info-main">
+        Library:
+    	@{ var ideAssembly = typeof(IdeInfoDisplay).Assembly; }
+        <div>
+			@{ var ideAssemblyName = ideAssembly.GetName(); }
+            v
+            <em class="ci_em" title="Version">
+                @(ideAssemblyName.Version)
+            </em>
+            ::
+			@if (AssemblyCustomAttributeIsDebug(ideAssembly))
+			{
+				@: Debug
+			}
+			else
+			{
+				@: Release
+			}
+			::
+            @ideAssemblyName.Name
+        </div>
+    </div>
+
+	<hr/>
+
+	<div>
+		<table>
+			<tr>
+				<td>IsDebug_MethodConditionalAttribute_Test:</td>
+				<td>@MethodConditionalAttributeIsDebug()</td>
+			</tr>
+			<tr>
+				<td>IsDebug_Preprocessor_Test:</td>
+				<td>@PreprocessorIsDebug()</td>
+			</tr>
+		</table>
+	</div>
+
+	<hr/>
+
+	<div class="ci_ide_info-references">
+        <div>
+            References
+        </div>
+
+        @{
+            var referencedClairAssembliesList = ideAssembly
+                .GetReferencedAssemblies()
+                .Where(x =>
+					x.Name is not null &&
+					(x.Name.StartsWith("Clair") ||
+						x.Name.StartsWith("Fluxor") ||
+						x.Name.StartsWith("Photino")))
+				.OrderByDescending(x => x.Name.StartsWith("Clair"))
+				.ToList();
+
+			referencedClairAssembliesList.AddRange(entryAssembly
+                .GetReferencedAssemblies()
+                .Where(x =>
+					x.Name is not null &&
+					x.Name.StartsWith("Photino")));
+        }
+
+        @foreach (var referencedClairAssembly in referencedClairAssembliesList)
+        {
+            if (referencedClairAssembly.Name is null)
+                continue;
+
+            <div>
+                v
+                <em class="ci_em" title="Version">
+                    @(referencedClairAssembly.Version)
+                </em>
+                ::
+				@if (AssemblyCustomAttributeIsDebug(Assembly.Load(referencedClairAssembly)))
+				{
+					@: Debug
+				}
+				else
+				{
+					@: Release
+				}
+				::
+                @referencedClairAssembly.Name
+            </div>
+        }
+    </div>
+
+	<hr/>
+	
+	@*<div>
+		BackgroundTaskWorkers:
+		<div>
+			<div>
+				ContinuousBackgroundTaskWorker: @(BackgroundTaskService.ContinuousTaskWorker.ExecuteTask?.Status.ToString() ?? "null")
+			</div>
+			<div>
+				BlockingBackgroundTaskWorker: @(BackgroundTaskService.IndefiniteTaskWorker.ExecuteTask?.Status.ToString() ?? "null")
+			</div>
+		</div>
+	</div>*@
+
+	<hr/>
+	
+	<div>
+        ClairHostingInformation:
+		<div>
+            <div>
+                @nameof(CommonService.ClairHostingInformation.ClairHostingKind): @CommonService.ClairHostingInformation.ClairHostingKind
+            </div>
+            <div>
+                @nameof(CommonService.ClairHostingInformation.ClairPurposeKind): @CommonService.ClairHostingInformation.ClairPurposeKind
+            </div>
+		</div>
+	</div>
+	
+	<hr/>
+
+	<div>
+        Recent Changes:
+		<div>
+		    <div>
+                <div>v <em class="ci_em">23.0.0 </em> (2025-10-20)</div>
+                <ul>
+                    <li>
+                        Draft PR
+                    </li>
+                    <li>
+                        GetPresentationLayer
+                    </li>
+                    <li>
+                        5000 less allocations solution wide parse
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

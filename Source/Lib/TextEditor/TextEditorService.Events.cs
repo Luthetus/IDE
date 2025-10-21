@@ -1,0 +1,39 @@
+namespace Clair.TextEditor.RazorLib;
+
+public partial class TextEditorService
+{
+    public event Action? TextEditorStateChanged;
+
+    public event Action<SecondaryChangedKind>? SecondaryChanged;
+}
+
+public enum SecondaryChangedKind
+{
+    ViewModel_CursorShouldBlinkChanged,
+
+    DirtyResourceUriStateChanged,
+    FindAllStateChanged,
+    Group_TextEditorGroupStateChanged,
+    
+    /// <summary>
+    /// Step 1: Notifies the TextEditorViewModelDisplay to recalculate `_componentData.SetWrapperCssAndStyle();`
+    ///         and invoke `StateHasChanged()`.
+    /// </summary>
+    StaticStateChanged,
+    /// <summary>
+    /// Step 1: Notifies the ClairTextEditorInitializer to measure a tiny UI element that has the options applied to it.
+    /// Step 2: ClairTextEditorInitializer then invokes `MeasuredStateChanged`.
+    /// Step 3: TextEditorViewModelDisplay sees that second event fire, it enqueues a re-calculation of the virtualization result.
+    /// Step 4: Eventually that virtualization result is finished and the editor re-renders.
+    /// </summary>
+    NeedsMeasured,
+    /// <summary>
+    /// Step 1: Notifies TextEditorViewModelDisplay to enqueue a re-calculation of the virtualization result.
+    /// Step 2: Eventually that virtualization result is finished and the editor re-renders.
+    /// </summary>
+    MeasuredStateChanged,
+    /// <summary>
+    /// This event communicates from the text editor UI to the header and footer.
+    /// </summary>
+    TextEditorWrapperCssStateChanged,
+}

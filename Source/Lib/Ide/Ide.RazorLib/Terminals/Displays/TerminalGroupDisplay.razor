@@ -1,0 +1,146 @@
+@using Clair.Common.RazorLib
+@using Clair.Common.RazorLib.Keys.Models
+@using Clair.Ide.RazorLib.Terminals.Models;
+
+@* ContextRecord="ContextFacts.TerminalContext" *@
+<div class="ci_ide_terminal" style="height: 100%; width: 100%; overflow: auto;">
+    @{
+        var terminalGroupDisplayState = IdeService.GetTerminalGroupState();
+        var terminalState = IdeService.GetTerminalState();
+
+        ITerminal? activeTerminal;
+
+        if (terminalGroupDisplayState.ActiveTerminalKey == terminalState.ExecutionTerminal.Key)
+        {
+            activeTerminal = terminalState.ExecutionTerminal;
+        }
+        else if (terminalGroupDisplayState.ActiveTerminalKey == terminalState.GeneralTerminal.Key)
+        {
+            activeTerminal = terminalState.GeneralTerminal;
+        }
+        else
+        {
+            activeTerminal = null;
+        }
+                
+		var appOptionsState = IdeService.CommonService.GetAppOptionsState();
+	
+		var iconDriver = new IconDriver(
+			appOptionsState.Options.IconSizeInPixels,
+			appOptionsState.Options.IconSizeInPixels);
+    }
+
+    <div class="ci_section-body">
+
+        <div class="ci_ide_terminal-body"
+             style="@terminalGroupDisplayState.BodyElementDimensions.GetStyleString(IdeService.CommonService.UiStringBuilder)">
+
+            @if (activeTerminal is null)
+            {
+                @: activeTerminal was null
+            }
+            else
+            {
+            	<TerminalOutputTextEditorExpandDisplay @key="activeTerminal.Key"
+            										   Terminal="activeTerminal"/>
+            }
+        </div>
+
+        <div class="ci_resize-column"
+             style="@IdeService.CommonService.Options_ResizeHandleCssWidth"
+             @onmousedown="SubscribeToDragEvent">
+        </div>
+
+        <div class="ci_ide_terminal-tabs"
+             style="@terminalGroupDisplayState.TabsElementDimensions.GetStyleString(IdeService.CommonService.UiStringBuilder)">
+            
+            @* TODO: Consider usage of a template function. *@
+            @if (terminalState.ExecutionTerminal is not null)
+            {
+                var executionTerminal = terminalState.ExecutionTerminal;
+                string isActiveCssClass = string.Empty;
+                if ((activeTerminal?.Key ?? Key<ITerminal>.Empty) == executionTerminal.Key)
+                    isActiveCssClass = "ci_active";
+
+                <button class="ci_button @isActiveCssClass"
+                        @onclick="() => DispatchSetActiveTerminalAction(executionTerminal.Key)">
+
+                    @executionTerminal.DisplayName
+
+                    @{ var isKillProcessDisabled = !executionTerminal.HasExecutingProcess; }
+
+                    <button class="ci_button"
+                            disabled=@isKillProcessDisabled
+                            @onclick="executionTerminal.KillProcess"
+                            @onclick:stopPropagation="true">
+                        Kill
+                    </button>
+                    
+                    <button class="ci_button"
+                    	    title="Clear inactive history"
+                            @onclick="executionTerminal.ClearFireAndForget"
+                            @onclick:stopPropagation="true">
+                        Clear
+                    </button>
+
+                    <div style="margin-left: 15px;">
+                        @if (executionTerminal.HasExecutingProcess)
+                        {
+                            @IconLoadingFragment.Render(iconDriver)
+                        }
+                        else
+                        {
+                            @IconRenderer.Render(IconKind.Blank, IdeService.CommonService.Options_IconSizeCssValue, IdeService.CommonService.Options_IconSizeCssValue)
+                        }
+                    </div>
+                </button>
+
+                <text>
+                    &nbsp;
+                    &nbsp;
+                    &nbsp;
+                </text>
+            }
+            @if (terminalState.GeneralTerminal is not null)
+            {
+                var generalTerminal = terminalState.GeneralTerminal;
+                string isActiveCssClass = string.Empty;
+                if ((activeTerminal?.Key ?? Key<ITerminal>.Empty) == generalTerminal.Key)
+                    isActiveCssClass = "ci_active";
+    
+                <button class="ci_button @isActiveCssClass"
+                        @onclick="() => DispatchSetActiveTerminalAction(generalTerminal.Key)">
+    
+                    @generalTerminal.DisplayName
+    
+                    @{ var isKillProcessDisabled = !generalTerminal.HasExecutingProcess; }
+    
+                    <button class="ci_button"
+                            disabled=@isKillProcessDisabled
+                            @onclick="generalTerminal.KillProcess"
+                            @onclick:stopPropagation="true">
+                        Kill
+                    </button>
+                    
+                    <button class="ci_button"
+                    	    title="Clear inactive history"
+                            @onclick="generalTerminal.ClearFireAndForget"
+                            @onclick:stopPropagation="true">
+                        Clear
+                    </button>
+    
+                    <div style="margin-left: 15px;">
+                        @if (generalTerminal.HasExecutingProcess)
+                        {
+                            @IconLoadingFragment.Render(iconDriver)
+                        }
+                        else
+                        {
+                            @IconRenderer.Render(IconKind.Blank, IdeService.CommonService.Options_IconSizeCssValue, IdeService.CommonService.Options_IconSizeCssValue)
+                        }
+                    </div>
+                </button>
+            }
+        </div>
+    </div>
+</div>

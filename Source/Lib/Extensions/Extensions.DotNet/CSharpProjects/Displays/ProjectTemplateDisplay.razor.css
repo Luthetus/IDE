@@ -1,0 +1,18 @@
+.ci_ide_project-template {
+    margin-bottom: 12px;
+    background-color: var(--ci_tertiary-background-color);
+    color: var(--ci_tertiary-foreground-color);
+}
+
+.ci_ide_project-template-title {
+    background-color: var(--ci_ide_section-title-background-color);
+    color: var(--ci_primary-foreground-color);
+    cursor: pointer;
+}
+    .ci_ide_project-template-title:hover {
+        background-color: var(--ci_active-no-focus-background-color);
+    }
+
+    .ci_ide_project-template-title.ci_active {
+        background-color: var(--ci_active-with-focus-background-color);
+    }

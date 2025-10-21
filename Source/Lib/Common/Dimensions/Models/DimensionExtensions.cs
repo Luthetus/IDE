@@ -1,0 +1,50 @@
+using Clair.Common.RazorLib.Exceptions;
+
+namespace Clair.Common.RazorLib.Dimensions.Models;
+
+public static class DimensionExtensions
+{
+    public static string GetStyleString(this DimensionUnitKind dimensionUnitKind)
+    {
+        return dimensionUnitKind switch
+        {
+            DimensionUnitKind.Pixels => "px",
+            DimensionUnitKind.ViewportWidth => "vw",
+            DimensionUnitKind.ViewportHeight => "vh",
+            DimensionUnitKind.Percentage => "%",
+            DimensionUnitKind.RootCharacterWidth => "rch",
+            DimensionUnitKind.RootCharacterHeight => "rem",
+            DimensionUnitKind.CharacterWidth => "ch",
+            DimensionUnitKind.CharacterHeight => "em",
+            _ => throw new ClairCommonException($"The {nameof(DimensionUnitKind)}: '{dimensionUnitKind}' was not recognized.")
+        };
+    }
+    
+    public static string GetStyleString(this DimensionOperatorKind dimensionOperatorKind)
+    {
+        return dimensionOperatorKind switch
+        {
+            DimensionOperatorKind.Add => "+",
+            DimensionOperatorKind.Subtract => "-",
+            DimensionOperatorKind.Multiply => "*",
+            DimensionOperatorKind.Divide => "/",
+            _ => throw new ClairCommonException($"The {nameof(DimensionOperatorKind)}: '{dimensionOperatorKind}' was not recognized.")
+        };
+    }
+    
+    public static string GetStyleString(this ElementPositionKind elementPositionKind)
+    {
+        return elementPositionKind switch
+        {
+            ElementPositionKind.Static => "static",
+            ElementPositionKind.Absolute => "absolute",
+            ElementPositionKind.Fixed => "fixed",
+            ElementPositionKind.Inherit => "inherit",
+            ElementPositionKind.Relative => "relative",
+            ElementPositionKind.Revert => "revert",
+            ElementPositionKind.Sticky => "sticky",
+            ElementPositionKind.Unset => "unset",
+            _ => throw new ClairCommonException($"The {nameof(ElementPositionKind)}: '{elementPositionKind}' was not recognized.")
+        };
+    }
+}

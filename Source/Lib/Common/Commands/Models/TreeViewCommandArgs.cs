@@ -1,0 +1,34 @@
+using Microsoft.AspNetCore.Components.Web;
+using Clair.Common.RazorLib.JavaScriptObjects.Models;
+using Clair.Common.RazorLib.TreeViews.Models;
+
+namespace Clair.Common.RazorLib.Commands.Models;
+
+/// <summary>
+/// Verify that 'TreeViewService is not null' to know this was constructed rather than default.
+/// </summary>
+public record struct TreeViewCommandArgs
+{
+    public TreeViewCommandArgs(
+        TreeViewContainer treeViewContainer,
+        TreeViewNoType? nodeThatReceivedMouseEvent,
+        Func<Task> restoreFocusToTreeView,
+        ContextMenuFixedPosition? contextMenuFixedPosition,
+        MouseEventArgs? mouseEventArgs,
+        KeyboardEventArgs? keyboardEventArgs)
+    {
+        TreeViewContainer = treeViewContainer;
+        NodeThatReceivedMouseEvent = nodeThatReceivedMouseEvent;
+        RestoreFocusToTreeView = restoreFocusToTreeView;
+        ContextMenuFixedPosition = contextMenuFixedPosition;
+        MouseEventArgs = mouseEventArgs;
+        KeyboardEventArgs = keyboardEventArgs;
+    }
+
+    public TreeViewContainer TreeViewContainer { get; }
+    public TreeViewNoType? NodeThatReceivedMouseEvent { get; }
+    public Func<Task> RestoreFocusToTreeView { get; }
+    public ContextMenuFixedPosition? ContextMenuFixedPosition { get; }
+    public MouseEventArgs? MouseEventArgs { get; }
+    public KeyboardEventArgs? KeyboardEventArgs { get; }
+}

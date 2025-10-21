@@ -1,0 +1,38 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Clair.Common.RazorLib
+@using Clair.Common.RazorLib.Dropdowns.Displays
+@using Clair.Common.RazorLib.Dropdowns.Models;
+@using Clair.Common.RazorLib.TreeViews.Displays
+@using Clair.Common.RazorLib.TreeViews.Models;
+@using Clair.Extensions.DotNet.DotNetSolutions.Displays.Internals;
+@using Clair.Extensions.DotNet.DotNetSolutions.Models;
+
+@* ContextRecord="ContextFacts.SolutionExplorerContext" *@
+
+<div class="ci_ide_solution-explorer-display" style="height: 100%">
+    @{
+    	var dotNetSolutionState = DotNetService.GetDotNetSolutionState();
+    	var appOptionsState = DotNetService.IdeService.TextEditorService.CommonService.GetAppOptionsState();
+    }
+
+    <div class="ci_section-body">
+        @if (dotNetSolutionState.DotNetSolutionModel is null)
+        {
+            <button class="ci_button"
+                    style="display: inline; margin-right: 12px; margin-bottom: 12px;"
+                    @onclick="() => DotNetSolutionState.ShowInputFile(DotNetService.IdeService, DotNetService)">
+                Open Solution
+            </button>
+
+            <button class="ci_button"
+                    style="display: inline;"
+            @onclick="OpenNewDotNetSolutionDialog">
+                New Solution
+            </button>
+        }
+        else
+        {
+            <TreeViewContainerDisplay TreeViewContainerParameter="_treeViewContainerParameter"/>
+        }
+    </div>
+</div>

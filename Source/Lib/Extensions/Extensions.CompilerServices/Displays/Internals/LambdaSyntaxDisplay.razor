@@ -1,0 +1,58 @@
+@using Clair.Extensions.CompilerServices.Syntax
+@using Clair.Extensions.CompilerServices.Syntax.NodeValues
+@using Clair.Extensions.CompilerServices.Syntax.NodeReferences
+@using Clair.TextEditor.RazorLib.TextEditors.Models.Internals
+
+@*
+    I'm making changes to the C# Compiler Service storage.
+    I encountered an infinite loop in the UI when I hovered a certain generic variable.
+    The TypeSyntaxDisplay was rendering GenericSyntaxDisplay which then rendered TypeSyntaxDisplay, repeat...
+    This spiked my memory, I was able to stop the app with Task Manager, but I want to avoid this happening again at all costs until I am 100% certain
+    the new storage won't have an infinite loop in the UI.
+*@
+@if (SyntaxViewModel.Depth < 6)
+{
+	var syntaxViewModelLocal = SyntaxViewModel;
+	
+	string? prefixText;
+	string? text;
+	VariableDeclarationNode? variableDeclarationNode;
+	
+	if (syntaxViewModelLocal.DefinitionNode.IsDefault() && syntaxViewModelLocal.TargetNode.IsDefault() && syntaxViewModelLocal.TargetSymbol.IsDefault())
+	{
+		prefixText = "(null)";
+		text = null;
+		variableDeclarationNode = null;
+	}
+	else if (!syntaxViewModelLocal.DefinitionNode.IsDefault() && syntaxViewModelLocal.DefinitionNode.SyntaxKind == SyntaxKind.VariableDeclarationNode)
+	{
+		prefixText = "(definition)";
+		text = syntaxViewModelLocal.GetTextFromTextSpan(syntaxViewModelLocal.DefinitionNode.IdentifierToken.TextSpan);
+		variableDeclarationNode = null;
+	}
+	else if (!syntaxViewModelLocal.TargetNode.IsDefault() && syntaxViewModelLocal.TargetNode.SyntaxKind == SyntaxKind.VariableReferenceNode)
+	{
+		prefixText = "(reference)";
+		text = syntaxViewModelLocal.GetTextFromTextSpan(syntaxViewModelLocal.TargetNode.IdentifierToken.TextSpan);
+		variableDeclarationNode = null;
+	}
+	else if (!syntaxViewModelLocal.TargetSymbol.IsDefault() &&
+			 (syntaxViewModelLocal.TargetSymbol.SyntaxKind == SyntaxKind.VariableSymbol ||
+			  	syntaxViewModelLocal.TargetSymbol.SyntaxKind == SyntaxKind.FieldSymbol ||
+			  	syntaxViewModelLocal.TargetSymbol.SyntaxKind == SyntaxKind.PropertySymbol))
+	{
+		prefixText = "(symbol)";
+		text = syntaxViewModelLocal.GetTextFromSymbol(syntaxViewModelLocal.TargetSymbol);
+		variableDeclarationNode = null;
+	}
+	else
+	{
+		prefixText = "(unrecognizable-state)";
+		text = null;
+		variableDeclarationNode = null;
+	}
+    
+    <span>
+    	<span class="ci_keyword">lambda</span>
+    </span>
+}

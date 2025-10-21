@@ -1,0 +1,44 @@
+using Microsoft.AspNetCore.Components;
+using Clair.Common.RazorLib.Notifications.Models;
+
+namespace Clair.Common.RazorLib.Notifications.Displays;
+
+public sealed partial class NotificationsViewDisplay : ComponentBase, IDisposable
+{
+    [Inject]
+    private CommonService CommonService { get; set; } = null!;
+    
+    private readonly Action _defaultClearAction = new Action(() => { });
+
+    private NotificationsViewKind _chosenNotificationsViewKind = NotificationsViewKind.Notifications;
+
+    protected override void OnInitialized()
+    {
+        CommonService.CommonUiStateChanged += OnCommonUiStateChanged;
+    }
+
+    private string GetIsActiveCssClass(
+        NotificationsViewKind chosenNotificationsViewKind,
+        NotificationsViewKind iterationNotificationsViewKind)
+    {
+        return chosenNotificationsViewKind == iterationNotificationsViewKind
+            ? "ci_active"
+            : string.Empty;
+    }
+
+    private void Clear()
+    {
+        CommonService.Notification_ReduceClearDefaultAction();
+    }
+
+    public async void OnCommonUiStateChanged(CommonUiEventKind commonUiEventKind)
+    {
+        if (commonUiEventKind == CommonUiEventKind.NotificationStateChanged)
+            await InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        CommonService.CommonUiStateChanged -= OnCommonUiStateChanged;
+    }
+}

@@ -1,0 +1,101 @@
+namespace Clair.Common.RazorLib.TreeViews.Models;
+
+/// <summary>
+/// <see cref="TreeViewAdhoc"/> is used when the consumer of the component does not want to show the root.<br/><br/>
+/// The TreeViews were designed with a root consisting of 1 node. To get around this <see cref="TreeViewAdhoc"/>
+/// can be used to have that top level root node be invisible to the user.
+/// </summary>
+public class TreeViewAdhoc : TreeViewWithType<byte>
+{
+    public TreeViewAdhoc(byte value)
+        : base(value, false, true)
+    {
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not TreeViewAdhoc treeViewAdhoc)
+            return false;
+
+        return treeViewAdhoc.Key == Key;
+    }
+
+    public override int GetHashCode()
+    {
+        return Key.GetHashCode();
+    }
+
+    public static TreeViewAdhoc ConstructTreeViewAdhoc()
+    {
+        return new TreeViewAdhoc(byte.MinValue)
+        {
+            Parent = null,
+            IsExpandable = false,
+            IsExpanded = true,
+            IndexAmongSiblings = 0,
+            IsRoot = true,
+            IsHidden = true,
+        };
+    }
+
+    public static TreeViewAdhoc ConstructTreeViewAdhoc(TreeViewContainer container, params TreeViewNoType[] treeViewList)
+    {
+        var treeViewAdhoc = ConstructTreeViewAdhoc();
+
+        treeViewAdhoc.ChildListOffset = container.ChildList.Count;
+        
+        for (int i = 0; i < treeViewList.Length; i++)
+        {
+            var child = treeViewList[i];
+
+            child.IndexAmongSiblings = i;
+            child.Parent = treeViewAdhoc;
+            
+            container.ChildList.Add(child);
+            ++treeViewAdhoc.ChildListLength;
+        }
+
+        return treeViewAdhoc;
+    }
+    
+    public override string GetDisplayText() => string.Empty;
+
+    /*public override TreeViewRenderer GetTreeViewRenderer()
+    {
+    
+    
+        using Clair.Common.RazorLib.TreeViews.Models;
+        using Microsoft.AspNetCore.Components;
+        
+        namespace Clair.Common.RazorLib.TreeViews.Displays.Utils;
+        
+        public partial class TreeViewAdhocDisplay : ComponentBase
+        {
+            [Parameter, EditorRequired]
+            public TreeViewNoType TreeViewNoTypeAdhoc { get; set; } = null!;
+        }
+    
+    
+    
+        return new TreeViewRenderer(
+            typeof(TreeViewAdhocDisplay),
+            new Dictionary<string, object?>
+            {
+                {
+                    nameof(TreeViewAdhocDisplay.TreeViewNoTypeAdhoc),
+                    this
+                },
+            });
+    }*/
+
+    public override Task LoadChildListAsync(TreeViewContainer container)
+    {
+        return Task.CompletedTask;
+    }
+
+    public override void RemoveRelatedFilesFromParent(List<TreeViewNoType> siblingsAndSelfTreeViews)
+    {
+        // This method is meant to do nothing in this case.
+        return;
+    }
+}

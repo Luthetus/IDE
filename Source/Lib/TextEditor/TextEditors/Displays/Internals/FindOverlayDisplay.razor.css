@@ -1,0 +1,12 @@
+.ci_te_find-overlay {
+    overflow: hidden;
+    position: absolute;
+    right: var(--ci_te_scrollbar-size);
+    top: 0;
+    width: 25%;
+    min-width: calc(22ch + 16px);
+    padding: 7px;
+    z-index: 2;
+    cursor: default;
+    background-color: var(--ci_te_scrollbar-background-color);
+}

@@ -1,0 +1,136 @@
+@using System.Text
+@using Clair.TextEditor.RazorLib.TextEditors.Models
+@using Clair.TextEditor.RazorLib.TextEditors.Models.Internals
+@using Clair.TextEditor.RazorLib.Lines.Models
+
+@{
+	var renderBatch = GetVirtualizationResult();
+	var componentData = GetComponentData();
+}
+
+@if (!renderBatch.IsValid || componentData is null)
+{
+	<div class="ci_te_text-editor-footer @componentData?.WrapperCssClass @TextEditorService.ThemeCssClassString"
+		 style="@componentData?.WrapperCssStyle">
+    </div>
+}
+else
+{
+	<div class="ci_te_text-editor-footer @componentData?.WrapperCssClass @TextEditorService.ThemeCssClassString"
+		 style="@componentData?.WrapperCssStyle">
+	    <div class="ci_te_text-editor-footer-listing">
+	        @{
+	            var model = renderBatch.Model;
+	            var viewModel = renderBatch.ViewModel;
+	            var options = componentData.RenderBatchPersistentState.TextEditorOptions;
+	
+	            if (model is not null && viewModel is not null)
+	            {
+	                if (!string.IsNullOrWhiteSpace(model.PersistentState.FileExtension))
+	                {
+	                    <div class="ci_te_text-editor-footer-entry">
+	                        @model.PersistentState.FileExtension
+	                    </div>
+	                }
+	
+	                <div class="ci_te_text-editor-footer-entry">
+	                    <div class="ci_te_text-editor-footer-name-value-pair">
+	                        <div class="ci_te_text-editor-footer-name">
+	                            length:
+	                        </div>
+	                        <div class="ci_te_text-editor-footer-value"
+	                             style="@GetDocumentLengthCssStyle(model.DocumentLength)">
+	                            @model.DocumentLength
+	                        </div>
+	                    </div>
+	
+	                    <div class="ci_te_text-editor-footer-name-value-pair">
+	                        <div class="ci_te_text-editor-footer-name">
+	                            lines:
+	                        </div>
+	                        <div class="ci_te_text-editor-footer-value"
+	                             style="@GetLineCountCssStyle(model.LineCount)">
+	                            @model.LineCount
+	                        </div>
+	                    </div>
+	                </div>
+	
+	                <div class="ci_te_text-editor-footer-entry">
+	                    <div class="ci_te_text-editor-footer-name-value-pair">
+	                        <div class="ci_te_text-editor-footer-name">
+	                            Ln:
+	                        </div>
+	
+	                        @{
+	                            var rowNumber = viewModel.LineIndex + 1;
+	                        }
+	
+	                        <div class="ci_te_text-editor-footer-value"
+	                             style="@GetLineCountCssStyle(model.LineCount)">
+	                            @rowNumber
+	                        </div>
+	                    </div>
+	
+	                    <div class="ci_te_text-editor-footer-name-value-pair">
+	                        <div class="ci_te_text-editor-footer-name">
+	                            Col:
+	                        </div>
+	
+	                        @{
+	                            var columnNumber = viewModel.ColumnIndex + 1;
+	                        }
+	
+	                        <div class="ci_te_text-editor-footer-value"
+	                             style="@GetMostCharactersOnASingleLineTupleLineLengthCssStyle(model.MostCharactersOnASingleLineTuple.lineLength)">
+	                            @columnNumber
+	                        </div>
+	                    </div>
+	
+	                    <div class="ci_te_text-editor-footer-name-value-pair">
+	                        <div class="ci_te_text-editor-footer-name">
+	                            Pos:
+	                        </div>
+	
+	                        @{
+	                            var positionNumber = GetPositionNumber(model, viewModel);
+	                        }
+	
+	                        <div class="ci_te_text-editor-footer-value"
+	                             style="@GetDocumentLengthCssStyle(model.DocumentLength)">
+	                            @positionNumber
+	                        </div>
+	                    </div>
+	                </div>
+	
+	                <div class="ci_te_text-editor-footer-entry">
+	                    <select @bind="SelectedLineEndKindString"
+	                            title="Line ending kind">
+	                        <option value="@LineEndKind.CarriageReturn.AsEnumName()">
+                                @LineEndKind.CarriageReturn.AsFriendlyName()
+                            </option>
+                            <option value="@LineEndKind.LineFeed.AsEnumName()">
+                                @LineEndKind.LineFeed.AsFriendlyName()
+                            </option>
+                            <option value="@LineEndKind.CarriageReturnLineFeed.AsEnumName()">
+                                @LineEndKind.CarriageReturnLineFeed.AsFriendlyName()
+                            </option>
+	                    </select>
+	                </div>
+	            }
+	            else
+	            {
+	                <div class="ci_te_text-editor-footer-entry ci_te_text-editor-footer-file-sizing">
+	                    @if (model is null)
+	                    {
+	                        <div>The @nameof(TextEditorModel) was null</div>
+	                    }
+	                    else if (viewModel is not null)
+	                    {
+	                        <div>The @nameof(TextEditorViewModel) was null</div>
+	                    }
+	                </div>
+	            }
+	        }
+	    </div>
+	</div>
+}

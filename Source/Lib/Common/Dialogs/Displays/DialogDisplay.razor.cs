@@ -1,0 +1,102 @@
+using Microsoft.AspNetCore.Components;
+using Clair.Common.RazorLib.Dimensions.Models;
+using Clair.Common.RazorLib.Resizes.Displays;
+using Clair.Common.RazorLib.Dynamics.Models;
+
+namespace Clair.Common.RazorLib.Dialogs.Displays;
+
+public partial class DialogDisplay : ComponentBase, IDisposable
+{
+    [Inject]
+    private CommonService CommonService { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public IDialog Dialog { get; set; } = null!;
+
+    private const int COUNT_OF_CONTROL_BUTTONS = 2;
+
+    private ResizableDisplay? _resizableDisplay;
+
+    private string IsMaximizedStyleCssString => Dialog.DialogIsMaximized
+        ? CommonService.CommonConfig.IsMaximizedStyleCssString
+        : string.Empty;
+
+    private string DialogTitleCssStyleString =>
+        "width: calc(100% -" +
+        $" ({COUNT_OF_CONTROL_BUTTONS} * ({CommonService.Options_IconSizeCssValue}px)) -" +
+        $" ({COUNT_OF_CONTROL_BUTTONS} * ({CommonFacts.HtmlFacts_Button_ButtonPaddingHorizontalTotalInPixelsCssValue})));";
+
+    protected override void OnInitialized()
+    {
+        CommonService.CommonUiStateChanged += OnCommonUiStateChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CommonService.JsRuntimeCommonApi
+                .FocusHtmlElementById(Dialog.DialogFocusPointHtmlElementId)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private async void OnCommonUiStateChanged(CommonUiEventKind commonUiEventKind)
+    {
+        if (commonUiEventKind == CommonUiEventKind.ActiveDialogKeyChanged)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private Task ReRenderAsync()
+    {
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private Task SubscribeMoveHandleAsync()
+    {
+        _resizableDisplay?.SubscribeToDragEventWithMoveHandle();
+        return Task.CompletedTask;
+    }
+
+    private void ToggleIsMaximized()
+    {
+        CommonService.Dialog_ReduceSetIsMaximizedAction(
+            Dialog.DynamicViewModelKey,
+            !Dialog.DialogIsMaximized);
+    }
+
+    private async Task DispatchDisposeDialogRecordAction()
+    {
+        CommonService.Dialog_ReduceDisposeAction(Dialog.DynamicViewModelKey);
+        
+        await CommonService.JsRuntimeCommonApi
+            .FocusHtmlElementById(Dialog.SetFocusOnCloseElementId
+                 ?? IDynamicViewModel.DefaultSetFocusOnCloseElementId)
+            .ConfigureAwait(false);
+    }
+
+    private string GetCssClassForDialogStateIsActiveSelection(bool isActive)
+    {
+        return isActive
+            ? "ci_active"
+            : string.Empty;
+    }
+
+    private Task HandleOnFocusIn()
+    {
+        CommonService.Dialog_ReduceSetActiveDialogKeyAction(Dialog.DynamicViewModelKey);
+        return Task.CompletedTask;
+    }
+
+    private void HandleOnMouseDown()
+    {
+        CommonService.Dialog_ReduceSetActiveDialogKeyAction(Dialog.DynamicViewModelKey);
+    }
+
+    public void Dispose()
+    {
+        CommonService.CommonUiStateChanged -= OnCommonUiStateChanged;
+    }
+}

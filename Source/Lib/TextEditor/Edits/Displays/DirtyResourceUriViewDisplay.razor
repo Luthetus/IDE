@@ -1,0 +1,26 @@
+@using System.Text;
+@using Clair.Common.RazorLib.FileSystems.Models
+
+@{ var dirtyResourceUriState = TextEditorService.GetDirtyResourceUriState(); }
+
+<div class="ci_web_dirty-text-editor-models-view">
+    <h3>DirtyResourceUriViewDisplay</h3>
+    
+    <hr/>
+    
+    @{ var localDirtyResourceUriList = dirtyResourceUriState.DirtyResourceUriList; }
+    @foreach (var dirtyResourceUri in localDirtyResourceUriList)
+    {
+        var absolutePath = new AbsolutePath(dirtyResourceUri.Value, false, TextEditorService.CommonService.FileSystemProvider, tokenBuilder: new StringBuilder(), formattedBuilder: new StringBuilder(), AbsolutePathNameKind.NameWithExtension);
+
+        <div>
+            <label>Open in editor:</label>
+            <button class="ci_button"
+                    style="display: inline; margin-bottom: 15px;"
+                    title="@absolutePath.Value"
+                    @onclick="() => OpenInEditorOnClick(dirtyResourceUri.Value)">
+                @absolutePath.Name
+            </button>
+        </div>
+    }
+</div>

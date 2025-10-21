@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Product>Clair Compiler Service Razor</Product>
+    <Description>A Razor implementation of the ICompilerService interface, which comes from the "Clair.TextEditor" repository.</Description>
+    <PackageId>Clair.CompilerServices.Razor</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Hunter Freeman</Authors>
+    <Company />
+    <PackageTags>DotNet CSharp Blazor RazorComponents</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\TextEditor\Clair.TextEditor.RazorLib.csproj" />
+    <ProjectReference Include="..\CSharp\Clair.CompilerServices.CSharp.csproj" />
+    <ProjectReference Include="..\Xml\Clair.CompilerServices.Xml.csproj" />
+    <ProjectReference Include="..\..\Extensions\Extensions.CompilerServices\Clair.Extensions.CompilerServices.csproj" />
+  </ItemGroup>
+
+</Project>

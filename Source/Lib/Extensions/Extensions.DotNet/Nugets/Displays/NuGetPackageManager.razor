@@ -1,0 +1,166 @@
+@using Clair.Common.RazorLib;
+
+@* ContextRecord="ContextFacts.NuGetPackageManagerContext" *@
+
+<div class="ci_ide_nu-get-package-manager-display" style="height: 100%; width: 100%;">
+    <div class="ci_section-body"
+         style="width: 100%;">
+
+        @{
+            var nuGetPackageManagerState = DotNetService.GetNuGetPackageManagerState();
+            var dotNetSolutionStateWrap = DotNetService.GetDotNetSolutionState();
+        }
+
+        @if (dotNetSolutionStateWrap.DotNetSolutionModel is null)
+        {
+            <div>
+                Solution has not yet been chosen
+            </div>
+        }
+        else
+        {
+            <div style="margin-bottom: 2em;">
+                <table>
+                    <tbody>
+                    <tr>
+                        <td>
+                            Project:
+                        </td>
+                        <td>
+                            <select @onchange="e => SelectedProjectToModifyChanged(e, dotNetSolutionStateWrap)">
+                                
+                                <option value="@Guid.Empty"
+                                        selected="@(!ValidateSolutionContainsSelectedProject(dotNetSolutionStateWrap, nuGetPackageManagerState))">
+                                    Select a project to modify
+                                </option>
+
+                                @foreach (var project in dotNetSolutionStateWrap.DotNetSolutionModel.DotNetProjectList)
+                                {
+                                    <option value="@project.ProjectIdGuid.ToString()"
+                                            selected="@CheckIfProjectIsSelected(project, nuGetPackageManagerState)">
+                                        @project.DisplayName
+                                    </option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            @if (nuGetPackageManagerState.SelectedProjectToModify is null)
+                            {
+                                <em class="ci_em">
+                                    {theSelectedProjectWasNotFound}
+                                </em>
+                            }
+                            else
+                            {
+                                <em class="ci_em">
+                                    @nuGetPackageManagerState.SelectedProjectToModify.DisplayName
+                                </em>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Source:
+                        </td>
+                        <td>
+                            <select>
+                                <option>TODO: pick provider</option>
+                            </select>
+                        </td>
+                        <td>
+                            <em class="ci_em">
+                                @DotNetService.ProviderWebsiteUrlNoFormatting
+                            </em>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Search:
+                        </td>
+                        <td>
+                            <input class="ci_ide_input ci_ide_input-text"
+                                    style="height: 2em;"
+                                    placeholder="Nuget query"
+                                    @bind="NugetQuery"
+                                    @bind:event="oninput"/>
+                        </td>
+                        <td>
+                            <em class="ci_em">
+
+                                @{ var localNugetQuery = NugetQuery; }
+
+                                @if (string.IsNullOrWhiteSpace(localNugetQuery))
+                                {
+                                    <text>{searchNotYetSet}</text>
+                                }
+                                else
+                                {
+                                    <text>@localNugetQuery</text>
+                                }
+                            </em>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Include prerelease:
+                        </td>
+                        <td>
+                            <input class="ci_ide_input"
+                                    type="checkbox"
+                                    @bind="IncludePrerelease" />
+                        </td>
+                        <td>
+                            <em class="ci_em">
+                                @IncludePrerelease
+                            </em>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <hr/>
+
+                <div>
+                    <span>RESULT:</span>
+
+                    <em class="ci_em">
+                        @(DotNetService.BuildQuery(NugetQuery, IncludePrerelease).Query)
+                    </em>
+                </div>
+
+                <button class="ci_button"
+                        @onclick="SubmitNuGetQueryOnClick">
+                    Submit
+                </button>
+
+                @if (_performingNugetQuery)
+                {
+                	var appOptionsState = DotNetService.CommonService.GetAppOptionsState();
+                
+                	var iconDriver = new IconDriver(
+						appOptionsState.Options.IconSizeInPixels,
+						appOptionsState.Options.IconSizeInPixels);
+						
+                    @IconLoadingFragment.Render(iconDriver)
+                }
+
+                @if (_exceptionFromNugetQuery is not null)
+                {
+                    <div>@_exceptionFromNugetQuery.Message</div>
+                }
+
+                <hr/>
+
+                @{ var nugetResult = DotNetService.GetNuGetPackageManagerState().QueryResultList; }
+
+                @if (nugetResult.Any())
+                {
+                    foreach (var entry in nugetResult)
+                    {
+                        <NugetPackageDisplay NugetPackageRecord="entry"/>
+                    }
+                }
+            </div>
+        }
+    </div>
+</div>

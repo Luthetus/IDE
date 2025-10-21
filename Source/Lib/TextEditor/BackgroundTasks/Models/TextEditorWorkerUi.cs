@@ -1,0 +1,372 @@
+using System.Collections.Concurrent;
+using Clair.Common.RazorLib.BackgroundTasks.Models;
+using Clair.Common.RazorLib.Keys.Models;
+using Clair.TextEditor.RazorLib.Characters.Models;
+using Clair.TextEditor.RazorLib.JavaScriptObjects.Models;
+using Clair.TextEditor.RazorLib.Commands.Models.Defaults;
+using Clair.TextEditor.RazorLib.Cursors.Models;
+using Clair.TextEditor.RazorLib.Events.Models;
+using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
+
+namespace Clair.TextEditor.RazorLib.BackgroundTasks.Models;
+
+public class TextEditorWorkerUi : IBackgroundTaskGroup
+{
+    private readonly TextEditorService _textEditorService;
+    
+    public TextEditorWorkerUi(TextEditorService textEditorService)
+    {
+        _textEditorService = textEditorService;
+    }
+    
+    public Key<IBackgroundTaskGroup> BackgroundTaskKey { get; } = Key<IBackgroundTaskGroup>.NewKey();
+    
+    public bool __TaskCompletionSourceWasCreated { get; set; }
+    
+    public ConcurrentQueue<(
+        TextEditorEventArgs WorkerUiArgs,
+        TextEditorComponentData ComponentData,
+        int ViewModelKey,
+        TextEditorWorkUiKind WorkUiKind)> WorkQueue { get; } = new();
+    
+    public void Enqueue(
+        TextEditorEventArgs workerUiArgs,
+        TextEditorComponentData componentData,
+        int viewModelKey,
+        TextEditorWorkUiKind workUiKind)
+    {
+        WorkQueue.Enqueue(
+            (
+                workerUiArgs,
+                componentData,
+                viewModelKey,
+                workUiKind
+            ));
+        _textEditorService.CommonService.Continuous_Enqueue(this);
+    }
+    
+    public async ValueTask HandleEvent()
+    {
+        if (!WorkQueue.TryDequeue(out (
+            TextEditorEventArgs WorkerUiArgs,
+            TextEditorComponentData ComponentData,
+            int ViewModelKey,
+            TextEditorWorkUiKind WorkUiKind) workArgsTuple))
+            return;
+        
+        switch (workArgsTuple.WorkUiKind)
+        {
+            case TextEditorWorkUiKind.OnDoubleClick:
+            {
+                var editContext = new TextEditorEditContext(workArgsTuple.ComponentData.TextEditorViewModelSlimDisplay.TextEditorService);
+    
+                var viewModel = editContext.GetViewModelModifier(workArgsTuple.ViewModelKey);
+                var modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri, isReadOnly: true);
+        
+                if (modelModifier is null || viewModel is null)
+                    return;
+                    
+                var hasSelectedText = TextEditorSelectionHelper.HasSelectedText(viewModel);
+        
+                if ((workArgsTuple.WorkerUiArgs.Buttons & 1) != 1 && hasSelectedText)
+                    return; // Not pressing the left mouse button so assume ContextMenu is desired result.
+        
+                if (workArgsTuple.WorkerUiArgs.ShiftKey)
+                    return; // Do not expand selection if user is holding shift
+        
+                // Labeling any ITextEditorEditContext -> JavaScript interop or Blazor StateHasChanged.
+                // Reason being, these are likely to be huge optimizations (2024-05-29).
+                var lineAndColumnIndex = await EventUtils.CalculateLineAndColumnIndex(
+                        modelModifier,
+                        viewModel,
+                        workArgsTuple.WorkerUiArgs.X,
+                        workArgsTuple.WorkerUiArgs.Y,
+                        workArgsTuple.ComponentData,
+                        editContext)
+                    .ConfigureAwait(false);
+        
+                var lowerColumnIndexExpansion = modelModifier.GetColumnIndexOfCharacterWithDifferingKind(
+                    lineAndColumnIndex.LineIndex,
+                    lineAndColumnIndex.ColumnIndex,
+                    true);
+        
+                lowerColumnIndexExpansion = lowerColumnIndexExpansion == -1
+                    ? 0
+                    : lowerColumnIndexExpansion;
+        
+                var higherColumnIndexExpansion = modelModifier.GetColumnIndexOfCharacterWithDifferingKind(
+                    lineAndColumnIndex.LineIndex,
+                    lineAndColumnIndex.ColumnIndex,
+                    false);
+        
+                higherColumnIndexExpansion = higherColumnIndexExpansion == -1
+                    ? modelModifier.GetLineLength(lineAndColumnIndex.LineIndex)
+                    : higherColumnIndexExpansion;
+        
+                CharacterKind lowerKind;
+                CharacterKind upperKind;
+        
+                if (viewModel.ColumnIndex > 0)
+                {
+                    var positionIndex = modelModifier.GetPositionIndex(viewModel.LineIndex, viewModel.ColumnIndex - 1);
+                    lowerKind = modelModifier.GetCharacterKind(positionIndex);
+                }
+                else
+                {
+                    lowerKind = CharacterKind.Bad;
+                }
+                
+                if (viewModel.ColumnIndex <= modelModifier.GetLineLength(lineAndColumnIndex.LineIndex))
+                {
+                    var positionIndex = modelModifier.GetPositionIndex(viewModel.LineIndex, viewModel.ColumnIndex);
+                    upperKind = modelModifier.GetCharacterKind(positionIndex);
+                }
+                else
+                {
+                    upperKind = CharacterKind.Bad;
+                }
+                
+                var lowerGolfPriority = CharacterKindHelper.GetPriorityGolfRank(lowerKind);
+                var upperGolfPriority = CharacterKindHelper.GetPriorityGolfRank(upperKind);
+                
+                if (lowerGolfPriority < upperGolfPriority)
+                {
+                    if (lowerKind != upperKind)
+                        higherColumnIndexExpansion = viewModel.ColumnIndex;
+                }
+                else if (upperGolfPriority < lowerGolfPriority)
+                {
+                    if (upperKind != lowerKind)
+                        lowerColumnIndexExpansion = viewModel.ColumnIndex;
+                }
+                
+                // Move user's cursor position to the higher expansion
+                viewModel.LineIndex = lineAndColumnIndex.LineIndex;
+                viewModel.ColumnIndex = higherColumnIndexExpansion;
+                viewModel.PreferredColumnIndex = lineAndColumnIndex.ColumnIndex;
+        
+                // Set text selection ending to higher expansion
+                var cursorPositionOfHigherExpansion = modelModifier.GetPositionIndex(
+                    lineAndColumnIndex.LineIndex,
+                    higherColumnIndexExpansion);
+                viewModel.SelectionEndingPositionIndex = cursorPositionOfHigherExpansion;
+        
+                // Set text selection anchor to lower expansion
+                var cursorPositionOfLowerExpansion = modelModifier.GetPositionIndex(
+                    lineAndColumnIndex.LineIndex,
+                    lowerColumnIndexExpansion);
+                viewModel.SelectionAnchorPositionIndex = cursorPositionOfLowerExpansion;
+                
+                await editContext.TextEditorService
+                    .FinalizePost(editContext)
+                    .ConfigureAwait(false);
+                
+                return;
+            }
+            case TextEditorWorkUiKind.OnKeyDown:
+            {
+                await TextEditorFacts.Keymap_DefaultKeymap.HandleEvent(
+                    workArgsTuple.ComponentData,
+                    workArgsTuple.ViewModelKey,
+                    workArgsTuple.WorkerUiArgs.Key,
+                    workArgsTuple.WorkerUiArgs.Code,
+                    workArgsTuple.WorkerUiArgs.CtrlKey,
+                    workArgsTuple.WorkerUiArgs.ShiftKey,
+                    workArgsTuple.WorkerUiArgs.AltKey,
+                    workArgsTuple.WorkerUiArgs.MetaKey);
+                return;
+            }
+            case TextEditorWorkUiKind.OnMouseDown:
+            {
+                var editContext = new TextEditorEditContext(workArgsTuple.ComponentData.TextEditorViewModelSlimDisplay.TextEditorService);
+    
+                var viewModel = editContext.GetViewModelModifier(workArgsTuple.ViewModelKey);
+                var modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri, isReadOnly: true);
+        
+                if (modelModifier is null || viewModel is null)
+                    return;
+        
+                viewModel.PersistentState.ShouldRevealCursor = false;
+        
+                var hasSelectedText = TextEditorSelectionHelper.HasSelectedText(viewModel);
+                
+                if ((workArgsTuple.WorkerUiArgs.Buttons & 1) != 1 && hasSelectedText)
+                    return; // Not pressing the left mouse button so assume ContextMenu is desired result.
+        
+                if (viewModel.PersistentState.MenuKind != MenuKind.None)
+                {
+                    TextEditorCommandDefaultFunctions.RemoveDropdown(
+                        editContext,
+                        viewModel,
+                        workArgsTuple.ComponentData.TextEditorViewModelSlimDisplay.TextEditorService.CommonService);
+                }
+        
+                // Remember the current cursor position prior to doing anything
+                var inLineIndex = viewModel.LineIndex;
+                var inColumnIndex = viewModel.ColumnIndex;
+        
+                // Move the cursor position
+                //
+                // Labeling any ITextEditorEditContext -> JavaScript interop or Blazor StateHasChanged.
+                // Reason being, these are likely to be huge optimizations (2024-05-29).
+                var lineAndColumnIndex = await EventUtils.CalculateLineAndColumnIndex(
+                        modelModifier,
+                        viewModel,
+                        workArgsTuple.WorkerUiArgs.X,
+                        workArgsTuple.WorkerUiArgs.Y,
+                        workArgsTuple.ComponentData,
+                        editContext)
+                    .ConfigureAwait(false);
+        
+                viewModel.LineIndex = lineAndColumnIndex.LineIndex;
+                viewModel.ColumnIndex = lineAndColumnIndex.ColumnIndex;
+                viewModel.PreferredColumnIndex = lineAndColumnIndex.ColumnIndex;
+        
+                var cursorPositionIndex = modelModifier.GetPositionIndex(
+                    lineAndColumnIndex.LineIndex,
+                    lineAndColumnIndex.ColumnIndex);
+        
+                if (workArgsTuple.WorkerUiArgs.ShiftKey)
+                {
+                    if (!hasSelectedText)
+                    {
+                        // If user does not yet have a selection then place the text selection anchor were they were
+                        viewModel.SelectionAnchorPositionIndex = modelModifier
+                            .GetPositionIndex(inLineIndex, inColumnIndex);
+                    }
+        
+                    // If user ALREADY has a selection then do not modify the text selection anchor
+                }
+                else
+                {
+                    viewModel.SelectionAnchorPositionIndex = cursorPositionIndex;
+                }
+        
+                viewModel.SelectionEndingPositionIndex = cursorPositionIndex;
+                
+                editContext.TextEditorService.ViewModel_StopCursorBlinking();
+                
+                await editContext.TextEditorService
+                    .FinalizePost(editContext)
+                    .ConfigureAwait(false);
+                
+                return;
+            }
+            case TextEditorWorkUiKind.OnMouseMove:
+            {
+                var editContext = new TextEditorEditContext(workArgsTuple.ComponentData.TextEditorViewModelSlimDisplay.TextEditorService);
+    
+                var viewModel = editContext.GetViewModelModifier(workArgsTuple.ViewModelKey);
+                var modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri, isReadOnly: true);
+        
+                if (modelModifier is null || viewModel is null)
+                    return;
+                    
+                // Labeling any ITextEditorEditContext -> JavaScript interop or Blazor StateHasChanged.
+                // Reason being, these are likely to be huge optimizations (2024-05-29).
+                var rowAndColumnIndex = await EventUtils.CalculateLineAndColumnIndex(
+                        modelModifier,
+                        viewModel,
+                        workArgsTuple.WorkerUiArgs.X,
+                        workArgsTuple.WorkerUiArgs.Y,
+                        workArgsTuple.ComponentData,
+                        editContext)
+                    .ConfigureAwait(false);
+                
+                var positionIndex = modelModifier.GetPositionIndex(rowAndColumnIndex.LineIndex, rowAndColumnIndex.ColumnIndex);
+                
+                if (viewModel.LineIndex == rowAndColumnIndex.LineIndex &&
+                    viewModel.ColumnIndex == rowAndColumnIndex.ColumnIndex &&
+                    viewModel.PreferredColumnIndex == rowAndColumnIndex.ColumnIndex &&
+                    viewModel.SelectionEndingPositionIndex == positionIndex)
+                {
+                    editContext.TextEditorService.ViewModel_StopCursorBlinking();
+                    return;
+                }
+                
+                viewModel.LineIndex = rowAndColumnIndex.LineIndex;
+                viewModel.ColumnIndex = rowAndColumnIndex.ColumnIndex;
+                viewModel.PreferredColumnIndex = rowAndColumnIndex.ColumnIndex;
+        
+                viewModel.SelectionEndingPositionIndex = positionIndex;
+            
+                editContext.TextEditorService.ViewModel_StopCursorBlinking();
+            
+                await editContext.TextEditorService
+                    .FinalizePost(editContext)
+                    .ConfigureAwait(false);
+                
+                return;
+            }
+            case TextEditorWorkUiKind.OnScrollHorizontal:
+            {
+                var editContext = new TextEditorEditContext(workArgsTuple.ComponentData.TextEditorViewModelSlimDisplay.TextEditorService);
+    
+                var viewModelModifier = editContext.GetViewModelModifier(workArgsTuple.ViewModelKey);
+                if (viewModelModifier is null)
+                    return;
+        
+                viewModelModifier.ScrollWasModified = true;
+                viewModelModifier.SetScrollLeft((int)workArgsTuple.WorkerUiArgs.X);
+                
+                await editContext.TextEditorService
+                    .FinalizePost(editContext)
+                    .ConfigureAwait(false);
+                
+                return;
+            }
+            case TextEditorWorkUiKind.OnScrollVertical:
+            {
+                var editContext = new TextEditorEditContext(workArgsTuple.ComponentData.TextEditorViewModelSlimDisplay.TextEditorService);
+    
+                var viewModelModifier = editContext.GetViewModelModifier(workArgsTuple.ViewModelKey);
+                if (viewModelModifier is null)
+                    return;
+        
+                viewModelModifier.ScrollWasModified = true;
+                viewModelModifier.SetScrollTop((int)workArgsTuple.WorkerUiArgs.Y);
+                    
+                await editContext.TextEditorService
+                    .FinalizePost(editContext)
+                    .ConfigureAwait(false);
+                
+                return;
+            }
+            case TextEditorWorkUiKind.OnWheel:
+            {
+                var editContext = new TextEditorEditContext(workArgsTuple.ComponentData.TextEditorViewModelSlimDisplay.TextEditorService);
+    
+                var viewModelModifier = editContext.GetViewModelModifier(workArgsTuple.ViewModelKey);
+                if (viewModelModifier is null)
+                    return;
+                    
+                if (workArgsTuple.WorkerUiArgs.ShiftKey)
+                {
+                    viewModelModifier.ScrollWasModified = true;
+                    // I find WheelEventArgs.DeltaY has to be used for horizontal scrolling with the mouse wheel.
+                    viewModelModifier.SetScrollLeft(
+                        viewModelModifier.PersistentState.ScrollLeft +
+                            (int)Math.Ceiling(workArgsTuple.WorkerUiArgs.Y / 2));
+                }
+                else
+                {
+                    viewModelModifier.ScrollWasModified = true;
+                    viewModelModifier.SetScrollTop(
+                        viewModelModifier.PersistentState.ScrollTop +
+                            (int)Math.Ceiling(workArgsTuple.WorkerUiArgs.Y));
+                }
+                
+                await editContext.TextEditorService
+                    .FinalizePost(editContext)
+                    .ConfigureAwait(false);
+                
+                return;
+            }
+            default:
+            {
+                Console.WriteLine($"{nameof(TextEditorWorkerUi)} {nameof(HandleEvent)} default case");
+                return;
+            }
+        }
+    }
+}

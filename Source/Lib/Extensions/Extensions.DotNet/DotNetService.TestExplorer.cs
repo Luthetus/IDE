@@ -1,0 +1,651 @@
+using Clair.Common.RazorLib;
+using Clair.Common.RazorLib.Reactives.Models;
+using Clair.Common.RazorLib.TreeViews.Models;
+using Clair.Common.RazorLib.TreeViews.Models.Utils;
+using Clair.CompilerServices.DotNetSolution.Models.Project;
+using Clair.Extensions.DotNet.CommandLines.Models;
+using Clair.Extensions.DotNet.TestExplorers.Models;
+using Clair.Ide.RazorLib;
+using Clair.Ide.RazorLib.Terminals.Models;
+
+namespace Clair.Extensions.DotNet;
+
+public partial class DotNetService
+{
+    private readonly object _stateModificationLock = new();
+
+    /// <summary>
+    /// Each time the user opens the 'Test Explorer' panel,
+    /// a check is done to see if the data being displayed
+    /// is in sync with the user's selected .NET solution.
+    ///
+    /// If it is not in sync, then it starts discovering tests for each of the
+    /// projects in the solution.
+    ///
+    /// But, if the user cancels this task, if they change panel tabs
+    /// from the 'Test Explorer' to something else, when they return
+    /// it will once again try to discover tests in all the projects for the solution.
+    ///
+    /// This is very annoying from a user perspective.
+    /// So this field will track whether we've already started
+    /// the task to discover tests in all the projects for the solution or not.
+    ///
+    /// This is fine because there is a button in the top left of the panel that
+    /// has a 'refresh' icon and it will start this task if the
+    /// user manually clicks it, (even if they cancelled the automatic invocation).
+    /// </summary>
+    private string _intentToDiscoverTestsInSolutionFilePath = string.Empty;
+
+    private string _treeViewOwnerSolutionFilePath = string.Empty;
+
+    private TestExplorerState _testExplorerState = new();
+
+    public TestExplorerState GetTestExplorerState() => _testExplorerState;
+
+    public void ReduceWithAction(Func<TestExplorerState, TestExplorerState> withFunc)
+    {
+        lock (_stateModificationLock)
+        {
+            var inState = GetTestExplorerState();
+
+            _testExplorerState = withFunc.Invoke(inState);
+
+            DotNetStateChanged?.Invoke(DotNetStateChangedKind.TestExplorerStateChanged);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// When the user interface for the test explorer is rendered,
+    /// then dispatch this in order to start a task that will discover unit tests.
+    /// </summary>
+    public Task HandleUserInterfaceWasInitializedEffect()
+    {
+        var dotNetSolutionState = GetDotNetSolutionState();
+        var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
+
+        if (dotNetSolutionModel is null)
+            return Task.CompletedTask;
+
+        var testExplorerState = GetTestExplorerState();
+
+        if (dotNetSolutionModel.AbsolutePath.Value != testExplorerState.SolutionFilePath)
+        {
+            ReduceWithAction(inState => inState with
+            {
+                SolutionFilePath = dotNetSolutionModel.AbsolutePath.Value
+            });
+
+            Enqueue_ConstructTreeView();
+        }
+
+        if (_intentToDiscoverTestsInSolutionFilePath != dotNetSolutionModel.AbsolutePath.Value)
+        {
+            _intentToDiscoverTestsInSolutionFilePath = dotNetSolutionModel.AbsolutePath.Value;
+            Enqueue_DiscoverTests();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task HandleShouldDiscoverTestsEffect()
+    {
+        var dotNetSolutionState = GetDotNetSolutionState();
+        var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
+
+        if (dotNetSolutionModel is null)
+            return Task.CompletedTask;
+
+        var testExplorerState = GetTestExplorerState();
+
+        if (dotNetSolutionModel.AbsolutePath.Value != testExplorerState.SolutionFilePath)
+        {
+            ReduceWithAction(inState => inState with
+            {
+                SolutionFilePath = dotNetSolutionModel.AbsolutePath.Value
+            });
+
+            Enqueue_ConstructTreeView();
+        }
+
+        _intentToDiscoverTestsInSolutionFilePath = dotNetSolutionModel.AbsolutePath.Value;
+        Enqueue_DiscoverTests();
+
+        return Task.CompletedTask;
+    }
+
+    private async void OnDotNetSolutionStateChanged(DotNetStateChangedKind dotNetStateChangedKind)
+    {
+        /*
+        // 2025-10-15
+        if (dotNetStateChangedKind != DotNetStateChangedKind.SolutionStateChanged)
+            return;
+    
+        var solutionFilePathWasNull = GetTestExplorerState().SolutionFilePath is null;
+
+        ReduceWithAction(inState => inState with
+        {
+            SolutionFilePath = null
+        });
+
+        ContainsTestsTreeViewGroup.ChildList = new();
+        NoTestsTreeViewGroup.ChildList = new();
+        ThrewAnExceptionTreeViewGroup.ChildList = new();
+        NotValidProjectForUnitTestTreeViewGroup.ChildList = new();
+
+        IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(TestExplorerState.TreeViewTestExplorerKey, ContainsTestsTreeViewGroup);
+
+        if (!solutionFilePathWasNull)
+        {
+            _ = Task.Run(async () =>
+            {
+                await HandleUserInterfaceWasInitializedEffect()
+                    .ConfigureAwait(false);
+            });
+        }
+        */
+    }
+
+    public void Enqueue_ConstructTreeView()
+    {
+        Enqueue(new DotNetWorkArgs
+        {
+            WorkKind = DotNetWorkKind.ConstructTreeView
+        });
+    }
+
+    public void Enqueue_DiscoverTests()
+    {
+        Enqueue(new DotNetWorkArgs
+        {
+            WorkKind = DotNetWorkKind.DiscoverTests
+        });
+    }
+
+    private readonly Throttle _throttleDiscoverTests = new(TimeSpan.FromMilliseconds(100));
+
+    public TreeViewGroup ContainsTestsTreeViewGroup { get; } = new("Have tests", true, true);
+    public TreeViewGroup NoTestsTreeViewGroup { get; } = new("No tests (but still a test-project)", true, true);
+    public TreeViewGroup ThrewAnExceptionTreeViewGroup { get; } = new("Projects that threw an exception during discovery", true, true);
+    public TreeViewGroup NotValidProjectForUnitTestTreeViewGroup { get; } = new("Not a test-project", true, true);
+
+    public async ValueTask TestExplorer_Do_ConstructTreeView()
+    {
+        var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(TestExplorerState.TreeViewTestExplorerKey);
+        CommonService.TreeView_DisposeContainerAction(TestExplorerState.TreeViewTestExplorerKey, shouldFireStateChangedEvent: false);
+    
+        var container = new TreeViewContainer(
+        	TestExplorerState.TreeViewTestExplorerKey,
+        	rootNode: null,
+        	selectedNodeList: Array.Empty<TreeViewNoType>())
+    	{
+    	    FlatListVersion = flatListVersion
+    	};
+        
+        CommonService.TreeView_RegisterContainerAction(
+        	container,
+        	shouldFireStateChangedEvent: false);
+    
+        var dotNetSolutionState = GetDotNetSolutionState();
+        var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
+
+        if (dotNetSolutionModel is null)
+            return;
+
+        var localDotNetProjectList = dotNetSolutionModel.DotNetProjectList
+            .Where(x => x.DotNetProjectKind == DotNetProjectKind.CSharpProject);
+
+        var localProjectTestModelList = localDotNetProjectList.Select(x => new ProjectTestModel(
+                x.ProjectIdGuid,
+                x.AbsolutePath,
+                callback => Task.CompletedTask,
+                node => IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(TestExplorerState.TreeViewTestExplorerKey, node)))
+            .ToList();
+
+        var localFormattedCommandValue = DotNetCliCommandFormatter.FormatDotNetTestListTests();
+
+        var localTreeViewProjectTestModelList = localProjectTestModelList.Select(x =>
+                (TreeViewNoType)new TreeViewProjectTestModel(
+                    x,
+                    true,
+                    false))
+            .ToArray();
+
+        var toBeChildListNoTestsTreeViewGroup = new List<TreeViewNoType>();
+        var toBeChildListNotValidProjectForUnitTestTreeViewGroup = new List<TreeViewNoType>();
+
+        foreach (var entry in localTreeViewProjectTestModelList)
+        {
+            var treeViewProjectTestModel = (TreeViewProjectTestModel)entry;
+
+            if (string.IsNullOrWhiteSpace(treeViewProjectTestModel.Item.DirectoryNameForTestDiscovery))
+                return;
+
+            var projectFileText = await IdeService.TextEditorService.CommonService.FileSystemProvider.File.ReadAllTextAsync(treeViewProjectTestModel.Item.AbsolutePath.Value);
+
+            if (projectFileText.Contains("xunit"))
+            {
+                toBeChildListNoTestsTreeViewGroup.Add(treeViewProjectTestModel);
+            }
+            else
+            {
+                toBeChildListNotValidProjectForUnitTestTreeViewGroup.Add(treeViewProjectTestModel);
+            }
+
+            treeViewProjectTestModel.Item.EnqueueDiscoverTestsFunc = callback =>
+            {
+                var terminalCommandRequest = new TerminalCommandRequest(
+                    localFormattedCommandValue,
+                    treeViewProjectTestModel.Item.DirectoryNameForTestDiscovery,
+                    treeViewProjectTestModel.Item.DotNetTestListTestsTerminalCommandRequestKey)
+                {
+                    BeginWithFunc = async parsedCommand =>
+                    {
+                        treeViewProjectTestModel.Item.TerminalCommandParsed = parsedCommand;
+                    },
+                    ContinueWithFunc = async parsedCommand =>
+                    {
+                        treeViewProjectTestModel.Item.TerminalCommandParsed = parsedCommand;
+
+                        try
+                        {
+                            treeViewProjectTestModel.Item.TestNameFullyQualifiedList = ParseOutputLineDotNetTestListTests(
+                                treeViewProjectTestModel.Item.TerminalCommandParsed.OutputCache.ToString());
+
+                            // THINKING_ABOUT_TREE_VIEW();
+                            {
+                                var splitOutputList = (treeViewProjectTestModel.Item.TestNameFullyQualifiedList ?? new())
+                                    .Select(x =>
+                                    {
+                                        // Theory, InlineData
+                                        // ------------------
+                                        // I don't have it in me to fix this at the moment.
+                                        // Need to handle these differently.
+                                        //
+                                        // Going to just take the non-argumented version
+                                        // for now.
+                                        //
+                                        // It will run all the [InlineData] in one go
+                                        // but can't single out yet. (2025-01-25)
+                                        var openParenthesisIndex = x.IndexOf("(");
+                                        if (openParenthesisIndex != -1)
+                                            x = x[..openParenthesisIndex];
+
+                                        return x.Split('.');
+                                    });
+
+                                var rootMap = new Dictionary<string, StringFragment>();
+
+                                foreach (var splitOutput in splitOutputList)
+                                {
+                                    var targetMap = rootMap;
+                                    var lastSeenStringFragment = (StringFragment?)null;
+
+                                    foreach (var fragment in splitOutput)
+                                    {
+                                        if (!targetMap.ContainsKey(fragment))
+                                            targetMap.Add(fragment, new(fragment));
+
+                                        lastSeenStringFragment = targetMap[fragment];
+                                        targetMap = lastSeenStringFragment.Map;
+                                    }
+
+                                    if (lastSeenStringFragment is not null)
+                                        lastSeenStringFragment.IsEndpoint = true;
+                                }
+
+                                treeViewProjectTestModel.Item.RootStringFragmentMap = rootMap;
+                                await callback.Invoke(rootMap).ConfigureAwait(false);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            await callback.Invoke(new()).ConfigureAwait(false);
+                            throw;
+                        }
+                    }
+                };
+
+                treeViewProjectTestModel.Item.TerminalCommandRequest = terminalCommandRequest;
+
+                return IdeService.GetTerminalState().ExecutionTerminal
+                    .EnqueueCommandAsync(terminalCommandRequest);
+            };
+        }
+        
+        NoTestsTreeViewGroup.ChildListLength = 0;
+        NoTestsTreeViewGroup.ChildListOffset = container.ChildList.Count;
+        foreach (var child in toBeChildListNoTestsTreeViewGroup)
+        {
+            container.ChildList.Add(child);
+            ++NoTestsTreeViewGroup.ChildListLength;
+        }
+        
+        NotValidProjectForUnitTestTreeViewGroup.ChildListLength = 0;
+        NotValidProjectForUnitTestTreeViewGroup.ChildListOffset = container.ChildList.Count;
+        foreach (var child in toBeChildListNotValidProjectForUnitTestTreeViewGroup)
+        {
+            container.ChildList.Add(child);
+            ++NotValidProjectForUnitTestTreeViewGroup.ChildListLength;
+        }
+
+        var adhocRoot = TreeViewAdhoc.ConstructTreeViewAdhoc(container, new[]
+        {
+            ContainsTestsTreeViewGroup,
+            NoTestsTreeViewGroup,
+            ThrewAnExceptionTreeViewGroup,
+            NotValidProjectForUnitTestTreeViewGroup
+        });
+
+        adhocRoot.LinkChildrenNoMap(adhocRoot.GetChildList(container), container);
+
+        ContainsTestsTreeViewGroup.LinkChildrenNoMap(ContainsTestsTreeViewGroup.GetChildList(container), container);
+        NoTestsTreeViewGroup.LinkChildrenNoMap(NoTestsTreeViewGroup.GetChildList(container), container);
+        ThrewAnExceptionTreeViewGroup.LinkChildrenNoMap(ThrewAnExceptionTreeViewGroup.GetChildList(container), container);
+        NotValidProjectForUnitTestTreeViewGroup.LinkChildrenNoMap(NotValidProjectForUnitTestTreeViewGroup.GetChildList(container), container);
+
+        var firstNode = localTreeViewProjectTestModelList.FirstOrDefault();
+
+        var activeNodes = new List<TreeViewNoType> { ContainsTestsTreeViewGroup };
+        
+        IdeService.TextEditorService.CommonService.TreeView_WithRootNodeAction(TestExplorerState.TreeViewTestExplorerKey, adhocRoot);
+
+        IdeService.TextEditorService.CommonService.TreeView_SetActiveNodeAction(
+            TestExplorerState.TreeViewTestExplorerKey,
+            firstNode,
+            true,
+            false);
+
+        ReduceWithAction(inState => inState with
+        {
+            ProjectTestModelList = localProjectTestModelList,
+            SolutionFilePath = dotNetSolutionModel.AbsolutePath.Value,
+        });
+    }
+
+    public ValueTask Do_DiscoverTests()
+    {
+        return ValueTask.CompletedTask;
+        /*
+        // 2025-10-15
+        _throttleDiscoverTests.Run(async _ =>
+        {
+            var dotNetSolutionState = GetDotNetSolutionState();
+            var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
+
+            if (dotNetSolutionModel is null)
+                return;
+
+            var localTestExplorerState = GetTestExplorerState();
+            var cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
+
+            var progressBarModel = new ProgressBarModel(0, "parsing...")
+            {
+                OnCancelFunc = () =>
+                {
+                    cancellationTokenSource.Cancel();
+                    cancellationTokenSource.Dispose();
+                    return Task.CompletedTask;
+                }
+            };
+
+            CommonFacts.DispatchProgress(
+                $"Test Discovery: {dotNetSolutionModel.AbsolutePath.Name}",
+                progressBarModel,
+                IdeService.TextEditorService.CommonService,
+                TimeSpan.FromMilliseconds(-1));
+
+            var progressThrottle = new Throttle(TimeSpan.FromMilliseconds(100));
+
+            try
+            {
+                progressThrottle.Run(_ =>
+                {
+                    progressBarModel.SetProgress(0, "Discovering tests...");
+                    return Task.CompletedTask;
+                });
+
+                var completionPercentPerProject = 1.0 / (double)NoTestsTreeViewGroup.ChildList.Count;
+                var projectsHandled = 0;
+
+                if (IdeService.TextEditorService.CommonService.TryGetTreeViewContainer(TestExplorerState.TreeViewTestExplorerKey, out var treeViewContainer))
+                {
+                    if (treeViewContainer.RootNode is not TreeViewAdhoc treeViewAdhoc)
+                        return;
+
+                    var dotNetProjectListLength = NoTestsTreeViewGroup.ChildList.Count;
+
+                    foreach (var treeViewProject in NoTestsTreeViewGroup.ChildList)
+                    {
+                        if (treeViewProject is not TreeViewProjectTestModel treeViewProjectTestModel)
+                            continue;
+
+                        var currentProgress = completionPercentPerProject * projectsHandled;
+
+                        progressThrottle.Run(_ =>
+                        {
+                            progressBarModel.SetProgress(
+                                currentProgress,
+                                $"{projectsHandled + 1}/{dotNetProjectListLength}: {treeViewProjectTestModel.Item.AbsolutePath.Name}");
+                            return Task.CompletedTask;
+                        });
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        await treeViewProject.LoadChildListAsync();
+                        projectsHandled++;
+                    }
+
+                    progressThrottle.Run(_ =>
+                    {
+                        progressBarModel.SetProgress(1, $"Finished test discovery: {dotNetSolutionModel.AbsolutePath.Name}", string.Empty);
+                        progressBarModel.Dispose();
+                        return Task.CompletedTask;
+                    });
+                    await Task_SumEachProjectTestCount();
+                }
+                else
+                {
+                    progressThrottle.Run(_ =>
+                    {
+                        progressBarModel.SetProgress(0, "not found");
+                        return Task.CompletedTask;
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                if (e is OperationCanceledException)
+                    progressBarModel.IsCancelled = true;
+
+                var currentProgress = progressBarModel.GetProgress();
+
+                progressThrottle.Run(_ =>
+                {
+                    // TODO: Set message 2 as the error instead so we can see the project...
+                    //       ... that it was discovering tests for when it threw exception?
+                    progressBarModel.SetProgress(currentProgress, e.ToString());
+                    progressBarModel.Dispose();
+                    return Task.CompletedTask;
+                });
+            }
+        });
+
+        return ValueTask.CompletedTask;
+        */
+    }
+
+    public Task Task_SumEachProjectTestCount()
+    {
+        return Task.CompletedTask;
+        /*
+        // 2025-10-15
+        var dotNetSolutionState = GetDotNetSolutionState();
+        var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
+
+        if (dotNetSolutionModel is null)
+            return Task.CompletedTask;
+
+        var totalTestCount = 0;
+        var notRanTestHashSet = new HashSet<string>();
+
+        Console.WriteLine($"NoTestsTreeViewGroup.ChildList.Count: {NoTestsTreeViewGroup.ChildList.Count}");
+        if (IdeService.TextEditorService.CommonService.TryGetTreeViewContainer(TestExplorerState.TreeViewTestExplorerKey, out var treeViewContainer))
+        {
+            if (treeViewContainer.RootNode is not TreeViewAdhoc treeViewAdhoc)
+                return Task.CompletedTask;
+
+            foreach (var treeViewProject in NoTestsTreeViewGroup.ChildList)
+            {
+                if (treeViewProject is not TreeViewProjectTestModel treeViewProjectTestModel)
+                    return Task.CompletedTask;
+
+                totalTestCount += treeViewProjectTestModel.Item.TestNameFullyQualifiedList?.Count ?? 0;
+
+                MoveNodeToCorrectBranch(treeViewProjectTestModel);
+
+                /*if (treeViewProjectTestModel.Item.TestNameFullyQualifiedList is not null)
+                {
+                    if (treeViewProjectTestModel.Item.TestNameFullyQualifiedList.Count > 0)
+                    {
+                        ContainsTestsTreeViewGroup.ChildList.Add(treeViewProjectTestModel);
+                    }
+                    else
+                    {
+                        NoTestsTreeViewGroup.ChildList.Add(treeViewProjectTestModel);
+                    }
+                }
+                else
+                {
+                    if (treeViewProjectTestModel.Item.TerminalCommandParsed is not null &&
+                        treeViewProjectTestModel.Item.TerminalCommandParsed.OutputCache.ToString().Contains("threw an exception"))
+                    {
+                        ThrewAnExceptionTreeViewGroup.ChildList.Add(treeViewProjectTestModel);
+                    }
+                    else
+                    {
+                        NotValidProjectForUnitTestTreeViewGroup.ChildList.Add(treeViewProjectTestModel);
+                    }
+                }*//*// 2025-10-15
+
+                if (treeViewProjectTestModel.Item.TestNameFullyQualifiedList is not null)
+                {
+                    foreach (var output in treeViewProjectTestModel.Item.TestNameFullyQualifiedList)
+                    {
+                        notRanTestHashSet.Add(output);
+                    }
+                }
+            }
+
+            ContainsTestsTreeViewGroup.LinkChildrenNoMap(ContainsTestsTreeViewGroup.ChildList);
+            NoTestsTreeViewGroup.LinkChildrenNoMap(NoTestsTreeViewGroup.ChildList);
+            ThrewAnExceptionTreeViewGroup.LinkChildrenNoMap(ThrewAnExceptionTreeViewGroup.ChildList);
+            NotValidProjectForUnitTestTreeViewGroup.LinkChildrenNoMap(NotValidProjectForUnitTestTreeViewGroup.ChildList);
+
+            var nextTreeViewAdhoc = TreeViewAdhoc.ConstructTreeViewAdhoc(
+                ContainsTestsTreeViewGroup,
+                NoTestsTreeViewGroup,
+                ThrewAnExceptionTreeViewGroup,
+                NotValidProjectForUnitTestTreeViewGroup);
+
+            nextTreeViewAdhoc.LinkChildrenNoMap(nextTreeViewAdhoc.ChildList);
+
+            IdeService.TextEditorService.CommonService.TreeView_WithRootNodeAction(TestExplorerState.TreeViewTestExplorerKey, nextTreeViewAdhoc);
+        }
+
+        ReduceWithAction(inState => inState with
+        {
+            TotalTestCount = totalTestCount,
+            NotRanTestHashSet = notRanTestHashSet,
+            SolutionFilePath = dotNetSolutionModel.AbsolutePath.Value
+        });
+
+        return Task.CompletedTask;
+        */
+    }
+
+    public void MoveNodeToCorrectBranch(TreeViewProjectTestModel treeViewProjectTestModel)
+    {
+        /*
+        // 2025-10-15
+        if (treeViewProjectTestModel.Parent is null)
+            return;
+
+        if (!IdeService.TextEditorService.CommonService.TryGetTreeViewContainer(TestExplorerState.TreeViewTestExplorerKey, out var treeViewContainer))
+            return;
+
+        // containsTestsTreeViewGroup
+        var containsTestsTreeViewGroupList = treeViewContainer.RootNode.ChildList
+            .Where(x =>
+                x is TreeViewGroup tvg &&
+                tvg.Item == "Have tests");
+        if (containsTestsTreeViewGroupList.Count() != 1)
+            return;
+        var containsTestsTreeViewGroup = containsTestsTreeViewGroupList.Single();
+
+        // noTestsTreeViewGroup
+        var noTestsTreeViewGroupList = treeViewContainer.RootNode.ChildList
+            .Where(x =>
+                x is TreeViewGroup tvg &&
+                tvg.Item == "Have tests");
+        if (noTestsTreeViewGroupList.Count() != 1)
+            return;
+        var noTestsTreeViewGroup = noTestsTreeViewGroupList.Single();
+
+        // threwAnExceptionTreeViewGroup
+        var threwAnExceptionTreeViewGroupList = treeViewContainer.RootNode.ChildList
+            .Where(x =>
+                x is TreeViewGroup tvg &&
+                tvg.Item == "Projects that threw an exception during discovery");
+        if (threwAnExceptionTreeViewGroupList.Count() != 1)
+            return;
+        var threwAnExceptionTreeViewGroup = threwAnExceptionTreeViewGroupList.Single();
+
+        // notValidProjectForUnitTestTreeViewGroup
+        var notValidProjectForUnitTestTreeViewGroupList = treeViewContainer.RootNode.ChildList
+            .Where(x =>
+                x is TreeViewGroup tvg &&
+                tvg.Item == "Not a test-project");
+        if (notValidProjectForUnitTestTreeViewGroupList.Count() != 1)
+            return;
+        var notValidProjectForUnitTestTreeViewGroup = notValidProjectForUnitTestTreeViewGroupList.Single();
+
+        treeViewProjectTestModel.Parent.ChildList.Remove(treeViewProjectTestModel);
+        treeViewProjectTestModel.Parent.LinkChildrenNoMap(treeViewProjectTestModel.Parent.ChildList);
+        IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(TestExplorerState.TreeViewTestExplorerKey, treeViewProjectTestModel.Parent);
+
+        if (treeViewProjectTestModel.Item.TestNameFullyQualifiedList is not null)
+        {
+            if (treeViewProjectTestModel.Item.TestNameFullyQualifiedList.Count > 0)
+            {
+                containsTestsTreeViewGroup.ChildList.Add(treeViewProjectTestModel);
+                containsTestsTreeViewGroup.LinkChildrenNoMap(containsTestsTreeViewGroup.ChildList);
+                IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(TestExplorerState.TreeViewTestExplorerKey, containsTestsTreeViewGroup);
+            }
+            else
+            {
+                noTestsTreeViewGroup.ChildList.Add(treeViewProjectTestModel);
+                noTestsTreeViewGroup.LinkChildrenNoMap(noTestsTreeViewGroup.ChildList);
+                IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(TestExplorerState.TreeViewTestExplorerKey, noTestsTreeViewGroup);
+            }
+        }
+        else
+        {
+            if (treeViewProjectTestModel.Item.TerminalCommandParsed is not null &&
+                treeViewProjectTestModel.Item.TerminalCommandParsed.OutputCache.ToString().Contains("threw an exception"))
+            {
+                threwAnExceptionTreeViewGroup.ChildList.Add(treeViewProjectTestModel);
+                threwAnExceptionTreeViewGroup.LinkChildrenNoMap(threwAnExceptionTreeViewGroup.ChildList);
+                IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(TestExplorerState.TreeViewTestExplorerKey, threwAnExceptionTreeViewGroup);
+            }
+            else
+            {
+                notValidProjectForUnitTestTreeViewGroup.ChildList.Add(treeViewProjectTestModel);
+                notValidProjectForUnitTestTreeViewGroup.LinkChildrenNoMap(notValidProjectForUnitTestTreeViewGroup.ChildList);
+                IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(TestExplorerState.TreeViewTestExplorerKey, notValidProjectForUnitTestTreeViewGroup);
+            }
+        }
+        */
+    }
+}

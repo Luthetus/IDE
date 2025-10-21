@@ -1,0 +1,14 @@
+.ci_widget {
+	position: fixed;
+	width: 60vw;
+	height: 60vh;
+	left: 20vw;
+	top: 20vh;
+	z-index: var(--ci_widget-display-z-index);
+    color: var(--ci_secondary-foreground-color);
+    background-color: var(--ci_secondary-background-color);
+    box-shadow: 0 0 var(--ci_dialog-display-box-shadow-blur-radius) var(--ci_primary-box-shadow-color);
+}
+    .ci_widget:focus {
+        outline: 4px solid var(--ci_toggled-on-hover-background-color);
+    }

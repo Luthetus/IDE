@@ -1,0 +1,66 @@
+@{
+	var dotNetSolutionState = DotNetService.GetDotNetSolutionState();
+	var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
+}
+
+<div class="ci_dotnet_solution-properties">
+	<h3>
+		@if (dotNetSolutionModel is null)
+		{
+			<text>dotNetSolutionModel is null</text>
+		}
+		else
+		{
+			<text>@dotNetSolutionModel.AbsolutePath.Value</text>
+		}
+	</h3>
+	
+	@{
+		string GetProjectCssClass(bool valid) => valid ? "ci_tree-view-valid" : "ci_tree-view-exception";
+	}
+	
+	@for (int i = 0; i < dotNetSolutionModel.DotNetProjectList.Count; i++)
+	{
+		var project = dotNetSolutionModel.DotNetProjectList[i];
+		
+		if (project.DotNetProjectKind == Clair.CompilerServices.DotNetSolution.Models.Project.DotNetProjectKind.CSharpProject)
+		{
+			var projectValid = true;
+			int indexReference;
+			
+			if (project.ProjectReferencesLength != 0)
+			{
+				for (indexReference = project.ProjectReferencesOffset; indexReference < project.ProjectReferencesOffset + project.ProjectReferencesLength; indexReference++)
+				{
+				    if (indexReference < dotNetSolutionModel.ProjectReferencesList.Count)
+				    {
+    				    var referencedAbsolutePath = dotNetSolutionModel.ProjectReferencesList[indexReference];
+    					var findIndex = dotNetSolutionModel.DotNetProjectList.FindIndex(x => x.AbsolutePath.Value == referencedAbsolutePath);
+    				
+    					if (findIndex == -1 || findIndex > i)
+    					{
+    						projectValid = false;
+    					}
+					}
+				}
+			}
+		
+			<div title="@project.AbsolutePath.Value" class="@GetProjectCssClass(projectValid)">
+				@project.AbsolutePath.Name
+			</div>
+			
+			if (project.ProjectReferencesLength != 0)
+			{
+				<ul>
+					@for (indexReference = project.ProjectReferencesOffset; indexReference < project.ProjectReferencesOffset + project.ProjectReferencesLength; indexReference++)
+					{
+					    if (indexReference < dotNetSolutionModel.ProjectReferencesList.Count)
+					    {
+						    <li>@dotNetSolutionModel.ProjectReferencesList[indexReference]</li>
+						}
+					}
+				</ul>
+			}
+		}
+	}
+</div>

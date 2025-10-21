@@ -1,0 +1,386 @@
+@using Clair.Common.RazorLib
+@using Clair.Common.RazorLib.Panels.Models
+@using Clair.Common.RazorLib.Dimensions.Models
+@using Clair.Common.RazorLib.Dropdowns.Displays
+@using Clair.Common.RazorLib.Dropdowns.Models
+@using Clair.Common.RazorLib.Installations.Models
+@using Clair.Common.RazorLib.Menus.Displays
+@using Clair.Common.RazorLib.Tabs.Displays
+@using Clair.Common.RazorLib.Dialogs.Displays
+@using Clair.Common.RazorLib.Widgets.Displays
+@using Clair.Common.RazorLib.Notifications.Displays
+@using Clair.Common.RazorLib.OutOfBoundsClicks.Displays
+@using Clair.Common.RazorLib.Badges.Displays;
+@using Clair.Common.RazorLib.Notifications.Models;
+@using Clair.TextEditor.RazorLib.TextEditors.Displays
+@using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals
+@using Clair.Ide.RazorLib
+@using Clair.Ide.RazorLib.Shareds.Displays.Internals
+@using Clair.Ide.RazorLib.Settings.Displays
+@using Clair.Ide.RazorLib.Shareds.Models
+@using Clair.Ide.RazorLib.BackgroundTasks.Models
+
+@inherits LayoutComponentBase
+
+@{
+    CreateCssStrings();
+}
+
+@* ContextRecord="ContextFacts.GlobalContext" *@
+
+<div id="@CommonFacts.RootHtmlElementId" class="@_classCssString" style="@_styleCssString">
+    
+    <CommonUiIsland/>
+    
+    @{
+        var panelState = DotNetService.CommonService.GetPanelState();
+        
+        PanelGroup leftPanelGroup = panelState.TopLeftPanelGroup;
+        PanelGroup rightPanelGroup = panelState.TopRightPanelGroup;
+        PanelGroup bottomPanelGroup = panelState.BottomPanelGroup;
+    }
+
+    @* Start Header *@
+    @* ContextRecord="ContextFacts.MainLayoutHeaderContext" *@
+    <div class="ci_header" style="@_headerCssStyle">
+        <div class="ci_header-left-content">
+            
+            @* Start SettingsDialogEntryPoint *@
+            <button class="ci_button"
+                    style="margin-left: 0;"
+                    @onclick="DispatchRegisterDialogRecordAction">
+                    
+                @* IconKind.SettingsGear *@
+                <svg width="@DotNetService.CommonService.Options_IconSizeCssValue" height="@DotNetService.CommonService.Options_IconSizeCssValue" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M19.85 8.75l4.15.83v4.84l-4.15.83 2.35 3.52-3.43 3.43-3.52-2.35-.83 4.15H9.58l-.83-4.15-3.52 2.35-3.43-3.43 2.35-3.52L0 14.42V9.58l4.15-.83L1.8 5.23 5.23 1.8l3.52 2.35L9.58 0h4.84l.83 4.15 3.52-2.35 3.43 3.43-2.35 3.52zm-1.57 5.07l4-.81v-2l-4-.81-.54-1.3 2.29-3.43-1.43-1.43-3.43 2.29-1.3-.54-.81-4h-2l-.81 4-1.3.54-3.43-2.29-1.43 1.43L6.38 8.9l-.54 1.3-4 .81v2l4 .81.54 1.3-2.29 3.43 1.43 1.43 3.43-2.29 1.3.54.81 4h2l.81-4 1.3-.54 3.43 2.29 1.43-1.43-2.29-3.43.54-1.3zm-8.186-4.672A3.43 3.43 0 0 1 12 8.57 3.44 3.44 0 0 1 15.43 12a3.43 3.43 0 1 1-5.336-2.852zm.956 4.274c.281.188.612.288.95.288A1.7 1.7 0 0 0 13.71 12a1.71 1.71 0 1 0-2.66 1.422z" /></svg>
+            </button>
+            @* End SettingsDialogEntryPoint *@
+    
+            <button @onclick="RenderFileDropdownOnClick"
+    			    id="@ButtonFileId"
+                    class="ci_button">
+                <u>F</u>ile
+            </button>
+    
+    		<button @onclick="RenderToolsDropdownOnClick"
+    			    id="@ButtonToolsId"
+                    class="ci_button">
+                <u>T</u>ools
+            </button>
+    
+    		<button @onclick="RenderViewDropdownOnClick"
+    			    id="@ButtonViewId"
+                    class="ci_button">
+    			<u>V</u>iew
+             </button>
+    
+    		<button @onclick="RenderRunDropdownOnClick"
+    			    id="@ButtonRunId"
+    				class="ci_button">
+                <u>R</u>un
+            </button>
+    
+            <button class="ci_button"
+                    @onclick="OpenInfoDialogOnClick">
+                Info
+            </button>
+    
+            @* Start StartupControlDisplay *@
+            @{
+            	var localStartupControlState = DotNetService.IdeService.GetIdeStartupControlState();
+            	
+                StartupControlModel activeStartupControl = default;
+                for (int i = 0; i < localStartupControlState.StartupControlList.Count; i++)
+                {
+                    if (localStartupControlState.StartupControlList[i].StartupProjectAbsolutePath.Value == localStartupControlState.ActiveStartupProjectAbsolutePathValue)
+                    {
+                        activeStartupControl = localStartupControlState.StartupControlList[i];
+                        break;
+                    }
+                }
+                
+            	if (activeStartupControl.StartupProjectAbsolutePath.Value is null)
+            	{
+            		_userInterfaceSawIsExecuting = false;
+            	}
+            	else
+            	{
+            		_userInterfaceSawIsExecuting = localStartupControlState.ExecutingTerminalCommandRequest is not null;
+            	}
+            }
+            
+            <div class="ci_startup-controls">
+               <div class="ci_startup-controls-entry">
+                   <select @bind="SelectedStartupControlAbsolutePathValue"
+                           title="@(activeStartupControl.StartupProjectAbsolutePath.Value ?? "Choose startup project")">
+                   	<option title="Choose startup project"
+               			    value="@string.Empty">
+               	    	Choose startup project
+               	    </option>
+                   
+                   	@foreach (var startupControl in localStartupControlState.StartupControlList)
+                   	{
+                   		<option value="@startupControl.StartupProjectAbsolutePath.Value">
+                   	    	@startupControl.Title
+                   	    </option>
+                   	}
+                   </select>
+                   &nbsp;
+              </div>
+               <div class="ci_startup-controls-entry">
+                    <button @onclick="StartProgramWithoutDebuggingOnClick"
+                            class="ci_button"
+                            id="@_startButtonElementId"
+                            disabled=@(activeStartupControl.StartupProjectAbsolutePath.Value is null)
+                            title="@(activeStartupControl.StartupProjectAbsolutePath.Value)">
+                        
+                        @if (_userInterfaceSawIsExecuting)
+                        {
+                            @* IconKind.StopCircle *@
+                            <svg width="@DotNetService.CommonService.Options_IconSizeCssValue" height="@DotNetService.CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_error-foreground-color)"><path d="M6 6h4v4H6z" /><path fill-rule="evenodd" clip-rule="evenodd" d="M8.6 1c1.6.1 3.1.9 4.2 2 1.3 1.4 2 3.1 2 5.1 0 1.6-.6 3.1-1.6 4.4-1 1.2-2.4 2.1-4 2.4-1.6.3-3.2.1-4.6-.7-1.4-.8-2.5-2-3.1-3.5C.9 9.2.8 7.5 1.3 6c.5-1.6 1.4-2.9 2.8-3.8C5.4 1.3 7 .9 8.6 1zm.5 12.9c1.3-.3 2.5-1 3.4-2.1.8-1.1 1.3-2.4 1.2-3.8 0-1.6-.6-3.2-1.7-4.3-1-1-2.2-1.6-3.6-1.7-1.3-.1-2.7.2-3.8 1-1.1.8-1.9 1.9-2.3 3.3-.4 1.3-.4 2.7.2 4 .6 1.3 1.5 2.3 2.7 3 1.2.7 2.6.9 3.9.6z" /></svg>
+                        }
+                        else
+                        {
+                            @* IconKind.StartWithoutDebugging *@
+                            <svg width="@DotNetService.CommonService.Options_IconSizeCssValue" height="@DotNetService.CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-start-without-debugging-color)">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M4.25 3l1.166-.624 8 5.333v1.248l-8 5.334-1.166-.624V3zm1.5 1.401v7.864l5.898-3.932L5.75 4.401z" />
+                            </svg>
+                        }
+                    </button>
+               </div>
+            </div>
+            @* End StartupControlDisplay *@
+        </div>
+    </div>
+    @* End Header *@
+    
+    @* Start Body *@
+    <div class="ci_body"
+         style="@DotNetService.CommonService.BodyElementStyle">
+    
+        <div class="@GetPanelElementCssClass(_leftPanelGroupParameter.PanelPositionCss, _leftPanelGroupParameter.CssClassString)"
+             style="@DotNetService.CommonService.LeftPanelStyle"
+        	 id="@_leftPanelGroupParameter.PanelPositionCss">
+            
+            <div class="ci_panel-tabs"
+                 style="@DotNetService.CommonService.Rotate_Options_LineHeight_CssStyle"
+        		 id="@_leftPanelGroupParameter.HtmlIdTabs">
+        
+                @foreach (var panelTab in leftPanelGroup.TabList)
+                {
+                    panelTab.TabGroup = leftPanelGroup;
+                    panelTab.TabCascadingValueBatch = _tabCascadingValueBatch;
+                
+                    <button class="@GetCssClass(panelTab)"
+                            title="@panelTab.TitleVerbose"
+                    		@key="panelTab.Key"
+                    		@onclick="panelTab.OnClick"
+                            @onmousedown="panelTab.HandleOnMouseDownAsync"
+                            @onmouseup="HandleOnMouseUp"
+                            @onmouseout="panelTab.HandleOnMouseOutAsync"
+                    		@oncontextmenu:preventDefault="true"
+                    		@oncontextmenu="panelTab.ManuallyPropagateOnContextMenu">
+                    	<span class="ci_dynamic-tab-text">@panelTab.Title</span>
+                    </button>
+                }
+        
+                @if (panelState.DragEventArgs is not null)
+                {
+                    <div class="ci_panel-tab-dropzone ci_panel-tab-dropzone-top"
+                         @onmouseup:stopPropagation="true"
+                         @onmouseup="e => TopDropzoneOnMouseUp(_leftPanelGroupParameter.PanelGroupKey, e)">
+                    </div>
+                    
+                    <div class="ci_panel-tab-dropzone ci_panel-tab-dropzone-bottom"
+                         @onmouseup:stopPropagation="true"
+                         @onmouseup="e => BottomDropzoneOnMouseUp(_leftPanelGroupParameter.PanelGroupKey, e)">
+                    </div>
+                }
+            </div>
+            
+            <div class="ci_panel-body" style="@GetTopPanelBodyStyle(leftPanelGroup)">
+                @if (leftPanelGroup.ActiveTab is not null)
+                {
+                    if (leftPanelGroup.ActiveTab.ComponentType == typeof(Clair.Extensions.DotNet.DotNetSolutions.Displays.SolutionExplorerDisplay))
+                    {
+                        <Clair.Extensions.DotNet.DotNetSolutions.Displays.SolutionExplorerDisplay/>
+                    }
+                    else if (leftPanelGroup.ActiveTab.ComponentType == typeof(Clair.Ide.RazorLib.FolderExplorers.Displays.FolderExplorerDisplay))
+                    {
+                        <Clair.Ide.RazorLib.FolderExplorers.Displays.FolderExplorerDisplay/>
+                    }
+                    else if (leftPanelGroup.ActiveTab.ComponentType == typeof(Clair.Ide.RazorLib.Terminals.Displays.TerminalGroupDisplay))
+                    {
+                        <Clair.Ide.RazorLib.Terminals.Displays.TerminalGroupDisplay/>
+                    }
+                    else if (leftPanelGroup.ActiveTab.ComponentType == typeof(Clair.Extensions.DotNet.Outputs.Displays.OutputPanelDisplay))
+                    {
+                        <Clair.Extensions.DotNet.Outputs.Displays.OutputPanelDisplay/>
+                    }
+                    else
+                    {
+                        <DynamicComponent Type="leftPanelGroup.ActiveTab.ComponentType"
+                                          Parameters="leftPanelGroup.ActiveTab.ComponentParameterMap" />
+                    }
+                }
+            </div>
+        </div>
+    
+        <div class="ci_resize-column"
+             style="@DotNetService.CommonService.Options_ResizeHandleCssWidth"
+             @onmousedown="SubscribeToDragEventTopLeft">
+        </div>
+    
+        <div class="ci_editor" style="@DotNetService.CommonService.EditorElementStyle">
+            <EditorDisplay/>
+        </div>
+        
+        <div class="ci_resize-column"
+             style="@DotNetService.CommonService.Options_ResizeHandleCssWidth"
+             @onmousedown="SubscribeToDragEventTopRight">
+        </div>
+    
+        <div class="@GetPanelElementCssClass(_rightPanelGroupParameter.PanelPositionCss, _rightPanelGroupParameter.CssClassString)"
+             style="@DotNetService.CommonService.RightPanelStyle"
+        	 id="@_rightPanelGroupParameter.PanelPositionCss">
+            
+            <div class="ci_panel-tabs"
+        		 style="@DotNetService.CommonService.Rotate_Options_LineHeight_CssStyle"
+        		 id="@_rightPanelGroupParameter.HtmlIdTabs">
+        
+                @foreach (var panelTab in rightPanelGroup.TabList)
+                {
+                    panelTab.TabGroup = rightPanelGroup;
+                    panelTab.TabCascadingValueBatch = _tabCascadingValueBatch;
+                
+                    <button class="@GetCssClass(panelTab)"
+                            title="@panelTab.TitleVerbose"
+                    		@key="panelTab.Key"
+                    		@onclick="panelTab.OnClick"
+                            @onmousedown="panelTab.HandleOnMouseDownAsync"
+                            @onmouseup="HandleOnMouseUp"
+                            @onmouseout="panelTab.HandleOnMouseOutAsync"
+                    		@oncontextmenu:preventDefault="true"
+                    		@oncontextmenu="panelTab.ManuallyPropagateOnContextMenu">
+                    	<span class="ci_dynamic-tab-text">@panelTab.Title</span>
+                    </button>
+                }
+        
+                @if (panelState.DragEventArgs is not null)
+                {
+                    <div class="ci_panel-tab-dropzone ci_panel-tab-dropzone-top"
+                         @onmouseup:stopPropagation="true"
+                         @onmouseup="e => TopDropzoneOnMouseUp(_rightPanelGroupParameter.PanelGroupKey, e)">
+                    </div>
+                    
+                    <div class="ci_panel-tab-dropzone ci_panel-tab-dropzone-bottom"
+                         @onmouseup:stopPropagation="true"
+                         @onmouseup="e => BottomDropzoneOnMouseUp(_rightPanelGroupParameter.PanelGroupKey, e)">
+                    </div>
+                }
+            </div>
+            
+            <div class="ci_panel-body" style="@GetTopPanelBodyStyle(rightPanelGroup)">
+                @if (rightPanelGroup.ActiveTab is not null)
+                {
+                    if (rightPanelGroup.ActiveTab.ComponentType == typeof(Clair.Extensions.DotNet.DotNetSolutions.Displays.SolutionExplorerDisplay))
+                    {
+                        <Clair.Extensions.DotNet.DotNetSolutions.Displays.SolutionExplorerDisplay/>
+                    }
+                    else if (rightPanelGroup.ActiveTab.ComponentType == typeof(Clair.Ide.RazorLib.FolderExplorers.Displays.FolderExplorerDisplay))
+                    {
+                        <Clair.Ide.RazorLib.FolderExplorers.Displays.FolderExplorerDisplay/>
+                    }
+                    else if (rightPanelGroup.ActiveTab.ComponentType == typeof(Clair.Ide.RazorLib.Terminals.Displays.TerminalGroupDisplay))
+                    {
+                        <Clair.Ide.RazorLib.Terminals.Displays.TerminalGroupDisplay/>
+                    }
+                    else if (rightPanelGroup.ActiveTab.ComponentType == typeof(Clair.Extensions.DotNet.Outputs.Displays.OutputPanelDisplay))
+                    {
+                        <Clair.Extensions.DotNet.Outputs.Displays.OutputPanelDisplay/>
+                    }
+                    else
+                    {
+                        <DynamicComponent Type="rightPanelGroup.ActiveTab.ComponentType"
+                                          Parameters="rightPanelGroup.ActiveTab.ComponentParameterMap" />
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    @* End Body *@
+
+    <div class="ci_resize-row"
+         style="@DotNetService.CommonService.Options_ResizeHandleCssHeight"
+         @onmousedown="SubscribeToDragEventBottom">
+    </div>
+    
+    <div class="@GetPanelElementCssClass(_bottomPanelGroupParameter.PanelPositionCss, _bottomPanelGroupParameter.CssClassString)"
+         style="@DotNetService.CommonService.BottomPanelStyle"
+    	 id="@_bottomPanelGroupParameter.PanelPositionCss">
+        
+        <div class="ci_panel-tabs"
+    		 style="@DotNetService.CommonService.Options_LineHeight_CssStyle"
+    		 id="@_bottomPanelGroupParameter.HtmlIdTabs">
+    
+            @foreach (var panelTab in bottomPanelGroup.TabList)
+            {
+                panelTab.TabGroup = bottomPanelGroup;
+                panelTab.TabCascadingValueBatch = _tabCascadingValueBatch;
+            
+                <button class="@GetCssClass(panelTab)"
+                        title="@panelTab.TitleVerbose"
+                		@key="panelTab.Key"
+                		@onclick="panelTab.OnClick"
+                        @onmousedown="panelTab.HandleOnMouseDownAsync"
+                        @onmouseup="HandleOnMouseUp"
+                        @onmouseout="panelTab.HandleOnMouseOutAsync"
+                		@oncontextmenu:preventDefault="true"
+                		@oncontextmenu="panelTab.ManuallyPropagateOnContextMenu">
+                	<span class="ci_dynamic-tab-text">@panelTab.Title</span>
+                </button>
+            }
+    
+            <MultiBadgeDisplay/>
+            
+            @if (panelState.DragEventArgs is not null)
+            {
+                <div class="ci_panel-tab-dropzone ci_panel-tab-dropzone-top"
+                     @onmouseup:stopPropagation="true"
+                     @onmouseup="e => TopDropzoneOnMouseUp(_bottomPanelGroupParameter.PanelGroupKey, e)">
+                </div>
+                
+                <div class="ci_panel-tab-dropzone ci_panel-tab-dropzone-bottom"
+                     @onmouseup:stopPropagation="true"
+                     @onmouseup="e => BottomDropzoneOnMouseUp(_bottomPanelGroupParameter.PanelGroupKey, e)">
+                </div>
+            }
+        </div>
+        
+        <div class="ci_panel-body" style="@GetBottomPanelBodyStyle(bottomPanelGroup)">
+            @if (bottomPanelGroup.ActiveTab is not null)
+            {
+                if (bottomPanelGroup.ActiveTab.ComponentType == typeof(Clair.Extensions.DotNet.DotNetSolutions.Displays.SolutionExplorerDisplay))
+                {
+                    <Clair.Extensions.DotNet.DotNetSolutions.Displays.SolutionExplorerDisplay/>
+                }
+                else if (bottomPanelGroup.ActiveTab.ComponentType == typeof(Clair.Ide.RazorLib.FolderExplorers.Displays.FolderExplorerDisplay))
+                {
+                    <Clair.Ide.RazorLib.FolderExplorers.Displays.FolderExplorerDisplay/>
+                }
+                else if (bottomPanelGroup.ActiveTab.ComponentType == typeof(Clair.Ide.RazorLib.Terminals.Displays.TerminalGroupDisplay))
+                {
+                    <Clair.Ide.RazorLib.Terminals.Displays.TerminalGroupDisplay/>
+                }
+                else if (bottomPanelGroup.ActiveTab.ComponentType == typeof(Clair.Extensions.DotNet.Outputs.Displays.OutputPanelDisplay))
+                {
+                    <Clair.Extensions.DotNet.Outputs.Displays.OutputPanelDisplay/>
+                }
+                else
+                {
+                    <DynamicComponent Type="bottomPanelGroup.ActiveTab.ComponentType"
+                                      Parameters="bottomPanelGroup.ActiveTab.ComponentParameterMap" />
+                }
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+@using Clair.Common.RazorLib.Keys.Models
+@using Clair.TextEditor.RazorLib.TextEditors.Displays
+@using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals
+@using Clair.TextEditor.RazorLib.TextEditors.Models
+@using Clair.Ide.RazorLib.Terminals.Models
+@using Clair.Ide.RazorLib.Terminals.Displays
+
+@{
+	var localTerminal = Terminal;
+	
+	var localFormatter = localTerminal;
+	
+	var workingDirectory = localTerminal.WorkingDirectory
+		?? "null";
+	
+	var paddingForWorkingDirectoryText = 2;
+	var workingDirectoryTextWidth = workingDirectory.Length + paddingForWorkingDirectoryText;
+}
+
+<div class="ci_ide_new-terminal-panel">
+	<div style="height: calc(100% - 2em);">
+		<TextEditorViewModelSlimDisplay TextEditorViewModelKey="localTerminal.TextEditorViewModelKey"
+									    ViewModelDisplayOptions="_textEditorViewModelDisplayOptions" />
+	</div>
+
+	<div style="height: 2em; display: flex;">
+		<input type="text"
+			   style="width: @(workingDirectoryTextWidth)ch; height: 100%;"
+			   title="Working directory"
+			   readonly
+			   value="@workingDirectory" />
+			   
+		<input type="text"
+			   style="width: calc(100% - @(workingDirectoryTextWidth)ch); height: 100%;"
+			   title="Command"
+			   @bind="CommandUiInputBinding"
+			   @bind:event="oninput"
+			   @onkeydown="HandleOnKeyDown" />
+	</div>
+</div>

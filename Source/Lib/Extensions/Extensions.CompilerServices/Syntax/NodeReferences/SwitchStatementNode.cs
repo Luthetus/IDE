@@ -1,0 +1,29 @@
+using Clair.Extensions.CompilerServices.Syntax.Interfaces;
+
+namespace Clair.Extensions.CompilerServices.Syntax.NodeReferences;
+
+public sealed class SwitchStatementNode : ICodeBlockOwner
+{
+    public SwitchStatementNode(
+        SyntaxToken keywordToken,
+        SyntaxToken openParenthesisToken,
+        IExpressionNode expressionNode,
+        SyntaxToken closeParenthesisToken)
+    {
+        KeywordToken = keywordToken;
+        OpenParenthesisToken = openParenthesisToken;
+        ExpressionNode = expressionNode;
+        CloseParenthesisToken = closeParenthesisToken;
+    }
+
+    public SyntaxToken KeywordToken { get; }
+    public SyntaxToken OpenParenthesisToken { get; }
+    public IExpressionNode ExpressionNode { get; }
+    public SyntaxToken CloseParenthesisToken { get; }
+
+    public int ParentScopeSubIndex { get; set; } = -1;
+    public int SelfScopeSubIndex { get; set; } = -1;
+
+    public bool IsFabricated { get; init; }
+    public SyntaxKind SyntaxKind => SyntaxKind.SwitchStatementNode;
+}

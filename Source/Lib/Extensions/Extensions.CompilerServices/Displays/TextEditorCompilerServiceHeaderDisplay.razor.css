@@ -1,0 +1,12 @@
+.ci_te_compiler-service-header {
+    padding-left: var(--ci_te_text-editor-header-padding-left);
+    overflow-y: hidden !important;
+    overflow: auto;
+    white-space: nowrap;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ci_te_compiler-service-header-select {
+	width: 33.3%;
+}

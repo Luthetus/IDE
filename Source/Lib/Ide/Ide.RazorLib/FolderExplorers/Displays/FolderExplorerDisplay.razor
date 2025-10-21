@@ -1,0 +1,29 @@
+@using Clair.Common.RazorLib
+@using Clair.Common.RazorLib.Dropdowns.Displays
+@using Clair.Common.RazorLib.Dropdowns.Models;
+@using Clair.Common.RazorLib.TreeViews.Displays
+@using Clair.Ide.RazorLib.FolderExplorers.Models;
+@using Clair.Common.RazorLib.TreeViews.Models;
+
+@* ContextRecord="ContextFacts.FolderExplorerContext" *@
+
+<div class="ci_ide_folder-explorer-display" style="height: 100%">
+	@{ var appOptionsState = IdeService.CommonService.GetAppOptionsState(); }
+    
+    <div class="ci_section-body">
+
+        @{ var folderExplorerState = IdeService.GetFolderExplorerState(); }
+
+        @if (folderExplorerState.AbsolutePath is null)
+        {
+            <button class="ci_button"
+                    @onclick="() => IdeService.FolderExplorer_ShowInputFile()">
+                Open Folder
+            </button>
+        }
+        else
+        {
+            <TreeViewContainerDisplay TreeViewContainerParameter="_treeViewContainerParameter"/>
+        }
+    </div>
+</div>

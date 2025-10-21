@@ -1,0 +1,179 @@
+@using Clair.Extensions.CompilerServices.Syntax
+@using Clair.Extensions.CompilerServices.Syntax.NodeValues
+@using Clair.Extensions.CompilerServices.Syntax.NodeReferences
+@using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals
+
+@{
+	var componentData = GetComponentData();
+}
+
+<div class="ci_te_text-editor-header @componentData?.WrapperCssClass ci_te_compiler-service-header"
+     style="@componentData?.WrapperCssStyle">
+	 
+	@{
+		var showDefaultToolbarLocal = _showDefaultToolbar;
+	}
+	
+	<div style="justify-content: space-between; display: flex;">
+		<div title="ICodeBlockOwner">
+			@{
+			    // These change within a background task.
+			    var syntaxKind = _syntaxKind;
+		    }
+			
+			<ErrorBoundary>
+			    @switch (syntaxKind)
+			    {
+			        case SyntaxKind.IfStatementNode:
+			            <text>
+							@IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+			                IfStatementNode
+		                </text>
+			            break;
+		            case SyntaxKind.WhileStatementNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    WhileStatementNode
+		                </text>
+		                break;
+		            case SyntaxKind.ForStatementNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    ForStatementNode
+		                </text>
+		                break;
+		            case SyntaxKind.ForeachStatementNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    ForeachStatementNode
+		                </text>
+		                break;
+		            case SyntaxKind.SwitchStatementNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    SwitchStatementNode
+		                </text>
+		                break;
+		            case SyntaxKind.DoWhileStatementNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    DoWhileStatementNode
+		                </text>
+		                break;
+		            case SyntaxKind.TryStatementCatchNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    TryStatementCatchNode
+		                </text>
+		                break;
+		            case SyntaxKind.TryStatementFinallyNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    TryStatementFinallyNode
+		                </text>
+		                break;
+		            case SyntaxKind.LockStatementNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    LockStatementNode
+		                </text>
+		                break;
+		            case SyntaxKind.TryStatementTryNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    TryStatementTryNode
+		                </text>
+		                break;
+		            case SyntaxKind.UsingStatementCodeBlockNode:
+		                <text>
+	                        @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+	                        UsingStatementCodeBlockNode
+	                    </text>
+		                break;
+		            case SyntaxKind.LambdaExpressionNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    LambdaExpressionNode
+	                    </text>
+		                break;
+		            case SyntaxKind.GetterOrSetterNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    GetterOrSetterNode
+	                    </text>
+		                break;
+		            case SyntaxKind.ArbitraryCodeBlockNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    ArbitraryCodeBlockNode
+	                    </text>
+		                break;
+		            case SyntaxKind.GlobalCodeBlockNode:
+		                <text>
+		                    @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+		                    GlobalCodeBlockNode
+	                    </text>
+		                break;
+		            case SyntaxKind.FunctionDefinitionNode:
+						<text>
+							@IconRenderer.Render(IconKind.SymbolMethod, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+							@(GetText(_identifierTextSpan, componentData))(...)
+						</text>
+						break;
+					case SyntaxKind.ConstructorDefinitionNode:
+						<text>
+							@IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+							@(GetText(_identifierTextSpan, componentData))(...)
+						</text>
+						break;
+					case SyntaxKind.TypeDefinitionNode:
+						<text>
+							@IconRenderer.Render(IconKind.SymbolClass, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+							@GetText(_identifierTextSpan, componentData)
+						</text>
+						break;
+					case SyntaxKind.NamespaceStatementNode:
+						<text>
+							@IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+							@GetText(_identifierTextSpan, componentData)
+						</text>
+						break;
+	                default:
+	                    <text>
+	                        @IconRenderer.Render(IconKind.Blank, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+	                        ???
+                        </text>
+	                    break;
+			    }
+		    </ErrorBoundary>
+		</div>
+	</div>
+	
+	<div style="justify-content: space-between; display: flex;">
+	
+		@{
+	    	
+	    }
+		
+		@if (showDefaultToolbarLocal)
+		{
+			<div class="ci_te_compiler-service-header-dropdown">
+				<TextEditorDefaultHeaderDisplay ComponentDataKey="ComponentDataKey"/>
+			</div>
+		}
+	
+		<button class="ci_button"
+				title="Toggle Default Toolbar"
+				@onclick="ToggleDefaultToolbar">
+			
+			@if (showDefaultToolbarLocal)
+			{
+				@IconRenderer.Render(IconKind.ChevronDown, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+			}
+			else
+			{
+				@IconRenderer.Render(IconKind.ChevronRight, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+			}
+		</button>
+	</div>
+</div>

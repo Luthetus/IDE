@@ -1,0 +1,276 @@
+using System.Text;
+using Clair.Common.RazorLib;
+using Clair.Common.RazorLib.FileSystems.Models;
+using Clair.Common.RazorLib.Keys.Models;
+using Clair.Common.RazorLib.Reactives.Models;
+using Clair.Common.RazorLib.TreeViews.Models;
+using Clair.Ide.RazorLib.CodeSearches.Models;
+using Clair.TextEditor.RazorLib.Decorations.Models;
+using Clair.TextEditor.RazorLib.Lexers.Models;
+using Clair.TextEditor.RazorLib.TextEditors.Models;
+
+namespace Clair.Ide.RazorLib;
+
+public partial class IdeService
+{
+    private readonly Throttle CodeSearch_throttle = new(TimeSpan.FromMilliseconds(300));
+
+    // Moving things from 'CodeSearchDisplay.razor.cs'
+    private Key<TextEditorViewModel> CodeSearch_previousTextEditorViewModelKey = Key<TextEditorViewModel>.Empty;
+    public Throttle CodeSearch_updateContentThrottle { get; } = new Throttle(TimeSpan.FromMilliseconds(333));
+
+    private CodeSearchState _codeSearchState = new();
+
+    public CodeSearchState GetCodeSearchState() => _codeSearchState;
+
+    public void CodeSearch_With(Func<CodeSearchState, CodeSearchState> withFunc)
+    {
+        lock (_stateModificationLock)
+        {
+            var outState = withFunc.Invoke(_codeSearchState);
+
+            if (outState.Query.StartsWith("f:"))
+            {
+                outState = outState with
+                {
+                    CodeSearchFilterKind = CodeSearchFilterKind.Files
+                };
+            }
+            else if (outState.Query.StartsWith("t:"))
+            {
+                outState = outState with
+                {
+                    CodeSearchFilterKind = CodeSearchFilterKind.Types
+                };
+            }
+            else if (outState.Query.StartsWith("m:"))
+            {
+                outState = outState with
+                {
+                    CodeSearchFilterKind = CodeSearchFilterKind.Members
+                };
+            }
+            else
+            {
+                outState = outState with
+                {
+                    CodeSearchFilterKind = CodeSearchFilterKind.None
+                };
+            }
+
+            _codeSearchState = outState;
+        }
+
+        IdeStateChanged?.Invoke(IdeStateChangedKind.CodeSearchStateChanged);
+    }
+
+    public void CodeSearch_AddResult(string result)
+    {
+        lock (_stateModificationLock)
+        {
+            var outResultList = new List<string>(_codeSearchState.ResultList);
+            outResultList.Add(result);
+
+            _codeSearchState = _codeSearchState with
+            {
+                ResultList = outResultList
+            };
+        }
+
+        IdeStateChanged?.Invoke(IdeStateChangedKind.CodeSearchStateChanged);
+    }
+
+    public void CodeSearch_ClearResultList()
+    {
+        lock (_stateModificationLock)
+        {
+            _codeSearchState = _codeSearchState with
+            {
+                ResultList = new List<string>()
+            };
+        }
+
+        IdeStateChanged?.Invoke(IdeStateChangedKind.CodeSearchStateChanged);
+    }
+
+    /// <summary>
+    /// TODO: This method makes use of <see cref="IThrottle"/> and yet is accessing...
+    ///       ...searchEffect.CancellationToken.
+    ///       The issue here is that the search effect parameter to this method
+    ///       could be out of date by the time that the throttle delay is completed.
+    ///       This should be fixed. (2024-05-02)
+    /// </summary>
+    /// <param name="searchEffect"></param>
+    /// <param name="dispatcher"></param>
+    /// <returns></returns>
+    public Task CodeSearch_HandleSearchEffect(CancellationToken cancellationToken = default)
+    {
+        CodeSearch_throttle.Run(async _ =>
+        {
+            CodeSearch_ClearResultList();
+
+            var codeSearchState = GetCodeSearchState();
+            CodeSearch_ConstructTreeView(codeSearchState);
+
+            var startingAbsolutePathForSearch = codeSearchState.StartingAbsolutePathForSearch;
+
+            if (string.IsNullOrWhiteSpace(startingAbsolutePathForSearch) ||
+                string.IsNullOrWhiteSpace(codeSearchState.Query))
+            {
+                return;
+            }
+            
+            var tokenBuilder = new StringBuilder();
+            var formattedBuilder = new StringBuilder();
+
+            await RecursiveHandleSearchEffect(startingAbsolutePathForSearch).ConfigureAwait(false);
+
+            CodeSearch_ConstructTreeView(GetCodeSearchState());
+
+            async Task RecursiveHandleSearchEffect(string directoryPathParent)
+            {
+                var directoryPathChildList = await CommonService.FileSystemProvider.Directory.GetDirectoriesAsync(
+                        directoryPathParent,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
+                var filePathChildList = await CommonService.FileSystemProvider.Directory.GetFilesAsync(
+                        directoryPathParent,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
+                foreach (var filePathChild in filePathChildList)
+                {
+                    var absolutePath = new AbsolutePath(filePathChild, false, CommonService.FileSystemProvider, tokenBuilder, formattedBuilder, AbsolutePathNameKind.NameWithExtension);
+
+                    if (absolutePath.Name.Contains(codeSearchState.Query))
+                        CodeSearch_AddResult(filePathChild);
+                }
+
+                foreach (var directoryPathChild in directoryPathChildList)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+
+                    if (IFileSystemProvider.IsDirectoryIgnored(directoryPathChild))
+                        continue;
+
+                    await RecursiveHandleSearchEffect(directoryPathChild).ConfigureAwait(false);
+                }
+            }
+        });
+
+        return Task.CompletedTask;
+    }
+
+    private void CodeSearch_ConstructTreeView(CodeSearchState codeSearchState)
+    {
+        var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(CodeSearchState.TreeViewCodeSearchContainerKey);
+        CommonService.TreeView_DisposeContainerAction(CodeSearchState.TreeViewCodeSearchContainerKey, shouldFireStateChangedEvent: false);
+    
+        var container = new TreeViewContainer(
+        	CodeSearchState.TreeViewCodeSearchContainerKey,
+        	rootNode: null,
+        	selectedNodeList: Array.Empty<TreeViewNoType>())
+    	{
+    	    FlatListVersion = flatListVersion
+    	};
+    
+        var tokenBuilder = new StringBuilder();
+        var formattedBuilder = new StringBuilder();
+    
+        var treeViewList = codeSearchState.ResultList.Select(
+            x => (TreeViewNoType)new TreeViewCodeSearchTextSpan(
+                new TextEditorTextSpan(
+                    0,
+                    0,
+                    (byte)GenericDecorationKind.None),
+                new AbsolutePath(x, false, CommonService.FileSystemProvider, tokenBuilder, formattedBuilder, AbsolutePathNameKind.NameWithExtension),
+                CommonService.FileSystemProvider,
+                false,
+                false))
+            .ToArray();
+        
+        var adhocRoot = TreeViewAdhoc.ConstructTreeViewAdhoc(container, treeViewList);
+        var firstNode = treeViewList.FirstOrDefault();
+
+        IReadOnlyList<TreeViewNoType> activeNodes = firstNode is null
+            ? Array.Empty<TreeViewNoType>()
+            : new List<TreeViewNoType> { firstNode };
+        
+        CommonService.TreeView_RegisterContainerAction(
+        	container,
+        	shouldFireStateChangedEvent: false);
+        
+        CommonService.TreeView_WithRootNodeAction(CodeSearchState.TreeViewCodeSearchContainerKey, adhocRoot, shouldFireStateChangedEvent: false);
+
+        CommonService.TreeView_SetActiveNodeAction(
+            CodeSearchState.TreeViewCodeSearchContainerKey,
+            firstNode,
+            true,
+            false,
+            shouldFireStateChangedEvent: true);
+    }
+
+    public async Task CodeSearch_UpdateContent(ResourceUri providedResourceUri)
+    {
+        TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
+        {
+            Console.WriteLine(nameof(CodeSearch_UpdateContent));
+
+            if (!CommonService.TryGetTreeViewContainer(
+                    CodeSearchState.TreeViewCodeSearchContainerKey,
+                    out var treeViewContainer))
+            {
+                Console.WriteLine("TryGetTreeViewContainer");
+                return;
+            }
+
+            if (treeViewContainer.SelectedNodeList.Count > 1)
+            {
+                Console.WriteLine("treeViewContainer.SelectedNodeList.Count > 1");
+                return;
+            }
+
+            var activeNode = treeViewContainer.ActiveNode;
+
+            if (activeNode is not TreeViewCodeSearchTextSpan treeViewCodeSearchTextSpan)
+            {
+                Console.WriteLine("activeNode is not TreeViewCodeSearchTextSpan treeViewCodeSearchTextSpan");
+                return;
+            }
+
+            var inPreviewViewModelKey = GetCodeSearchState().PreviewViewModelKey;
+            var outPreviewViewModelKey = TextEditorService.NewViewModelKey();
+
+            var filePath = treeViewCodeSearchTextSpan.AbsolutePath.Value;
+            var resourceUri = new ResourceUri(treeViewCodeSearchTextSpan.AbsolutePath.Value);
+
+            await TextEditorService.RegisterModel_Configured(editContext, resourceUri)
+                .ConfigureAwait(false);
+
+            var viewModelKey = await TextEditorService.TryRegisterViewModel_Configured(
+                    editContext,
+                    outPreviewViewModelKey,
+                    resourceUri,
+                    new Category(nameof(IdeService)),
+                    false)
+                .ConfigureAwait(false);
+
+            if (viewModelKey != 0)
+            {
+                CodeSearch_With(inState => inState with
+                {
+                    PreviewFilePath = filePath,
+                    PreviewViewModelKey = viewModelKey,
+                });
+
+                if (inPreviewViewModelKey != 0 &&
+                    inPreviewViewModelKey != viewModelKey)
+                {
+                    TextEditorService.ViewModel_Dispose(editContext, inPreviewViewModelKey);
+                }
+            }
+        });
+    }
+}

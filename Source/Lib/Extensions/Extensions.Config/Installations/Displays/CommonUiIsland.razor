@@ -1,0 +1,197 @@
+@using Clair.Common.RazorLib
+@using Clair.Common.RazorLib.Panels.Models
+@using Clair.Common.RazorLib.Resizes.Displays
+@using Clair.Common.RazorLib.Dimensions.Models
+@using Clair.Common.RazorLib.Dropdowns.Displays
+@using Clair.Common.RazorLib.Dropdowns.Models
+@using Clair.Common.RazorLib.Installations.Models
+@using Clair.Common.RazorLib.Menus.Displays
+@using Clair.Ide.RazorLib.Shareds.Displays.Internals
+@using Clair.Ide.RazorLib.Settings.Displays
+@using Clair.Ide.RazorLib.Shareds.Models
+
+@using Clair.Common.RazorLib.Dialogs.Displays
+@using Clair.Common.RazorLib.Widgets.Displays
+@using Clair.Common.RazorLib.Notifications.Displays
+@using Clair.Common.RazorLib.OutOfBoundsClicks.Displays
+@using Clair.Common.RazorLib.Dropdowns.Displays
+
+@using Clair.Common.RazorLib.Panels.Models;
+@using Clair.Common.RazorLib.Tabs.Displays;
+@using Clair.Common.RazorLib.Badges.Displays;
+@using Clair.Common.RazorLib.Notifications.Models;
+
+@{
+    var dialogList = DotNetService.CommonService.GetDialogState().DialogList;
+}
+
+<Clair.Common.RazorLib.Drags.Displays.DragInitializer />
+
+@if (_doCommonMeasure)
+{
+    <div id="@_measureLineHeightElementId"
+         class="ci_measure-lineHeight-wrap"
+         style="@_lineHeightCssStyle">
+        0
+    </div>
+}
+
+@if (_doTextEditorMeasure)
+{
+    <div class="@_wrapperCssClass"
+    	 style="@_wrapperCssStyle">
+    	<div class="ci_te_measure-charWidth-lineHeight-wrap ci_te_row">
+    	    <div class="ci_te_measure-charWidth-lineHeight ci_te_row"
+    	         id="@_measureCharacterWidthAndLineHeightElementId">
+    	    </div>
+    	</div>
+    </div>
+}
+
+@foreach (var dialog in dialogList)
+{
+    <DialogDisplay @key="dialog.DynamicViewModelKey" 
+                   Dialog="dialog"/>
+}
+
+
+@{ var widgetState = DotNetService.CommonService.GetWidgetState(); }
+@if (widgetState.Widget is not null)
+{
+	<OutOfBoundsClickDisplay ZIndex="12"
+	                         OnMouseDownCallback="WIDGET_RemoveWidget" />
+}
+@if (widgetState.Widget is not null)
+{
+	<WidgetDisplay @key="widgetState.Widget.Key"
+				   Widget="widgetState.Widget"/>
+}
+
+
+@{ var notificationState = DotNetService.CommonService.GetNotificationState(); }
+@for (int i = 0; i < notificationState.DefaultList.Count; i++)
+{
+    var index = i;
+    var notification = notificationState.DefaultList[index];
+    
+    <NotificationDisplay @key="notification.DynamicViewModelKey" 
+                         Notification="notification"
+                         Index="index"/>
+}
+
+
+@{ var dropdownState = DotNetService.CommonService.GetDropdownState(); }
+@if (dropdownState.DropdownList.Count > 0 && dropdownState.DropdownList.Any(x => x.ShouldShowOutOfBoundsClickDisplay))
+{
+	<OutOfBoundsClickDisplay ZIndex="15"
+	                         OnMouseDownCallback="DROPDOWN_ClearActiveKeyList" />
+}
+@foreach (var dropdown in dropdownState.DropdownList)
+{
+	<DropdownDisplay @key="dropdown.Key"
+					 Dropdown="dropdown"/>
+}
+
+
+<div class="ci_tooltip-initializer"></div>
+@{
+    var tooltipModel = DotNetService.CommonService.GetTooltipState().TooltipModel;
+    
+    if (tooltipModel is not null)
+	{
+		var x = tooltipModel.X;
+		var y = tooltipModel.Y;
+	
+		if (Math.Abs(ValueTooltipRelativeX - x) >= 0.1)
+		{
+			ValueTooltipRelativeX = x;
+			TooltipRelativeX = x.ToString(System.Globalization.CultureInfo.InvariantCulture);
+		}
+	
+		if (Math.Abs(ValueTooltipRelativeY - y) >= 0.1)
+		{
+			ValueTooltipRelativeY = y;
+			TooltipRelativeY = y.ToString(System.Globalization.CultureInfo.InvariantCulture);
+		}
+	}
+}
+@if (tooltipModel is not null)
+{
+    <div class="ci_te_tooltip ci_set-selectable @(tooltipModel.CssClassString ?? string.Empty)"
+         style="left: @(TooltipRelativeX)px; top: @(TooltipRelativeY)px;"
+         id="@DotNetService.CommonService.Tooltip_HtmlElementId"
+         @onmouseover="tooltipModel.OnMouseOver"
+         @onmousedown:stopPropagation="true"
+         @onwheel="x => tooltipModel.OnWheel?.Invoke(tooltipModel, x) ?? Task.CompletedTask"
+         @onmousemove:stopPropagation="true"
+         @ondblclick:stopPropagation="true"
+         @onclick:stopPropagation="true"
+         @oncontextmenu:stopPropagation="true">
+
+        @if (tooltipModel.RendererType is null)
+        {
+            <text>tooltipModel.RendererType is null</text>
+        }
+        else
+        {
+            <DynamicComponent Type="tooltipModel.RendererType"
+                              Parameters="tooltipModel.ParameterMap" />
+        }
+    </div>
+}
+
+@if (_ctrlIsDown)
+{
+    var textEditorGroup = DotNetService.TextEditorService.Group_GetTextEditorGroupState().EditorTextEditorGroup;
+
+    <div class="ci_main-layout-overlay">
+        <div>
+            <h2>Dialogs</h2>
+            @for (int i = 0; i < dialogList.Count; i++)
+            {
+                var dialog = dialogList[i];
+                
+                string cssClass;
+                
+                if (_ctrlTabKind == CtrlTabKind.Dialogs && _index == i)
+                {
+                    cssClass = "ci_config_ctrl-tab-entry ci_active";
+                }
+                else
+                {
+                    cssClass = "ci_config_ctrl-tab-entry";
+                }
+                
+                <div class="@cssClass">@dialog.Title</div>
+            }
+        </div>
+        
+        <div style="margin-left: 10px; border-left: 1px solid var(--ci_primary-border-color);">
+            <h2>TextEditors</h2>
+            @if (textEditorGroup is not null)
+            {
+                for (int i = 0; i < textEditorGroup.ViewModelKeyList.Count; i++)
+                {
+                    var viewModelKey = textEditorGroup.ViewModelKeyList[i];
+                    var viewModel = DotNetService.TextEditorService.ViewModel_GetOrDefault(viewModelKey);
+                    
+                    if (viewModel is not null)
+                    {
+                        string cssClass;
+                        
+                        if (_ctrlTabKind == CtrlTabKind.TextEditors && _index == i)
+                        {
+                            cssClass = "ci_config_ctrl-tab-entry ci_active";
+                        }
+                        else
+                        {
+                            cssClass = "ci_config_ctrl-tab-entry";
+                        }
+                    
+                        <div class="@cssClass">@viewModel.PersistentState.Title</div>
+                    }
+                }
+            }
+        </div>
+    </div>
+}

@@ -1,0 +1,67 @@
+@using Clair.Common.RazorLib.Dynamics.Models
+@using Clair.Common.RazorLib.Resizes.Displays
+
+@{
+	var dialogState = CommonService.GetDialogState();
+	var dialogStateIsActiveSelection = dialogState.ActiveDialogKey == Dialog.DynamicViewModelKey;
+}
+
+<div class="ci_dialog-display @Dialog.DialogCssClass @GetCssClassForDialogStateIsActiveSelection(dialogStateIsActiveSelection)"
+     style="@Dialog.DialogElementDimensions.GetStyleString(CommonService.UiStringBuilder) @IsMaximizedStyleCssString"
+     id="@Dialog.DialogFocusPointHtmlElementId"
+     tabindex="-1"
+     @onfocusin="HandleOnFocusIn"
+     @onmousedown="HandleOnMouseDown">
+
+    @if (Dialog.DialogIsResizable && !Dialog.DialogIsMaximized)
+    {
+        <ResizableDisplay @ref="_resizableDisplay"
+                          ElementDimensions="Dialog.DialogElementDimensions"
+                          ReRenderFuncAsync="ReRenderAsync"
+                          Drag="Dialog as IDrag" />
+    }
+
+    <div class="ci_dialog-display-toolbar"
+         @onmousedown="SubscribeMoveHandleAsync">
+        <div class="ci_dialog-display-title ci_unselectable"
+             style="@DialogTitleCssStyleString"
+             title="@Dialog.Title">
+            @Dialog.Title
+        </div>
+
+        <div class="ci_dialog-display-buttons"
+             @onmousedown:stopPropagation="true">
+            
+            @if (Dialog.DialogIsResizable)
+            {
+                <button class="ci_button ci_dialog-display-button-entry"
+                        @onclick="ToggleIsMaximized">
+
+                    @if (Dialog.DialogIsMaximized)
+                    {
+                        @* IconKind.Restore *@
+                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path d="M3 5v9h9V5H3zm8 8H4V6h7v7z" /><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5h1V4h7v7h-1v1h2V3H5v2z" /></svg>
+                    }
+                    else
+                    {
+                        @* IconKind.Maximize *@
+                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path d="M3 3v10h10V3H3zm9 9H4V4h8v8z" /></svg>
+                    }
+                </button>
+            }
+            
+            <button class="ci_button ci_dialog-display-button-entry"
+                    @onclick="DispatchDisposeDialogRecordAction">
+                @* IconKind.Close *@
+	            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.116 8l-4.558 4.558.884.884L8 8.884l4.558 4.558.884-.884L8.884 8l4.558-4.558-.884-.884L8 7.116 3.442 2.558l-.884.884L7.116 8z" /></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="ci_dialog-display-body">
+        <CascadingValue Value="Dialog" IsFixed="true">
+            <DynamicComponent Type="Dialog.ComponentType"
+                              Parameters="Dialog.ComponentParameterMap" />
+        </CascadingValue>
+    </div>
+</div>

@@ -1,0 +1,19 @@
+@using Clair.Common.RazorLib;
+@using Clair.Common.RazorLib.Themes.Models;
+
+<select @onchange="SelectedThemeChanged"
+        class="ci_select ci_te_text-editor-input-theme">
+    @{
+        var themesList = TextEditorService.CommonService.GetThemeState().ThemeList;
+
+        var chosenThemeKey = TextEditorService.Options_GetTextEditorOptionsState().Options.CommonOptions.ThemeKey;
+        
+        foreach (var theme in themesList)
+        {
+            <option value="@theme.Key.ToString()"
+                    selected="@(chosenThemeKey == theme.Key)">
+                @theme.DisplayName
+            </option>
+        }
+    }
+</select>

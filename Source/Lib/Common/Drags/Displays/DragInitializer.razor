@@ -1,0 +1,31 @@
+<div class="ci_drag-initializer"
+     style="@StyleCss"
+     @onmousemove="DRAG_DispatchSetDragStateActionOnMouseMove"
+     @onmouseup="DRAG_DispatchSetDragStateActionOnMouseUp">
+    
+	@{
+		var dragState = CommonService.GetDragState();
+		var draggableViewModel = dragState.Drag;
+	}
+
+	@if (draggableViewModel is not null)
+	{
+		var dropzoneViewModelList = draggableViewModel.DropzoneList;
+
+		if (draggableViewModel.DragComponentType is not null)
+		{
+			<div style="@dragState.DragElementDimensions.GetStyleString(CommonService.UiStringBuilder)">
+				<DragDisplay/>
+			</div>
+		}
+
+		foreach (var dropzone in dropzoneViewModelList)
+		{
+			<div style="z-index: @dropzone.MeasuredHtmlElementDimensions.ZIndex; @dropzone.ElementDimensions.GetStyleString(CommonService.UiStringBuilder)"
+				 class="ci_dropzone @DRAG_GetIsActiveCssClass(dropzone) @dropzone.CssClass"
+				 @onmouseover="() => _onMouseOverDropzone = dropzone"
+				 @onmouseover:stopPropagation="true">
+			</div>
+		}
+	}
+</div>

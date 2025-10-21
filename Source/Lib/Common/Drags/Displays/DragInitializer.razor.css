@@ -1,0 +1,26 @@
+.ci_drag-initializer {
+    z-index: var(--ci_drag-initializer-z-index);
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.ci_dropzone {
+	background-color: var(--ci_ide_context-boundary-overlay-background-color);
+    opacity: 0.6;
+    cursor: default;
+}
+
+	.ci_dropzone.ci_active {
+        background-color: var(--ci_button-hover-background-color);
+        box-shadow: 0 0 2px var(--ci_primary-overlay-box-shadow-color);
+    }
+
+.ci_dropzone.ci_dropzone-fallback {
+	background-color: transparent;
+    box-shadow: none;
+    opacity: 0;
+	cursor: pointer;
+}

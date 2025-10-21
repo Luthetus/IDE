@@ -1,0 +1,5 @@
+.ci_permissions-body {
+    margin: 10px;
+    padding: 10px;
+    border-left: 1px solid var(--ci_primary-border-color);
+}

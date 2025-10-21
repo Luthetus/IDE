@@ -1,0 +1,34 @@
+using Clair.Common.RazorLib;
+using Clair.Common.RazorLib.Options.Models;
+
+namespace Clair.TextEditor.RazorLib.Options.Models;
+
+public record struct TextEditorOptionsState
+{
+    public TextEditorOptionsState()
+    {
+        Options = new TextEditorOptions(
+            new CommonOptions(
+                DEFAULT_FONT_SIZE_IN_PIXELS,
+                DEFAULT_ICON_SIZE_IN_PIXELS,
+                AppOptionsState.DEFAULT_RESIZE_HANDLE_WIDTH_IN_PIXELS,
+                AppOptionsState.DEFAULT_RESIZE_HANDLE_HEIGHT_IN_PIXELS,
+                CommonFacts.VisualStudioDarkThemeClone.Key,
+                fontFamily: null),
+            showWhitespace: false,
+            showNewlines: false,
+            tabKeyBehavior: true,
+            tabWidth: 4,
+            DEFAULT_CURSOR_WIDTH_IN_PIXELS,
+            charAndLineMeasurements: new(0, 0));
+    }
+
+    public const int DEFAULT_FONT_SIZE_IN_PIXELS = 20;
+    public const int DEFAULT_ICON_SIZE_IN_PIXELS = 18;
+    public const double DEFAULT_CURSOR_WIDTH_IN_PIXELS = 2.5;
+
+    public const int MINIMUM_FONT_SIZE_IN_PIXELS = 5;
+    public const int MINIMUM_ICON_SIZE_IN_PIXELS = 5;
+
+    public TextEditorOptions Options { get; set; }
+}

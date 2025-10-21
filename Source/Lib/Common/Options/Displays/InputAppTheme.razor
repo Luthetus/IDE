@@ -1,0 +1,35 @@
+@using Clair.Common.RazorLib.Themes.Models;
+
+@{
+    var themeState = CommonService.GetThemeState();
+    var appOptionsState = CommonService.GetAppOptionsState();
+
+    var themesInScopeList = themeState.ThemeList
+        .Where(x => x.IncludeScopeApp)
+        .ToArray();
+        
+    var isActiveValid = CheckIsActiveValid(
+        themesInScopeList,
+        appOptionsState.Options.ThemeKey);
+}
+    
+<select @onchange="OnThemeSelectChanged"
+		class="ci_select ci_select-theme">
+
+    <option value="@Guid.Empty.ToString()"
+            selected="@isActiveValid">
+        Select a Theme
+    </option>
+    
+    @foreach (var theme in themesInScopeList)
+    {
+        var isActiveSelection = CheckIsActiveSelection(
+            theme.Key,
+            appOptionsState.Options.ThemeKey);
+
+        <option value="@theme.Key.ToString()"
+                selected="@isActiveSelection">
+            @theme.DisplayName
+        </option>
+    }
+</select>

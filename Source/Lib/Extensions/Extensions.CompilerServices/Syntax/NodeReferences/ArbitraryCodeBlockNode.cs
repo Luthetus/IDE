@@ -1,0 +1,12 @@
+using Clair.Extensions.CompilerServices.Syntax.Interfaces;
+
+namespace Clair.Extensions.CompilerServices.Syntax.NodeReferences;
+
+public sealed class ArbitraryCodeBlockNode : ICodeBlockOwner
+{
+    public int ParentScopeSubIndex { get; set; } = -1;
+    public int SelfScopeSubIndex { get; set; } = -1;
+
+    public bool IsFabricated { get; init; }
+    public SyntaxKind SyntaxKind => SyntaxKind.ArbitraryCodeBlockNode;
+}

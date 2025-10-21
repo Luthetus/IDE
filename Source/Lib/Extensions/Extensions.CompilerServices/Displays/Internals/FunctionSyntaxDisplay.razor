@@ -1,0 +1,337 @@
+@using Clair.Extensions.CompilerServices.Syntax
+@using Clair.Extensions.CompilerServices.Syntax.Enums
+@using Clair.Extensions.CompilerServices.Syntax.NodeValues
+@using Clair.Extensions.CompilerServices.Syntax.NodeReferences
+@using Clair.TextEditor.RazorLib.TextEditors.Models.Internals
+
+@*
+    I'm making changes to the C# Compiler Service storage.
+    I encountered an infinite loop in the UI when I hovered a certain generic variable.
+    The TypeSyntaxDisplay was rendering GenericSyntaxDisplay which then rendered TypeSyntaxDisplay, repeat...
+    This spiked my memory, I was able to stop the app with Task Manager, but I want to avoid this happening again at all costs until I am 100% certain
+    the new storage won't have an infinite loop in the UI.
+*@
+@if (SyntaxViewModel.Depth < 6)
+{
+	var syntaxViewModelLocal = SyntaxViewModel;
+	
+	string? prefixText;
+	
+	// Hacky addition of 'string? returnTypeClauseNodeText' due to a ConstructorSymbol just being the identifier, not a node.
+	TypeReferenceValue returnTypeClauseNode;
+	string? returnTypeClauseNodeText;
+	
+	string? methodName;
+	bool hasGenericParameterListing;
+	int offsetFunctionArgumentEntryList;
+    int lengthFunctionArgumentEntryList;
+	bool isConstructorInvocation = false;
+	
+	if (syntaxViewModelLocal.DefinitionNode.IsDefault() && syntaxViewModelLocal.TargetNode.IsDefault() && syntaxViewModelLocal.TargetSymbol.IsDefault())
+	{
+		prefixText = "(null)";
+		returnTypeClauseNode = default;
+		returnTypeClauseNodeText = null;
+		methodName = null;
+		hasGenericParameterListing = false;
+		offsetFunctionArgumentEntryList = -1;
+		lengthFunctionArgumentEntryList = 0;
+	}
+	else if (!syntaxViewModelLocal.DefinitionNode.IsDefault() &&
+			 (syntaxViewModelLocal.DefinitionNode.SyntaxKind == SyntaxKind.FunctionDefinitionNode ||
+			  	syntaxViewModelLocal.DefinitionNode.SyntaxKind == SyntaxKind.ConstructorDefinitionNode))
+	{
+		prefixText = null;
+		
+		if (syntaxViewModelLocal.DefinitionNode.SyntaxKind == SyntaxKind.FunctionDefinitionNode)
+		{
+			var functionDefinitionNode = syntaxViewModelLocal.DefinitionNode;
+			var functionDefinitionMetadata = syntaxViewModelLocal.ExtendedCompilerService.FunctionDefinitionTraitsList[functionDefinitionNode.TraitsIndex];
+			
+			returnTypeClauseNode = functionDefinitionMetadata.ReturnTypeReference;
+			returnTypeClauseNodeText = null;
+			methodName = syntaxViewModelLocal.GetTextFromTextSpan(functionDefinitionNode.IdentifierToken.TextSpan);
+			hasGenericParameterListing = functionDefinitionMetadata.OpenAngleBracketToken.ConstructorWasInvoked;
+			offsetFunctionArgumentEntryList = functionDefinitionMetadata.OffsetFunctionArgumentEntryList;
+			lengthFunctionArgumentEntryList = functionDefinitionMetadata.LengthFunctionArgumentEntryList;
+		}
+		else if (syntaxViewModelLocal.DefinitionNode.SyntaxKind == SyntaxKind.ConstructorDefinitionNode)
+		{
+			var constructorDefinitionNode = syntaxViewModelLocal.DefinitionNode;
+			var constructorDefinitionMetadata = syntaxViewModelLocal.ExtendedCompilerService.ConstructorDefinitionTraitsList[constructorDefinitionNode.TraitsIndex];
+			returnTypeClauseNode = constructorDefinitionMetadata.ReturnTypeReference;
+			returnTypeClauseNodeText = null;
+			methodName = null;
+			hasGenericParameterListing = false;
+			offsetFunctionArgumentEntryList = constructorDefinitionMetadata.OffsetFunctionArgumentEntryList;
+			lengthFunctionArgumentEntryList = constructorDefinitionMetadata.LengthFunctionArgumentEntryList;
+		}
+		else
+		{
+			returnTypeClauseNode = default;
+			returnTypeClauseNodeText = null;
+			methodName = "unknown syntax";
+			hasGenericParameterListing = false;
+			offsetFunctionArgumentEntryList = -1;
+    		lengthFunctionArgumentEntryList = 0;
+		}
+	}
+	else if (!syntaxViewModelLocal.TargetNode.IsDefault() &&
+			 (syntaxViewModelLocal.TargetNode.SyntaxKind == SyntaxKind.FunctionInvocationNode ||
+			  	syntaxViewModelLocal.TargetNode.SyntaxKind == SyntaxKind.ConstructorInvocationNode))
+	{
+		prefixText = "(reference)";
+		
+		if (syntaxViewModelLocal.TargetNode.SyntaxKind == SyntaxKind.FunctionInvocationNode)
+		{
+			var functionInvocationNode = syntaxViewModelLocal.TargetNode;
+			returnTypeClauseNode = default;//functionInvocationNode.ResultTypeReference;
+			returnTypeClauseNodeText = null;
+			methodName = syntaxViewModelLocal.GetTextFromTextSpan(functionInvocationNode.IdentifierToken.TextSpan);
+			hasGenericParameterListing = false;//functionInvocationNode.OpenAngleBracketToken.ConstructorWasInvoked;
+			offsetFunctionArgumentEntryList = -1;
+    		lengthFunctionArgumentEntryList = 0;
+		}
+		else if (syntaxViewModelLocal.TargetNode.SyntaxKind == SyntaxKind.ConstructorInvocationNode)
+		{
+			var constructorInvocationNode = syntaxViewModelLocal.TargetNode;
+			returnTypeClauseNode = default;//constructorInvocationNode.ResultTypeReference;
+			returnTypeClauseNodeText = null;
+			methodName = null;
+			hasGenericParameterListing = false;
+			offsetFunctionArgumentEntryList = -1;
+    		lengthFunctionArgumentEntryList = 0;
+		}
+		else
+		{
+			returnTypeClauseNode = default;
+			returnTypeClauseNodeText = null;
+			methodName = "unknown syntax";
+			hasGenericParameterListing = false;
+			offsetFunctionArgumentEntryList = -1;
+    		lengthFunctionArgumentEntryList = 0;
+		}
+	}
+	else if (!syntaxViewModelLocal.TargetSymbol.IsDefault() &&
+			 (syntaxViewModelLocal.TargetSymbol.SyntaxKind == SyntaxKind.FunctionSymbol ||
+			  	syntaxViewModelLocal.TargetSymbol.SyntaxKind == SyntaxKind.ConstructorSymbol))
+	{
+		prefixText = "(symbol)";
+	
+		if (syntaxViewModelLocal.TargetSymbol.SyntaxKind == SyntaxKind.FunctionSymbol)
+		{
+			returnTypeClauseNode = default;
+			returnTypeClauseNodeText = null;
+			methodName = syntaxViewModelLocal.GetTextFromSymbol(syntaxViewModelLocal.TargetSymbol);
+			hasGenericParameterListing = false;
+			offsetFunctionArgumentEntryList = -1;
+    		lengthFunctionArgumentEntryList = 0;
+		}
+		else if (syntaxViewModelLocal.TargetSymbol.SyntaxKind == SyntaxKind.ConstructorSymbol)
+		{
+			returnTypeClauseNode = default;
+			returnTypeClauseNodeText = syntaxViewModelLocal.GetTextFromSymbol(syntaxViewModelLocal.TargetSymbol);
+			methodName = null;
+			hasGenericParameterListing = false;
+			offsetFunctionArgumentEntryList = -1;
+    		lengthFunctionArgumentEntryList = 0;
+		}
+		else
+		{
+			returnTypeClauseNode = default;
+			returnTypeClauseNodeText = null;
+			methodName = null;
+			hasGenericParameterListing = false;
+			offsetFunctionArgumentEntryList = -1;
+    		lengthFunctionArgumentEntryList = 0;
+		}
+	}
+	else
+	{
+		prefixText = "(unrecognizable-state)";
+		returnTypeClauseNode = default;
+		returnTypeClauseNodeText = null;
+		methodName = null;
+		hasGenericParameterListing = false;
+		offsetFunctionArgumentEntryList = -1;
+		lengthFunctionArgumentEntryList = 0;
+	}
+    
+    <span style="display: inline-flex;">
+    	
+    	@if (syntaxViewModelLocal.Depth == 0 && !string.IsNullOrWhiteSpace(prefixText))
+    	{
+    		<span>
+    			@prefixText&nbsp;
+    		</span>
+    	}
+
+        @if (!returnTypeClauseNode.IsDefault())
+    	{
+    		var syntaxViewModel = new SyntaxViewModel(
+    		    SyntaxViewModel.ExtendedCompilerService,
+    		    SyntaxViewModel.TextEditorService,
+                SyntaxViewModel.AbsolutePathId,
+    			targetSymbol: default,
+    			targetNode: default,
+    			definitionNode: default,
+    			depth: syntaxViewModelLocal.Depth + 1);
+    		<TypeSyntaxDisplay SyntaxViewModel="syntaxViewModel" TypeReference="returnTypeClauseNode"/>
+    		<text>&nbsp;</text>
+    	}
+    	else if (!string.IsNullOrWhiteSpace(returnTypeClauseNodeText))
+    	{
+    		// Hacky addition of 'string? returnTypeClauseNodeText' due to a ConstructorSymbol just being the identifier, not a node.
+    		<span class="ci_type">
+    			@returnTypeClauseNodeText
+    		</span>
+    	}
+    	
+    	@if (!string.IsNullOrWhiteSpace(methodName))
+    	{
+    		var classCssString = syntaxViewModelLocal.DefinitionNode.IsDefault()
+    			? string.Empty
+    			: "ci_te_syntax-onclick";
+    	
+    		<span class="@classCssString ci_method"
+    			  @onclick="() => syntaxViewModelLocal.HandleOnClick(TextEditorService, SyntaxKind.FunctionDefinitionNode)">
+    			@methodName
+    		</span>
+    	}
+    	
+    	@if (hasGenericParameterListing)
+    	{
+    		var syntaxViewModel = new SyntaxViewModel(
+    		    SyntaxViewModel.ExtendedCompilerService,
+    		    SyntaxViewModel.TextEditorService,
+                SyntaxViewModel.AbsolutePathId,
+    			targetSymbol: default,
+    			targetNode: syntaxViewModelLocal.TargetNode,
+    			definitionNode: syntaxViewModelLocal.DefinitionNode,
+    			depth: syntaxViewModelLocal.Depth + 1);
+    		<GenericSyntaxDisplay SyntaxViewModel="syntaxViewModel" />
+    	}
+    	
+    	@if (lengthFunctionArgumentEntryList == 0)
+    	{
+    		<text>()</text>
+    	}
+    	else
+    	{
+    		<text>(</text>
+    		@for (int index = offsetFunctionArgumentEntryList; index < offsetFunctionArgumentEntryList + lengthFunctionArgumentEntryList; index++)
+    		{
+    			var argumentEntry = SyntaxViewModel.ExtendedCompilerService.FunctionArgumentEntryList[index];
+    			
+    			if (argumentEntry.OptionalCompileTimeConstantToken.SyntaxKind != SyntaxKind.NotApplicable)
+    			{
+    			    <text>[</text>
+    			}
+    			
+    			string? argumentModifierText;
+    			switch (argumentEntry.ArgumentModifierKind)
+    			{
+                	case ArgumentModifierKind.Out:
+                        argumentModifierText = "out";
+                        break;
+                    case ArgumentModifierKind.In:
+                        argumentModifierText = "in";
+                        break;
+                    case ArgumentModifierKind.Ref:
+                        argumentModifierText = "ref";
+                        break;
+                    case ArgumentModifierKind.Params:
+                        argumentModifierText = "params";
+                        break;
+                    case ArgumentModifierKind.This:
+                        argumentModifierText = "this";
+                        break;
+                    case ArgumentModifierKind.Readonly:
+                        argumentModifierText = "readonly";
+                        break;
+                    case ArgumentModifierKind.RefReadonly:
+                        argumentModifierText = "ref readonly";
+                        break;
+                    case ArgumentModifierKind.ReadonlyRef:
+                        argumentModifierText = "readonly ref";
+                        break;
+                    case ArgumentModifierKind.ThisRef:
+                        argumentModifierText = "this ref";
+                        break;
+                    case ArgumentModifierKind.RefThis:
+                        argumentModifierText = "ref this";
+                        break;
+                    default:
+                        argumentModifierText = null;
+                        break;
+    			}
+    			
+    			if (argumentModifierText is not null)
+    			{
+    			    <span class="ci_keyword">
+    			        @(argumentModifierText)&nbsp;
+    			    </span>
+    			}
+    			
+			    var variableDeclarationNode = new VariableDeclarationNode(
+			        argumentEntry.TypeReference,
+                    argumentEntry.IdentifierToken,
+                    argumentEntry.VariableKind,
+                    isInitialized: true,
+                    SyntaxViewModel.AbsolutePathId);
+    			
+    			var syntaxNodeValue = new SyntaxNodeValue(
+    			    variableDeclarationNode,
+    			    (List<Clair.Extensions.CompilerServices.Syntax.NodeValues.VariableDeclarationTraits>)SyntaxViewModel.ExtendedCompilerService.VariableDeclarationTraitsList);
+    			
+    			var syntaxViewModel = new SyntaxViewModel(
+        		    SyntaxViewModel.ExtendedCompilerService,
+    				SyntaxViewModel.TextEditorService,
+                    SyntaxViewModel.AbsolutePathId,
+    				targetSymbol: default,
+    				targetNode: syntaxNodeValue,
+    				definitionNode: syntaxNodeValue,
+    				depth: syntaxViewModelLocal.Depth + 1);
+    			<VariableSyntaxDisplay SyntaxViewModel="syntaxViewModel"/>
+    			
+    			if (argumentEntry.OptionalCompileTimeConstantToken.SyntaxKind != SyntaxKind.NotApplicable)
+    			{
+    			    <text>&nbsp;=&nbsp;</text>
+    			    
+    			    switch (argumentEntry.OptionalCompileTimeConstantToken.SyntaxKind)
+    			    {
+    			        case SyntaxKind.NullTokenKeyword:
+    			            <span class="ci_keyword">@(GetTextFromTextSpan(argumentEntry.OptionalCompileTimeConstantToken.TextSpan))</span>
+    			            break;
+    			        case SyntaxKind.FalseTokenKeyword:
+    			            <span class="ci_keyword">@(GetTextFromTextSpan(argumentEntry.OptionalCompileTimeConstantToken.TextSpan))</span>
+    			            break;
+    			        case SyntaxKind.TrueTokenKeyword:
+    			            <span class="ci_keyword">@(GetTextFromTextSpan(argumentEntry.OptionalCompileTimeConstantToken.TextSpan))</span>
+    			            break;
+    			        case SyntaxKind.StringLiteralToken:
+    			            <span class="ci_string">@(GetTextFromTextSpan(argumentEntry.OptionalCompileTimeConstantToken.TextSpan))</span>
+    			            break;
+    		            case SyntaxKind.CharLiteralToken:
+    			            <span class="ci_string">@(GetTextFromTextSpan(argumentEntry.OptionalCompileTimeConstantToken.TextSpan))</span>
+    			            break;
+    		            case SyntaxKind.NumericLiteralToken:
+    			            <span class="ci_te_numeric-literal">@(GetTextFromTextSpan(argumentEntry.OptionalCompileTimeConstantToken.TextSpan))</span>
+    			            break;
+    		            default:
+    			            <text>...</text>
+    			            break;
+    			    }
+    			    
+    			    <text>]</text>
+    			}
+    			
+    			if (index < offsetFunctionArgumentEntryList + lengthFunctionArgumentEntryList - 1)
+    			{
+    				<text>, </text>
+    			}
+    		}
+    		<text>)</text>
+    	}
+    </span>
+}

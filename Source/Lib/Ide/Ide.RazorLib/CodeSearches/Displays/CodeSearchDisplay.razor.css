@@ -1,0 +1,23 @@
+.ci_ide_find-all {
+    height: 100%;
+}
+
+.ci_ide_find-all-top-content {
+    overflow: auto;
+}
+
+.ci_ide_find-all-filter-list {
+    display: flex;
+}
+
+.ci_ide_find-all-filter-list > .ci_ide_find-all-filter {
+    margin-right: 5px;
+}
+
+.ci_ide_find-all-filter {
+    background-color: var(--ci_active-no-focus-background-color);
+}
+
+    .ci_ide_find-all-filter.ci_active {
+        background-color: var(--ci_active-with-focus-background-color);
+    }

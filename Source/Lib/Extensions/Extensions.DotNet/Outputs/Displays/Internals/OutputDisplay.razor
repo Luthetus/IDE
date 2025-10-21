@@ -1,0 +1,24 @@
+@using Clair.Common.RazorLib.TreeViews.Displays
+@using Clair.Extensions.DotNet.Outputs.Models
+@using Clair.Extensions.DotNet.CommandLines.Models
+@using Clair.TextEditor.RazorLib.Lexers.Models
+
+<div class="ci_output-display" style="height: 100%;">
+	
+	@{
+		var dotNetRunParseResult = DotNetService.GetDotNetRunParseResult();
+		var appOptionsState = DotNetService.TextEditorService.CommonService.GetAppOptionsState();
+	}
+	
+	<div class="ci_output-display-top-row" style="height: 1.8em;">
+		@dotNetRunParseResult.Message
+	
+		(@dotNetRunParseResult.ErrorList.Count errors)
+		(@dotNetRunParseResult.WarningList.Count warnings)
+		(@dotNetRunParseResult.OtherList.Count other)
+	</div>
+
+	<div class="ci_output-display-body" style="height: calc(100% - 1.8em);">
+        <TreeViewContainerDisplay TreeViewContainerParameter="_treeViewContainerParameter"/>
+	</div>
+</div>

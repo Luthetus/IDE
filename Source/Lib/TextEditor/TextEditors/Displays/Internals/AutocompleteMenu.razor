@@ -1,0 +1,9 @@
+@using Clair.Common.RazorLib.Menus.Displays
+@using Clair.TextEditor.RazorLib.Autocompletes.Models
+
+@{ var renderBatch = GetVirtualizationResult(); }
+
+@if (renderBatch.IsValid)
+{
+    <MenuDisplay @ref="_menuDisplay" Menu="GetMenuRecord()"/>
+}

@@ -1,0 +1,243 @@
+using Microsoft.AspNetCore.Components;
+using Clair.Common.RazorLib.Installations.Models;
+using Clair.Common.RazorLib.Keys.Models;
+using Clair.Common.RazorLib.Dynamics.Models;
+using Clair.CompilerServices.DotNetSolution.Models;
+using Clair.Ide.RazorLib;
+using Clair.Ide.RazorLib.Terminals.Models;
+using Clair.Ide.RazorLib.BackgroundTasks.Models;
+using Clair.Ide.RazorLib.InputFiles.Models;
+using Clair.Extensions.DotNet.CSharpProjects.Models;
+using Clair.Extensions.DotNet.CommandLines.Models;
+
+namespace Clair.Extensions.DotNet.CSharpProjects.Displays;
+
+public sealed partial class CSharpProjectFormDisplay : ComponentBase, IDisposable
+{
+    [Inject]
+    private DotNetService DotNetService { get; set; } = null!;
+
+    [CascadingParameter]
+    public IDialog DialogRecord { get; set; } = null!;
+
+    [Parameter]
+    public Key<DotNetSolutionModel> DotNetSolutionModelKey { get; set; }
+
+    private CSharpProjectFormViewModel _viewModel = null!;
+
+    private DotNetSolutionModel? DotNetSolutionModel => DotNetService.GetDotNetSolutionState().DotNetSolutionModel;
+
+    protected override void OnInitialized()
+    {
+        _viewModel = new(DotNetSolutionModel, DotNetService.IdeService.TextEditorService.CommonService.FileSystemProvider);
+        
+        DotNetService.DotNetStateChanged += OnDotNetSolutionStateChanged;
+        DotNetService.IdeService.IdeStateChanged += OnTerminalStateChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ReadProjectTemplates().ConfigureAwait(false);
+        }
+    }
+
+    private string GetIsActiveCssClassString(CSharpProjectFormPanelKind panelKind) =>
+        _viewModel.ActivePanelKind == panelKind ? "ci_active" : string.Empty;
+
+    private void RequestInputFileForParentDirectory(string message)
+    {
+        DotNetService.IdeService.Enqueue(new IdeWorkArgs
+        {
+            WorkKind = IdeWorkKind.RequestInputFileStateForm,
+            StringValue = message,
+            OnAfterSubmitFunc = async absolutePath =>
+            {
+                if (absolutePath.Value is null)
+                    return;
+
+                _viewModel.ParentDirectoryNameValue = absolutePath.Value;
+                await InvokeAsync(StateHasChanged);
+            },
+            SelectionIsValidFunc = absolutePath =>
+            {
+                if (absolutePath.Value is null || !absolutePath.IsDirectory)
+                    return Task.FromResult(false);
+
+                return Task.FromResult(true);
+            },
+            InputFilePatterns = new()
+            {
+                new InputFilePattern("Directory", absolutePath => absolutePath.IsDirectory)
+            }
+        });
+    }
+
+    private async Task ReadProjectTemplates()
+    {
+        if (DotNetService.IdeService.TextEditorService.CommonService.ClairHostingInformation.ClairHostingKind != ClairHostingKind.Photino)
+        {
+            _viewModel.ProjectTemplateList = new();
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            await EnqueueDotNetNewListAsync().ConfigureAwait(false);
+        }
+    }
+
+    private async Task EnqueueDotNetNewListAsync()
+    {
+        try
+        {
+            // Render UI loading icon
+            _viewModel.IsReadingProjectTemplates = true;
+            await InvokeAsync(StateHasChanged);
+
+            var formattedCommandValue = DotNetCliCommandFormatter.FormatDotnetNewList();
+            var generalTerminal = DotNetService.IdeService.GetTerminalState().GeneralTerminal;
+                
+            var terminalCommandRequest = new TerminalCommandRequest(
+                formattedCommandValue,
+                DotNetService.IdeService.CommonService.FileSystemProvider.HomeDirectoryAbsolutePath.Value,
+                new Key<TerminalCommandRequest>(_viewModel.LoadProjectTemplatesTerminalCommandRequestKey.Guid))
+            {
+                ContinueWithFunc = parsedTerminalCommand =>
+                {
+                    DotNetService.ParseOutputLineDotNetNewList(parsedTerminalCommand.OutputCache.ToString());
+                    _viewModel.ProjectTemplateList = DotNetService.ProjectTemplateList ?? new();
+                    return InvokeAsync(StateHasChanged);
+                }
+            };
+
+            generalTerminal.EnqueueCommand(terminalCommandRequest);
+        }
+        finally
+        {
+            // UI loading message
+            _viewModel.IsReadingProjectTemplates = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    /// <summary>If the non-deprecated version of the command fails, then try the deprecated one.</summary>
+    private async Task EnqueueDotnetNewListDeprecatedAsync()
+    {
+        try
+        {
+            // UI loading message
+            _viewModel.IsReadingProjectTemplates = true;
+            await InvokeAsync(StateHasChanged);
+
+            var formattedCommandValue = DotNetCliCommandFormatter.FormatDotnetNewListDeprecated();
+            var generalTerminal = DotNetService.IdeService.GetTerminalState().GeneralTerminal;
+
+            var terminalCommandRequest = new TerminalCommandRequest(
+                formattedCommandValue,
+                DotNetService.IdeService.TextEditorService.CommonService.FileSystemProvider.HomeDirectoryAbsolutePath.Value,
+                new Key<TerminalCommandRequest>(_viewModel.LoadProjectTemplatesTerminalCommandRequestKey.Guid))
+            {
+                ContinueWithFunc = parsedCommand =>
+                {
+                    DotNetService.ParseOutputLineDotNetNewList(parsedCommand.OutputCache.ToString());
+                    _viewModel.ProjectTemplateList = DotNetService.ProjectTemplateList ?? new();
+                    return InvokeAsync(StateHasChanged);
+                }
+            };
+                
+            DotNetService.IdeService.GetTerminalState().GeneralTerminal.EnqueueCommand(terminalCommandRequest);
+        }
+        finally
+        {
+            // UI loading message
+            _viewModel.IsReadingProjectTemplates = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private string GetCssClassForActivePanelKind(CSharpProjectFormPanelKind localActivePanelKind)
+    {
+        return localActivePanelKind switch
+        {
+            CSharpProjectFormPanelKind.Graphical => "ci_ide_c-sharp-project-form-graphical-panel",
+            CSharpProjectFormPanelKind.Manual => "ci_ide_c-sharp-project-form-manual-panel",
+            _ => throw new NotImplementedException($"The {nameof(CSharpProjectFormPanelKind)}: '{localActivePanelKind}' was unrecognized."),
+        };
+    }
+
+    private async Task StartNewCSharpProjectCommandOnClick()
+    {
+        if (!_viewModel.TryTakeSnapshot(out var immutableView) ||
+            immutableView is null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(immutableView.ProjectTemplateShortNameValue) ||
+            string.IsNullOrWhiteSpace(immutableView.CSharpProjectNameValue) ||
+            string.IsNullOrWhiteSpace(immutableView.ParentDirectoryNameValue))
+        {
+            return;
+        }
+
+        if (DotNetService.IdeService.TextEditorService.CommonService.ClairHostingInformation.ClairHostingKind == ClairHostingKind.Photino)
+        {
+            var generalTerminal = DotNetService.IdeService.GetTerminalState().GeneralTerminal;
+
+            var terminalCommandRequest = new TerminalCommandRequest(
+                immutableView.FormattedNewCSharpProjectCommandValue,
+                immutableView.ParentDirectoryNameValue,
+                new Key<TerminalCommandRequest>(immutableView.NewCSharpProjectTerminalCommandRequestKey.Guid))
+            {
+                ContinueWithFunc = parsedCommand =>
+                {
+                    var terminalCommandRequest = new TerminalCommandRequest(
+                        immutableView.FormattedAddExistingProjectToSolutionCommandValue,
+                        immutableView.ParentDirectoryNameValue,
+                        new Key<TerminalCommandRequest>(immutableView.AddCSharpProjectToSolutionTerminalCommandRequestKey.Guid))
+                    {
+                        ContinueWithFunc = parsedCommand =>
+                        {
+                            DotNetService.IdeService.TextEditorService.CommonService.Dialog_ReduceDisposeAction(DialogRecord.DynamicViewModelKey);
+    
+                            DotNetService.Enqueue(new DotNetWorkArgs
+                            {
+                                WorkKind = DotNetWorkKind.SetDotNetSolution,
+                                DotNetSolutionAbsolutePath = immutableView.DotNetSolutionModel.AbsolutePath,
+                            });
+                            return Task.CompletedTask;
+                        }
+                    };
+                        
+                    generalTerminal.EnqueueCommand(terminalCommandRequest);
+                    return Task.CompletedTask;
+                }
+            };
+                
+            generalTerminal.EnqueueCommand(terminalCommandRequest);
+        }
+    }
+    
+    public async void OnDotNetSolutionStateChanged(DotNetStateChangedKind dotNetStateChangedKind)
+    {
+        if (dotNetStateChangedKind == DotNetStateChangedKind.SolutionStateChanged)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    public async void OnTerminalStateChanged(IdeStateChangedKind ideStateChangedKind)
+    {
+        if (ideStateChangedKind == IdeStateChangedKind.TerminalHasExecutingProcessStateChanged)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    public void Dispose()
+    {
+        DotNetService.DotNetStateChanged -= OnDotNetSolutionStateChanged;
+        DotNetService.IdeService.IdeStateChanged -= OnTerminalStateChanged;
+    }
+}

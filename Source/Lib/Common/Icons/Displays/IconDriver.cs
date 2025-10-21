@@ -1,0 +1,13 @@
+namespace Clair.Common.RazorLib.Icons.Displays;
+
+public struct IconDriver
+{
+    public IconDriver(int widthInPixels, int heightInPixels)
+    {
+        WidthInPixels = widthInPixels;
+        HeightInPixels = heightInPixels;
+    }
+
+    public double WidthInPixels { get; }
+    public double HeightInPixels { get; }
+}

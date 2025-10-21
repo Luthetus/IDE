@@ -1,0 +1,28 @@
+<div class="ci_ide_delete-file-form-display"
+     @onkeydown="HandleOnKeyDown">
+
+    <div>
+        <em class="ci_em">
+            Remove C# Project:
+        </em>
+
+        <div>
+            <em class="ci_em" title="@AbsolutePath.Value">
+                @AbsolutePath.Name
+            </em>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between;">
+        <button class="ci_button"
+                @onclick="RemoveCSharpProjectFromSolutionOnClick">
+            Remove
+        </button>
+
+        <button class="ci_button"
+                @ref="_cancelButtonElementReference"
+                @onclick="CancelOnClick">
+            Cancel
+        </button>
+    </div>
+</div>

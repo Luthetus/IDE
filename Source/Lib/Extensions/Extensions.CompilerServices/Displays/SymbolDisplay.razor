@@ -1,0 +1,180 @@
+@using Microsoft.AspNetCore.Components.Web
+@using Clair.TextEditor.RazorLib.TextEditors.Models.Internals
+@using Clair.TextEditor.RazorLib.CompilerServices
+@using Clair.TextEditor.RazorLib.Lexers.Models
+@using Clair.Extensions.CompilerServices.Syntax
+@using Clair.Extensions.CompilerServices.Syntax.NodeValues
+@using Clair.Extensions.CompilerServices.Syntax.NodeReferences
+@using Clair.Extensions.CompilerServices.Displays.Internals
+
+@{
+    var normalCompilerService = TextEditorService.GetCompilerService("cs");
+    if (normalCompilerService is IExtendedCompilerService extendedCompilerService)
+    {
+        var absolutePathString = extendedCompilerService.TryGetIntToFileAbsolutePathMap(AbsolutePathId);
+        if (absolutePathString is not null)
+        {
+            var resourceUri = new ResourceUri(absolutePathString);
+            var symbolLocal = Symbol;
+            // var targetNode = GetTargetNode(TextEditorService, symbolLocal, AbsolutePathId);
+            var definitionNode = GetDefinitionNodeValue(TextEditorService, symbolLocal, default, resourceUri);
+	
+	        int absolutePathId;
+	
+	        if (definitionNode.IsDefault())
+	        {
+    	        absolutePathId = AbsolutePathId;
+	        }
+	        else
+	        {
+	            switch (definitionNode.SyntaxKind)
+    	        {
+    	            case SyntaxKind.VariableDeclarationNode:
+            	        var variableDeclarationNode = definitionNode;
+            	        absolutePathId = variableDeclarationNode.AbsolutePathId;
+            	        break;
+                    case SyntaxKind.FunctionDefinitionNode:
+            	        var functionDefinitionNode = definitionNode;
+            	        absolutePathId = functionDefinitionNode.AbsolutePathId;
+            	        break;
+                    case SyntaxKind.TypeDefinitionNode:
+            	        var innerTypeDefinitionNode = definitionNode;
+            	        absolutePathId = innerTypeDefinitionNode.AbsolutePathId;
+            	        break;
+    	            default:
+    	                absolutePathId = AbsolutePathId;
+    	                break;
+    	        }
+	        }
+	
+            var model = TextEditorService.Model_GetOrDefault(resourceUri);
+	
+	        if (model is null)
+	        {
+                extendedCompilerService = null;
+	        }
+	
+	        var syntaxViewModel = new SyntaxViewModel(
+                extendedCompilerService,
+	            TextEditorService,
+	            absolutePathId,
+		        symbolLocal,
+		        default,
+		        definitionNode,
+		        depth: 0);
+        
+            if (syntaxViewModel.ExtendedCompilerService is not null)
+            {
+                <div class="ci_te_symbol">
+                    <ErrorBoundary>
+                        <ChildContent>
+                            @switch (symbolLocal.SymbolKindString)
+                            {
+                                case "TypeSymbol":
+                                    {
+                                        <TypeSyntaxDisplay SyntaxViewModel="syntaxViewModel" />
+                                        break;
+                                    }
+                                case "FunctionSymbol":
+                                case "ConstructorSymbol":
+                                    {
+                                        <FunctionSyntaxDisplay SyntaxViewModel="syntaxViewModel" />
+                                        break;
+                                    }
+                                case "LambdaSymbol":
+                                    {
+                                        <LambdaSyntaxDisplay SyntaxViewModel="syntaxViewModel" />
+                                        break;
+                                    }
+                                case "VariableSymbol":
+                                case "FieldSymbol":
+                                case "PropertySymbol":
+                                case "EnumMemberSymbol":
+                                    {
+                                        <VariableSyntaxDisplay SyntaxViewModel="syntaxViewModel" />
+                                        break;
+                                    }
+                                case "StringInterpolationSymbol":
+                                case "StringVerbatimSymbol":
+                                case "InjectedLanguageComponentSymbol":
+                                    {
+                                        <MiscSyntaxDisplay SyntaxViewModel="syntaxViewModel" />
+                                        break;
+                                    }
+                                case "NamespaceSymbol":
+                                    {
+                                        <text>
+                                            <span class="ci_keyword">
+                                                namespace
+                                            </span>
+
+                                            <span class="@(string.Empty /* Namespaces do not have their own css class as of (2023-07-20) */)">
+                                                @syntaxViewModel.GetTextFromSymbol(symbolLocal)
+                                            </span>
+                                        </text>
+                                        break;
+                                    }
+                                case "LabelSymbol":
+                                    {
+                                        <text>
+                                            <span class="ci_keyword">
+                                                label
+                                            </span>
+
+                                            <span class="@(string.Empty /* Labels do not have their own css class as of (2023-07-20) */)">
+                                                @syntaxViewModel.GetTextFromSymbol(symbolLocal)
+                                            </span>
+                                        </text>
+                                        break;
+                                    }
+                                case "DiscardSymbol":
+                                    {
+                                        <text>
+                                            <span class="ci_keyword">
+                                                discard
+                                            </span>
+
+                                            <span class="@(string.Empty /* Discards do not have their own css class as of (2023-07-20) */)">
+                                                @syntaxViewModel.GetTextFromSymbol(symbolLocal)
+                                            </span>
+                                        </text>
+                                        break;
+                                    }
+                                case "SourceFileSymbol":
+                                    {
+                                        <text>
+                                            <span class="ci_keyword">
+                                                Open in editor:
+                                            </span>
+
+                                            <button class="ci_button ci_te_source-file"
+                                                    @onclick="() => OpenInEditorOnClick(syntaxViewModel.GetTextFromSymbol(symbolLocal))">
+                                                @syntaxViewModel.GetTextFromSymbol(symbolLocal)
+                                            </button>
+                                        </text>
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        <text>
+                                            <span class="ci_keyword">
+                                                unknown-symbol-kind
+                                            </span>
+
+                                            <span class="@(string.Empty /* Unknown-symbol-kinds do not have their own css class as of (2023-07-20) */)">
+                                                @syntaxViewModel.GetTextFromSymbol(symbolLocal)
+                                            </span>
+                                        </text>
+                                        break;
+                                    }
+                            }
+                        </ChildContent>
+                        <ErrorContent Context="error">
+                            @error.ToString()
+                        </ErrorContent>
+                    </ErrorBoundary>
+                </div>
+            }
+        }
+    }
+}

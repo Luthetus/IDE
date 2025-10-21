@@ -1,0 +1,241 @@
+@using Clair.Ide.RazorLib.Terminals.Models;
+@using Clair.Extensions.DotNet.CSharpProjects.Models;
+
+<div class="ci_ide_c-sharp-project-form ci_ide_form @GetCssClassForActivePanelKind(_viewModel.ActivePanelKind)">
+    
+    @{ _viewModel.DotNetSolutionModel = DotNetSolutionModel; }
+
+    @if (_viewModel.DotNetSolutionModel is null)
+    {
+        <div>@nameof(_viewModel.DotNetSolutionModel) is null</div>
+    }
+    else
+    {
+    	var appOptionsState = DotNetService.IdeService.TextEditorService.CommonService.GetAppOptionsState();
+    
+        <div class="ci_ide_c-sharp-project-form-top-inputs">
+            <div class="ci_ide_form-group">
+                <div class="ci_ide_form-label">
+                    Project name:
+                </div>
+
+                <div class="ci_ide_form-value">
+                    <input class="ci_ide_input ci_ide_input-text"
+                           style="height: 2em;"
+                           placeholder="Project name"
+                    @bind="_viewModel.CSharpProjectNameValue"
+                    @bind:event="oninput" />
+                </div>
+            </div>
+        </div>
+
+        <div class="ci_ide_c-sharp-project-form-middle-inputs">
+            <div class="ci_ide_form-group ci_ide_disable-display-flex">
+                <div class="ci_ide_form-label ci_ide_c-sharp-project-form-sticky">
+                    <div class="ci_ide_c-sharp-project-form-sticky-left-side">
+                        Project template:
+
+                        <span class="ci_ide_c-sharp-project-form-tabs">
+                            @foreach (var panelKind in Enum.GetValues<CSharpProjectFormPanelKind>())
+                            {
+                                <button class="ci_ide_panel-tab ci_button ci_tab @GetIsActiveCssClassString(panelKind)"
+                                @onclick="() => _viewModel.ActivePanelKind = panelKind">
+
+                                    @switch (panelKind)
+                                    {
+                                        case CSharpProjectFormPanelKind.Graphical:
+                                            @: Graphically
+                                            break;
+                                        case CSharpProjectFormPanelKind.Manual:
+                                            @: Manually
+                                            break;
+                                    }
+                                </button>
+                            }
+                        </span>
+                    </div>
+
+                    <div class="ci_ide_c-sharp-project-form-sticky-right-side">
+                        @if (_viewModel.ActivePanelKind == CSharpProjectFormPanelKind.Graphical)
+                        {
+                            <div class="ci_ide_graphical-project-template-search-container">
+                                <input class="ci_ide_input ci_ide_input-text"
+                                       type="text"
+                                       placeholder="Search"
+                                       autocapitalize="none"
+                                       autocorrect="off"
+                                       autocomplete="off"
+                                       spellcheck="false"
+                                @bind="_viewModel.SearchInput"
+                                @bind:event="oninput" />
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="ci_ide_form-value">
+                    <div class="ci_ide_c-sharp-project-form-panel">
+                        @if (_viewModel.ActivePanelKind == CSharpProjectFormPanelKind.Graphical)
+                        {
+                            <div class="ci_ide_graphical-project-template-inputs">
+                                @if (_viewModel.IsReadingProjectTemplates)
+                                {
+                                    <div>
+                                        Reading project templates
+                                        @IconLoadingFragment.Render(new IconDriver(appOptionsState.Options.IconSizeInPixels, appOptionsState.Options.IconSizeInPixels))
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="ci_ide_graphical-project-template-container">
+                                        @{
+                                            var filteredProjectTemplateList = _viewModel.ProjectTemplateList;
+                                            var localSearchInput = _viewModel.SearchInput;
+
+                                            if (!string.IsNullOrWhiteSpace(localSearchInput))
+                                            {
+                                                filteredProjectTemplateList = _viewModel.ProjectTemplateList.Where(pt =>
+                                                pt.TemplateName!.Contains(localSearchInput, StringComparison.InvariantCultureIgnoreCase) ||
+                                                pt.ShortName!.Contains(localSearchInput, StringComparison.InvariantCultureIgnoreCase) ||
+                                                pt.Language!.Contains(localSearchInput, StringComparison.InvariantCultureIgnoreCase) ||
+                                                pt.Tags!.Contains(localSearchInput, StringComparison.InvariantCultureIgnoreCase))
+                                                .ToList();
+                                            }
+
+                                            foreach (var projectTemplate in filteredProjectTemplateList)
+                                            {
+                                                <ProjectTemplateDisplay ProjectTemplate="projectTemplate"
+                                                                        ShortNameOfSelectedProjectTemplate="@_viewModel.ProjectTemplateShortNameValue"
+                                                                        OnProjectTemplateSelectedEventCallback="pt => _viewModel.ProjectTemplateShortNameValue = pt.ShortName!" />
+                                            }
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (_viewModel.ActivePanelKind == CSharpProjectFormPanelKind.Manual)
+                        {
+                            <div class="ci_ide_manual-project-template-inputs">
+                                <div class="ci_ide_form-group">
+                                    <div class="ci_ide_form-label">
+                                        Template name:
+                                    </div>
+
+                                    <div class="ci_ide_form-value">
+                                        <input class="ci_ide_input ci_ide_input-text"
+                                               style="height: 2em;"
+                                               placeholder="Template name"
+                                        @bind="_viewModel.ProjectTemplateShortNameValue"
+                                        @bind:event="oninput" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ci_ide_c-sharp-project-form-bottom-inputs">
+            <div class="ci_ide_form-group">
+                <div class="ci_ide_form-label">
+                    Directory:
+                </div>
+
+                <div class="ci_ide_form-value"
+                     style="display: flex;">
+
+                    <input class="ci_ide_input ci_ide_input-text"
+                           style="height: 2em;"
+                           placeholder="Parent directory"
+                    @bind="_viewModel.ParentDirectoryNameValue"
+                    @bind:event="oninput" />
+
+                    <button class="ci_button"
+                            @onclick='() => RequestInputFileForParentDirectory("Directory for new C# Project")'>
+                        @IconRenderer.Render(IconKind.Folder, DotNetService.CommonService.Options_IconSizeCssValue, DotNetService.CommonService.Options_IconSizeCssValue)
+                    </button>
+                </div>
+            </div>
+
+            <div class="ci_ide_form-group">
+                <div class="ci_ide_form-label">
+                    Optional parameters:
+                </div>
+
+                <div class="ci_ide_form-value">
+                    <input class="ci_ide_input ci_ide_input-text"
+                           style="height: 2em;"
+                           placeholder="Optional parameters"
+                    @bind="_viewModel.OptionalParametersValue"
+                    @bind:event="oninput" />
+                </div>
+            </div>
+        </div>
+
+        <div class="ci_ide_form-output-container">
+            <div class="ci_ide_form-output-entry">
+                <span class="ci_ide_form-output-entry-label">
+                    Project&nbsp;Name:
+                </span>
+                <span class="ci_ide_form-output-entry-value">
+                    <em class="ci_em">@_viewModel.CSharpProjectNameDisplay</em>
+                    .csproj
+                </span>
+            </div>
+
+            <div class="ci_ide_form-output-entry">
+                <span class="ci_ide_form-output-entry-label">
+                    Template&nbsp;Name:
+                </span>
+                <span class="ci_ide_form-output-entry-value">
+                    <em class="ci_em">@_viewModel.ProjectTemplateShortNameDisplay</em>
+                </span>
+            </div>
+
+            <div class="ci_ide_form-output-entry">
+                <span class="ci_ide_form-output-entry-label">
+                    Optional&nbsp;Parameters:
+                </span>
+                <span class="ci_ide_form-output-entry-value">
+                    <em class="ci_em">@_viewModel.OptionalParametersDisplay</em>
+                </span>
+            </div>
+
+            <div class="ci_ide_form-output-entry">
+                <span class="ci_ide_form-output-entry-label">
+                    Directory&nbsp;Absolute&nbsp;File&nbsp;Path:
+                </span>
+                <span class="ci_ide_form-output-entry-value">
+                    <em class="ci_em">@_viewModel.ParentDirectoryNameDisplay</em>
+                </span>
+            </div>
+        </div>
+
+        <div class="ci_ide_c-sharp-project-form-submit-section">
+            <div class="ci_ide_c-sharp-project-form-command-section">
+                Command:
+                <div>
+                    <em class="ci_em">
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        @_viewModel.FormattedNewCSharpProjectCommandValue
+                        &nbsp;\
+                    </em>
+
+                    <br />
+
+                    <em class="ci_em">
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        @_viewModel.FormattedAddExistingProjectToSolutionCommandValue
+                    </em>
+                </div>
+            </div>
+
+            <button class="ci_button"
+            @onclick="StartNewCSharpProjectCommandOnClick">
+                Run
+            </button>
+        </div>
+    }
+</div>

@@ -1,0 +1,201 @@
+@using Clair.Common.RazorLib.Installations.Models
+@using Clair.Common.RazorLib.Keys.Models
+@using Clair.Common.RazorLib.Dimensions;
+@using Clair.Common.RazorLib.Dimensions.Models
+@using Clair.TextEditor.RazorLib.Keymaps.Models;
+@using Clair.TextEditor.RazorLib.Cursors.Models
+@using Clair.TextEditor.RazorLib.Lines.Models;
+@using Clair.TextEditor.RazorLib.Options.Models;
+@using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals
+@using Clair.TextEditor.RazorLib.TextEditors.Models;
+@using Clair.TextEditor.RazorLib.TextEditors.Models.Internals
+@using Clair.TextEditor.RazorLib.Decorations.Models
+@using Clair.TextEditor.RazorLib.Lexers.Models
+
+<div id="@_componentData.RowSectionElementId"
+     style="@_componentData.PersonalWrapperCssStyle"
+     class="@_componentData.PersonalWrapperCssClass"
+     tabindex="-1">
+    
+    @{
+        var virtualizationResult = _componentData.Virtualization;
+    }
+    
+	<div class="ci_te_virtualization-boundary-display"
+		 style="@virtualizationResult.BothVirtualizationBoundaryStyleCssString">
+	</div>
+    
+    @if (virtualizationResult.IsValid)
+    {
+    	var presentationLayerGroupSpan = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(virtualizationResult.PresentationLayerGroupList);
+        var presentationLayerStyleSpan = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(virtualizationResult.PresentationLayerStyleList);
+
+        var firstPresentationLayerGroupSpan = presentationLayerGroupSpan.Slice(
+            virtualizationResult.FirstPresentationLayerGroupStartInclusiveIndex,
+            virtualizationResult.FirstPresentationLayerGroupEndExclusiveIndex - virtualizationResult.FirstPresentationLayerGroupStartInclusiveIndex);
+
+        foreach (var group in firstPresentationLayerGroupSpan)
+        {
+            var firstPresentationLayerStyleSpan = presentationLayerStyleSpan.Slice(
+                group.StartInclusiveIndex,
+                group.EndExclusiveIndex - group.StartInclusiveIndex);
+        
+            <div class="@group.CssClassString">
+                @foreach (var styleString in firstPresentationLayerStyleSpan)
+                {
+                    <div style="@styleString">
+                    </div>
+                }
+			</div>
+        }
+		
+		<div class="ci_te_text-selection-group">
+		    @for (var i = 0; i < virtualizationResult.SelectionStyleList.Count; i++)
+	        {
+				<div style="@virtualizationResult.SelectionStyleList[i]">
+				</div>
+	        }
+		</div>
+		
+		var lastPresentationLayerGroupSpan = presentationLayerGroupSpan.Slice(
+            virtualizationResult.LastPresentationLayerGroupStartInclusiveIndex,
+            virtualizationResult.LastPresentationLayerGroupEndExclusiveIndex - virtualizationResult.LastPresentationLayerGroupStartInclusiveIndex);
+
+        foreach (var group in lastPresentationLayerGroupSpan)
+        {
+            var lastPresentationLayerStyleSpan = presentationLayerStyleSpan.Slice(
+                group.StartInclusiveIndex,
+                group.EndExclusiveIndex - group.StartInclusiveIndex);
+        
+            <div class="@group.CssClassString">
+                @foreach (var styleString in lastPresentationLayerStyleSpan)
+                {
+                    <div style="@styleString">
+                    </div>
+                }
+			</div>
+        }
+    
+    	if (ViewModelDisplayOptions.IncludeGutterComponent)
+    	{
+    	    <div class="ci_te_gutter-section"
+    			 style="@virtualizationResult.Gutter_WidthCssStyle">
+    			 
+    			<div class="ci_te_gutter-column"
+    			     style="@virtualizationResult.GutterColumnTopCss">
+    			</div>
+    			 
+	    		@for (int virtualizationResultIndex = 0;
+	    			  virtualizationResultIndex < virtualizationResult.Count;
+	    			  virtualizationResultIndex++)
+			    {
+			        <div style="@virtualizationResult.EntryList[virtualizationResultIndex].GutterCssStyle">
+			            @(virtualizationResult.EntryList[virtualizationResultIndex].LineNumberString)
+			        </div>
+		    	}
+			</div>
+    	}
+    	
+    	<div class="ci_te_text-section">
+    	
+    	    @{
+    	        var entireSpan = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(virtualizationResult.VirtualizationSpanList);
+    	    }
+    	
+	    	@for (int virtualizationResultIndex = 0;
+	    		  virtualizationResultIndex < virtualizationResult.Count;
+	    		  virtualizationResultIndex++)
+		    {
+		    	<div style="@virtualizationResult.EntryList[virtualizationResultIndex].LineCssStyle">
+				
+					@*
+						'!= 0' because the struct's int property will default to '0',
+						and if there is no text then the property is unchanged from its default value.
+					*@
+					@if (virtualizationResult.EntryList[virtualizationResultIndex].VirtualizationSpan_EndExclusiveIndex != 0)
+					{
+					    var smallSpan = entireSpan.Slice(
+					        virtualizationResult.EntryList[virtualizationResultIndex].VirtualizationSpan_StartInclusiveIndex,
+					        virtualizationResult.EntryList[virtualizationResultIndex].VirtualizationSpan_EndExclusiveIndex -
+					            virtualizationResult.EntryList[virtualizationResultIndex].VirtualizationSpan_StartInclusiveIndex);
+					
+						foreach (var virtualizationSpan in smallSpan)
+						{
+							<span class="@virtualizationSpan.CssClass">
+					            @(virtualizationSpan.MarkupStringText)
+					        </span>
+					    }
+					}
+					
+					@*
+					(2025-06-29) I don't feel like dealing with this right now.
+					
+					@if (GlobalShowNewlines && virtualizationResult.EntryList[virtualizationResultIndex].LineIndex < virtualizationResult.Model.LineCount)
+					{
+						// amountOfLeftInCharacterWidthUnits <= lengthOfLine
+						if (virtualizationResult.EntryList[virtualizationResultIndex].LeftInPixels / virtualizationResult.ViewModel.PersistentState.CharAndLineMeasurements.CharacterWidth <=
+							virtualizationResult.Model.GetLineLength(virtualizationResult.EntryList[virtualizationResultIndex].LineIndex, true))
+						{
+						    <span class="ci_te_newline">
+						        @virtualizationResult.Model.LineEndList[virtualizationResult.EntryList[virtualizationResultIndex].LineIndex].LineEndKind.AsCharactersHtmlEscaped()
+						    </span>
+						}
+					}
+					*@
+				</div>
+		    }
+	    </div>
+	    
+	    <textarea id="@_componentData.PrimaryCursorContentId"
+				  tabindex="@_componentData.RenderBatchPersistentState.ViewModelDisplayOptions.TabIndex"
+				  class="@_componentData.BlinkAnimationCssClass"
+				  style="@virtualizationResult.CursorCssStyle">
+		</textarea>
+						
+		<div class="@CaretRowCssClass"
+			 style="@virtualizationResult.CaretRowCssStyle">
+		</div>
+	}
+	else
+    {
+    	if (virtualizationResult.Model is null)
+	    {
+	        <div>The @nameof(TextEditorModel) was null</div>
+	    }
+	    else if (virtualizationResult.ViewModel is null)
+	    {
+	        <div>The @nameof(TextEditorViewModel) was null</div>
+	    }
+	    else if (_componentData?.RenderBatchPersistentState?.TextEditorOptions is null)
+	    {
+	        <div>The @nameof(TextEditorOptions) was null</div>
+	    }
+    }
+    
+    <div class="ci_te_scrollbar-section" style="@virtualizationResult.ScrollbarSection_LeftCssStyle">
+		
+		<div class="ci_te_scrollbar ci_te_scrollbar-horizontal"
+		     id="@HORIZONTAL_ScrollbarElementId"
+		     style="@virtualizationResult.HORIZONTAL_ScrollbarCssStyle">
+		    
+		    <div class="ci_te_scrollbar-slider"
+		         id="@HORIZONTAL_ScrollbarSliderElementId"
+		         style="@virtualizationResult.HORIZONTAL_SliderCssStyle">
+		    </div>
+		</div><!--
+		
+		--><div class="ci_te_scrollbar ci_te_scrollbar-vertical"
+		        id="@VERTICAL_ScrollbarElementId">
+		         
+		    <div class="ci_te_scrollbar-slider"
+		         id="@VERTICAL_ScrollbarSliderElementId"
+		         style="@virtualizationResult.VERTICAL_SliderCssStyle">
+		    </div>
+		</div><!--
+	    
+		--><div class="ci_te_scrollbar ci_te_scrollbar-connector"
+		        id="@CONNECTOR_ScrollbarElementId">
+		</div>
+	</div>
+</div>
+

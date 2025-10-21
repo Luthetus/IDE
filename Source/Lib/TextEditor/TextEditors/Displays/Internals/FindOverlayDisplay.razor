@@ -1,0 +1,157 @@
+@using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
+
+@{
+    var renderBatchLocal = GetVirtualizationResult();
+    var componentDataLocal = GetComponentData();
+}
+
+@if (componentDataLocal is not null &&
+     renderBatchLocal.IsValid &&
+	 renderBatchLocal.ViewModel.PersistentState.ShowFindOverlay)
+{
+	<div class="ci_te_find-overlay"
+         @onmousedown:stopPropagation="true"
+         @onmousemove:stopPropagation="true"
+         @ondblclick:stopPropagation="true"
+         @onclick:stopPropagation="true"
+         @oncontextmenu:stopPropagation="true"
+         @onkeydown="HandleOnKeyDownAsync"
+         @onkeydown:stopPropagation="true">
+
+        <div class="ci_te_find-overlay-top-row"
+             style="display: flex;">
+             
+        	@*
+        	Comment out the find and replace (2025-04-12)
+        	
+        	<button class="ci_button"
+                    style="margin-left: 5px;"
+                    @onclick="ToggleShowReplace"
+                    @onclick:stopPropagation="true"
+                    @onmousedown:stopPropagation="true"
+                    @onmousemove:stopPropagation="true"
+                    @ondblclick:stopPropagation="true"
+                    @oncontextmenu:stopPropagation="true"
+                    @onkeydown:stopPropagation="true">
+                @if (renderBatchLocal.ViewModel.ShowReplaceButtonInFindOverlay)
+                {
+                	@IconChevronDownFragment.Render(iconDriver)
+                }
+                else
+                {
+                	@IconChevronRightFragment.Render(iconDriver)
+                }
+            </button>
+            *@
+        
+            <input @bind="InputValue"
+                   @bind:event="oninput"
+                   id="@componentDataLocal.RenderBatchPersistentState.ComponentData.FindOverlayId"
+                   class="ci_ide_input ci_ide_input-text"
+                   placeholder="Find..." />
+         </div>
+         
+        @*
+        Comment out the find and replace (2025-04-12)
+        
+        @if (renderBatchLocal.ViewModel.ShowReplaceButtonInFindOverlay)
+        {
+	        <div class="ci_te_find-overlay-replace-row">
+	        	<input @bind="InputReplace"
+                       @bind:event="oninput"
+                       class="ci_ide_input ci_ide_input-text"
+                       placeholder="Replace..." />
+
+	        	<button class="ci_button"
+                        style="margin-left: 5px;"
+                        @onclick="ReplaceCurrent"
+                        @onclick:stopPropagation="true"
+                        @onmousedown:stopPropagation="true"
+                        @onmousemove:stopPropagation="true"
+                        @ondblclick:stopPropagation="true"
+                        @oncontextmenu:stopPropagation="true"
+                        @onkeydown:stopPropagation="true">
+                    @IconUnlockFragment.Render(iconDriver)
+                </button>
+                
+                <button class="ci_button"
+                        style="margin-left: 5px;"
+                        @onclick="ReplaceAll"
+                        @onclick:stopPropagation="true"
+                        @onmousedown:stopPropagation="true"
+                        @onmousemove:stopPropagation="true"
+                        @ondblclick:stopPropagation="true"
+                        @oncontextmenu:stopPropagation="true"
+                        @onkeydown:stopPropagation="true">
+                    @IconUnlockFragment.Render(iconDriver)
+                </button>
+	        </div>
+        }
+        *@
+
+        <div class="ci_te_find-overlay-bottom-row">
+            @{
+                var findOverlayPresentationModel = renderBatchLocal.Model!.PresentationModelList.FirstOrDefault(
+                    x => x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey);
+
+                var completedCalculation = findOverlayPresentationModel?.CompletedCalculation;
+            }
+
+            @if (findOverlayPresentationModel is null)
+            {
+                <div title="@nameof(findOverlayPresentationModel) is null">
+                    null
+                </div>
+            }
+            else if (completedCalculation is null)
+            {
+                <div title="@nameof(completedCalculation) is null">
+                    null
+                </div>
+            }
+            else
+            {
+                <div style="display: flex;">
+
+                    @if (_activeIndexMatchedTextSpan is null)
+                    {
+                        @: ?
+                    }
+                    else
+                    {
+                        <text>@(_activeIndexMatchedTextSpan.Value + 1)</text>
+                    }
+
+                    of
+
+                    @completedCalculation.TextSpanList.Count
+
+                    <button class="ci_button"
+                            style="margin-left: 5px;"
+                            @onclick="MoveActiveIndexMatchedTextSpanDown"
+                            @onclick:stopPropagation="true"
+                            @onmousedown:stopPropagation="true"
+                            @onmousemove:stopPropagation="true"
+                            @ondblclick:stopPropagation="true"
+                            @oncontextmenu:stopPropagation="true"
+                            @onkeydown:stopPropagation="true">
+                        @IconRenderer.Render(IconKind.ArrowDown, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+                    </button>
+
+					<button class="ci_button"
+                            style="margin-left: 5px;"
+                            @onclick="MoveActiveIndexMatchedTextSpanUp"
+                            @onclick:stopPropagation="true"
+                            @onmousedown:stopPropagation="true"
+                            @onmousemove:stopPropagation="true"
+                            @ondblclick:stopPropagation="true"
+                            @oncontextmenu:stopPropagation="true"
+                            @onkeydown:stopPropagation="true">
+                        @IconRenderer.Render(IconKind.ArrowUp, TextEditorService.CommonService.Options_IconSizeCssValue, TextEditorService.CommonService.Options_IconSizeCssValue)
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+}
+

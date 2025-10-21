@@ -1,0 +1,76 @@
+<div class="ci_progress-bar">
+	@{
+		var localProgressBarModel = ProgressBarModel;
+		var localDecimalPercentProgress = (int)Math.Ceiling(localProgressBarModel.DecimalPercentProgress * 100);
+		var percentageCompleteString = $"{localDecimalPercentProgress}%";
+	}
+    
+    <div class="ci_progress-bar-time-elapsed">
+        @($"{localProgressBarModel.GetTimeElapsed().TotalSeconds:N3}") seconds
+	</div>
+    
+    <div class="ci_progress-bar" style="display: flex;">
+    	<div class="ci_progress-bar-fill"
+	         style="@_progressBarFillCssStyle">
+	
+			@{
+			    CommonService.UiStringBuilder.Clear();
+		        CommonService.UiStringBuilder.Append("width: ");
+		        CommonService.UiStringBuilder.Append(percentageCompleteString);
+		        CommonService.UiStringBuilder.Append(";");
+			}
+			<div class="ci_progress-bar-fill-slider"
+				 style="@CommonService.UiStringBuilder.ToString()">
+			</div>
+	
+			@{
+			    CommonService.UiStringBuilder.Clear();
+		        CommonService.UiStringBuilder.Append("left: calc(50% - ");
+		        CommonService.UiStringBuilder.Append(percentageCompleteString.Length);
+		        CommonService.UiStringBuilder.Append("ch);");
+			}
+			<div class="ci_progress-bar-fill-text"
+				 style="@CommonService.UiStringBuilder.ToString()">
+				@percentageCompleteString
+			</div>
+		</div>
+		
+		@if (localProgressBarModel.IsCancellable)
+		{
+			<div style="@_cancelButtonContainingDivCssStyle">
+				<button class="ci_button"
+						style="width: 100%; height: 100%;"
+					    disabled=@(localProgressBarModel.IsCancelled || localProgressBarModel.IntentToCancel || localProgressBarModel.IsDisposed)
+					    @onclick="localProgressBarModel.Cancel">
+					
+					@if (localProgressBarModel.IsCancelled)
+					{
+						<text>IsCancelled</text>
+					}
+					else if (localProgressBarModel.IntentToCancel)
+					{
+						<text>Cancelling</text>
+					}
+					else if (localProgressBarModel.IsDisposed)
+					{
+						<text>Disposed</text>
+					}
+					else
+					{
+						<text>Cancel</text>
+					}
+				</button>
+			</div>
+		}
+    </div>
+
+	@if (!string.IsNullOrWhiteSpace(localProgressBarModel.Message))
+	{
+		<div class="ci_progress-bar-message">@localProgressBarModel.Message</div>
+	}
+
+	@if (!string.IsNullOrWhiteSpace(localProgressBarModel.SecondaryMessage))
+	{
+		<div class="ci_progress-bar-message-secondary">@localProgressBarModel.SecondaryMessage</div>
+	}
+</div>

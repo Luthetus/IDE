@@ -767,8 +767,14 @@ public partial class DotNetService
         try
         {
             var localStartupControlState = IdeService.GetIdeStartupControlState();
-        	originallyActiveStartupControl = localStartupControlState.StartupControlList.FirstOrDefault(
-        	    x => x.StartupProjectAbsolutePath.Value == localStartupControlState.ActiveStartupProjectAbsolutePathValue);
+            foreach (var x in localStartupControlState.StartupControlList)
+            {
+                if (x.StartupProjectAbsolutePath.Value == localStartupControlState.ActiveStartupProjectAbsolutePathValue)
+                {
+                    originallyActiveStartupControl = x;
+                    break;
+                }
+            }
         
             RegisterStartupControl_Range(dotNetSolutionModel.DotNetProjectList);
 

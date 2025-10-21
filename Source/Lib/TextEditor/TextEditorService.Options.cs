@@ -72,8 +72,15 @@ public partial class TextEditorService
     
     public void HandleThemeChange()
     {
-        var usingThemeCss = CommonService.GetThemeState().ThemeList
-            .FirstOrDefault(x => x.Key == Options_GetTextEditorOptionsState().Options.CommonOptions.ThemeKey);
+        ThemeRecord usingThemeCss = default;
+        foreach (var theme in CommonService.GetThemeState().ThemeList)
+        {
+            if (theme.Key == Options_GetTextEditorOptionsState().Options.CommonOptions.ThemeKey)
+            {
+                usingThemeCss = theme;
+                break;
+            }
+        }
         var usingThemeCssClassString = usingThemeCss.IsDefault()
             ? CommonFacts.VisualStudioDarkThemeClone.CssClassString
             : usingThemeCss.CssClassString;
@@ -330,16 +337,26 @@ public partial class TextEditorService
         }
         
         var inState = Options_GetTextEditorOptionsState();
-        
-        var matchedTheme = CommonService.GetThemeState().ThemeList.FirstOrDefault(x => x.Key == themeKey);
-        
+
+        ThemeRecord matchedTheme = default;
+        foreach (var theme in CommonService.GetThemeState().ThemeList)
+        {
+            if (theme.Key == themeKey)
+            {
+                matchedTheme = theme;
+                break;
+            }
+        }
+        if (matchedTheme.IsDefault())
+            matchedTheme = CommonFacts.VisualStudioDarkThemeClone;
+
         Options_textEditorOptionsState = new TextEditorOptionsState
         {
             Options = inState.Options with
             {
                 CommonOptions = inState.Options.CommonOptions with
                 {
-                    ThemeKey = matchedTheme.IsDefault() ? CommonFacts.VisualStudioDarkThemeClone.Key : matchedTheme.Key,
+                    ThemeKey = matchedTheme.Key,
                     FontSizeInPixels = ValidateFontSize(fontSizeInPixels),
                     
                 },

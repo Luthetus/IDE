@@ -60,10 +60,16 @@ public partial class CommonService
     public string TreeView_GetActiveNodeElementId(Key<TreeViewContainer> containerKey)
     {
         var inState = GetTreeViewState();
-        
-        var inContainer = inState.ContainerList.FirstOrDefault(
-            x => x.Key == containerKey);
-            
+
+        TreeViewContainer? inContainer = null;
+        foreach (var c in inState.ContainerList)
+        {
+            if (c.Key == containerKey)
+            {
+                inContainer = c;
+                break;
+            }
+        }
         if (inContainer is not null)
             return inContainer.ActiveNodeElementId;
         
@@ -73,9 +79,16 @@ public partial class CommonService
     public void TreeView_RegisterContainerAction(TreeViewContainer container, bool shouldFireStateChangedEvent = true)
     {
         var inState = GetTreeViewState();
-    
-        var inContainer = inState.ContainerList.FirstOrDefault(
-            x => x.Key == container.Key);
+
+        TreeViewContainer? inContainer = null;
+        foreach (var c in inState.ContainerList)
+        {
+            if (c.Key == container.Key)
+            {
+                inContainer = c;
+                break;
+            }
+        }
 
         if (inContainer is not null)
         {
@@ -146,10 +159,16 @@ public partial class CommonService
     public void TreeView_AddChildNodeAction(Key<TreeViewContainer> containerKey, TreeViewNoType parentNode, TreeViewNoType childNode)
     {
         var inState = GetTreeViewState();
-    
-        var inContainer = inState.ContainerList.FirstOrDefault(
-            x => x.Key == containerKey);
 
+        TreeViewContainer? inContainer = null;
+        foreach (var c in inState.ContainerList)
+        {
+            if (c.Key == containerKey)
+            {
+                inContainer = c;
+                break;
+            }
+        }
         if (inContainer is null)
         {
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);

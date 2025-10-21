@@ -254,10 +254,16 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             string absolutePathString,
             CancellationToken cancellationToken = default)
         {
-            var existingFile = _inMemoryFileSystemProvider._files.FirstOrDefault(f =>
-                f.AbsolutePath.Value == absolutePathString &&
-                !f.IsDirectory);
-
+            InMemoryFile existingFile = default;
+            foreach (var f in _inMemoryFileSystemProvider._files)
+            {
+                if (f.AbsolutePath.Value == absolutePathString &&
+                    !f.IsDirectory)
+                {
+                    existingFile = f;
+                    break;
+                }
+            }
             if (existingFile.Data is null)
                 return Task.FromResult(default(DateTime));
 
@@ -268,10 +274,16 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             string absolutePathString,
             CancellationToken cancellationToken = default)
         {
-            var existingFile = _inMemoryFileSystemProvider._files.FirstOrDefault(f =>
-                f.AbsolutePath.Value == absolutePathString &&
-                !f.IsDirectory);
-
+            InMemoryFile existingFile = default;
+            foreach (var f in _inMemoryFileSystemProvider._files)
+            {
+                if (f.AbsolutePath.Value == absolutePathString &&
+                    !f.IsDirectory)
+                {
+                    existingFile = f;
+                    break;
+                }
+            }
             if (existingFile.Data is null)
                 throw new ClairCommonException($"File with path: '{absolutePathString}' was not found.");
 
@@ -280,10 +292,16 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
         
         public string UnsafeReadAllText(string absolutePathString)
         {
-            var existingFile = _inMemoryFileSystemProvider._files.FirstOrDefault(f =>
-                f.AbsolutePath.Value == absolutePathString &&
-                !f.IsDirectory);
-
+            InMemoryFile existingFile = default;
+            foreach (var f in _inMemoryFileSystemProvider._files)
+            {
+                if (f.AbsolutePath.Value == absolutePathString &&
+                    !f.IsDirectory)
+                {
+                    existingFile = f;
+                    break;
+                }
+            }
             if (existingFile.Data is null)
                 throw new ClairCommonException($"File with path: '{absolutePathString}' was not found.");
 

@@ -1,0 +1,83 @@
+/* _content/Clair.Ide.RazorLib/CodeSearches/Displays/CodeSearchDisplay.razor.rz.scp.css */
+.ci_ide_find-all[b-74d2igzijt] {
+    height: 100%;
+}
+
+.ci_ide_find-all-top-content[b-74d2igzijt] {
+    overflow: auto;
+}
+
+.ci_ide_find-all-filter-list[b-74d2igzijt] {
+    display: flex;
+}
+
+.ci_ide_find-all-filter-list > .ci_ide_find-all-filter[b-74d2igzijt] {
+    margin-right: 5px;
+}
+
+.ci_ide_find-all-filter[b-74d2igzijt] {
+    background-color: var(--ci_active-no-focus-background-color);
+}
+
+    .ci_ide_find-all-filter.ci_active[b-74d2igzijt] {
+        background-color: var(--ci_active-with-focus-background-color);
+    }
+/* _content/Clair.Ide.RazorLib/CommandBars/Displays/CommandBarDisplay.razor.rz.scp.css */
+.ci_ide_command-bar[b-q8fc997xlh] {
+	width: 100%;
+	height: 100%;
+}
+/* _content/Clair.Ide.RazorLib/Settings/Displays/SettingsDisplay.razor.rz.scp.css */
+.ci_ide_settings[b-2eq8lenl2s] {
+    padding: 5px;
+}
+
+.ci_ide_settings-scope-border[b-2eq8lenl2s] {
+    padding: 0 !important;
+    background-color: var(--ci_primary-border-color);
+    opacity: 0.7;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    margin-left: 6px;
+}
+
+.ci_ide_settings-scope-title[b-2eq8lenl2s] {
+    color: var(--ci_primary-emphasis-foreground-color);
+}
+
+.ci_ide_settings-scope-body[b-2eq8lenl2s] {
+    position: relative;
+    padding-left: 12px;
+}
+
+.ci_ide_settings-scope-body > div[b-2eq8lenl2s] {
+    padding: 7px 5px;
+    margin-bottom: 7px;
+}
+/* _content/Clair.Ide.RazorLib/Shareds/Displays/Internals/IdeInfoDisplay.razor.rz.scp.css */
+table[b-bhl20no5po], th[b-bhl20no5po], td[b-bhl20no5po] {
+	border: 1px solid var(--ci_primary-border-color);
+	margin-top: 8px;
+	padding: 5px;
+}
+
+pre[b-bhl20no5po] {
+	 background-color: var(--ci_te_body-background-color);
+	 margin-top: 5px;
+	 padding: 5px;
+}
+/* _content/Clair.Ide.RazorLib/Terminals/Displays/TerminalGroupDisplay.razor.rz.scp.css */
+.ci_section-body[b-6e095la6ny] {
+    width: 100%;
+    display: flex;
+}
+/* _content/Clair.Ide.RazorLib/Terminals/Displays/TerminalOutputTextEditorExpandDisplay.razor.rz.scp.css */
+.ci_ide_new-terminal-panel[b-xlaz0mngy6] {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	font-family: monospace;
+}

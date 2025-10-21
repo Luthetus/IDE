@@ -1,0 +1,155 @@
+/* _content/Clair.Common/Drags/Displays/DragInitializer.razor.rz.scp.css */
+.ci_drag-initializer[b-2jb5nvs8ga] {
+    z-index: var(--ci_drag-initializer-z-index);
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.ci_dropzone[b-2jb5nvs8ga] {
+	background-color: var(--ci_ide_context-boundary-overlay-background-color);
+    opacity: 0.6;
+    cursor: default;
+}
+
+	.ci_dropzone.ci_active[b-2jb5nvs8ga] {
+        background-color: var(--ci_button-hover-background-color);
+        box-shadow: 0 0 2px var(--ci_primary-overlay-box-shadow-color);
+    }
+
+.ci_dropzone.ci_dropzone-fallback[b-2jb5nvs8ga] {
+	background-color: transparent;
+    box-shadow: none;
+    opacity: 0;
+	cursor: pointer;
+}
+/* _content/Clair.Common/Dropdowns/Displays/DropdownDisplay.razor.rz.scp.css */
+.ci_dropdown[b-v89gzp0ksa] {
+	position: fixed;
+	z-index: var(--ci_dropdown-display-z-index);
+    color: var(--ci_tertiary-foreground-color);
+    background-color: var(--ci_tertiary-background-color);
+    box-shadow: 0 0 var(--ci_dropdown-display-default-background-box-shadow-blur-radius) var(--ci_primary-box-shadow-color);
+}
+/* _content/Clair.Common/FileSystems/Displays/PermissionsDisplay.razor.rz.scp.css */
+.ci_permissions-body[b-mlvikzr6eu] {
+    margin: 10px;
+    padding: 10px;
+    border-left: 1px solid var(--ci_primary-border-color);
+}
+/* _content/Clair.Common/Icons/Displays/IconLoadingFragment.razor.rz.scp.css */
+.lds-dual-ring[b-dqeseky352] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lds-dual-ring[b-dqeseky352]:after {
+    content: " ";
+    display: block;
+    width: 1em;
+    height: 1em;
+    margin: .2em;
+    border-radius: 50%;
+    border: .15em solid var(--ci_primary-font-color);
+    border-color: var(--ci_primary-font-color) transparent var(--ci_primary-font-color) transparent;
+    animation: lds-dual-ring-b-dqeseky352 1.2s linear infinite;
+}
+
+@keyframes lds-dual-ring-b-dqeseky352 {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+/* _content/Clair.Common/Notifications/Displays/NotificationDisplay.razor.rz.scp.css */
+.ci_notification[b-tnh5etnnvz] {
+    position: fixed;
+    z-index: var(--ci_notification-display-z-index);
+    color: var(--ci_secondary-foreground-color);
+    background-color: var(--ci_notification-display-background-color);
+    box-shadow: 0 0 var(--ci_notification-display-box-shadow-blur-radius) var(--ci_primary-box-shadow-color);
+}
+
+.ci_notification-toolbar[b-tnh5etnnvz] {
+    height: var(--ci_notification-display-toolbar-height);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--ci_tertiary-foreground-color);
+    background-color: var(--ci_notification-display-toolbar-background-color);
+    cursor: default;
+    padding: var(--ci_notification-toolbar-padding);
+}
+
+.ci_notification-title[b-tnh5etnnvz] {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.ci_error .ci_notification-toolbar[b-tnh5etnnvz] {
+    background-color: var(--ci_error-background-color);
+}
+
+.ci_notification-control-buttons[b-tnh5etnnvz] {
+    display: flex;
+    align-items: center;
+}
+
+.ci_notification-button-entry[b-tnh5etnnvz] {
+    margin-right: var(--ci_notification-button-entry-margin-right);
+    padding: var(--ci_notification-button-entry-padding);
+    display: inline-flex;
+    height: fit-content;
+}
+
+.ci_notification-body[b-tnh5etnnvz] {
+    height: calc(100% - var(--ci_notification-display-toolbar-height));
+    overflow: auto;
+    padding: var(--ci_notification-body-padding);
+}
+/* _content/Clair.Common/Notifications/Displays/NotificationsViewDisplay.razor.rz.scp.css */
+.ci_web_notifications-view-tabs[b-w7m6y5jqv0] {
+    margin-top: 8px;
+    display: flex;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 2px solid var(--ci_primary-border-color);
+}
+
+    .ci_web_notifications-view-tabs .ci_button[b-w7m6y5jqv0] {
+        margin-right: 8px !important;
+    }
+
+.ci_web_notifications-view-tab-entry-count[b-w7m6y5jqv0] {
+    margin: 0 5px;
+}
+/* _content/Clair.Common/OutOfBoundsClicks/Displays/OutOfBoundsClickDisplay.razor.rz.scp.css */
+.ci_out-of-bounds-click-display[b-ujtd8sx2j7] {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+/* _content/Clair.Common/Widgets/Displays/WidgetDisplay.razor.rz.scp.css */
+.ci_widget[b-6cfdfqjr97] {
+	position: fixed;
+	width: 60vw;
+	height: 60vh;
+	left: 20vw;
+	top: 20vh;
+	z-index: var(--ci_widget-display-z-index);
+    color: var(--ci_secondary-foreground-color);
+    background-color: var(--ci_secondary-background-color);
+    box-shadow: 0 0 var(--ci_dialog-display-box-shadow-blur-radius) var(--ci_primary-box-shadow-color);
+}
+    .ci_widget:focus[b-6cfdfqjr97] {
+        outline: 4px solid var(--ci_toggled-on-hover-background-color);
+    }

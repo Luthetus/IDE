@@ -1,0 +1,18 @@
+/* _content/Clair.ExtendCompilerServices/Displays/SymbolDisplay.razor.rz.scp.css */
+.ci_te_syntax-onclick:hover[b-e3ck5wuy4o]::deep {
+	text-decoration: underline;
+	cursor: pointer;
+}
+/* _content/Clair.ExtendCompilerServices/Displays/TextEditorCompilerServiceHeaderDisplay.razor.rz.scp.css */
+.ci_te_compiler-service-header[b-0gzf5svjt7] {
+    padding-left: var(--ci_te_text-editor-header-padding-left);
+    overflow-y: hidden !important;
+    overflow: auto;
+    white-space: nowrap;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ci_te_compiler-service-header-select[b-0gzf5svjt7] {
+	width: 33.3%;
+}

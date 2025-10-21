@@ -23,7 +23,7 @@ public sealed partial class InputTextEditorTheme : ComponentBase, IDisposable
         {
             var foundTheme = themeList.FirstOrDefault(x => x.Key == chosenThemeKeyInt);
 
-            if (foundTheme != default)
+            if (!foundTheme.IsDefault())
                 TextEditorService.Options_SetTheme(foundTheme);
         }
         else

@@ -74,7 +74,7 @@ public partial class TextEditorService
     {
         var usingThemeCss = CommonService.GetThemeState().ThemeList
             .FirstOrDefault(x => x.Key == Options_GetTextEditorOptionsState().Options.CommonOptions.ThemeKey);
-        var usingThemeCssClassString = usingThemeCss == default
+        var usingThemeCssClassString = usingThemeCss.IsDefault()
             ? CommonFacts.VisualStudioDarkThemeClone.CssClassString
             : usingThemeCss.CssClassString;
         ThemeCssClassString = usingThemeCssClassString;
@@ -339,7 +339,7 @@ public partial class TextEditorService
             {
                 CommonOptions = inState.Options.CommonOptions with
                 {
-                    ThemeKey = matchedTheme == default ? CommonFacts.VisualStudioDarkThemeClone.Key : matchedTheme.Key,
+                    ThemeKey = matchedTheme.IsDefault() ? CommonFacts.VisualStudioDarkThemeClone.Key : matchedTheme.Key,
                     FontSizeInPixels = ValidateFontSize(fontSizeInPixels),
                     
                 },

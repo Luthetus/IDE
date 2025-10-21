@@ -78,8 +78,18 @@ public partial class CommonService
     
     private void HandleThemeChange()
     {
-        var usingTheme = GetThemeState().ThemeList.FirstOrDefault(x => x.Key == GetAppOptionsState().Options.ThemeKey);
-        usingTheme = usingTheme == default ? CommonFacts.VisualStudioDarkThemeClone : usingTheme;
+        ThemeRecord usingTheme = default;
+        foreach (var theme in GetThemeState().ThemeList)
+        {
+            if (theme.Key == GetAppOptionsState().Options.ThemeKey)
+            {
+                usingTheme = theme;
+                break;
+            }
+        }
+        if (usingTheme.IsDefault())
+            return;
+        usingTheme = usingTheme.IsDefault() ? CommonFacts.VisualStudioDarkThemeClone : usingTheme;
         
         Options_ThemeCssClassString = usingTheme.CssClassString;
         
@@ -331,7 +341,7 @@ public partial class CommonService
         {
             Options = inState.Options with
             {
-                ThemeKey = matchedTheme == default ? CommonFacts.VisualStudioDarkThemeClone.Key : matchedTheme.Key,
+                ThemeKey = matchedTheme.IsDefault() ? CommonFacts.VisualStudioDarkThemeClone.Key : matchedTheme.Key,
                 FontFamily = ValidateFontFamily(optionsJson.FontFamily),
                 FontSizeInPixels = ValidateFontSize(optionsJson.FontSizeInPixels),
                 ResizeHandleWidthInPixels = ValidateResizeHandleWidth(optionsJson.ResizeHandleWidthInPixels),

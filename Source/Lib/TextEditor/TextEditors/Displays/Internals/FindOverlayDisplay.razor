@@ -1,3 +1,4 @@
+@using Clair.TextEditor.RazorLib.Decorations.Models
 @using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 
 @{
@@ -91,9 +92,15 @@
 
         <div class="ci_te_find-overlay-bottom-row">
             @{
-                var findOverlayPresentationModel = renderBatchLocal.Model!.PresentationModelList.FirstOrDefault(
-                    x => x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey);
-
+                TextEditorPresentationModel? findOverlayPresentationModel = null;
+                foreach (var presentationModel in renderBatchLocal.Model!.PresentationModelList)
+                {
+                    if (presentationModel.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey)
+                    {
+                        findOverlayPresentationModel = presentationModel;
+                        break;
+                    }
+                }
                 var completedCalculation = findOverlayPresentationModel?.CompletedCalculation;
             }
 

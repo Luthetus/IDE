@@ -11,7 +11,7 @@ See [my youtube channel](https://www.youtube.com/@hunterfreeman3496) for 3 years
 
 ## Demo:
 
-https://anxietyandscreaming.github.io/anxietyandscreaming/
+https://luthetus.github.io/IDE
 
 > The demo is an extremely barebones version of the native application.
 

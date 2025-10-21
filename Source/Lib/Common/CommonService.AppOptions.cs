@@ -335,13 +335,23 @@ public partial class CommonService
         
         var inState = GetAppOptionsState();
 
-        var matchedTheme = GetThemeState().ThemeList.FirstOrDefault(x => x.Key == optionsJson.ThemeKey);
-        
+        ThemeRecord matchedTheme = default;
+        foreach (var theme in GetThemeState().ThemeList)
+        {
+            if (theme.Key == optionsJson.ThemeKey)
+            {
+                matchedTheme = theme;
+                break;
+            }
+        }
+        if (matchedTheme.IsDefault())
+            matchedTheme = CommonFacts.VisualStudioDarkThemeClone;
+
         _appOptionsState = inState with
         {
             Options = inState.Options with
             {
-                ThemeKey = matchedTheme.IsDefault() ? CommonFacts.VisualStudioDarkThemeClone.Key : matchedTheme.Key,
+                ThemeKey = matchedTheme.Key,
                 FontFamily = ValidateFontFamily(optionsJson.FontFamily),
                 FontSizeInPixels = ValidateFontSize(optionsJson.FontSizeInPixels),
                 ResizeHandleWidthInPixels = ValidateResizeHandleWidth(optionsJson.ResizeHandleWidthInPixels),

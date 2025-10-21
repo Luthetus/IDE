@@ -12,15 +12,29 @@ public partial class CommonService
     
     public TreeViewState GetTreeViewState() => _treeViewState;
     
-    public TreeViewContainer GetTreeViewContainer(Key<TreeViewContainer> containerKey) =>
-        _treeViewState.ContainerList.FirstOrDefault(x => x.Key == containerKey);
+    public TreeViewContainer? GetTreeViewContainer(Key<TreeViewContainer> containerKey)
+    {
+        foreach (var container in _treeViewState.ContainerList)
+        {
+            if (container.Key == containerKey)
+                return container;
+        }
+        return null;
+    }
 
     public bool TryGetTreeViewContainer(Key<TreeViewContainer> containerKey, out TreeViewContainer? container)
     {
-        container = GetTreeViewState().ContainerList.FirstOrDefault(
-            x => x.Key == containerKey);
+        foreach (var c in GetTreeViewState().ContainerList)
+        {
+            if (c.Key == containerKey)
+            {
+                container = c;
+                return true;
+            }    
+        }
 
-        return container is not null;
+        container = null;
+        return false;
     }
 
     public void TreeView_MoveRight(

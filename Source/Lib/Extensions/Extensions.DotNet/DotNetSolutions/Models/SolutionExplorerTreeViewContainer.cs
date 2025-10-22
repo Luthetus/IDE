@@ -2,14 +2,16 @@ using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 
-namespace Clair.TextEditor.RazorLib.FindAlls.Models;
+namespace Clair.Extensions.DotNet.DotNetSolutions.Models;
 
-public class FindAllTreeViewContainer : TreeViewContainer
+public class SolutionExplorerTreeViewContainer : TreeViewContainer
 {
-    public FindAllTreeViewContainer(CommonService commonService)
+    // DotNetSolutionState.TreeViewSolutionExplorerStateKey
+    
+    public SolutionExplorerTreeViewContainer(CommonService commonService)
         : base(commonService)
     {
-        Key = Key<TreeViewContainer>.NewKey();
+        Key = DotNetSolutionState.TreeViewSolutionExplorerStateKey;
         NodeValueList = new();
     }
     

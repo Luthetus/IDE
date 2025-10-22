@@ -13,7 +13,8 @@ public partial class CommonService
     public TreeViewState GetTreeViewState() => _treeViewState;
     
     public TreeViewContainer? GetTreeViewContainer(Key<TreeViewContainer> containerKey)    {
-        foreach (var container in _treeViewState.ContainerList)        {            if (container.Key == containerKey)                return container;        }
+        foreach (var container in _treeViewState.ContainerList)        {
+            if (container.Key == containerKey)                return container;        }
         return null;    }
 
     public bool TryGetTreeViewContainer(Key<TreeViewContainer> containerKey, out TreeViewContainer? container)
@@ -54,6 +55,9 @@ public partial class CommonService
         
     public void TreeView_RegisterContainerAction(TreeViewContainer container, bool shouldFireStateChangedEvent = true)
     {
+        if (container.Key == Key<TreeViewContainer>.Empty)
+            throw new NotImplementedException("container.Key == Key<TreeViewContainer>.Empty; must not be true");
+    
         var inState = GetTreeViewState();        TreeViewContainer? inContainer = null;
         foreach (var c in inState.ContainerList)        {            if (c.Key == container.Key)            {                inContainer = c;                break;            }        }
 

@@ -3,15 +3,36 @@
 @using Clair.Common.RazorLib.Dimensions;
 @using Clair.Common.RazorLib.Dimensions.Models;
 
+@{
+    _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerKey);
+}
 
+    
+
+<div>
+    @TreeViewContainerKey
+    
+    @if (_treeViewContainer is null)
+    {
+        <div>_treeViewContainer is null</div>
+    }
+    else
+    {
+        var nodeValueList = _treeViewContainer.NodeValueList;
+        <div>
+            @for (int i = 0; i < nodeValueList.Count; i++)
+            {
+                <div>@_treeViewContainer.GetDisplayText(indexNodeValue: i)</div>
+            }
+        </div>
+    }
+</div>
 
 @*@{ _treeViewContainer = null; }*@
 
 @*// 2025-10-22 (rewrite TreeViews)
 
-@{
-    _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerParameter.TreeViewContainerKey);
-}
+
 
 <div id="@_htmlId"
      class="@GetContainerElementCssClass(_treeViewContainer)"

@@ -934,13 +934,10 @@ public partial class DotNetService
         //
         // Oh no way my mom might've just gotten home with food totally epic
         
-        if (!IdeService.CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
+        if (!CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
         {
-            treeViewContainer = new TreeViewContainer(
-                DotNetSolutionState.TreeViewSolutionExplorerStateKey,
-                rootNode: null,
-                selectedNodeList: Array.Empty<TreeViewNodeValue>());
-            IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);
+            treeViewContainer = new SolutionExplorerTreeViewContainer(CommonService);
+            CommonService.TreeView_RegisterContainerAction(treeViewContainer);
         }
         
         /*

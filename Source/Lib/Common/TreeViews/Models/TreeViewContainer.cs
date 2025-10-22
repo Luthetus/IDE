@@ -6,7 +6,7 @@ namespace Clair.Common.RazorLib.TreeViews.Models;
 
 /// <summary>
 /// This interface should always be directly tied to UI of a TreeView actively being rendered.
-/// To maintain TreeView state beyond the lifecycle of the UI, implement the Dispose
+/// To maintain TreeView state beyond the lifecycle of the UI, implement the DisposeContainer() method
 /// and store the TreeView yourself however you want, in an optimized manner.
 /// </summary>
 public abstract class TreeViewContainer
@@ -30,7 +30,7 @@ public abstract class TreeViewContainer
     /// </summary>
 
     /// <summary>Unique identifier</summary>
-    public virtual Key<TreeViewContainer> Key { get; init; }
+    public abstract Key<TreeViewContainer> Key { get; init; }
     
     public virtual bool IsRootNodeHidden { get; set; }
     
@@ -47,7 +47,7 @@ public abstract class TreeViewContainer
     /// the container's (inclusive) ChildList[TreeViewNoType.ChildListOffset] to
     /// (exclusive) ChildList[TreeViewNoType.ChildListOffset + TreeViewNoType.ChildListLength].
     /// </summary>
-    public virtual List<TreeViewNodeValue> NodeValueList { get; }
+    public abstract List<TreeViewNodeValue> NodeValueList { get; }
     
     /// <summary>The nodeValue with the highlighted background color</summary>
     public virtual int ActiveNodeValueIndex { get; }
@@ -96,7 +96,10 @@ public abstract class TreeViewContainer
         
     }
     
-    public virtual string GetDisplayText(int indexNodeValue) => this.GetType().Name;
+    public virtual string GetDisplayText(int indexNodeValue)
+    {
+        return string.Empty;
+    }
     /// <summary>
     /// Make sure to return null if you don't use this, in order to avoid the 'class' attribute for no reason.
     /// </summary>

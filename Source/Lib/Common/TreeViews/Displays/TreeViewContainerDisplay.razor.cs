@@ -16,7 +16,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     private CommonService CommonService { get; set; } = null!;
 
     [Parameter, EditorRequired]
-    public TreeViewContainerParameter TreeViewContainerParameter { get; set; }
+    public Key<TreeViewContainer> TreeViewContainerKey { get; set; }
     
     private int OffsetPerDepthInPixels => (int)Math.Ceiling(
         CommonService.GetAppOptionsState().Options.IconSizeInPixels * (2.0 / 3.0));

@@ -72,6 +72,75 @@ public interface ITreeViewContainer : IDisposable
         
     }
     
+    public virtual string GetDisplayText() => this.GetType().Name;
+    /// <summary>
+    /// Make sure to return null if you don't use this, in order to avoid the 'class' attribute for no reason.
+    /// </summary>
+    public virtual string? GetDisplayTextCssClass() => null;
+    /// <summary>
+    /// Make sure to return null if you don't use this, in order to avoid the 'class' attribute for no reason.
+    /// </summary>
+    public virtual string? GetHoverText() => null;
+    public virtual IconKind IconKind => IconKind.None;
+    
+    public abstract Task LoadChildListAsync(TreeViewContainer container);
+
+    /// <summary>
+    /// Sets foreach child: child.Parent = this;
+    /// As well it sets the child.IndexAmongSiblings, and maintains expanded state.
+    /// </summary>
+    public void LinkChildrenNoMap(IEnumerable<TreeViewNoType> nextChildList, ITreeViewContainer container)
+    {
+        LinkChildren(previousChildList: null, nextChildList, container);
+    }
+    
+    /// <summary>
+    /// Sets foreach child: child.Parent = this;
+    /// As well it sets the child.IndexAmongSiblings, and maintains expanded state.
+    /// </summary>
+    public virtual void LinkChildren(
+        IEnumerable<TreeViewNoType>? previousChildList,
+        IEnumerable<TreeViewNoType> nextChildList,
+        ITreeViewContainer container)
+    {
+        Dictionary<TreeViewNoType, TreeViewNoType>? previousChildMap;
+        if (previousChildList is not null)
+            previousChildMap = previousChildList.ToDictionary(child => child);
+        else
+            previousChildMap = null;
+            
+        var indexAmongSiblings = 0;
+        foreach (var nextChild in nextChildList)
+        {
+            nextChild.Parent = this;
+            nextChild.IndexAmongSiblings = indexAmongSiblings++;
+    
+            if (previousChildMap is not null && previousChildMap.TryGetValue(nextChild, out var previousChild))
+            {
+                nextChild.IsExpanded = previousChild.IsExpanded;
+                nextChild.IsExpandable = previousChild.IsExpandable;
+                nextChild.IsHidden = previousChild.IsHidden;
+                nextChild.Key = previousChild.Key;
+                nextChild.ChildListOffset = previousChild.ChildListOffset;
+                nextChild.ChildListLength = previousChild.ChildListLength;
+                
+                // This step is only necessary when restoring the previousChild.
+                foreach (var innerChild in nextChild.GetChildList(container))
+                {
+                    innerChild.Parent = nextChild;
+                }
+            }
+        }
+    }
+    
+    public virtual IEnumerable<TreeViewNoType> GetChildList(TreeViewContainer container)
+    {
+        if (ChildListOffset >= container.ChildList.Count)
+            return Enumerable.Empty<TreeViewNoType>();
+    
+        return container.ChildList.Skip(ChildListOffset).Take(ChildListLength);
+    }
+    
     /// <summary>
     /// This interface should always be directly tied to UI of a TreeView actively being rendered.
     /// To maintain TreeView state beyond the lifecycle of the UI, implement the Dispose

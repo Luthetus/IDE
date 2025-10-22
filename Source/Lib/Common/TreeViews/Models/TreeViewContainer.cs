@@ -79,7 +79,7 @@ public abstract class TreeViewContainer
     /// When the UI expands a nodeValue, then this method is invoked foreach child of the expanded nodeValue.
     /// (virtualization is NOT accounted for. This gets invoked for every new child whether it is visible or not).
     /// </summary>
-    public virtual void Saturate(int )
+    public virtual void Saturate(int indexNodeValue)
     {
         // NOTE: Code behinds can be done easily because you only ever remove children....
         // ...thus you have this contiguous space in the List and a span over it.
@@ -90,29 +90,29 @@ public abstract class TreeViewContainer
     /// When the UI collapses a nodeValue, then this method is invoked on every nodeValue which
     /// was a child of the collapsed nodeValue.
     /// </summary>
-    public virtual void Dessicate(ref TreeViewNodeValue nodeValue)
+    public virtual void Dessicate(int indexNodeValue)
     {
         
     }
     
-    public virtual string GetDisplayText() => this.GetType().Name;
+    public virtual string GetDisplayText(int indexNodeValue) => this.GetType().Name;
     /// <summary>
     /// Make sure to return null if you don't use this, in order to avoid the 'class' attribute for no reason.
     /// </summary>
-    public virtual string? GetDisplayTextCssClass() => null;
+    public virtual string? GetDisplayTextCssClass(int indexNodeValue) => null;
     /// <summary>
     /// Make sure to return null if you don't use this, in order to avoid the 'class' attribute for no reason.
     /// </summary>
-    public virtual string? GetHoverText() => null;
+    public virtual string? GetHoverText(int indexNodeValue) => null;
     public virtual IconKind IconKind => IconKind.None;
     
-    public abstract Task LoadChildListAsync(TreeViewContainer container);
+    public abstract Task LoadChildListAsync(int indexNodeValue);
 
     /// <summary>
     /// Sets foreach child: child.Parent = this;
     /// As well it sets the child.IndexAmongSiblings, and maintains expanded state.
     /// </summary>
-    public virtual void LinkChildrenNoMap(IEnumerable<TreeViewNoType> nextChildList, ITreeViewContainer container)
+    public virtual void LinkChildrenNoMap(int indexNodeValue, IEnumerable<TreeViewNoType> nextChildList)
     {
         LinkChildren(previousChildList: null, nextChildList, container);
     }
@@ -122,9 +122,9 @@ public abstract class TreeViewContainer
     /// As well it sets the child.IndexAmongSiblings, and maintains expanded state.
     /// </summary>
     public virtual void LinkChildren(
+        int indexNodeValue, 
         IEnumerable<TreeViewNoType>? previousChildList,
-        IEnumerable<TreeViewNoType> nextChildList,
-        ITreeViewContainer container)
+        IEnumerable<TreeViewNoType> nextChildList)
     {
         Dictionary<TreeViewNoType, TreeViewNoType>? previousChildMap;
         if (previousChildList is not null)
@@ -156,7 +156,7 @@ public abstract class TreeViewContainer
         }
     }
     
-    public virtual IEnumerable<TreeViewNoType> GetChildList(TreeViewContainer container)
+    public virtual IEnumerable<TreeViewNoType> GetChildList(int indexNodeValue)
     {
         if (ChildListOffset >= container.ChildList.Count)
             return Enumerable.Empty<TreeViewNoType>();

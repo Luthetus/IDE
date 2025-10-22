@@ -42,12 +42,24 @@ public interface ITreeViewContainer : IDisposable
     
     public List<> Asd;
     
-    public void Saturate(TreeViewNodeValue nodeValue)
+    /// <summary>
+    /// When the UI expands a nodeValue, then
+    /// this method is invoked on every newly "shown" nodeValue.
+    /// (virtualization isn't accounted for...
+    ///  this gets invoked for every new child
+    ///  whether it is visible or not).
+    /// </summary>
+    public void Saturate(ref TreeViewNodeValue nodeValue)
     {
         
     }
     
-    public void Dessicate(TreeViewNodeValue nodeValue)
+    /// <summary>
+    /// When the UI collapses a nodeValue, then
+    /// this method is invoked on every nodeValue which
+    /// was a child of the collapsed nodeValue.
+    /// </summary>
+    public void Dessicate(ref TreeViewNodeValue nodeValue)
     {
         
     }

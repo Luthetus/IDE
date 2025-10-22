@@ -937,7 +937,6 @@ public partial class DotNetService
         if (!CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
         {
             treeViewContainer = new SolutionExplorerTreeViewContainer(CommonService);
-            CommonService.TreeView_RegisterContainerAction(treeViewContainer);
             
             var rootNode = new TreeViewNodeValue
             {
@@ -950,6 +949,11 @@ public partial class DotNetService
                 IsExpandable = true,
                 IsExpanded = true
             };
+            treeViewContainer.NodeValueList.Add(rootNode);
+            
+            CommonService.TreeView_RegisterContainerAction(treeViewContainer);
+            
+            
         }
         
         /*

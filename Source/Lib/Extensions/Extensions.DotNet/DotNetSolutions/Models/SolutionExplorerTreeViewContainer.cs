@@ -25,10 +25,11 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
     
     public override string GetDisplayText(int indexNodeValue)
     {
-        var nodeValue = NodeValueList[NodeValueList];
-        if (nodeValue.)
+        var nodeValue = NodeValueList[indexNodeValue];
+        if (nodeValue.TreeViewNodeValueKind == TreeViewNodeValueKind.b0)
         {
+            return ".NET Solution";
         }
-        return string.Empty;
+        return "asdfg";
     }
 }

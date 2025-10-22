@@ -15,9 +15,9 @@ public abstract class TreeViewContainer
         CommonService = commonService;
     }
     
-    public CommonService CommonService { get; }
+    public virtual CommonService CommonService { get; }
 
-    public int NextNodeValueKey { get; set; }
+    public virtual int NextNodeValueKey { get; set; }
     
     /// <summary>
     /// TODO: Don't use the static int named 's_nextKey'.
@@ -29,9 +29,9 @@ public abstract class TreeViewContainer
     /// </summary>
 
     /// <summary>Unique identifier</summary>
-    public Key<TreeViewContainer> Key { get; init; }
+    public virtual Key<TreeViewContainer> Key { get; init; }
     
-    public bool IsRootNodeHidden { get; set; }
+    public virtual bool IsRootNodeHidden { get; set; }
     
     /// <summary>
     /// WARNING: modification of this list from a non-`ITreeViewContainer` is extremely unsafe.
@@ -46,10 +46,10 @@ public abstract class TreeViewContainer
     /// the container's (inclusive) ChildList[TreeViewNoType.ChildListOffset] to
     /// (exclusive) ChildList[TreeViewNoType.ChildListOffset + TreeViewNoType.ChildListLength].
     /// </summary>
-    public List<TreeViewNodeValue> NodeValueList { get; }
+    public virtual List<TreeViewNodeValue> NodeValueList { get; }
     
     /// <summary>The nodeValue with the highlighted background color</summary>
-    public int ActiveNodeValueIndex { get; }
+    public virtual int ActiveNodeValueIndex { get; }
     
     /// <summary>
     /// In your constructor:
@@ -57,7 +57,7 @@ public abstract class TreeViewContainer
     ///
     /// This is used for scrolling the ActiveNodeValueIndex into view.
     /// </summary>
-    public string ActiveNodeElementId { get; }
+    public virtual string ActiveNodeElementId { get; }
     
     /// <summary>
     /// <see cref="RemoveRelatedFilesFromParent"/> is used for showing codebehinds such that a file on

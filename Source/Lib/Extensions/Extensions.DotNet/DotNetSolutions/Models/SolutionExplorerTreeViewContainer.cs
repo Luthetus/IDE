@@ -22,4 +22,13 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
     {
         return Task.CompletedTask;
     }
+    
+    public override string GetDisplayText(int indexNodeValue)
+    {
+        var nodeValue = NodeValueList[NodeValueList];
+        if (nodeValue.)
+        {
+        }
+        return string.Empty;
+    }
 }

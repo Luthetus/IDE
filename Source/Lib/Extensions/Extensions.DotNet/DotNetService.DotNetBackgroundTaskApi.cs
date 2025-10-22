@@ -938,6 +938,18 @@ public partial class DotNetService
         {
             treeViewContainer = new SolutionExplorerTreeViewContainer(CommonService);
             CommonService.TreeView_RegisterContainerAction(treeViewContainer);
+            
+            var rootNode = new TreeViewNodeValue
+            {
+                ParentIndex = -1,
+                IndexAmongSiblings = 0,
+                ChildListOffset = treeViewContainer.NodeValueList.Count,
+                ChildListLength = 0,
+                TreeViewNodeValueKind = TreeViewNodeValueKind.b0,
+                TraitsIndex = 0,
+                IsExpandable = true,
+                IsExpanded = true
+            };
         }
         
         /*
@@ -947,11 +959,7 @@ public partial class DotNetService
         if (dotNetSolutionModel is null)
             return;
 
-        var rootNode = new TreeViewSolution(
-            dotNetSolutionModel,
-            IdeService.TextEditorService.CommonService,
-            true,
-            true);
+        
 
         if (!IdeService.CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
         {

@@ -27,6 +27,7 @@ public interface ITreeViewContainer : IDisposable
     /// </summary>
     public List<TreeViewNodeValue> NodeValueList { get; }
     
+    /// <summary>The nodeValue with the highlighted background color</summary>
     public int ActiveNodeValueIndex { get; }
     
     /// <summary>
@@ -38,11 +39,24 @@ public interface ITreeViewContainer : IDisposable
     public string ActiveNodeElementId { get; }
     
     /// <summary>
-    /// When the UI expands a nodeValue, then
-    /// this method is invoked on every newly "shown" nodeValue.
-    /// (virtualization isn't accounted for...
-    ///  this gets invoked for every new child
-    ///  whether it is visible or not).
+    /// <see cref="RemoveRelatedFilesFromParent"/> is used for showing codebehinds such that a file on
+    /// the filesystem can be displayed as having children in the TreeView.<br/><br/>
+    /// In the case of a directory loading its children. After the directory loads all its children it
+    /// will loop through the children invoking <see cref="RemoveRelatedFilesFromParent"/> on each of
+    /// the children.<br/><br/>
+    /// For example: if a directory has the children { 'Component.razor', 'Component.razor.cs' }  then
+    /// 'Component.razor' will remove 'Component.razor.cs' from the parent directories children and
+    /// mark itself as expandable as it saw a related file in its parent.
+    /// </summary>
+    public virtual void RemoveRelatedFilesFromParent(List<TreeViewNoType> siblingsAndSelfTreeViews)
+    {
+        // The default implementation of this method is to do nothing.
+        // Override this method to implement some functionality if desired.
+    }
+    
+    /// <summary>
+    /// When the UI expands a nodeValue, then this method is invoked foreach child of the expanded nodeValue.
+    /// (virtualization is NOT accounted for. This gets invoked for every new child whether it is visible or not).
     /// </summary>
     public void Saturate(ref TreeViewNodeValue nodeValue)
     {
@@ -50,8 +64,7 @@ public interface ITreeViewContainer : IDisposable
     }
     
     /// <summary>
-    /// When the UI collapses a nodeValue, then
-    /// this method is invoked on every nodeValue which
+    /// When the UI collapses a nodeValue, then this method is invoked on every nodeValue which
     /// was a child of the collapsed nodeValue.
     /// </summary>
     public void Dessicate(ref TreeViewNodeValue nodeValue)

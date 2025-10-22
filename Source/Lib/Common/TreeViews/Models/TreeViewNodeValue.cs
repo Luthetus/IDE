@@ -3,6 +3,9 @@ using Clair.Common.RazorLib.Icons.Displays;
 
 namespace Clair.Common.RazorLib.TreeViews.Models;
 
+/// <summary>
+/// The value
+/// </summary>
 public struct TreeViewNodeValue
 {
     /// <summary>The corresponding TreeViewContainer will have this</summary>
@@ -23,6 +26,21 @@ public struct TreeViewNodeValue
     public int ChildListLength { get; set; }
     public TreeViewNodeValueKind TreeViewNodeValueKind { get; set; }
     
+    /// <summary>
+    /// All data should be stored on the ITreeViewContainer.
+    ///
+    /// This property either can be an index within some List wherein
+    /// the nodeValue's data is stored.
+    ///
+    /// Or you can use this as a unique identifier / whatever, if the data is non-list required.
+    ///
+    /// The ITreeViewContainer might consider a variety of lists, each containing a value type
+    /// representation of the data as per TreeViewNodeValueKind.
+    ///
+    /// Or might just put all the data in one class, use inheritance etc... /whatever
+    /// </summary>
+    public int TraitsIndex { get; set; }
+    
     public IEnumerable<TreeViewNoType> GetChildList(TreeViewContainer container)
     {
         if (ChildListOffset >= container.ChildList.Count)
@@ -36,7 +54,6 @@ public struct TreeViewNodeValue
     /// is found at within their <see cref="Parent"/>'s <see cref="ChildList"/>
     /// </summary>
     public int IndexAmongSiblings { get; set; }
-    public bool IsRoot { get; set; }
     public bool IsHidden { get; set; }
     public bool IsExpandable { get; set; }
     public bool IsExpanded { get; set; }
@@ -66,7 +83,7 @@ public struct TreeViewNodeValue
     /// Sets foreach child: child.Parent = this;
     /// As well it sets the child.IndexAmongSiblings, and maintains expanded state.
     /// </summary>
-    public void LinkChildrenNoMap(IEnumerable<TreeViewNoType> nextChildList, TreeViewContainer container)
+    public void LinkChildrenNoMap(IEnumerable<TreeViewNoType> nextChildList, ITreeViewContainer container)
     {
         LinkChildren(previousChildList: null, nextChildList, container);
     }
@@ -78,7 +95,7 @@ public struct TreeViewNodeValue
     public virtual void LinkChildren(
         IEnumerable<TreeViewNoType>? previousChildList,
         IEnumerable<TreeViewNoType> nextChildList,
-        TreeViewContainer container)
+        ITreeViewContainer container)
     {
         Dictionary<TreeViewNoType, TreeViewNoType>? previousChildMap;
         if (previousChildList is not null)
@@ -108,21 +125,5 @@ public struct TreeViewNodeValue
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// <see cref="RemoveRelatedFilesFromParent"/> is used for showing codebehinds such that a file on
-    /// the filesystem can be displayed as having children in the TreeView.<br/><br/>
-    /// In the case of a directory loading its children. After the directory loads all its children it
-    /// will loop through the children invoking <see cref="RemoveRelatedFilesFromParent"/> on each of
-    /// the children.<br/><br/>
-    /// For example: if a directory has the children { 'Component.razor', 'Component.razor.cs' }  then
-    /// 'Component.razor' will remove 'Component.razor.cs' from the parent directories children and
-    /// mark itself as expandable as it saw a related file in its parent.
-    /// </summary>
-    public virtual void RemoveRelatedFilesFromParent(List<TreeViewNoType> siblingsAndSelfTreeViews)
-    {
-        // The default implementation of this method is to do nothing.
-        // Override this method to implement some functionality if desired.
     }
 }

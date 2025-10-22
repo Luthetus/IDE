@@ -33,6 +33,10 @@ public abstract class TreeViewContainer
     public abstract Key<TreeViewContainer> Key { get; init; }
     
     public virtual bool IsRootNodeHidden { get; set; }
+    /// <summary>
+    /// This permits simple "scope to" logic by just moving the index that represents the root node temporarily.
+    /// </summary>
+    public virtual int IndexRootNode { get; set; }
     
     /// <summary>
     /// WARNING: modification of this list from a non-`ITreeViewContainer` is extremely unsafe.

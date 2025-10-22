@@ -218,6 +218,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                         eventArgsKeyDown.BoundingClientRectLeft,
                         eventArgsKeyDown.BoundingClientRectTop));
                 return;
+                // I am EXTREMELY familiar with every line of code what I'm doing here is a horrible idea 99% of the time
             }
             case ".":
             {

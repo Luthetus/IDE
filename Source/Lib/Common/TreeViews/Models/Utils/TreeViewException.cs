@@ -1,6 +1,6 @@
 namespace Clair.Common.RazorLib.TreeViews.Models.Utils;
 
-public class TreeViewException : TreeViewWithType<Exception>
+public class TreeViewException : TreeViewNodeValue<Exception>
 {
     public TreeViewException(
             Exception exception,

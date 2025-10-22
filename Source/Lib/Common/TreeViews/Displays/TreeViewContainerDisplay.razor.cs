@@ -50,12 +50,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// <summary>
     /// UI thread only.
     /// </summary>
-    private readonly List<TreeViewNoType> _flatNodeList = new();
+    private readonly List<TreeViewNodeValue> _flatNodeList = new();
     /// <summary>
     /// UI thread only.
     /// Contains the "used to be" targetNode, and the index that it left off at.
     /// </summary>
-    private readonly Stack<(TreeViewNoType Node, int Index)> _nodeRecursionStack = new();
+    private readonly Stack<(TreeViewNodeValue Node, int Index)> _nodeRecursionStack = new();
     
     private Key<TreeViewContainer> _previousTreeViewContainerKey = Key<TreeViewContainer>.Empty;
     private int _previousContainerVersion;
@@ -515,7 +515,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             keyboardEventArgs: null));
     }
     
-    private List<TreeViewNoType> GetFlatNodes()
+    private List<TreeViewNodeValue> GetFlatNodes()
     {
         _flatNodeList.Clear();
         _nodeRecursionStack.Clear();
@@ -647,7 +647,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// <summary>
     /// This method should only be invoked from the "UI thread" due to the usage of `CommonBackgroundTaskApi.UiStringBuilder`.
     /// </summary>
-    private string GetNodeElementCssStyle(TreeViewNoType node, int index)
+    private string GetNodeElementCssStyle(TreeViewNodeValue node, int index)
     {
         if (!CommonService.IntToCssValueCache.ContainsKey(node.Depth * OffsetPerDepthInPixels))
             CommonService.IntToCssValueCache.Add(node.Depth * OffsetPerDepthInPixels, (node.Depth * OffsetPerDepthInPixels).ToCssValue());

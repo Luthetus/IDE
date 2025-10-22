@@ -56,13 +56,13 @@ public partial class CommonService
         }
     }
 
-    public async ValueTask Do_TreeView_HandleExpansionChevronOnMouseDown(TreeViewNoType localTreeViewNoType, TreeViewContainer treeViewContainer)
+    public async ValueTask Do_TreeView_HandleExpansionChevronOnMouseDown(TreeViewNodeValue localTreeViewNoType, TreeViewContainer treeViewContainer)
     {
         await localTreeViewNoType.LoadChildListAsync(treeViewContainer).ConfigureAwait(false);
         TreeView_ReRenderNodeAction(treeViewContainer.Key, localTreeViewNoType, flatListChanged: true);
     }
 
-    public async ValueTask Do_TreeView_ManuallyPropagateOnContextMenu(Func<MouseEventArgs?, Key<TreeViewContainer>, TreeViewNoType?, Task> handleTreeViewOnContextMenu, MouseEventArgs mouseEventArgs, Key<TreeViewContainer> key, TreeViewNoType treeViewNoType)
+    public async ValueTask Do_TreeView_ManuallyPropagateOnContextMenu(Func<MouseEventArgs?, Key<TreeViewContainer>, TreeViewNodeValue, Task> handleTreeViewOnContextMenu, MouseEventArgs mouseEventArgs, Key<TreeViewContainer> key, TreeViewNodeValue treeViewNoType)
     {
         await handleTreeViewOnContextMenu.Invoke(
                 mouseEventArgs,
@@ -71,7 +71,7 @@ public partial class CommonService
             .ConfigureAwait(false);
     }
 
-    public async ValueTask Do_TreeViewService_LoadChildList(Key<TreeViewContainer> containerKey, TreeViewNoType treeViewNoType)
+    public async ValueTask Do_TreeViewService_LoadChildList(Key<TreeViewContainer> containerKey, TreeViewNodeValue treeViewNoType)
     {
         try
         {

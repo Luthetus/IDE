@@ -12,28 +12,13 @@ public partial class CommonService
     
     public TreeViewState GetTreeViewState() => _treeViewState;
     
-    public TreeViewContainer? GetTreeViewContainer(Key<TreeViewContainer> containerKey)
-    {
-        foreach (var container in _treeViewState.ContainerList)
-        {
-            if (container.Key == containerKey)
-                return container;
-        }
-        return null;
-    }
+    public TreeViewContainer? GetTreeViewContainer(Key<TreeViewContainer> containerKey)    {
+        foreach (var container in _treeViewState.ContainerList)        {            if (container.Key == containerKey)                return container;        }
+        return null;    }
 
     public bool TryGetTreeViewContainer(Key<TreeViewContainer> containerKey, out TreeViewContainer? container)
     {
-        foreach (var c in GetTreeViewState().ContainerList)
-        {
-            if (c.Key == containerKey)
-            {
-                container = c;
-                return true;
-            }    
-        }
-
-        container = null;
+        foreach (var c in GetTreeViewState().ContainerList)        {            if (c.Key == containerKey)            {                container = c;                return true;            }            }        container = null;
         return false;
     }
 
@@ -59,17 +44,8 @@ public partial class CommonService
 
     public string TreeView_GetActiveNodeElementId(Key<TreeViewContainer> containerKey)
     {
-        var inState = GetTreeViewState();
-
-        TreeViewContainer? inContainer = null;
-        foreach (var c in inState.ContainerList)
-        {
-            if (c.Key == containerKey)
-            {
-                inContainer = c;
-                break;
-            }
-        }
+        var inState = GetTreeViewState();        TreeViewContainer? inContainer = null;
+        foreach (var c in inState.ContainerList)        {            if (c.Key == containerKey)            {                inContainer = c;                break;            }        }
         if (inContainer is not null)
             return inContainer.ActiveNodeElementId;
         
@@ -78,17 +54,8 @@ public partial class CommonService
         
     public void TreeView_RegisterContainerAction(TreeViewContainer container, bool shouldFireStateChangedEvent = true)
     {
-        var inState = GetTreeViewState();
-
-        TreeViewContainer? inContainer = null;
-        foreach (var c in inState.ContainerList)
-        {
-            if (c.Key == container.Key)
-            {
-                inContainer = c;
-                break;
-            }
-        }
+        var inState = GetTreeViewState();        TreeViewContainer? inContainer = null;
+        foreach (var c in inState.ContainerList)        {            if (c.Key == container.Key)            {                inContainer = c;                break;            }        }
 
         if (inContainer is not null)
         {
@@ -126,7 +93,7 @@ public partial class CommonService
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
     }
 
-    public void TreeView_WithRootNodeAction(Key<TreeViewContainer> containerKey, TreeViewNoType node, bool shouldFireStateChangedEvent = true)
+    public void TreeView_WithRootNodeAction(Key<TreeViewContainer> containerKey, TreeViewNodeValue node, bool shouldFireStateChangedEvent = true)
     {
         var inState = GetTreeViewState();
     
@@ -156,19 +123,10 @@ public partial class CommonService
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
     }
 
-    public void TreeView_AddChildNodeAction(Key<TreeViewContainer> containerKey, TreeViewNoType parentNode, TreeViewNoType childNode)
+    public void TreeView_AddChildNodeAction(Key<TreeViewContainer> containerKey, TreeViewNodeValue parentNode, TreeViewNodeValue childNode)
     {
-        var inState = GetTreeViewState();
-
-        TreeViewContainer? inContainer = null;
-        foreach (var c in inState.ContainerList)
-        {
-            if (c.Key == containerKey)
-            {
-                inContainer = c;
-                break;
-            }
-        }
+        var inState = GetTreeViewState();        TreeViewContainer? inContainer = null;
+        foreach (var c in inState.ContainerList)        {            if (c.Key == containerKey)            {                inContainer = c;                break;            }        }
         if (inContainer is null)
         {
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
@@ -188,7 +146,7 @@ public partial class CommonService
         return;
     }
 
-    public void TreeView_ReRenderNodeAction(Key<TreeViewContainer> containerKey, TreeViewNoType node, bool flatListChanged = false)
+    public void TreeView_ReRenderNodeAction(Key<TreeViewContainer> containerKey, TreeViewNodeValue node, bool flatListChanged = false)
     {
         var inState = GetTreeViewState();
     
@@ -216,7 +174,7 @@ public partial class CommonService
 
     public void TreeView_SetActiveNodeAction(
         Key<TreeViewContainer> containerKey,
-        TreeViewNoType? nextActiveNode,
+        TreeViewNodeValue nextActiveNode,
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode,
         bool shouldFireStateChangedEvent = true)
@@ -372,7 +330,7 @@ public partial class CommonService
         Key<TreeViewContainer> containerKey,
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode,
-        Action<TreeViewNoType> loadChildListAction)
+        Action<TreeViewNodeValue> loadChildListAction)
     {
         var inState = GetTreeViewState();
     
@@ -488,7 +446,7 @@ public partial class CommonService
     private TreeViewContainer PerformReRenderNode(
         TreeViewContainer inContainer,
         Key<TreeViewContainer> containerKey,
-        TreeViewNoType node)
+        TreeViewNodeValue node)
     {
         return inContainer with { StateId = Guid.NewGuid() };
     }
@@ -496,7 +454,7 @@ public partial class CommonService
     private TreeViewContainer PerformSetActiveNode(
         TreeViewContainer inContainer,
         Key<TreeViewContainer> containerKey,
-        TreeViewNoType? nextActiveNode,
+        TreeViewNodeValue nextActiveNode,
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
@@ -826,7 +784,7 @@ public partial class CommonService
         Key<TreeViewContainer> containerKey,
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode,
-        Action<TreeViewNoType> loadChildListAction)
+        Action<TreeViewNodeValue> loadChildListAction)
     {
         var outContainer = inContainer;
 

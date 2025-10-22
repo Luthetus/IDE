@@ -1,6 +1,6 @@
 namespace Clair.Common.RazorLib.TreeViews.Models.Utils;
 
-public class TreeViewSpinner : TreeViewWithType<Guid>
+public class TreeViewSpinner : TreeViewNodeValue<Guid>
 {
     public TreeViewSpinner(
             Guid guid,
@@ -74,7 +74,7 @@ public class TreeViewSpinner : TreeViewWithType<Guid>
         return Task.CompletedTask;
     }
 
-    public override void RemoveRelatedFilesFromParent(List<TreeViewNoType> siblingsAndSelfTreeViews)
+    public override void RemoveRelatedFilesFromParent(List<TreeViewNodeValue> siblingsAndSelfTreeViews)
     {
         return;
     }

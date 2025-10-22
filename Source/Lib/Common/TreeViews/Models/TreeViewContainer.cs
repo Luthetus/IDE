@@ -69,7 +69,7 @@ public abstract class TreeViewContainer
     /// 'Component.razor' will remove 'Component.razor.cs' from the parent directories children and
     /// mark itself as expandable as it saw a related file in its parent.
     /// </summary>
-    public virtual void RemoveRelatedFilesFromParent(List<TreeViewNoType> siblingsAndSelfTreeViews)
+    public virtual void RemoveRelatedFilesFromParent(List<TreeViewNodeValue> siblingsAndSelfTreeViews)
     {
         // The default implementation of this method is to do nothing.
         // Override this method to implement some functionality if desired.
@@ -112,7 +112,7 @@ public abstract class TreeViewContainer
     /// Sets foreach child: child.Parent = this;
     /// As well it sets the child.IndexAmongSiblings, and maintains expanded state.
     /// </summary>
-    public virtual void LinkChildrenNoMap(int indexNodeValue, IEnumerable<TreeViewNoType> nextChildList)
+    public virtual void LinkChildrenNoMap(int indexNodeValue, IEnumerable<TreeViewNodeValue> nextChildList)
     {
         LinkChildren(previousChildList: null, nextChildList, container);
     }
@@ -123,8 +123,8 @@ public abstract class TreeViewContainer
     /// </summary>
     public virtual void LinkChildren(
         int indexNodeValue, 
-        IEnumerable<TreeViewNoType>? previousChildList,
-        IEnumerable<TreeViewNoType> nextChildList)
+        IEnumerable<TreeViewNodeValue>? previousChildList,
+        IEnumerable<TreeViewNodeValue> nextChildList)
     {
         Dictionary<TreeViewNoType, TreeViewNoType>? previousChildMap;
         if (previousChildList is not null)
@@ -156,7 +156,7 @@ public abstract class TreeViewContainer
         }
     }
     
-    public virtual IEnumerable<TreeViewNoType> GetChildList(int indexNodeValue)
+    public virtual IEnumerable<TreeViewNodeValue> GetChildList(int indexNodeValue)
     {
         if (ChildListOffset >= container.ChildList.Count)
             return Enumerable.Empty<TreeViewNoType>();

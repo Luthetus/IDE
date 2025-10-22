@@ -180,5 +180,5 @@ public partial class CommonService : IBackgroundTaskGroup
         return absolutePathString;
     }
     
-    public TreeViewNoType? ParentOfCutFile { get; set; }
+    public TreeViewNodeValue ParentOfCutFile { get; set; }
 }

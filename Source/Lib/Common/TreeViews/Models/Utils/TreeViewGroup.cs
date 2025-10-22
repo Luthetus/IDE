@@ -1,6 +1,6 @@
 namespace Clair.Common.RazorLib.TreeViews.Models.Utils;
 
-public class TreeViewGroup : TreeViewWithType<string>
+public class TreeViewGroup : TreeViewNodeValue<string>
 {
     public TreeViewGroup(
             string displayText,
@@ -60,7 +60,7 @@ public class TreeViewGroup : TreeViewWithType<string>
         return Task.CompletedTask;
     }
 
-    public override void RemoveRelatedFilesFromParent(List<TreeViewNoType> siblingsAndSelfTreeViews)
+    public override void RemoveRelatedFilesFromParent(List<TreeViewNodeValue> siblingsAndSelfTreeViews)
     {
         return;
     }

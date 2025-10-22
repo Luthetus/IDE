@@ -36,4 +36,15 @@ public interface ITreeViewContainer
     public List<TreeViewNoType> ChildList { get; set; } = new();
     
     public List<> Asd;
+    
+    public void Hydrate(TreeViewNodeValue nodeValue)
+    {
+        
+    }
+    
+    // ???????????? wtf are these names
+    public void Dessicate()
+    {
+        
+    }
 }

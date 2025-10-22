@@ -186,6 +186,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     [JSInvokable]
     public async Task ReceiveOnKeyDown(TreeViewEventArgsKeyDown eventArgsKeyDown)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
+        
         if (_treeViewContainer is null)
             return;
 
@@ -266,7 +269,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*/ false);
+                    /*preventScroll:*//*// 2025-10-22 (rewrite TreeViews) false);
             },
             null,
             null,
@@ -318,11 +321,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 break;
             }
         }
+        */
     }
     
     [JSInvokable]
     public void ReceiveOnContextMenu(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         _treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
             eventArgsMouseDown.ViewHeight,
@@ -377,7 +383,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*/ false);
+                    /*preventScroll:*//*// 2025-10-22 (rewrite TreeViews) false);
             },
             contextMenuFixedPosition,
             new MouseEventArgs
@@ -393,11 +399,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             OnContextMenuFunc = TreeViewContainerParameter.OnContextMenuFunc,
             TreeViewContextMenuCommandArgs = _treeViewContextMenuCommandArgs,
         });
+        */
     }
     
     [JSInvokable]
     public void ReceiveContentOnMouseDown(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         _treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
             eventArgsMouseDown.ViewHeight,
@@ -435,11 +444,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             _flatNodeList[IndexActiveNode],
             addSelectedNodes: false,
             selectNodesBetweenCurrentAndNextActiveNode: false);
+        */
     }
     
     [JSInvokable]
     public async Task ReceiveOnClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         _treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
             eventArgsMouseDown.ViewHeight,
@@ -465,7 +477,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*/ false);
+                    /*preventScroll:*//* false);
             },
             contextMenuFixedPosition: null,
             new MouseEventArgs
@@ -474,11 +486,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 ClientY = eventArgsMouseDown.Y,
             },
             keyboardEventArgs: null));
+        */
     }
     
     [JSInvokable]
     public async Task ReceiveOnDoubleClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         _treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
             eventArgsMouseDown.ViewHeight,
@@ -504,7 +519,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*/ false);
+                    /*preventScroll:*//*// 2025-10-22 (rewrite TreeViews) false);
             },
             contextMenuFixedPosition: null,
             new MouseEventArgs
@@ -513,10 +528,13 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 ClientY = eventArgsMouseDown.Y,
             },
             keyboardEventArgs: null));
+        */
     }
     
     private List<TreeViewNodeValue> GetFlatNodes()
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         _flatNodeList.Clear();
         _nodeRecursionStack.Clear();
         
@@ -580,6 +598,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         }
         
         return _flatNodeList;
+        */
+        return _flatNodeList;
     }
     
     private int IndexBasicValidation(int indexLocal)
@@ -618,10 +638,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
 
     private string GetHasActiveNodeCssClass(TreeViewContainer? treeViewContainer)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (treeViewContainer?.ActiveNode is null)
             return string.Empty;
 
         return "ci_active";
+        */
+        return string.Empty;
     }
     
     public async void OnTreeViewStateChanged(CommonUiEventKind commonUiEventKind)
@@ -649,6 +673,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// </summary>
     private string GetNodeElementCssStyle(TreeViewNodeValue node, int index)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (!CommonService.IntToCssValueCache.ContainsKey(node.Depth * OffsetPerDepthInPixels))
             CommonService.IntToCssValueCache.Add(node.Depth * OffsetPerDepthInPixels, (node.Depth * OffsetPerDepthInPixels).ToCssValue());
     
@@ -664,6 +690,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         CommonService.UiStringBuilder.Append("px;");
         
         return CommonService.UiStringBuilder.ToString();
+        */
+        return string.Empty;
     }
     
     private void ValidateScrollbar()

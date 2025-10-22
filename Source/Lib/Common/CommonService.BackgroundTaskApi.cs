@@ -58,8 +58,11 @@ public partial class CommonService
 
     public async ValueTask Do_TreeView_HandleExpansionChevronOnMouseDown(TreeViewNodeValue localTreeViewNoType, TreeViewContainer treeViewContainer)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         await localTreeViewNoType.LoadChildListAsync(treeViewContainer).ConfigureAwait(false);
         TreeView_ReRenderNodeAction(treeViewContainer.Key, localTreeViewNoType, flatListChanged: true);
+        */
     }
 
     public async ValueTask Do_TreeView_ManuallyPropagateOnContextMenu(Func<MouseEventArgs?, Key<TreeViewContainer>, TreeViewNodeValue, Task> handleTreeViewOnContextMenu, MouseEventArgs mouseEventArgs, Key<TreeViewContainer> key, TreeViewNodeValue treeViewNoType)
@@ -73,6 +76,8 @@ public partial class CommonService
 
     public async ValueTask Do_TreeViewService_LoadChildList(Key<TreeViewContainer> containerKey, TreeViewNodeValue treeViewNoType)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         try
         {
             var inState = GetTreeViewState();
@@ -97,6 +102,7 @@ public partial class CommonService
             Console.WriteLine(e);
             throw;
         }
+        */
     }
     
     public ValueTask HandleEvent()

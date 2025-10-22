@@ -115,7 +115,10 @@ public abstract class TreeViewContainer
     /// </summary>
     public virtual void LinkChildrenNoMap(int indexNodeValue, IEnumerable<TreeViewNodeValue> nextChildList)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         LinkChildren(previousChildList: null, nextChildList, container);
+        */
     }
     
     /// <summary>
@@ -127,7 +130,9 @@ public abstract class TreeViewContainer
         IEnumerable<TreeViewNodeValue>? previousChildList,
         IEnumerable<TreeViewNodeValue> nextChildList)
     {
-        Dictionary<TreeViewNoType, TreeViewNoType>? previousChildMap;
+        /*
+        // 2025-10-22 (rewrite TreeViews)
+        Dictionary<TreeViewNodeValue, TreeViewNodeValue>? previousChildMap;
         if (previousChildList is not null)
             previousChildMap = previousChildList.ToDictionary(child => child);
         else
@@ -155,14 +160,19 @@ public abstract class TreeViewContainer
                 }
             }
         }
+        */
     }
     
     public virtual IEnumerable<TreeViewNodeValue> GetChildList(int indexNodeValue)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (ChildListOffset >= container.ChildList.Count)
             return Enumerable.Empty<TreeViewNoType>();
     
         return container.ChildList.Skip(ChildListOffset).Take(ChildListLength);
+        */
+        return Enumerable.Empty<TreeViewNodeValue>();
     }
     
     /// <summary>
@@ -315,6 +325,8 @@ public abstract class TreeViewContainer
     /// </summary>
     protected virtual void OnMouseDown(TreeViewCommandArgs commandArgs)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (commandArgs.NodeThatReceivedMouseEvent is null || commandArgs.MouseEventArgs is null)
             return;
 
@@ -359,6 +371,7 @@ public abstract class TreeViewContainer
                 }
             }
         }
+        */
     }
     
     /// <summary>

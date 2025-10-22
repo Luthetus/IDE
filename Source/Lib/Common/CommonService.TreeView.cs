@@ -95,6 +95,8 @@ public partial class CommonService
 
     public void TreeView_WithRootNodeAction(Key<TreeViewContainer> containerKey, TreeViewNodeValue node, bool shouldFireStateChangedEvent = true)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -121,10 +123,13 @@ public partial class CommonService
         
         if (shouldFireStateChangedEvent)
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
+        */
     }
 
     public void TreeView_AddChildNodeAction(Key<TreeViewContainer> containerKey, TreeViewNodeValue parentNode, TreeViewNodeValue childNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();        TreeViewContainer? inContainer = null;
         foreach (var c in inState.ContainerList)        {            if (c.Key == containerKey)            {                inContainer = c;                break;            }        }
         if (inContainer is null)
@@ -144,10 +149,13 @@ public partial class CommonService
 
         TreeView_ReRenderNodeAction(containerKey, parent);
         return;
+        */
     }
 
     public void TreeView_ReRenderNodeAction(Key<TreeViewContainer> containerKey, TreeViewNodeValue node, bool flatListChanged = false)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -170,6 +178,7 @@ public partial class CommonService
         
         _treeViewState = inState with { ContainerList = outContainerList };
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
+        */
     }
 
     public void TreeView_SetActiveNodeAction(
@@ -237,6 +246,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -263,6 +274,7 @@ public partial class CommonService
         _treeViewState = inState with { ContainerList = outContainerList };
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
         return;
+        */
     }
 
     public void TreeView_MoveDownAction(
@@ -270,6 +282,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -296,6 +310,7 @@ public partial class CommonService
         _treeViewState = inState with { ContainerList = outContainerList };
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
         return;
+        */
     }
 
     public void TreeView_MoveUpAction(
@@ -303,6 +318,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -324,6 +341,7 @@ public partial class CommonService
         _treeViewState = inState with { ContainerList = outContainerList };
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
         return;
+        */
     }
 
     public void TreeView_MoveRightAction(
@@ -332,6 +350,8 @@ public partial class CommonService
         bool selectNodesBetweenCurrentAndNextActiveNode,
         Action<TreeViewNodeValue> loadChildListAction)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -359,6 +379,7 @@ public partial class CommonService
         _treeViewState = inState with { ContainerList = outContainerList };
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
         return;
+        */
     }
 
     public void TreeView_MoveHomeAction(
@@ -366,6 +387,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -392,6 +415,7 @@ public partial class CommonService
         _treeViewState = inState with { ContainerList = outContainerList };
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
         return;
+        */
     }
 
     public void TreeView_MoveEndAction(
@@ -399,6 +423,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -425,10 +451,13 @@ public partial class CommonService
         _treeViewState = inState with { ContainerList = outContainerList };
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
         return;
+        */
     }
     
     public int TreeView_GetNextFlatListVersion(Key<TreeViewContainer> containerKey)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -441,6 +470,8 @@ public partial class CommonService
         }
         
         return inState.ContainerList[indexContainer].FlatListVersion + 1;
+        */
+        return 1;
     }
 
     private TreeViewContainer PerformReRenderNode(
@@ -448,7 +479,11 @@ public partial class CommonService
         Key<TreeViewContainer> containerKey,
         TreeViewNodeValue node)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         return inContainer with { StateId = Guid.NewGuid() };
+        */
+        return inContainer;
     }
 
     private TreeViewContainer PerformSetActiveNode(
@@ -458,6 +493,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var inSelectedNodeList = inContainer.SelectedNodeList;
         var selectedNodeListWasCleared = false;
 
@@ -623,6 +660,8 @@ public partial class CommonService
         }
         
         return outContainer;
+        */
+        return inContainer;
     }
     
     private TreeViewContainer PerformRemoveSelectedNode(
@@ -630,6 +669,8 @@ public partial class CommonService
         Key<TreeViewContainer> containerKey,
         int keyOfNodeToRemove)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var indexOfNodeToRemove = inContainer.SelectedNodeList.FindIndex(
             x => x.Key == keyOfNodeToRemove);
 
@@ -640,6 +681,8 @@ public partial class CommonService
         {
             SelectedNodeList = outSelectedNodeList
         };
+        */
+        return inContainer;
     }
     
     private TreeViewContainer PerformMoveLeft(
@@ -648,6 +691,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var outContainer = inContainer;
 
         if (addSelectedNodes)
@@ -680,6 +725,8 @@ public partial class CommonService
         }
 
         return outContainer;
+        */
+        return inContainer;
     }
 
     private TreeViewContainer PerformMoveDown(
@@ -688,6 +735,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var outContainer = inContainer;
 
         if (outContainer.ActiveNode.IsExpanded &&
@@ -729,6 +778,8 @@ public partial class CommonService
         }
 
         return outContainer;
+        */
+        return inContainer;
     }
 
     private TreeViewContainer PerformMoveUp(
@@ -737,6 +788,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var outContainer = inContainer;
 
         if (outContainer?.ActiveNode?.Parent is null)
@@ -777,6 +830,8 @@ public partial class CommonService
         }
 
         return outContainer;
+        */
+        return inContainer;
     }
 
     private TreeViewContainer PerformMoveRight(
@@ -786,6 +841,8 @@ public partial class CommonService
         bool selectNodesBetweenCurrentAndNextActiveNode,
         Action<TreeViewNodeValue> loadChildListAction)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var outContainer = inContainer;
 
         if (outContainer is null || outContainer.ActiveNode is null)
@@ -817,6 +874,8 @@ public partial class CommonService
         }
 
         return outContainer;
+        */
+        return inContainer;
     }
 
     private TreeViewContainer PerformMoveHome(
@@ -825,6 +884,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var outContainer = inContainer;
 
         TreeViewNoType target;
@@ -847,6 +908,8 @@ public partial class CommonService
             target,
             addSelectedNodes,
             selectNodesBetweenCurrentAndNextActiveNode);
+        */
+        return inContainer;
     }
 
     private TreeViewContainer PerformMoveEnd(
@@ -855,6 +918,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var outContainer = inContainer;
 
         var target = outContainer.RootNode;
@@ -870,6 +935,8 @@ public partial class CommonService
             target,
             addSelectedNodes,
             selectNodesBetweenCurrentAndNextActiveNode);
+        */
+        return inContainer;
     }
     
     // TODO: Clearing logic

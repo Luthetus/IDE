@@ -14,17 +14,7 @@ public partial class TextEditorService
 {
     private readonly object _stateModificationLock = new();
 
-    private readonly Throttle _throttleSetSearchQuery = new Throttle(TimeSpan.FromMilliseconds(500));
-    private readonly Throttle _throttleUiUpdate = new Throttle(CommonFacts.ThrottleFacts_TwentyFour_Frames_Per_Second);
-
-    private readonly object _flushSearchResultsLock = new();
-
-    /// <summary>
-    /// Each instance of the state will share this cancellation token source because the 'with' keyword
-    /// will copy any private members too, and <see cref="CancellationTokenSource"/> is a reference type.
-    /// </summary>
     private CancellationTokenSource _searchCancellationTokenSource = new();
-
     private TextEditorFindAllState _findAllState = new();
 
     public TextEditorFindAllState GetFindAllState() => _findAllState;
@@ -61,8 +51,6 @@ public partial class TextEditorService
         {
             _searchCancellationTokenSource.Cancel();
             _searchCancellationTokenSource = new();
-
-            _findAllState = _findAllState with { };
         }
 
         SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
@@ -372,16 +360,14 @@ public partial class TextEditorService
     public record struct TextEditorFindAllState(
         string SearchQuery,
         string StartingDirectoryPath,
-        List<(string SourceText, ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList,
-        ProgressBarModel? ProgressBarModel)
+        List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList)
     {
         public static readonly Key<TreeViewContainer> TreeViewFindAllContainerKey = Key<TreeViewContainer>.NewKey();
 
         public TextEditorFindAllState() : this(
-            string.Empty,
-            string.Empty,
-            new(),
-            null)
+            SearchQuery: string.Empty,
+            StartingDirectoryPath: string.Empty,
+            SearchResultList: new())
         {
         }
     }

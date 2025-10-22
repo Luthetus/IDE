@@ -56,8 +56,6 @@ public struct TreeViewNodeValue
     
     public bool IsExpandable { get; set; }
     public bool IsExpanded { get; set; }
-
-    public int Key { get; set; } = s_nextKey++;
     
     public bool IsDefault() => TreeViewNodeValueKind == TreeViewNodeValueKind.None;
 }

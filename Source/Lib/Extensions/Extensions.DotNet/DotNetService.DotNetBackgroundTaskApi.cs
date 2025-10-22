@@ -914,6 +914,9 @@ public partial class DotNetService
     {
         // !!!!!!!!!!!!!
         // This is probably the most important thing to do next.
+        //
+        // I changed my AppData so the app would auto open a .NET Solution without
+        // having to use the input file dialog (which is currently broken).
         // !!!!!!!!!!!!!
         
         /*

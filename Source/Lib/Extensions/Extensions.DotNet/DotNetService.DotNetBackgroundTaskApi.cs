@@ -15,7 +15,6 @@ using Clair.Extensions.DotNet.AppDatas.Models;
 using Clair.Extensions.DotNet.CommandLines.Models;
 using Clair.Extensions.DotNet.DotNetSolutions.Displays;
 using Clair.Extensions.DotNet.DotNetSolutions.Models;
-using Clair.Extensions.DotNet.Namespaces.Models;
 using Clair.Extensions.DotNet.Nugets.Models;
 using Clair.Extensions.DotNet.TestExplorers.Models;
 using Clair.Ide.RazorLib;
@@ -101,7 +100,7 @@ public partial class DotNetService
         ReduceSetMostRecentQueryResultAction(localNugetResult);
     }
 
-    public ValueTask Do_RunTestByFullyQualifiedName(TreeViewStringFragment treeViewStringFragment, string fullyQualifiedName, TreeViewProjectTestModel treeViewProjectTestModel)
+    /*public ValueTask Do_RunTestByFullyQualifiedName(TreeViewStringFragment treeViewStringFragment, string fullyQualifiedName, TreeViewProjectTestModel treeViewProjectTestModel)
     {
         var parentDirectory = treeViewProjectTestModel.Item.AbsolutePath.CreateSubstringParentDirectory();
         if (parentDirectory is null)
@@ -199,6 +198,7 @@ public partial class DotNetService
         treeViewStringFragment.Item.TerminalCommandRequest = terminalCommandRequest;
         IdeService.GetTerminalState().ExecutionTerminal.EnqueueCommand(terminalCommandRequest);
     }
+    */
 
     #region DotNetSolutionIdeApi
     private const int GET_TEXT_BUFFER_SIZE = 32;
@@ -912,6 +912,11 @@ public partial class DotNetService
 
     public async ValueTask Do_SetDotNetSolutionTreeView(Key<DotNetSolutionModel> dotNetSolutionModelKey)
     {
+        // !!!!!!!!!!!!!
+        // This is probably the most important thing to do next.
+        // !!!!!!!!!!!!!
+        
+        /*
         var dotNetSolutionState = GetDotNetSolutionState();
 
         var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
@@ -943,6 +948,7 @@ public partial class DotNetService
                 true,
                 false);
         }
+        */
     }
 
     private void RegisterStartupControl_Range(List<IDotNetProject> projectList)

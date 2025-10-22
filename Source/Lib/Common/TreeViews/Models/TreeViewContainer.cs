@@ -79,16 +79,18 @@ public abstract class TreeViewContainer
     /// When the UI expands a nodeValue, then this method is invoked foreach child of the expanded nodeValue.
     /// (virtualization is NOT accounted for. This gets invoked for every new child whether it is visible or not).
     /// </summary>
-    public void Saturate(ref TreeViewNodeValue nodeValue)
+    public virtual void Saturate(int )
     {
-        
+        // NOTE: Code behinds can be done easily because you only ever remove children....
+        // ...thus you have this contiguous space in the List and a span over it.
+        // You can decrease length and shift various children around.
     }
     
     /// <summary>
     /// When the UI collapses a nodeValue, then this method is invoked on every nodeValue which
     /// was a child of the collapsed nodeValue.
     /// </summary>
-    public void Dessicate(ref TreeViewNodeValue nodeValue)
+    public virtual void Dessicate(ref TreeViewNodeValue nodeValue)
     {
         
     }
@@ -110,7 +112,7 @@ public abstract class TreeViewContainer
     /// Sets foreach child: child.Parent = this;
     /// As well it sets the child.IndexAmongSiblings, and maintains expanded state.
     /// </summary>
-    public void LinkChildrenNoMap(IEnumerable<TreeViewNoType> nextChildList, ITreeViewContainer container)
+    public virtual void LinkChildrenNoMap(IEnumerable<TreeViewNoType> nextChildList, ITreeViewContainer container)
     {
         LinkChildren(previousChildList: null, nextChildList, container);
     }

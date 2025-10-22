@@ -919,6 +919,30 @@ public partial class DotNetService
         // having to use the input file dialog (which is currently broken).
         // !!!!!!!!!!!!!
         
+        var dotNetSolutionState = GetDotNetSolutionState();
+        
+        var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
+        if (dotNetSolutionModel is null)
+            return;
+            
+        // I said there is an emphasis on tying the TreeViewContainer directly to the UI lifecycle
+        // and then DisposeContainer() is invoked when the UI disappears
+        // was an opportunity to create more optimized storage of the TreeView
+        /// so you could recreate it when the UI later was shown again.
+        //
+        // I need to just get something on sscreen though so I'm gonna ignore what I said for now.
+        //
+        // Oh no way my mom might've just gotten home with food totally epic
+        
+        if (!IdeService.CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
+        {
+            treeViewContainer = new TreeViewContainer(
+                DotNetSolutionState.TreeViewSolutionExplorerStateKey,
+                rootNode: null,
+                selectedNodeList: Array.Empty<TreeViewNodeValue>());
+            IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);
+        }
+        
         /*
         var dotNetSolutionState = GetDotNetSolutionState();
 

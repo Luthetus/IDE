@@ -33,6 +33,10 @@ public struct TreeViewNodeValue
     /// </summary>
     public int ChildListLength { get; set; }
     
+    /// <summary>
+    /// '.None' should NEVER be used.
+    /// It marks whether a nodeValue is the default value or not.
+    /// </summary>
     public TreeViewNodeValueKind TreeViewNodeValueKind { get; set; }
     
     /// <summary>
@@ -52,11 +56,7 @@ public struct TreeViewNodeValue
     
     public bool IsExpandable { get; set; }
     public bool IsExpanded { get; set; }
-    
-    /// <summary>
-    /// Used by the UI
-    /// </summary>
-    public int Depth { get; set; }    
+
     public int Key { get; set; } = s_nextKey++;
     
     public bool IsDefault() => TreeViewNodeValueKind == TreeViewNodeValueKind.None;

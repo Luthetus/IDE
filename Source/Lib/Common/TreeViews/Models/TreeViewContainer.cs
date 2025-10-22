@@ -1,5 +1,6 @@
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Commands.Models;
+using Clair.Common.RazorLib.Icons.Displays;
 
 namespace Clair.Common.RazorLib.TreeViews.Models;
 

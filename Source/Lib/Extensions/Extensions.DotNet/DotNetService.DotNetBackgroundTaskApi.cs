@@ -15,7 +15,7 @@ using Clair.Extensions.DotNet.AppDatas.Models;
 using Clair.Extensions.DotNet.CommandLines.Models;
 using Clair.Extensions.DotNet.DotNetSolutions.Displays;
 using Clair.Extensions.DotNet.DotNetSolutions.Models;
-// using Clair.Extensions.DotNet.Namespaces.Models;
+using Clair.Extensions.DotNet.Namespaces.Models;
 using Clair.Extensions.DotNet.Nugets.Models;
 using Clair.Extensions.DotNet.TestExplorers.Models;
 using Clair.Ide.RazorLib;
@@ -99,6 +99,105 @@ public partial class DotNetService
             .ConfigureAwait(false);
 
         ReduceSetMostRecentQueryResultAction(localNugetResult);
+    }
+
+    public ValueTask Do_RunTestByFullyQualifiedName(TreeViewStringFragment treeViewStringFragment, string fullyQualifiedName, TreeViewProjectTestModel treeViewProjectTestModel)
+    {
+        var parentDirectory = treeViewProjectTestModel.Item.AbsolutePath.CreateSubstringParentDirectory();
+        if (parentDirectory is null)
+            return ValueTask.CompletedTask;
+    
+        RunTestByFullyQualifiedName(
+            treeViewStringFragment,
+            fullyQualifiedName,
+            parentDirectory);
+
+        return ValueTask.CompletedTask;
+    }
+
+    private void RunTestByFullyQualifiedName(
+        TreeViewStringFragment treeViewStringFragment,
+        string fullyQualifiedName,
+        string? directoryNameForTestDiscovery)
+    {
+        var dotNetTestByFullyQualifiedNameFormattedCommandValue = DotNetCliCommandFormatter
+            .FormatDotNetTestByFullyQualifiedName(fullyQualifiedName);
+
+        if (string.IsNullOrWhiteSpace(directoryNameForTestDiscovery) ||
+            string.IsNullOrWhiteSpace(fullyQualifiedName))
+        {
+            return;
+        }
+
+        var terminalCommandRequest = new TerminalCommandRequest(
+            dotNetTestByFullyQualifiedNameFormattedCommandValue,
+            directoryNameForTestDiscovery,
+            treeViewStringFragment.Item.DotNetTestByFullyQualifiedNameFormattedTerminalCommandRequestKey)
+        {
+            BeginWithFunc = parsedCommand =>
+            {
+                treeViewStringFragment.Item.TerminalCommandParsed = parsedCommand;
+                IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(TestExplorerState.TreeViewTestExplorerKey, treeViewStringFragment);
+                return Task.CompletedTask;
+            },
+            ContinueWithFunc = parsedCommand =>
+            {
+                treeViewStringFragment.Item.TerminalCommandParsed = parsedCommand;
+                var output = treeViewStringFragment.Item.TerminalCommandParsed?.OutputCache.ToString() ?? null;
+
+                if (output is not null && output.Contains("Duration:"))
+                {
+                    if (output.Contains("Passed!"))
+                    {
+                        ReduceWithAction(inState =>
+                        {
+                            var passedTestHashSet = new HashSet<string>(inState.PassedTestHashSet);
+                            passedTestHashSet.Add(fullyQualifiedName);
+
+                            var notRanTestHashSet = new HashSet<string>(inState.NotRanTestHashSet);
+                            notRanTestHashSet.Remove(fullyQualifiedName);
+
+                            var failedTestHashSet = new HashSet<string>(inState.FailedTestHashSet);
+                            failedTestHashSet.Remove(fullyQualifiedName);
+
+                            return inState with
+                            {
+                                PassedTestHashSet = passedTestHashSet,
+                                NotRanTestHashSet = notRanTestHashSet,
+                                FailedTestHashSet = failedTestHashSet,
+                            };
+                        });
+                    }
+                    else
+                    {
+                        ReduceWithAction(inState =>
+                        {
+                            var failedTestHashSet = new HashSet<string>(inState.FailedTestHashSet);
+                            failedTestHashSet.Add(fullyQualifiedName);
+
+                            var notRanTestHashSet = new HashSet<string>(inState.NotRanTestHashSet);
+                            notRanTestHashSet.Remove(fullyQualifiedName);
+
+                            var passedTestHashSet = new HashSet<string>(inState.PassedTestHashSet);
+                            passedTestHashSet.Remove(fullyQualifiedName);
+
+                            return inState with
+                            {
+                                FailedTestHashSet = failedTestHashSet,
+                                NotRanTestHashSet = notRanTestHashSet,
+                                PassedTestHashSet = passedTestHashSet,
+                            };
+                        });
+                    }
+                }
+
+                IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(TestExplorerState.TreeViewTestExplorerKey, treeViewStringFragment);
+                return Task.CompletedTask;
+            }
+        };
+
+        treeViewStringFragment.Item.TerminalCommandRequest = terminalCommandRequest;
+        IdeService.GetTerminalState().ExecutionTerminal.EnqueueCommand(terminalCommandRequest);
     }
 
     #region DotNetSolutionIdeApi
@@ -813,7 +912,6 @@ public partial class DotNetService
 
     public async ValueTask Do_SetDotNetSolutionTreeView(Key<DotNetSolutionModel> dotNetSolutionModelKey)
     {
-        /*
         var dotNetSolutionState = GetDotNetSolutionState();
 
         var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
@@ -845,7 +943,6 @@ public partial class DotNetService
                 true,
                 false);
         }
-        */
     }
 
     private void RegisterStartupControl_Range(List<IDotNetProject> projectList)

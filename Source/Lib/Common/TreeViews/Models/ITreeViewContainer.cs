@@ -2,7 +2,12 @@ using Clair.Common.RazorLib.Keys.Models;
 
 namespace Clair.Common.RazorLib.TreeViews.Models;
 
-public interface ITreeViewContainer
+/// <summary>
+/// This interface should always be directly tied to UI of a TreeView actively being rendered.
+/// To maintain TreeView state beyond the lifecycle of the UI, implement the Dispose
+/// and store the TreeView yourself however you want, in an optimized manner.
+/// </summary>
+public interface ITreeViewContainer : IDisposable
 {
     /// <summary>
     /// WARNING: modification of this list from a non-`ITreeViewContainer` is extremely unsafe.
@@ -37,14 +42,22 @@ public interface ITreeViewContainer
     
     public List<> Asd;
     
-    public void Hydrate(TreeViewNodeValue nodeValue)
+    public void Saturate(TreeViewNodeValue nodeValue)
     {
         
     }
     
-    // ???????????? wtf are these names
-    public void Dessicate()
+    public void Dessicate(TreeViewNodeValue nodeValue)
     {
         
+    }
+    
+    /// <summary>
+    /// This interface should always be directly tied to UI of a TreeView actively being rendered.
+    /// To maintain TreeView state beyond the lifecycle of the UI, implement the Dispose
+    /// and store the TreeView yourself however you want, in an optimized manner.
+    /// </summary>
+    public void Dispose()
+    {
     }
 }

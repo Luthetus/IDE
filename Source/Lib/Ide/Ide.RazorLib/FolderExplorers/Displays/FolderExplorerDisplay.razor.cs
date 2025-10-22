@@ -16,12 +16,6 @@ public sealed partial class FolderExplorerDisplay : ComponentBase, IDisposable
     protected override void OnInitialized()
     {
         IdeService.IdeStateChanged += OnFolderExplorerStateChanged;
-    
-        _treeViewContainerParameter = new(
-            FolderExplorerState.TreeViewContentStateKey,
-            new FolderExplorerTreeViewKeyboardEventHandler(IdeService),
-            new FolderExplorerTreeViewMouseEventHandler(IdeService),
-            OnTreeViewContextMenuFunc);
     }
 
     private Task OnTreeViewContextMenuFunc(TreeViewCommandArgs treeViewCommandArgs)

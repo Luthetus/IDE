@@ -6,8 +6,9 @@ namespace Clair.Ide.RazorLib.FileSystems.Models;
 
 public class TreeViewHelperAbsolutePathDirectory
 {
-    public static Task<List<TreeViewNoType>> LoadChildrenAsync(TreeViewAbsolutePath directoryTreeView)
+    public static Task<List<TreeViewNodeValue>> LoadChildrenAsync(TreeViewNodeValue directoryTreeView)
     {
+        /*
         var directoryAbsolutePathString = directoryTreeView.Item.Value;
         var directoryList = directoryTreeView.CommonService.FileSystemProvider.Directory.GetDirectories(directoryAbsolutePathString);
         var fileList = directoryTreeView.CommonService.FileSystemProvider.Directory.GetFiles(directoryAbsolutePathString);
@@ -40,5 +41,7 @@ public class TreeViewHelperAbsolutePathDirectory
                 }));
 
         return Task.FromResult(list);
+        */
+        return Task.FromResult(new List<TreeViewNodeValue>());
     }
 }

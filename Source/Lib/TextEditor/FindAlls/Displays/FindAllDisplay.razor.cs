@@ -37,11 +37,14 @@ public sealed partial class FindAllDisplay : ComponentBase, IDisposable
     {
         TextEditorService.SecondaryChanged += OnFindAllStateChanged;
         
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         _treeViewContainerParameter = new(
             TextEditorService.TextEditorFindAllState.TreeViewFindAllContainerKey,
             new FindAllTreeViewKeyboardEventHandler(TextEditorService),
             new FindAllTreeViewMouseEventHandler(TextEditorService),
             OnTreeViewContextMenuFunc);
+        */
     }
     
     private Task OnTreeViewContextMenuFunc(TreeViewCommandArgs treeViewCommandArgs)

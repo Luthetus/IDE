@@ -152,6 +152,8 @@ public partial class IdeService : IBackgroundTaskGroup
 
     private async ValueTask Do_SetFolderExplorerTreeView(AbsolutePath folderAbsolutePath)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         CommonService.FileSystemProvider.DeletionPermittedRegister(
             new(folderAbsolutePath.Value, true),
             tokenBuilder: new StringBuilder(),
@@ -175,6 +177,7 @@ public partial class IdeService : IBackgroundTaskGroup
         CommonService.TreeView_RegisterContainerAction(
             container,
             shouldFireStateChangedEvent: false);
+        */
     }
 
     public void FolderExplorer_ShowInputFile()

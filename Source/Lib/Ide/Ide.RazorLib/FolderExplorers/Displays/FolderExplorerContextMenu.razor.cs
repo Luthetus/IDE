@@ -27,12 +27,21 @@ public partial class FolderExplorerContextMenu : ComponentBase
         if (_previousGetMenuRecordInvocation.treeViewCommandArgs == treeViewCommandArgs)
             return _previousGetMenuRecordInvocation.menuRecord;
 
+        // ----------------------------------------------------------------------
+        var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            _previousGetMenuRecordInvocation = (treeViewCommandArgs, menuRecord);
+            return menuRecord;
+        // ---------------------------------------------------------------------- 
+
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (treeViewCommandArgs.NodeThatReceivedMouseEvent is null)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (treeViewCommandArgs, menuRecord);
             return menuRecord;
         }
+        *//*// 2025-10-22 (rewrite TreeViews)
 
         var menuRecordsList = new List<MenuOptionRecord>();
 
@@ -65,13 +74,15 @@ public partial class FolderExplorerContextMenu : ComponentBase
             var menuRecord = new MenuRecord(menuRecordsList);
             _previousGetMenuRecordInvocation = (treeViewCommandArgs, menuRecord);
             return menuRecord;
-        }
+        }*/
     }
 
-    private MenuOptionRecord[] GetDirectoryMenuOptions(TreeViewAbsolutePath treeViewModel)
+    private MenuOptionRecord[] GetDirectoryMenuOptions(TreeViewNodeValue treeViewModel)
     {
-        return new[]
+        return new MenuOptionRecord[]
         {
+            /*
+            // 2025-10-22 (rewrite TreeViews)
             IdeService.NewEmptyFile(
                 treeViewModel.Item,
                 async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
@@ -90,15 +101,18 @@ public partial class FolderExplorerContextMenu : ComponentBase
 
                     await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false);
                 }),
+            */
         };
     }
 
     private MenuOptionRecord[] GetFileMenuOptions(
-        TreeViewAbsolutePath treeViewModel,
-        TreeViewAbsolutePath? parentTreeViewModel)
+        TreeViewNodeValue treeViewModel,
+        TreeViewNodeValue parentTreeViewModel)
     {
-        return new[]
+        return new MenuOptionRecord[]
         {
+            /*
+            // 2025-10-22 (rewrite TreeViews)
             IdeService.CopyFile(
                 treeViewModel.Item,
                 (Func<Task>)(() => {
@@ -119,10 +133,11 @@ public partial class FolderExplorerContextMenu : ComponentBase
                 treeViewModel.Item,
                 IdeService.CommonService,
                 async ()  => await ReloadTreeViewModel(parentTreeViewModel).ConfigureAwait(false))
+            */
         };
     }
 
-    private MenuOptionRecord[] GetDebugMenuOptions(TreeViewAbsolutePath treeViewModel)
+    private MenuOptionRecord[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)
     {
         return new MenuOptionRecord[]
         {
@@ -142,8 +157,10 @@ public partial class FolderExplorerContextMenu : ComponentBase
     /// as the root. But this method erroneously reloads the old root.
     /// </summary>
     /// <param name="treeViewModel"></param>
-    private async Task ReloadTreeViewModel(TreeViewNoType? treeViewModel)
+    private async Task ReloadTreeViewModel(TreeViewNodeValue treeViewModel)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (treeViewModel is null)
             return;
 
@@ -161,5 +178,6 @@ public partial class FolderExplorerContextMenu : ComponentBase
             FolderExplorerState.TreeViewContentStateKey,
             treeViewModel,
             flatListChanged: true);
+        */
     }
 }

@@ -1,3 +1,4 @@
+/*
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
@@ -51,7 +52,7 @@ public class TreeViewCodeSearchTextSpan : TreeViewWithType<TextEditorTextSpan>
     
         <div title="@TreeViewCodeSearchTextSpan.AbsolutePath.Value">
             @(TreeViewCodeSearchTextSpan.AbsolutePath.NameWithExtension)
-        </div>
+        <//*div>
 
     
     
@@ -67,11 +68,11 @@ public class TreeViewCodeSearchTextSpan : TreeViewWithType<TextEditorTextSpan>
                     this
                 }
             });
-    }*/
+    }*//*
     
     public override Task LoadChildListAsync(TreeViewContainer container)
     {
         return Task.CompletedTask;
     }
 }
-
+*/

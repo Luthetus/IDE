@@ -1,3 +1,5 @@
+/*
+// 2025-10-22 (rewrite TreeViews)
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
@@ -34,3 +36,4 @@ public class TreeViewFindAllTextSpan : TreeViewWithType<TextEditorTextSpan>
         return Task.CompletedTask;
     }
 }
+*/

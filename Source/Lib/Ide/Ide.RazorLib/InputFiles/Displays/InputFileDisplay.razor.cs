@@ -17,23 +17,11 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
     [CascadingParameter]
     public IDialog? DialogRecord { get; set; }
 
-    private InputFileTreeViewMouseEventHandler _inputFileTreeViewMouseEventHandler = null!;
-    private InputFileTreeViewKeyboardEventHandler _inputFileTreeViewKeyboardEventHandler = null!;
-
     public static readonly Key<TreeViewContainer> InputFileSidebar_TreeViewContainerKey = Key<TreeViewContainer>.NewKey();
     private TreeViewContainerParameter InputFileSidebar_treeViewContainerParameter;
 
     protected override void OnInitialized()
     {
-        _inputFileTreeViewMouseEventHandler = new InputFileTreeViewMouseEventHandler(IdeService);
-        _inputFileTreeViewKeyboardEventHandler = new InputFileTreeViewKeyboardEventHandler(IdeService);
-
-        InputFileSidebar_treeViewContainerParameter = new(
-            InputFileSidebar_TreeViewContainerKey,
-            _inputFileTreeViewKeyboardEventHandler,
-            _inputFileTreeViewMouseEventHandler,
-            OnTreeViewContextMenuFunc);
-        
         IdeService.IdeStateChanged += OnInputFileStateChanged;
     }
     
@@ -41,6 +29,8 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
     {
         if (firstRender)
         {
+            /*
+            // 2025-10-22 (rewrite TreeViews)
             var directoryHomeNode = new TreeViewAbsolutePath(
                 IdeService.CommonService.FileSystemProvider.HomeDirectoryAbsolutePath,
                 IdeService.CommonService,
@@ -71,6 +61,7 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
                     addSelectedNodes: true,
                     selectNodesBetweenCurrentAndNextActiveNode: false);
             }
+            */
         }
 
         return Task.CompletedTask;
@@ -120,16 +111,22 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
 
     private string GetSelectedTreeViewModelAbsolutePathString(InputFileState inputFileState)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var selectedAbsolutePath = inputFileState.SelectedTreeViewModel?.Item;
 
         if (selectedAbsolutePath is null)
             return "Selection is null";
 
         return selectedAbsolutePath.Value.Value;
+        */
+        return string.Empty;
     }
 
     private async Task FireOnAfterSubmit()
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var valid = await IdeService.GetInputFileState().SelectionIsValidFunc
             .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel?.Item ?? default)
             .ConfigureAwait(false);
@@ -143,12 +140,17 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
                 .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel?.Item ?? default)
                 .ConfigureAwait(false);
         }
+        */
     }
 
     private bool OnAfterSubmitIsDisabled()
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         return !IdeService.GetInputFileState().SelectionIsValidFunc.Invoke(IdeService.GetInputFileState().SelectedTreeViewModel?.Item ?? default)
             .Result;
+        */
+        return true;
     }
 
     private Task CancelOnClick()

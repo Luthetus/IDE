@@ -75,6 +75,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     {
         if (firstRender)
         {
+            /*
             // Do not ConfigureAwait(false) so that the UI doesn't change out from under you
             // before you finish setting up the events?
             // (is this a thing, I'm just presuming this would be true).
@@ -82,8 +83,10 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 "clairCommon.treeViewInitialize",
                 _dotNetHelper,
                 _htmlId);
+            */
         }
         
+        /*
         if (_treeViewContainer is not null)
         {
             var didValidateScrollbar = false;
@@ -94,7 +97,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*/ false);
+                    /*preventScroll:*//* false);
             
                 didValidateScrollbar = true;
                 ValidateScrollbar();
@@ -115,7 +118,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             // `if (firstRender)` is the only current scenario where an await comes prior to this read and assign.
             //
             // ScrollLeft is most likely to shortcircuit, thus it is being put first.
-            
+            /*
             var scroll_LeftChanged = _seenScrollLeft != _treeViewMeasurements.ScrollLeft;
             var scroll_TopChanged = _seenScrollTop != _treeViewMeasurements.ScrollTop;
             
@@ -132,7 +135,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                     .ConfigureAwait(false);
             }
             else if (scroll_TopChanged) // ScrollTop is most likely to come next
-            {
+            /*{
                 if (_treeViewMeasurements.ScrollTop < 0)
                     _treeViewMeasurements.ScrollTop = 0;
             
@@ -163,6 +166,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 await InvokeAsync(StateHasChanged);
             }
         }
+        */
     }
     
     [JSInvokable]

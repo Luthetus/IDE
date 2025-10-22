@@ -29,7 +29,7 @@ public record TestExplorerState(
         DetailsElementDimensions.Width_Offset = new DimensionUnit(0, DimensionUnitKind.Pixels, DimensionOperatorKind.Subtract);
     }
 
-    public List<ProjectTestModel> ProjectTestModelList { get; init; } = new();
+    //public List<ProjectTestModel> ProjectTestModelList { get; init; } = new();
     
     public ElementDimensions TreeViewElementDimensions { get; init; } = new();
     public ElementDimensions DetailsElementDimensions { get; init; } = new();

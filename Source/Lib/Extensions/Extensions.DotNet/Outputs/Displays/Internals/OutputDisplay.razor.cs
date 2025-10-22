@@ -20,12 +20,6 @@ public sealed partial class OutputDisplay : ComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        _treeViewContainerParameter = new(
-            OutputState.TreeViewContainerKey,
-            new OutputTreeViewKeyboardEventHandler(DotNetService.TextEditorService),
-            new OutputTreeViewMouseEventHandler(DotNetService.TextEditorService),
-            OnTreeViewContextMenuFunc);
-    
         DotNetService.DotNetStateChanged += DotNetCliOutputParser_StateChanged;
         
         if (DotNetService.GetOutputState().DotNetRunParseResultId != DotNetService.GetDotNetRunParseResult().Id)

@@ -58,6 +58,8 @@ public partial class TextEditorService
 
     public void SetProgressBarModel(ProgressBarModel progressBarModel)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         lock (_stateModificationLock)
         {
             _findAllState = _findAllState with
@@ -65,12 +67,14 @@ public partial class TextEditorService
                 ProgressBarModel = progressBarModel,
             };
         }
+        */
 
         SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
     }
 
     public void FlushSearchResults(List<(string SourceText, ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList)
     {
+        /*
         lock (_stateModificationLock)
         {
             var inState = GetFindAllState();
@@ -88,6 +92,7 @@ public partial class TextEditorService
                 SearchResultList = localSearchResultList
             };
         }
+        */
 
         SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
     }
@@ -109,6 +114,8 @@ public partial class TextEditorService
 
     public Task HandleStartSearchAction()
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         _throttleSetSearchQuery.Run(async _ =>
         {
             CancelSearch();
@@ -142,6 +149,7 @@ public partial class TextEditorService
                 Console.WriteLine(e);
             }
         });
+        */
 
         return Task.CompletedTask;
     }
@@ -278,6 +286,8 @@ public partial class TextEditorService
 
         void ShowFilesProcessedCountOnUi(double decimalPercentProgress, bool shouldDisposeProgressBarModel = false)
         {
+            /*
+            // 2025-10-22 (rewrite TreeViews)
             _throttleUiUpdate.Run(_ =>
             {
                 progressBarModel.SetProgress(
@@ -294,18 +304,21 @@ public partial class TextEditorService
 
                 return Task.CompletedTask;
             });
+            */
         }
     }
 
     private void ConstructTreeView(TextEditorFindAllState textEditorFindAllState)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(TextEditorFindAllState.TreeViewFindAllContainerKey);
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
         var container = new TreeViewContainer(
     		TextEditorFindAllState.TreeViewFindAllContainerKey,
     		rootNode: null,
-    		selectedNodeList: Array.Empty<TreeViewNoType>());
+    		selectedNodeList: Array.Empty<TreeViewNodeValue>());
     
         var groupedResults = textEditorFindAllState.SearchResultList.GroupBy(x => x.ResourceUri);
 
@@ -350,6 +363,7 @@ public partial class TextEditorService
         CommonService.TreeView_RegisterContainerAction(
         	container,
         	shouldFireStateChangedEvent: true);
+    	*/
     }
 
     public void Dispose()

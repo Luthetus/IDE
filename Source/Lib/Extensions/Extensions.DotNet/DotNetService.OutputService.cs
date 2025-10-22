@@ -2,7 +2,6 @@ using System.Text;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Reactives.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Common.RazorLib.TreeViews.Models.Utils;
 using Clair.Extensions.DotNet.CommandLines.Models;
 using Clair.Extensions.DotNet.Outputs.Models;
 
@@ -37,13 +36,14 @@ public partial class DotNetService
 
     public ValueTask OutputService_Do_ConstructTreeView()
     {
+        /*
         var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(OutputState.TreeViewContainerKey);
         CommonService.TreeView_DisposeContainerAction(OutputState.TreeViewContainerKey);
         
         CommonService.TreeView_RegisterContainerAction(new TreeViewContainer(
                 OutputState.TreeViewContainerKey,
                 rootNode: null,
-                selectedNodeList: Array.Empty<TreeViewNoType>())
+                selectedNodeList: Array.Empty<TreeViewNodeValue>())
             {
                 FlatListVersion = flatListVersion
             });
@@ -193,6 +193,7 @@ public partial class DotNetService
         
             ReduceStateHasChangedAction(dotNetRunParseResult.Id);
         }
+        */
         return ValueTask.CompletedTask;
     }
 }

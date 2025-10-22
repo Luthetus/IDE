@@ -1,3 +1,4 @@
+/*
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.TextEditor.RazorLib;
@@ -35,3 +36,4 @@ public class CodeSearchTreeViewMouseEventHandler : TreeViewMouseEventHandler
         return Task.CompletedTask;
     }
 }
+*/

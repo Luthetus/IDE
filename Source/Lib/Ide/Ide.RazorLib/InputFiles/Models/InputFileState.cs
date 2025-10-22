@@ -1,13 +1,14 @@
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.FileSystems.Models;
+using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Ide.RazorLib.FileSystems.Models;
 
 namespace Clair.Ide.RazorLib.InputFiles.Models;
 
 public record struct InputFileState(
     int IndexInHistory,
-    IReadOnlyList<TreeViewAbsolutePath> OpenedTreeViewModelHistoryList,
-    TreeViewAbsolutePath? SelectedTreeViewModel,
+    IReadOnlyList<TreeViewNodeValue> OpenedTreeViewModelHistoryList,
+    TreeViewNodeValue SelectedTreeViewModel,
     Func<AbsolutePath, Task> OnAfterSubmitFunc,
     Func<AbsolutePath, Task<bool>> SelectionIsValidFunc,
     IReadOnlyList<InputFilePattern> InputFilePatternsList,
@@ -17,8 +18,8 @@ public record struct InputFileState(
 {
     public InputFileState() : this(
         -1,
-        Array.Empty<TreeViewAbsolutePath>(),
-        null,
+        Array.Empty<TreeViewNodeValue>(),
+        default,
         _ => Task.CompletedTask,
         _ => Task.FromResult(false),
         Array.Empty<InputFilePattern>(),
@@ -31,19 +32,21 @@ public record struct InputFileState(
     public bool CanMoveBackwardsInHistory => IndexInHistory > 0;
     public bool CanMoveForwardsInHistory => IndexInHistory < OpenedTreeViewModelHistoryList.Count - 1;
 
-    public TreeViewAbsolutePath? GetOpenedTreeView()
+    public TreeViewNodeValue GetOpenedTreeView()
     {
         if (IndexInHistory == -1 || IndexInHistory >= OpenedTreeViewModelHistoryList.Count)
-            return null;
+            return default;
 
         return OpenedTreeViewModelHistoryList[IndexInHistory];
     }
 
     public static InputFileState NewOpenedTreeViewModelHistory(
         InputFileState inInputFileState,
-        TreeViewAbsolutePath selectedTreeViewModel,
+        TreeViewNodeValue selectedTreeViewModel,
         CommonService commonService)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var selectionClone = new TreeViewAbsolutePath(
             selectedTreeViewModel.Item,
             commonService,
@@ -76,5 +79,7 @@ public record struct InputFileState(
             IndexInHistory = inInputFileState.IndexInHistory + 1,
             OpenedTreeViewModelHistoryList = nextHistory,
         };
+        */
+        return inInputFileState;
     }
 }

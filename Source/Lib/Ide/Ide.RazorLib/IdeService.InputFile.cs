@@ -1,6 +1,7 @@
 using System.Text;
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.FileSystems.Models;
+using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Ide.RazorLib.BackgroundTasks.Models;
 using Clair.Ide.RazorLib.FileSystems.Models;
 using Clair.Ide.RazorLib.InputFiles.Models;
@@ -35,7 +36,7 @@ public partial class IdeService
         IdeStateChanged?.Invoke(IdeStateChangedKind.InputFileStateChanged);
     }
 
-    public void InputFile_SetSelectedTreeViewModel(TreeViewAbsolutePath? selectedTreeViewModel)
+    public void InputFile_SetSelectedTreeViewModel(TreeViewNodeValue selectedTreeViewModel)
     {
         lock (_stateModificationLock)
         {
@@ -97,8 +98,10 @@ public partial class IdeService
 
     public void InputFile_OpenParentDirectory(
         CommonService commonService,
-        TreeViewAbsolutePath? parentDirectoryTreeViewModel)
+        TreeViewNodeValue parentDirectoryTreeViewModel)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         lock (_stateModificationLock)
         {
             var inState = GetInputFileState();
@@ -144,9 +147,10 @@ public partial class IdeService
 
         finalize:
         IdeStateChanged?.Invoke(IdeStateChangedKind.InputFileStateChanged);
+        */
     }
 
-    public void InputFile_RefreshCurrentSelection(TreeViewAbsolutePath? currentSelection)
+    public void InputFile_RefreshCurrentSelection(TreeViewNodeValue currentSelection)
     {
         lock (_stateModificationLock)
         {
@@ -194,8 +198,10 @@ public partial class IdeService
 
     public void InputFile_Enqueue_OpenParentDirectoryAction(
         CommonService commonService,
-        TreeViewAbsolutePath? parentDirectoryTreeViewModel)
+        TreeViewNodeValue parentDirectoryTreeViewModel)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (parentDirectoryTreeViewModel is not null)
         {
             Enqueue(new IdeWorkArgs
@@ -204,12 +210,15 @@ public partial class IdeService
                 TreeViewAbsolutePath = parentDirectoryTreeViewModel
             });
         }
+        */
     }
 
     public async ValueTask InputFile_Do_OpenParentDirectoryAction(
         CommonService commonService,
-        TreeViewAbsolutePath? parentDirectoryTreeViewModel)
+        TreeViewNodeValue parentDirectoryTreeViewModel)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (parentDirectoryTreeViewModel is not null)
         {
             if (!CommonService.TryGetTreeViewContainer(InputFileDisplay.InputFileSidebar_TreeViewContainerKey, out var treeViewContainer))
@@ -217,9 +226,10 @@ public partial class IdeService
             
             await parentDirectoryTreeViewModel.LoadChildListAsync(treeViewContainer).ConfigureAwait(false);
         }
+        */
     }
 
-    public void InputFile_Enqueue_RefreshCurrentSelectionAction(CommonService commonService, TreeViewAbsolutePath? currentSelection)
+    public void InputFile_Enqueue_RefreshCurrentSelectionAction(CommonService commonService, TreeViewNodeValue currentSelection)
     {
         /*
         // 2025-10-15
@@ -236,7 +246,7 @@ public partial class IdeService
         */
     }
 
-    public async ValueTask InputFile_Do_RefreshCurrentSelectionAction(TreeViewAbsolutePath? currentSelection)
+    public async ValueTask InputFile_Do_RefreshCurrentSelectionAction(TreeViewNodeValue currentSelection)
     {
         /*
         // 2025-10-15

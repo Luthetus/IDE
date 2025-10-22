@@ -1,3 +1,5 @@
+/*
+// 2025-10-22 (rewrite TreeViews)
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
@@ -34,3 +36,4 @@ public class FindAllTreeViewMouseEventHandler : TreeViewMouseEventHandler
         return Task.CompletedTask;
     }
 }
+*/

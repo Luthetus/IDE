@@ -48,12 +48,6 @@ public sealed partial class CodeSearchDisplay : ComponentBase, IDisposable
     {
         IdeService.IdeStateChanged += OnCodeSearchStateChanged;
         IdeService.CommonService.CommonUiStateChanged += OnCommonUiStateChanged;
-        
-        _treeViewContainerParameter = new(
-            CodeSearchState.TreeViewCodeSearchContainerKey,
-            new CodeSearchTreeViewKeyboardEventHandler(IdeService.TextEditorService),
-            new CodeSearchTreeViewMouseEventHandler(IdeService.TextEditorService),
-            OnTreeViewContextMenuFunc);
     }
     
     protected override void OnAfterRender(bool firstRender)

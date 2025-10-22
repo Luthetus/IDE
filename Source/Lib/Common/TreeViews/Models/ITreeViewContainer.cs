@@ -9,6 +9,17 @@ namespace Clair.Common.RazorLib.TreeViews.Models;
 /// </summary>
 public interface ITreeViewContainer : IDisposable
 {
+    public int NextNodeValueKey { get; set; }
+    
+    /// <summary>
+    /// TODO: Don't use the static int named 's_nextKey'.
+    /// ...a single user theoretically could have a key collision,
+    /// but even moreso if the app were to be ServerSide hosted
+    /// the 's_nextKey' can more frequently hit the same int (and perhaps go to the same user/TreeViewContainer).
+    /// 
+    /// Also, using 0 to indicate "None"/"a null of sorts" is a bit odd given the "eventual" return of 0 when the int wraps around then returns every negative value.
+    /// </summary>
+
     /// <summary>Unique identifier</summary>
     public Key<TreeViewContainer> Key { get; init; }
     

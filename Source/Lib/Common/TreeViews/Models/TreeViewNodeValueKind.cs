@@ -1,7 +1,12 @@
 namespace Clair.Common.RazorLib.TreeViews.Models;
 
+/// <summary>
+/// 'None' should NEVER be used.
+/// It marks whether a nodeValue is the default value or not.
+/// </summary>
 public enum TreeViewNodeValueKind : byte
 {
+    None = 0,
     b0,
     b1,
     b2,

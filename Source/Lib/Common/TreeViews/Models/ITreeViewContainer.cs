@@ -23,6 +23,8 @@ public interface ITreeViewContainer : IDisposable
     /// <summary>Unique identifier</summary>
     public Key<TreeViewContainer> Key { get; init; }
     
+    public bool IsRootNodeHidden { get; set; }
+    
     /// <summary>
     /// WARNING: modification of this list from a non-`ITreeViewContainer` is extremely unsafe.
     /// ...it is the responsibility of the container to ensure any modifications it performs

@@ -181,6 +181,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             ScrollWidth = eventArgsKeyDown.ScrollWidth,
             ScrollHeight = eventArgsKeyDown.ScrollHeight,
         };
+        //Console.WriteLine(eventArgsKeyDown.ScrollTop);
         //ValidateScrollbar();
         StateHasChanged();
     }

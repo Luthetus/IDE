@@ -606,27 +606,22 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// <summary>
     /// This method should only be invoked from the "UI thread" due to the usage of `CommonBackgroundTaskApi.UiStringBuilder`.
     /// </summary>
-    private string GetNodeElementCssStyle(TreeViewNodeValue node, int index)
+    private string GetNodeElementCssStyle(TreeViewNodeValue node, int depth)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
-        if (!CommonService.IntToCssValueCache.ContainsKey(node.Depth * OffsetPerDepthInPixels))
-            CommonService.IntToCssValueCache.Add(node.Depth * OffsetPerDepthInPixels, (node.Depth * OffsetPerDepthInPixels).ToCssValue());
+        if (!CommonService.IntToCssValueCache.ContainsKey(depth * OffsetPerDepthInPixels))
+            CommonService.IntToCssValueCache.Add(depth * OffsetPerDepthInPixels, (depth * OffsetPerDepthInPixels).ToCssValue());
     
         CommonService.UiStringBuilder.Clear();
+        CommonService.UiStringBuilder.Append("height: ");
+        CommonService.UiStringBuilder.Append(CommonService.Options_LineHeight_CssStyle);
+        CommonService.UiStringBuilder.Append("px; ");
+
         CommonService.UiStringBuilder.Append("padding-left: ");
-        CommonService.UiStringBuilder.Append(CommonService.IntToCssValueCache[node.Depth * OffsetPerDepthInPixels]);
+        CommonService.UiStringBuilder.Append(CommonService.IntToCssValueCache[depth * OffsetPerDepthInPixels]);
         CommonService.UiStringBuilder.Append("px; ");
         CommonService.UiStringBuilder.Append(CommonService.Options_LineHeight_CssStyle);
         
-        var topCssValue = (index * CommonService.Options_LineHeight).ToCssValue();
-        CommonService.UiStringBuilder.Append("top: ");
-        CommonService.UiStringBuilder.Append(topCssValue);
-        CommonService.UiStringBuilder.Append("px;");
-        
         return CommonService.UiStringBuilder.ToString();
-        */
-        return string.Empty;
     }
     
     private void ValidateScrollbar()

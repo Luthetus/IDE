@@ -112,7 +112,7 @@
                     // class="@cssClass"
                     // style="@GetNodeElementCssStyle(node, i)"
                     <div class="@cssClass"
-                         style="@CommonService.Options_LineHeight_CssStyle">
+                         style="@GetNodeElementCssStyle(childNode, depth)">
                         @if (childNode.IsExpandable)
                         {
                             <span style="cursor: pointer;">
@@ -235,6 +235,7 @@
                 if (forceFirstNodeToRender)
                 {
                     forceFirstNodeToRender = false;
+                    depth++;
                 }
                 else if (childNode.IsExpanded && childNode.ChildListLength > 0)
                 {

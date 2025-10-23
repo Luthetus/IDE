@@ -60,7 +60,6 @@ window.clairCommon = {
             });
             
             element.addEventListener('wheel', (event) => {
-                element.scrollTop = element.scrollTop + event.deltaY;
                 dotNetHelper.invokeMethodAsync("ReceiveOnWheel",
                 {
                     Y: event.deltaY,

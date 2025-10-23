@@ -9,6 +9,9 @@
     // each render based on the user input you can perform simple modifications to the existing virtualization result
     // to quickly get the next.
 
+    // Contiguous depths can be grouped perhaps?
+    //
+
     // The state is very unsafe to just read from the reference.
     _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerKey);
     var activeNodeValueIndex = _treeViewContainer?.ActiveNodeValueIndex ?? 0;
@@ -21,7 +24,7 @@
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
 <div id="@_htmlId"
-     class="ci_tree-view-state"
+     class="ci_tree-view-state ci_unselectable"
      tabindex="0">
     
     @if (_treeViewContainer is null)
@@ -41,17 +44,17 @@
 
         var childIndex = 0;
         var forceFirstNodeToRender = true;
-        <div>
+        @*<div>*@
             @*
                 TODO: Rewrite the comment below this.
                 Loop iterates 1 layer above in order to avoid the break case every child if the child is not expanded or ChildList.Count is == 0
                 Thus, the root case has to be handled entirely outside the loop.
             *@
 
-            @{
+            //@{
                 int literalIndex;
                 TreeViewNodeValue childNode;
-            }
+            //}
 
             @while (true)
             {
@@ -91,6 +94,7 @@
                         continue;
                     }
                     isCalculatingPreceedingEmptySpace = false;
+                    <div class="width: 1px; height: @(preceedingEmptySpaceHeight)px;"></div>
                 }
 
                 if (contentHeight > _treeViewMeasurements.ViewHeight)
@@ -245,10 +249,8 @@
                     childIndex = 0;
                 }
             }
-        </div>
+        @*</div>*@
 
-        @* hmm this has to come before, use reverse css or??? *@
-        <div class="width: 1px; height: @(preceedingEmptySpaceHeight)px;"></div>
         <div style="width: 1px; height: @(endingEmptySpaceHeight)px; position: absolute; top: @(preceedingEmptySpaceHeight + contentHeight)px;"></div>
     }
 </div>

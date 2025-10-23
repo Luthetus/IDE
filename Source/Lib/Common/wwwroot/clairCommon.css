@@ -280,12 +280,11 @@ ul.ci_indent-child-content {
     overflow: hidden;
     outline: none;
     position: relative;
-    display: flex;
-    flex-flow: column-reverse;
-    justify-content: flex-end;
+    /*display: flex;*/
+    justify-content: flex-start;
 }
 
-    .ci_tree-view-state:focus-within > div > div.ci_selected {
+    .ci_tree-view-state:focus-within > div.ci_selected {
         background-color: var(--ci_active-with-focus-background-color);
     }
 
@@ -293,7 +292,7 @@ ul.ci_indent-child-content {
         outline: var(--ci_outline-with-focus-color) inset;
     }
 
-    .ci_tree-view-state:focus > div > div.ci_active {
+    .ci_tree-view-state:focus > div.ci_active {
         background-color: var(--ci_active-with-focus-background-color);
     }
 
@@ -311,15 +310,15 @@ ul.ci_indent-child-content {
             white-space: nowrap;
         }
 
-        .ci_tree-view-state > div > div.ci_selected {
+        .ci_tree-view-state > div.ci_selected {
             background-color: var(--ci_active-no-focus-background-color);
         }
 
-        .ci_tree-view-state > div > div.ci_active {
+        .ci_tree-view-state > div.ci_active {
             background-color: var(--ci_active-no-focus-background-color);
         }
 
-            .ci_tree-view-state > div > div.ci_active:focus {
+            .ci_tree-view-state > div.ci_active:focus {
                 background-color: var(--ci_active-with-focus-background-color);
             }
             

@@ -84,7 +84,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _htmlId);
         }
         
-        /*
         if (_treeViewContainer is not null)
         {
             var didValidateScrollbar = false;
@@ -95,7 +94,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*//* false);
+                    /*preventScroll:*/ false);
             
                 didValidateScrollbar = true;
                 ValidateScrollbar();
@@ -163,7 +162,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 await InvokeAsync(StateHasChanged);
             }
         }
-        */
     }
     
     [JSInvokable]
@@ -171,18 +169,17 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     {
         if (_treeViewContainer is null)
             return;
-        
+
         _treeViewMeasurements = _treeViewMeasurements with
         {
-            // The JS will scroll then provide the updated ScrollTop.
-            ScrollTop = eventArgsKeyDown.ScrollTop,
+            ScrollTop = eventArgsKeyDown.ScrollTop + eventArgsKeyDown.Y,
             ViewWidth = eventArgsKeyDown.ViewWidth,
             ViewHeight = eventArgsKeyDown.ViewHeight,
             ScrollWidth = eventArgsKeyDown.ScrollWidth,
             ScrollHeight = eventArgsKeyDown.ScrollHeight,
         };
-        //Console.WriteLine(eventArgsKeyDown.ScrollTop);
-        //ValidateScrollbar();
+        
+        ValidateScrollbar();
         StateHasChanged();
     }
     
@@ -612,14 +609,11 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             CommonService.IntToCssValueCache.Add(depth * OffsetPerDepthInPixels, (depth * OffsetPerDepthInPixels).ToCssValue());
     
         CommonService.UiStringBuilder.Clear();
-        CommonService.UiStringBuilder.Append("height: ");
         CommonService.UiStringBuilder.Append(CommonService.Options_LineHeight_CssStyle);
-        CommonService.UiStringBuilder.Append("px; ");
 
-        CommonService.UiStringBuilder.Append("padding-left: ");
+        CommonService.UiStringBuilder.Append(" padding-left: ");
         CommonService.UiStringBuilder.Append(CommonService.IntToCssValueCache[depth * OffsetPerDepthInPixels]);
         CommonService.UiStringBuilder.Append("px; ");
-        CommonService.UiStringBuilder.Append(CommonService.Options_LineHeight_CssStyle);
         
         return CommonService.UiStringBuilder.ToString();
     }

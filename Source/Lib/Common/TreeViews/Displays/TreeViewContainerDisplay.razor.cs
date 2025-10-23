@@ -50,7 +50,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// <summary>
     /// UI thread only.
     /// </summary>
-    private readonly List<int> _indexVirtualizedNodeValueList = new();
+    private readonly List<(int Index, int Depth)> _virtualizedTupleList = new();
     /// <summary>
     /// UI thread only.
     /// Contains the "used to be" targetNode, and the index that it left off at.
@@ -422,8 +422,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         var relativeX = eventArgsMouseDown.X - _treeViewMeasurements.BoundingClientRectLeft + eventArgsMouseDown.ScrollLeft;
         relativeX = Math.Max(0, relativeX);
         
-        if (relativeX >= 0 &&
-            relativeX <= ClairTreeViewIconWidth)
+        if (relativeX >= (_virtualizedTupleList[VirtualIndexActiveNode].Depth * OffsetPerDepthInPixels) &&
+            relativeX <= ClairTreeViewIconWidth + (_virtualizedTupleList[VirtualIndexActiveNode].Depth * OffsetPerDepthInPixels))
         {
             HandleChevronOnClick(eventArgsMouseDown);
         }
@@ -442,12 +442,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         }
         */
 
-        if (_indexVirtualizedNodeValueList[VirtualIndexActiveNode] >= _treeViewContainer.NodeValueList.Count)
+        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)
             return;
 
         CommonService.TreeView_SetActiveNodeAction(
             _treeViewContainer.Key,
-            _indexVirtualizedNodeValueList[VirtualIndexActiveNode],
+            _virtualizedTupleList[VirtualIndexActiveNode].Index,
             addSelectedNodes: false,
             selectNodesBetweenCurrentAndNextActiveNode: false);
     }
@@ -472,12 +472,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
 
-        if (_indexVirtualizedNodeValueList[VirtualIndexActiveNode] >= _treeViewContainer.NodeValueList.Count)
+        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)
             return;
 
         await _treeViewContainer.OnClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
-            _treeViewContainer.NodeValueList[_indexVirtualizedNodeValueList[VirtualIndexActiveNode]],
+            _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index],
             async () =>
             {
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
@@ -514,12 +514,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
         
-        if (_indexVirtualizedNodeValueList[VirtualIndexActiveNode] >= _treeViewContainer.NodeValueList.Count)
+        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)
             return;
 
         await _treeViewContainer.OnDoubleClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
-            _treeViewContainer.NodeValueList[_indexVirtualizedNodeValueList[VirtualIndexActiveNode]],
+            _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index],
             async () =>
             {
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
@@ -540,8 +540,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     {
         if (virtualIndexLocal < 0)
             return 0;
-        else if (virtualIndexLocal >= _indexVirtualizedNodeValueList.Count)
-            return _indexVirtualizedNodeValueList.Count - 1;
+        else if (virtualIndexLocal >= _virtualizedTupleList.Count)
+            return _virtualizedTupleList.Count - 1;
         
         return virtualIndexLocal;
     }

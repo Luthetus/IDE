@@ -12,7 +12,7 @@
     // The state is very unsafe to just read from the reference.
     _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerKey);
     var activeNodeValueIndex = _treeViewContainer?.ActiveNodeValueIndex ?? 0;
-    _indexVirtualizedNodeValueList.Clear();
+    _virtualizedTupleList.Clear();
     _nodeRecursionStack.Clear();
     int depth = 0;
     int indexRootNode = _treeViewContainer?.IndexRootNode ?? -1;
@@ -100,14 +100,14 @@
 
                 if (!isCalculatingEndingEmptySpace)
                 {
-                    _indexVirtualizedNodeValueList.Add(literalIndex);
+                    _virtualizedTupleList.Add((literalIndex, depth));
                     contentHeight += CommonService.Options_LineHeight;
 
                     var cssClass = string.Empty;
                     if (literalIndex == activeNodeValueIndex)
                     {
                         cssClass = "ci_active ci_selected";
-                        VirtualIndexActiveNode = _indexVirtualizedNodeValueList.Count - 1;
+                        VirtualIndexActiveNode = _virtualizedTupleList.Count - 1;
                     }
                     // class="@cssClass"
                     // style="@GetNodeElementCssStyle(node, i)"

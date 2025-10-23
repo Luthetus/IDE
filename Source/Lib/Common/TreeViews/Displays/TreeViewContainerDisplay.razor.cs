@@ -620,8 +620,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     
     private void ValidateScrollbar()
     {
+        // Console.WriteLine(_treeViewMeasurements.ScrollTop);
+
         if (_treeViewMeasurements.ScrollLeft + _treeViewMeasurements.ViewWidth > _treeViewMeasurements.ScrollWidth)
         {
+            // Console.WriteLine("if (_treeViewMeasurements.ScrollLeft + _treeViewMeasurements.ViewWidth > _treeViewMeasurements.ScrollWidth)");
+
             _treeViewMeasurements = _treeViewMeasurements with
             {
                 ScrollLeft = _treeViewMeasurements.ScrollWidth - _treeViewMeasurements.ViewWidth
@@ -629,6 +633,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         }
         if (_treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight > _treeViewMeasurements.ScrollHeight)
         {
+            // Console.WriteLine("if (_treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight > _treeViewMeasurements.ScrollHeight)");
+            // Console.WriteLine($"\tif ({_treeViewMeasurements.ScrollTop} + {_treeViewMeasurements.ViewHeight} > {_treeViewMeasurements.ScrollHeight})");
+
             _treeViewMeasurements = _treeViewMeasurements with
             {
                 ScrollTop = _treeViewMeasurements.ScrollHeight - _treeViewMeasurements.ViewHeight
@@ -637,6 +644,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     
         if (_treeViewMeasurements.ScrollLeft < 0)
         {
+            // Console.WriteLine("if (_treeViewMeasurements.ScrollLeft < 0)");
+
             _treeViewMeasurements = _treeViewMeasurements with
             {
                 ScrollLeft = 0
@@ -644,13 +653,17 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         }
         if (_treeViewMeasurements.ScrollTop < 0)
         {
+            // Console.WriteLine("if (_treeViewMeasurements.ScrollTop < 0)");
+
             _treeViewMeasurements = _treeViewMeasurements with
             {
                 ScrollTop = 0
             };
         }
+
+        // Console.WriteLine("\t" + _treeViewMeasurements.ScrollTop);
     }
-    
+
     public void Dispose()
     {
         CommonService.CommonUiStateChanged -= OnTreeViewStateChanged;

@@ -20,6 +20,8 @@
     int depth = 0;
     int indexRootNode = _treeViewContainer?.IndexRootNode ?? -1;
     var nodeValueList = _treeViewContainer?.NodeValueList;
+
+
 }
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
@@ -98,7 +100,7 @@
                         continue;
                     }
                     isCalculatingPreceedingEmptySpace = false;
-                    <div class="width: 1px; height: @(preceedingEmptySpaceHeight)px;"></div>
+                    <div style="width: 1px; height: @(preceedingEmptySpaceHeight)px;"></div>
                 }
 
                 if (contentHeight > _treeViewMeasurements.ViewHeight)
@@ -255,7 +257,8 @@
             }
         @*</div>*@
 
-        <div style="width: 1px; height: @(endingEmptySpaceHeight)px; position: absolute; top: @(preceedingEmptySpaceHeight + contentHeight)px;"></div>
+        @* position: absolute; top: @(preceedingEmptySpaceHeight + contentHeight)px; *@
+        <div style="width: 1px; height: @(endingEmptySpaceHeight)px;"></div>
     }
 </div>
 

@@ -355,7 +355,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
             case TreeViewNodeValueKind.b3: // dir
                 return IconKind.Folder;
             case TreeViewNodeValueKind.b4: // file
-                return IconKind.File;
+                var file = FileTraitsList[nodeValue.TraitsIndex];
+                return IdeFacts.GetIconKind(file);
             default:
                 return IconKind.None;
         }

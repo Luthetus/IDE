@@ -20,8 +20,6 @@
     int depth = 0;
     int indexRootNode = _treeViewContainer?.IndexRootNode ?? -1;
     var nodeValueList = _treeViewContainer?.NodeValueList;
-
-    Console.WriteLine(_treeViewMeasurements.ScrollTop);
 }
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
@@ -46,7 +44,7 @@
 
         var childIndex = 0;
         bool forceFirstNodeToRender;
-        if (preceedingEmptySpaceHeight + CommonService.Options_LineHeight < _treeViewMeasurements.ScrollTop)
+        if (_treeViewMeasurements.ScrollTop > CommonService.Options_LineHeight)
             forceFirstNodeToRender = false;
         else
             forceFirstNodeToRender = true;
@@ -258,9 +256,9 @@
         @*</div>*@
 
         @* position: absolute; top: @(preceedingEmptySpaceHeight + contentHeight)px; *@
-        <div style="width: 1px; height: @(endingEmptySpaceHeight)px;"></div>
+        @*<div style="width: 1px; height: @(endingEmptySpaceHeight)px;"></div>*@
 
-        <div style="width: 1px; height: @(preceedingEmptySpaceHeight + contentHeight + endingEmptySpaceHeight)px; position: absolute; top: @(preceedingEmptySpaceHeight + contentHeight)px;"></div>
+        <div style="width: 1px; height: @(preceedingEmptySpaceHeight + contentHeight + endingEmptySpaceHeight)px; position: absolute;"></div>
     }
 </div>
 

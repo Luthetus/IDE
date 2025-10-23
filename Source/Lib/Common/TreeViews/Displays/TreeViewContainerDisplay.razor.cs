@@ -195,7 +195,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             {
                 var mouseEventArgs = new MouseEventArgs { Button = -1 };
                 
-                ReceiveOnContextMenuAsync(
+                await ReceiveOnContextMenuAsync(
                     new TreeViewEventArgsMouseDown(
                         Buttons: 0,
                         Button: -1,
@@ -216,7 +216,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             {
                 if (eventArgsKeyDown.CtrlKey)
                 {
-                    ReceiveOnContextMenuAsync(
+                    await ReceiveOnContextMenuAsync(
                         new TreeViewEventArgsMouseDown(
                             Buttons: 0,
                             Button: -1,
@@ -238,7 +238,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             {
                 if (eventArgsKeyDown.ShiftKey)
                 {
-                    ReceiveOnContextMenuAsync(
+                    await ReceiveOnContextMenuAsync(
                         new TreeViewEventArgsMouseDown(
                             Buttons: 0,
                             Button: -1,
@@ -470,7 +470,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             eventArgsMouseDown.ScrollWidth,
             eventArgsMouseDown.ScrollHeight);
     
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + eventArgsMouseDown.ScrollTop;
+        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop/* + eventArgsMouseDown.ScrollTop*/;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);

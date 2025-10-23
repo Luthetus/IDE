@@ -39,36 +39,49 @@
         var targetNodeIndex = indexRootNode;
         var targetNode = _treeViewContainer.NodeValueList[indexRootNode];
 
-        int childIndex = 0;
+        var childIndex = 0;
+        var forceFirstNodeToRender = true;
         <div>
-
-            <div style="@CommonService.Options_LineHeight_CssStyle">First node probably won't render...</div>
-
             @*
                 TODO: Rewrite the comment below this.
                 Loop iterates 1 layer above in order to avoid the break case every child if the child is not expanded or ChildList.Count is == 0
                 Thus, the root case has to be handled entirely outside the loop.
             *@
+
+            @{
+                int literalIndex;
+                TreeViewNodeValue childNode;
+            }
+
             @while (true)
             {
-                if (childIndex >= targetNode.ChildListLength)
+                if (!forceFirstNodeToRender)
                 {
-                    if (_nodeRecursionStack.Count > 0)
+                    if (childIndex >= targetNode.ChildListLength)
                     {
-                        var recursionEntry = _nodeRecursionStack.Pop();
-                        depth--;
-                        targetNode = recursionEntry.Node;
-                        childIndex = recursionEntry.Index;
-                        continue;
+                        if (_nodeRecursionStack.Count > 0)
+                        {
+                            var recursionEntry = _nodeRecursionStack.Pop();
+                            depth--;
+                            targetNode = recursionEntry.Node;
+                            childIndex = recursionEntry.Index;
+                            continue;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
-                    else
-                    {
-                        break;
-                    }
-                }
 
-                var literalIndex = targetNode.ChildListOffset + childIndex;
-                var childNode = _treeViewContainer.NodeValueList[targetNode.ChildListOffset + childIndex++];
+                    literalIndex = targetNode.ChildListOffset + childIndex;
+                    childNode = _treeViewContainer.NodeValueList[targetNode.ChildListOffset + childIndex++];
+                }
+                else
+                {
+                    // can't set the "force root node to render bool" to false here it must be done after the markup
+                    literalIndex = indexRootNode;
+                    childNode = _treeViewContainer.NodeValueList[literalIndex];
+                }
 
                 if (isCalculatingPreceedingEmptySpace)
                 {
@@ -212,7 +225,11 @@
                     </div>
                 </div>
 
-                if (childNode.IsExpanded && childNode.ChildListLength > 0)
+                if (forceFirstNodeToRender)
+                {
+                    forceFirstNodeToRender = false;
+                }
+                else if (childNode.IsExpanded && childNode.ChildListLength > 0)
                 {
                     _nodeRecursionStack.Push((targetNode, childIndex));
                     depth++;

@@ -21,7 +21,7 @@
     int indexRootNode = _treeViewContainer?.IndexRootNode ?? -1;
     var nodeValueList = _treeViewContainer?.NodeValueList;
 
-
+    Console.WriteLine(_treeViewMeasurements.ScrollTop);
 }
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
@@ -259,6 +259,8 @@
 
         @* position: absolute; top: @(preceedingEmptySpaceHeight + contentHeight)px; *@
         <div style="width: 1px; height: @(endingEmptySpaceHeight)px;"></div>
+
+        <div style="width: 1px; height: @(preceedingEmptySpaceHeight + contentHeight + endingEmptySpaceHeight)px; position: absolute; top: @(preceedingEmptySpaceHeight + contentHeight)px;"></div>
     }
 </div>
 

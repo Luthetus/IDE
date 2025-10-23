@@ -275,12 +275,12 @@ ul.ci_indent-child-content {
     overflow: hidden;
 }
 
-/*.ci_tree-view-state {
+.ci_tree-view-state {
     height: 100%;
-    overflow: hidden;
-    outline: none;
+    /*overflow: hidden;
+    outline: none;*/
     position: relative;
-}*/
+}
 
     .ci_tree-view-state:focus-within > div.ci_selected {
         background-color: var(--ci_active-with-focus-background-color);

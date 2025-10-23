@@ -936,7 +936,7 @@ public partial class DotNetService
         
         if (!CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
         {
-            treeViewContainer = new SolutionExplorerTreeViewContainer(CommonService);
+            treeViewContainer = new SolutionExplorerTreeViewContainer(CommonService, dotNetSolutionModel);
             
             var rootNode = new TreeViewNodeValue
             {
@@ -950,7 +950,9 @@ public partial class DotNetService
                 IsExpanded = true
             };
             treeViewContainer.NodeValueList.Add(rootNode);
-            
+
+            await treeViewContainer.LoadChildListAsync(indexNodeValue: 0).ConfigureAwait(false);
+
             CommonService.TreeView_RegisterContainerAction(treeViewContainer);
             
             

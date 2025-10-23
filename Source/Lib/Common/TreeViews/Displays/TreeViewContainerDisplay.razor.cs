@@ -326,9 +326,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     [JSInvokable]
     public void ReceiveOnContextMenu(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
-        _treeViewMeasurements = new TreeViewMeasurements(
+        /*_treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
             eventArgsMouseDown.ViewHeight,
             eventArgsMouseDown.BoundingClientRectLeft,
@@ -382,7 +380,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*//*// 2025-10-22 (rewrite TreeViews) false);
+                    /*preventScroll:*//* false);
             },
             contextMenuFixedPosition,
             new MouseEventArgs
@@ -397,15 +395,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             WorkKind = CommonWorkKind.TreeView_HandleTreeViewOnContextMenu,
             OnContextMenuFunc = TreeViewContainerParameter.OnContextMenuFunc,
             TreeViewContextMenuCommandArgs = _treeViewContextMenuCommandArgs,
-        });
-        */
+        });*/
     }
     
     [JSInvokable]
     public void ReceiveContentOnMouseDown(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
         _treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
             eventArgsMouseDown.ViewHeight,
@@ -426,6 +421,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         var relativeX = eventArgsMouseDown.X - _treeViewMeasurements.BoundingClientRectLeft + eventArgsMouseDown.ScrollLeft;
         relativeX = Math.Max(0, relativeX);
         
+        /*
         // TODO: Determine why my math is wrong...
         // ...I need to subtract 1.1 for lower bound and subtract 1 for upper bound.
         // So the question is, "Why do I need to add this arbitrary subtractions,
@@ -437,20 +433,18 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         {
             HandleChevronOnClick(eventArgsMouseDown);
         }
-        
+        */
+
         CommonService.TreeView_SetActiveNodeAction(
             _treeViewContainer.Key,
-            _flatNodeList[IndexActiveNode],
+            IndexActiveNode,
             addSelectedNodes: false,
             selectNodesBetweenCurrentAndNextActiveNode: false);
-        */
     }
     
     [JSInvokable]
     public async Task ReceiveOnClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
         _treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
             eventArgsMouseDown.ViewHeight,
@@ -468,7 +462,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         IndexActiveNode = IndexBasicValidation(indexLocal);
         
-        await TreeViewContainerParameter.TreeViewMouseEventHandler.OnClickAsync(new TreeViewCommandArgs(
+        await _treeViewContainer.OnClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
             _flatNodeList[IndexActiveNode],
             async () =>
@@ -476,7 +470,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*//* false);
+                    /*preventScroll:*/ false);
             },
             contextMenuFixedPosition: null,
             new MouseEventArgs
@@ -485,14 +479,11 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 ClientY = eventArgsMouseDown.Y,
             },
             keyboardEventArgs: null));
-        */
     }
     
     [JSInvokable]
     public async Task ReceiveOnDoubleClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
         _treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
             eventArgsMouseDown.ViewHeight,
@@ -510,7 +501,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         IndexActiveNode = IndexBasicValidation(indexLocal);
         
-        await TreeViewContainerParameter.TreeViewMouseEventHandler.OnDoubleClickAsync(new TreeViewCommandArgs(
+        await _treeViewContainer.OnDoubleClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
             _flatNodeList[IndexActiveNode],
             async () =>
@@ -518,7 +509,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*//*// 2025-10-22 (rewrite TreeViews) false);
+                    /*preventScroll:*/ false);
             },
             contextMenuFixedPosition: null,
             new MouseEventArgs
@@ -527,7 +518,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 ClientY = eventArgsMouseDown.Y,
             },
             keyboardEventArgs: null));
-        */
     }
     
     private List<TreeViewNodeValue> GetFlatNodes()
@@ -603,12 +593,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     
     private int IndexBasicValidation(int indexLocal)
     {
-        if (indexLocal < 0)
+        return indexLocal;
+
+        /*if (indexLocal < 0)
             return 0;
         else if (indexLocal >= _flatNodeList.Count)
             return _flatNodeList.Count - 1;
         
-        return indexLocal;
+        return indexLocal;*/
     }
     
     private void HandleChevronOnClick(TreeViewEventArgsMouseDown eventArgsMouseDown)

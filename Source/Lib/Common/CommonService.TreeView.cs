@@ -187,7 +187,7 @@ public partial class CommonService
 
     public void TreeView_SetActiveNodeAction(
         Key<TreeViewContainer> containerKey,
-        TreeViewNodeValue nextActiveNode,
+        int indexActiveNode,
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode,
         bool shouldFireStateChangedEvent = true)
@@ -204,17 +204,19 @@ public partial class CommonService
         }
 
         var inContainer = inState.ContainerList[indexContainer];
-        
-        var outContainer = PerformSetActiveNode(
+
+        inContainer.ActiveNodeValueIndex = indexActiveNode;
+
+        if (shouldFireStateChangedEvent)
+            CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
+
+        /*var outContainer = PerformSetActiveNode(
             inContainer, containerKey, nextActiveNode, addSelectedNodes, selectNodesBetweenCurrentAndNextActiveNode);
 
         var outContainerList = new List<TreeViewContainer>(inState.ContainerList);
         outContainerList[indexContainer] = outContainer;
 
-        _treeViewState = inState with { ContainerList = outContainerList };
-        
-        if (shouldFireStateChangedEvent)
-            CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
+        _treeViewState = inState with { ContainerList = outContainerList };*/
     }
 
     public void TreeView_RemoveSelectedNodeAction(

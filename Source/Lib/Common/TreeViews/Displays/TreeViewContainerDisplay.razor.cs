@@ -467,10 +467,13 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         var indexLocal = (int)(relativeY / LineHeight);
         
         VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
-        
+
+        if (_indexVirtualizedNodeValueList[VirtualIndexActiveNode] >= _treeViewContainer.NodeValueList.Count)
+            return;
+
         await _treeViewContainer.OnClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
-            _indexVirtualizedNodeValueList[VirtualIndexActiveNode],
+            _treeViewContainer.NodeValueList[_indexVirtualizedNodeValueList[VirtualIndexActiveNode]],
             async () =>
             {
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
@@ -507,9 +510,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
         
+        if (_indexVirtualizedNodeValueList[VirtualIndexActiveNode] >= _treeViewContainer.NodeValueList.Count)
+            return;
+
         await _treeViewContainer.OnDoubleClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
-            _indexVirtualizedNodeValueList[VirtualIndexActiveNode],
+            _treeViewContainer.NodeValueList[_indexVirtualizedNodeValueList[VirtualIndexActiveNode]],
             async () =>
             {
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
@@ -524,77 +530,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 ClientY = eventArgsMouseDown.Y,
             },
             keyboardEventArgs: null));
-    }
-    
-    private List<TreeViewNodeValue> GetFlatNodes()
-    {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
-        _flatNodeList.Clear();
-        _nodeRecursionStack.Clear();
-        
-        int depth;
-        
-        // I'm only going to include 'IsHidden' with the root node for now.
-        if (_treeViewContainer.RootNode.IsHidden)
-        {
-            depth = 0;
-        }
-        else
-        {
-            _flatNodeList.Add(_treeViewContainer.RootNode);
-            depth = 1;
-        }
-        
-        _treeViewContainer.RootNode.IsExpanded = true;
-        
-        if (!_treeViewContainer.RootNode.IsExpanded ||
-            _treeViewContainer.RootNode.ChildListLength == 0)
-        {
-            return _flatNodeList;
-        }
-        
-        var targetNode = _treeViewContainer.RootNode;
-        
-        int index = 0;
-    
-        // TODO: Rewrite the comment below this.
-        // Loop iterates 1 layer above in order to avoid the break case every child if the child is not expanded or ChildList.Count is == 0
-        // Thus, the root case has to be handled entirely outside the loop.
-        while (true)
-        {
-            if (index >= targetNode.ChildListLength)
-            {
-                if (_nodeRecursionStack.Count > 0)
-                {
-                    var recursionEntry = _nodeRecursionStack.Pop();
-                    depth--;
-                    targetNode = recursionEntry.Node;
-                    index = recursionEntry.Index;
-                    continue;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        
-            var childNode = _treeViewContainer.ChildList[targetNode.ChildListOffset + index++];
-            childNode.Depth = depth;
-            _flatNodeList.Add(childNode);
-        
-            if (childNode.IsExpanded && childNode.ChildListLength > 0)
-            {
-                _nodeRecursionStack.Push((targetNode, index));
-                depth++;
-                targetNode = childNode;
-                index = 0;
-            }
-        }
-        
-        return _flatNodeList;
-        */
-        return _indexVirtualizedNodeValueList;
     }
     
     private int VirtualIndexBasicValidation(int virtualIndexLocal)

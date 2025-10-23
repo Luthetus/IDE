@@ -397,7 +397,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public void ReceiveContentOnMouseDown(TreeViewEventArgsMouseDown eventArgsMouseDown)
+    public Task ReceiveContentOnMouseDown(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
         _treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
@@ -415,38 +415,25 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         var indexLocal = (int)(relativeY / LineHeight);
         
         VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
-        
+        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)
+            return Task.CompletedTask;
+
         var relativeX = eventArgsMouseDown.X - _treeViewMeasurements.BoundingClientRectLeft + eventArgsMouseDown.ScrollLeft;
         relativeX = Math.Max(0, relativeX);
         
         if (relativeX >= (_virtualizedTupleList[VirtualIndexActiveNode].Depth * OffsetPerDepthInPixels) &&
             relativeX <= ClairTreeViewIconWidth + (_virtualizedTupleList[VirtualIndexActiveNode].Depth * OffsetPerDepthInPixels))
         {
-            HandleChevronOnClick(eventArgsMouseDown);
+            return _treeViewContainer.ToggleExpansion(_virtualizedTupleList[VirtualIndexActiveNode].Index);
         }
-
-        /*
-        // TODO: Determine why my math is wrong...
-        // ...I need to subtract 1.1 for lower bound and subtract 1 for upper bound.
-        // So the question is, "Why do I need to add this arbitrary subtractions,
-        // and are the arbitrary subtractions different depending on display settings / font sizes / etc...".
-        // Given my setup, these arbitrary subtractions make the hitbox "feel" pixel perfect.
-        //
-        if (relativeX >= (_flatNodeList[IndexActiveNode].Depth * OffsetPerDepthInPixels - 1.1) &&
-            relativeX <= (_flatNodeList[IndexActiveNode].Depth * OffsetPerDepthInPixels + ClairTreeViewIconWidth - 1))
-        {
-            HandleChevronOnClick(eventArgsMouseDown);
-        }
-        */
-
-        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)
-            return;
 
         CommonService.TreeView_SetActiveNodeAction(
             _treeViewContainer.Key,
             _virtualizedTupleList[VirtualIndexActiveNode].Index,
             addSelectedNodes: false,
             selectNodesBetweenCurrentAndNextActiveNode: false);
+        
+        return Task.CompletedTask;
     }
     
     [JSInvokable]
@@ -543,31 +530,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         return virtualIndexLocal;
     }
     
-    private Task HandleChevronOnClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
-    {
-        return _treeViewContainer.ToggleExpansion(VirtualIndexActiveNode);
-        /*var localTreeViewNoType = _flatNodeList[IndexActiveNode];
-        
-        if (!localTreeViewNoType.IsExpandable)
-            return;
-
-        localTreeViewNoType.IsExpanded = !localTreeViewNoType.IsExpanded;
-
-        if (localTreeViewNoType.IsExpanded)
-        {
-            CommonService.Enqueue(new CommonWorkArgs
-            {
-                WorkKind = CommonWorkKind.TreeView_HandleExpansionChevronOnMouseDown,
-                IndexNodeValue = eventArgsMouseDown.localTreeViewNoType,
-                TreeViewContainer = _treeViewContainer
-            });
-        }
-        else
-        {
-            CommonService.TreeView_ReRenderNodeAction(_treeViewContainer.Key, localTreeViewNoType, flatListChanged: true);
-        }*/
-    }
-
     private string GetHasActiveNodeCssClass(TreeViewContainer? treeViewContainer)
     {
         /*

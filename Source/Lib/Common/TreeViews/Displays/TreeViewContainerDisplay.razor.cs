@@ -84,7 +84,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _htmlId);
         }
         
-        /*
         if (_treeViewContainer is not null)
         {
             var didValidateScrollbar = false;
@@ -95,7 +94,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*//* false);
+                    /*preventScroll:*/ false);
             
                 didValidateScrollbar = true;
                 ValidateScrollbar();
@@ -116,7 +115,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             // `if (firstRender)` is the only current scenario where an await comes prior to this read and assign.
             //
             // ScrollLeft is most likely to shortcircuit, thus it is being put first.
-            /*
             var scroll_LeftChanged = _seenScrollLeft != _treeViewMeasurements.ScrollLeft;
             var scroll_TopChanged = _seenScrollTop != _treeViewMeasurements.ScrollTop;
             
@@ -133,7 +131,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                     .ConfigureAwait(false);
             }
             else if (scroll_TopChanged) // ScrollTop is most likely to come next
-            /*{
+            {
                 if (_treeViewMeasurements.ScrollTop < 0)
                     _treeViewMeasurements.ScrollTop = 0;
             
@@ -164,7 +162,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 await InvokeAsync(StateHasChanged);
             }
         }
-        */
     }
     
     [JSInvokable]

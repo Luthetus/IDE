@@ -306,7 +306,7 @@ ul.ci_indent-child-content {
         width: 100%;
     }*/
 
-        .ci_tree-view-state > div > div {
+        .ci_tree-view-state > div {
             white-space: nowrap;
         }
 

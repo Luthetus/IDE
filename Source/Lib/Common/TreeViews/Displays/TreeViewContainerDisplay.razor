@@ -43,7 +43,11 @@
         var targetNode = nodeValueList[indexRootNode];
 
         var childIndex = 0;
-        var forceFirstNodeToRender = true;
+        bool forceFirstNodeToRender;
+        if (preceedingEmptySpaceHeight + CommonService.Options_LineHeight < _treeViewMeasurements.ScrollTop)
+            forceFirstNodeToRender = false;
+        else
+            forceFirstNodeToRender = true;
         @*<div>*@
             @*
                 TODO: Rewrite the comment below this.

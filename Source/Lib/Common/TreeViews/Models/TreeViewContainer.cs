@@ -393,7 +393,13 @@ public abstract class TreeViewContainer
         }
         */
     }
-    
+
+    public abstract Task OnContextMenuAsync(
+        int indexNodeValue,
+        bool occurredDueToMouseEvent,
+        double leftPositionInPixels,
+        double topPositionInPixels);
+
     /// <summary>
     /// This interface should always be directly tied to UI of a TreeView actively being rendered.
     /// To maintain TreeView state beyond the lifecycle of the UI, implement the Dispose

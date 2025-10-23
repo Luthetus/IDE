@@ -1,10 +1,12 @@
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Commands.Models;
+using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Icons.Displays;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.CompilerServices.DotNetSolution.Models;
+using Clair.Extensions.DotNet.DotNetSolutions.Displays.Internals;
 using Clair.Ide.RazorLib;
 using System.Text;
 
@@ -274,6 +276,43 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 new Category("main"),
                 editContext.TextEditorService.NewViewModelKey());*/
         });
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// If the context menu event occurred due to a "RightClick" event then
+    /// <br/>
+    /// <see cref="LeftPositionInPixels"/> == <see cref="MouseEventArgs.ClientX"/>
+    /// <br/>
+    /// <see cref="TopPositionInPixels"/> == <see cref="MouseEventArgs.ClientY"/>
+    /// <br/><br/>
+    /// If the context menu event occurred due to a "keyboard" event then
+    /// <br/>
+    /// <see cref="LeftPositionInPixels"/> == element.getBoundingClientRect().left
+    /// <br/>
+    /// <see cref="TopPositionInPixels"/> == element.getBoundingClientRect().top + element.getBoundingClientRect().height
+    /// </summary>
+    public override Task OnContextMenuAsync(
+        int indexNodeValue,
+        bool occurredDueToMouseEvent,
+        double leftPositionInPixels,
+        double topPositionInPixels)
+    {
+        var dropdownRecord = new DropdownRecord(
+            SolutionExplorerContextMenu.ContextMenuEventDropdownKey,
+            leftPositionInPixels,
+            topPositionInPixels,
+            typeof(SolutionExplorerContextMenu),
+            new Dictionary<string, object?>
+            {
+                //{
+                    // nameof(SolutionExplorerContextMenu.TreeViewCommandArgs),
+                    // treeViewCommandArgs
+                //}
+            },
+            null);
+
+        CommonService.Dropdown_ReduceRegisterAction(dropdownRecord);
         return Task.CompletedTask;
     }
 }

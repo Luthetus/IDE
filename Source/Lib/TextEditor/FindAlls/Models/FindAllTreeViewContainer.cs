@@ -20,4 +20,13 @@ public class FindAllTreeViewContainer : TreeViewContainer
     {
         return Task.CompletedTask;
     }
+
+    public override Task OnContextMenuAsync(
+        int indexNodeValue,
+        bool occurredDueToMouseEvent,
+        double leftPositionInPixels,
+        double topPositionInPixels)
+    {
+        return Task.CompletedTask;
+    }
 }

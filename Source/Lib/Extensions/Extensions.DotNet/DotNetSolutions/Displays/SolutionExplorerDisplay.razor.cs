@@ -33,26 +33,6 @@ public sealed partial class SolutionExplorerDisplay : ComponentBase, IDisposable
             await DotNetService.Do_SetDotNetSolutionTreeView(Key<DotNetSolutionModel>.Empty/*this arg isn't used*/);
     }
 
-    private Task OnTreeViewContextMenuFunc(TreeViewCommandArgs treeViewCommandArgs)
-    {
-        /*var dropdownRecord = new DropdownRecord(
-            SolutionExplorerContextMenu.ContextMenuEventDropdownKey,
-            treeViewCommandArgs.ContextMenuFixedPosition.LeftPositionInPixels,
-            treeViewCommandArgs.ContextMenuFixedPosition.TopPositionInPixels,
-            typeof(SolutionExplorerContextMenu),
-            new Dictionary<string, object?>
-            {
-                {
-                    nameof(SolutionExplorerContextMenu.TreeViewCommandArgs),
-                    treeViewCommandArgs
-                }
-            },
-            null);
-
-        DotNetService.IdeService.TextEditorService.CommonService.Dropdown_ReduceRegisterAction(dropdownRecord);*/
-        return Task.CompletedTask;
-    }
-
     private void OpenNewDotNetSolutionDialog()
     {
         var dialogRecord = new DialogViewModel(

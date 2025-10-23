@@ -1,8 +1,8 @@
 using Clair.Common.RazorLib;
+using Clair.Common.RazorLib.Icons.Displays;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.CompilerServices.DotNetSolution.Models;
-using Clair.CompilerServices.DotNetSolution.Models.Project;
 
 namespace Clair.Extensions.DotNet.DotNetSolutions.Models;
 
@@ -42,7 +42,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             IndexAmongSiblings = 0,
                             ChildListOffset = 0,
                             ChildListLength = 0,
-                            TreeViewNodeValueKind = TreeViewNodeValueKind.b1,
+                            TreeViewNodeValueKind = TreeViewNodeValueKind.b1, // SolutionFolder
                             TraitsIndex = i,
                             IsExpandable = true,
                             IsExpanded = false,
@@ -59,7 +59,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             IndexAmongSiblings = 0,
                             ChildListOffset = 0,
                             ChildListLength = 0,
-                            TreeViewNodeValueKind = TreeViewNodeValueKind.b2,
+                            TreeViewNodeValueKind = TreeViewNodeValueKind.b2, // .csproj
                             TraitsIndex = i,
                             IsExpandable = true,
                             IsExpanded = false,
@@ -104,14 +104,30 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
         var nodeValue = NodeValueList[indexNodeValue];
         switch (nodeValue.TreeViewNodeValueKind)
         {
-            case TreeViewNodeValueKind.b0:
+            case TreeViewNodeValueKind.b0: // .sln
                 return DotNetSolutionModel.AbsolutePath.Name;
-            case TreeViewNodeValueKind.b1:
+            case TreeViewNodeValueKind.b1: // SolutionFolder
                 return DotNetSolutionModel.SolutionFolderList[nodeValue.TraitsIndex].DisplayName;
-            case TreeViewNodeValueKind.b2:
+            case TreeViewNodeValueKind.b2: // .csproj
                 return DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Name;
             default:
                 return "asdfg";
+        }
+    }
+
+    public override IconKind GetIconKind(int indexNodeValue)
+    {
+        var nodeValue = NodeValueList[indexNodeValue];
+        switch (nodeValue.TreeViewNodeValueKind)
+        {
+            case TreeViewNodeValueKind.b0: // .sln
+                return IconKind.DotNetSolution;
+            case TreeViewNodeValueKind.b1: // SolutionFolder
+                return IconKind.DotNetSolutionFolder;
+            case TreeViewNodeValueKind.b2: // .csproj
+                return IconKind.CSharpProject;
+            default:
+                return IconKind.None;
         }
     }
 }

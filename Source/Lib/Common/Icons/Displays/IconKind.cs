@@ -1,5 +1,15 @@
 ﻿namespace Clair.Common.RazorLib.Icons.Displays;
 
+/// <summary>
+/// I believe None will not put any markup at all.
+/// 
+/// But Blank will put an icon that is the same width as all the others
+/// just that it visually is effectively a 100% transparent element that does nothing.
+/// 
+/// I came by this in passing just now so I wanted to put my initial thoughts
+/// 
+/// TODO: verify these statements.
+/// </summary>
 public enum IconKind
 {
     ArrowDown,

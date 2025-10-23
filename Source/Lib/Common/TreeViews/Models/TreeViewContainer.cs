@@ -112,7 +112,7 @@ public abstract class TreeViewContainer
     /// Make sure to return null if you don't use this, in order to avoid the 'class' attribute for no reason.
     /// </summary>
     public virtual string? GetHoverText(int indexNodeValue) => null;
-    public virtual IconKind IconKind => IconKind.None;
+    public virtual IconKind GetIconKind(int indexNodeValue) => IconKind.None;
     
     public abstract Task LoadChildListAsync(int indexNodeValue);
 

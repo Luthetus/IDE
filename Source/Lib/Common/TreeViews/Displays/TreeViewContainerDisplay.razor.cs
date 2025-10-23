@@ -411,8 +411,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             eventArgsMouseDown.ScrollTop,
             eventArgsMouseDown.ScrollWidth,
             eventArgsMouseDown.ScrollHeight);
-    
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + eventArgsMouseDown.ScrollTop;
+
+        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop;// + eventArgsMouseDown.ScrollTop;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
@@ -442,9 +442,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         }
         */
 
+        if (_indexVirtualizedNodeValueList[VirtualIndexActiveNode] >= _treeViewContainer.NodeValueList.Count)
+            return;
+
         CommonService.TreeView_SetActiveNodeAction(
             _treeViewContainer.Key,
-            VirtualIndexActiveNode,
+            _indexVirtualizedNodeValueList[VirtualIndexActiveNode],
             addSelectedNodes: false,
             selectNodesBetweenCurrentAndNextActiveNode: false);
     }
@@ -535,8 +538,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     
     private int VirtualIndexBasicValidation(int virtualIndexLocal)
     {
-        return virtualIndexLocal;
-
         if (virtualIndexLocal < 0)
             return 0;
         else if (virtualIndexLocal >= _indexVirtualizedNodeValueList.Count)

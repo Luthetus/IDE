@@ -102,10 +102,16 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
     public override string GetDisplayText(int indexNodeValue)
     {
         var nodeValue = NodeValueList[indexNodeValue];
-        if (nodeValue.TreeViewNodeValueKind == TreeViewNodeValueKind.b0)
+        switch (nodeValue.TreeViewNodeValueKind)
         {
-            return ".NET Solution";
+            case TreeViewNodeValueKind.b0:
+                return DotNetSolutionModel.AbsolutePath.Name;
+            case TreeViewNodeValueKind.b1:
+                return DotNetSolutionModel.SolutionFolderList[nodeValue.TraitsIndex].DisplayName;
+            case TreeViewNodeValueKind.b2:
+                return DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Name;
+            default:
+                return "asdfg";
         }
-        return "asdfg";
     }
 }

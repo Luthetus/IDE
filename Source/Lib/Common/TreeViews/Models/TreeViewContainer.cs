@@ -54,7 +54,7 @@ public abstract class TreeViewContainer
     public abstract List<TreeViewNodeValue> NodeValueList { get; }
     
     /// <summary>The nodeValue with the highlighted background color</summary>
-    public virtual int ActiveNodeValueIndex { get; }
+    public virtual int ActiveNodeValueIndex { get; set; }
     
     /// <summary>
     /// In your constructor:

@@ -75,7 +75,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     {
         if (firstRender)
         {
-            /*
             // Do not ConfigureAwait(false) so that the UI doesn't change out from under you
             // before you finish setting up the events?
             // (is this a thing, I'm just presuming this would be true).
@@ -83,7 +82,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 "clairCommon.treeViewInitialize",
                 _dotNetHelper,
                 _htmlId);
-            */
         }
         
         /*
@@ -190,9 +188,6 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     [JSInvokable]
     public async Task ReceiveOnKeyDown(TreeViewEventArgsKeyDown eventArgsKeyDown)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
-        
         if (_treeViewContainer is null)
             return;
 
@@ -267,13 +262,13 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         var treeViewCommandArgs = new TreeViewCommandArgs(
             _treeViewContainer,
-            null,
+            default,
             async () =>
             {
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*//*// 2025-10-22 (rewrite TreeViews) false);
+                    /*preventScroll:*/ false);
             },
             null,
             null,
@@ -285,10 +280,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
 
         // Do not ConfigureAwait(false) here, the _flatNodeList is made on the UI thread
         // and after this await we need to read the _flatNodeList to scroll the newly active node into view.
-        await TreeViewContainerParameter.TreeViewKeyboardEventHandler.OnKeyDownAsync(treeViewCommandArgs);
+        await _treeViewContainer.OnKeyDownAsync(treeViewCommandArgs);
         
-        var treeViewContainerLocal = CommonService.GetTreeViewContainer(TreeViewContainerParameter.TreeViewContainerKey);
-        
+        var treeViewContainerLocal = CommonService.GetTreeViewContainer(TreeViewContainerKey);
         if (treeViewContainerLocal is null)
             return;
         
@@ -298,6 +292,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             ScrollWidth = eventArgsKeyDown.ScrollWidth
         };
         
+        /*
         for (int i = 0; i < _flatNodeList.Count; i++)
         {
             var node = _flatNodeList[i];

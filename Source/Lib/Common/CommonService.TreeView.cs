@@ -286,10 +286,8 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
-    
+
         var indexContainer = inState.ContainerList.FindIndex(
             x => x.Key == containerKey);
 
@@ -298,14 +296,20 @@ public partial class CommonService
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
             return;
         }
-        
+
         var inContainer = inState.ContainerList[indexContainer];
-        if (inContainer?.ActiveNode is null)
+        if (inContainer is null)
         {
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
             return;
         }
 
+        ++inContainer.ActiveNodeValueIndex;
+
+        CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
+
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var outContainer = PerformMoveDown(inContainer, containerKey, addSelectedNodes, selectNodesBetweenCurrentAndNextActiveNode);
 
         var outContainerList = new List<TreeViewContainer>(inState.ContainerList);

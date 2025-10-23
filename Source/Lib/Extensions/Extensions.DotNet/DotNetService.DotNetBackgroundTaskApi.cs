@@ -936,7 +936,7 @@ public partial class DotNetService
         
         if (!CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
         {
-            treeViewContainer = new SolutionExplorerTreeViewContainer(CommonService, dotNetSolutionModel);
+            treeViewContainer = new SolutionExplorerTreeViewContainer(IdeService, dotNetSolutionModel);
             
             var rootNode = new TreeViewNodeValue
             {

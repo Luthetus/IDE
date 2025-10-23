@@ -1,8 +1,11 @@
 using Clair.Common.RazorLib;
+using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.Icons.Displays;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.CompilerServices.DotNetSolution.Models;
+using Clair.Ide.RazorLib;
+using Clair.TextEditor.RazorLib.TextEditors.Models;
 
 namespace Clair.Extensions.DotNet.DotNetSolutions.Models;
 
@@ -10,17 +13,19 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
 {
     // DotNetSolutionState.TreeViewSolutionExplorerStateKey
     
-    public SolutionExplorerTreeViewContainer(CommonService commonService, DotNetSolutionModel dotNetSolutionModel)
-        : base(commonService)
+    public SolutionExplorerTreeViewContainer(IdeService ideService, DotNetSolutionModel dotNetSolutionModel)
+        : base(ideService.CommonService)
     {
         Key = DotNetSolutionState.TreeViewSolutionExplorerStateKey;
         NodeValueList = new();
         DotNetSolutionModel = dotNetSolutionModel;
+        IdeService = ideService;
     }
     
     public override Key<TreeViewContainer> Key { get; init; }
     public override List<TreeViewNodeValue> NodeValueList { get; }
     public DotNetSolutionModel DotNetSolutionModel { get; }
+    public IdeService IdeService { get; }
 
     public override Task LoadChildListAsync(int indexNodeValue)
     {
@@ -129,5 +134,25 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
             default:
                 return IconKind.None;
         }
+    }
+
+    public override Task OnDoubleClickAsync(TreeViewCommandArgs commandArgs)
+    {
+        base.OnDoubleClickAsync(commandArgs);
+
+        if (commandArgs.NodeThatReceivedMouseEvent.TreeViewNodeValueKind != TreeViewNodeValueKind.b4) // NamespacePath
+            return Task.CompletedTask;
+
+        IdeService.TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
+        {
+            /*await IdeService.TextEditorService.OpenInEditorAsync(
+                editContext,
+                treeViewNamespacePath.Item.Value,
+                true,
+                null,
+                new Category("main"),
+                editContext.TextEditorService.NewViewModelKey());*/
+        });
+        return Task.CompletedTask;
     }
 }

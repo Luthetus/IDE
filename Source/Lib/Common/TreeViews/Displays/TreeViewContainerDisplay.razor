@@ -13,6 +13,9 @@
     _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerKey);
     var activeNodeValueIndex = _treeViewContainer?.ActiveNodeValueIndex ?? 0;
     _indexVirtualizedNodeValueList.Clear();
+    _nodeRecursionStack.Clear();
+    int depth = 0;
+    int indexRootNode = _treeViewContainer.IndexRootNode;
 }
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
@@ -24,7 +27,7 @@
     {
         <div>_treeViewContainer is null</div>
     }
-    else
+    else if (indexRootNode > 0 && indexRootNode < _treeViewContainer.NodeValueList.Count)
     {
         var nodeValueList = _treeViewContainer.NodeValueList;
         <div style="height: @(CommonService.Options_LineHeight * nodeValueList.Count)px; width: 1px; position: absolute;"></div>
@@ -32,6 +35,48 @@
         var isCalculatingPreceedingEmptySpace = true;
         var preceedingEmptySpaceHeight = 0;
         var contentHeight = 0;
+
+        var targetNodeIndex = indexRootNode;
+        var targetNode = _treeViewContainer.NodeValueList[indexRootNode];
+
+        int index = 0;
+
+        // TODO: Rewrite the comment below this.
+        // Loop iterates 1 layer above in order to avoid the break case every child if the child is not expanded or ChildList.Count is == 0
+        // Thus, the root case has to be handled entirely outside the loop.
+        while (true)
+        {
+            if (index >= targetNode.ChildListLength)
+            {
+                if (_nodeRecursionStack.Count > 0)
+                {
+                    var recursionEntry = _nodeRecursionStack.Pop();
+                    depth--;
+                    targetNode = recursionEntry.Node;
+                    index = recursionEntry.Index;
+                    continue;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            var childNode = _treeViewContainer.ChildList[targetNode.ChildListOffset + index++];
+            childNode.Depth = depth;
+            _flatNodeList.Add(childNode);
+
+            if (childNode.IsExpanded && childNode.ChildListLength > 0)
+            {
+                _nodeRecursionStack.Push((targetNode, index));
+                depth++;
+                targetNode = childNode;
+                index = 0;
+            }
+        }
+
+        
+
         <div>
             @for (int i = 0; i < nodeValueList.Count; i++)
             {

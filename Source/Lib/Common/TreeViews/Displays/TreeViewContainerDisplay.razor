@@ -39,47 +39,34 @@
         var targetNodeIndex = indexRootNode;
         var targetNode = _treeViewContainer.NodeValueList[indexRootNode];
 
-        int index = 0;
-
-        // TODO: Rewrite the comment below this.
-        // Loop iterates 1 layer above in order to avoid the break case every child if the child is not expanded or ChildList.Count is == 0
-        // Thus, the root case has to be handled entirely outside the loop.
-        while (true)
-        {
-            if (index >= targetNode.ChildListLength)
-            {
-                if (_nodeRecursionStack.Count > 0)
-                {
-                    var recursionEntry = _nodeRecursionStack.Pop();
-                    depth--;
-                    targetNode = recursionEntry.Node;
-                    index = recursionEntry.Index;
-                    continue;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            var childNode = _treeViewContainer.ChildList[targetNode.ChildListOffset + index++];
-            childNode.Depth = depth;
-            _flatNodeList.Add(childNode);
-
-            if (childNode.IsExpanded && childNode.ChildListLength > 0)
-            {
-                _nodeRecursionStack.Push((targetNode, index));
-                depth++;
-                targetNode = childNode;
-                index = 0;
-            }
-        }
-
-        
-
+        int childIndex = 0;
         <div>
-            @for (int i = 0; i < nodeValueList.Count; i++)
+            @*
+                TODO: Rewrite the comment below this.
+                Loop iterates 1 layer above in order to avoid the break case every child if the child is not expanded or ChildList.Count is == 0
+                Thus, the root case has to be handled entirely outside the loop.
+            *@
+            @while (true)
             {
+                if (childIndex >= targetNode.ChildListLength)
+                {
+                    if (_nodeRecursionStack.Count > 0)
+                    {
+                        var recursionEntry = _nodeRecursionStack.Pop();
+                        depth--;
+                        targetNode = recursionEntry.Node;
+                        childIndex = recursionEntry.Index;
+                        continue;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                var literalIndex = targetNode.ChildListOffset + childIndex;
+                var childNode = _treeViewContainer.NodeValueList[targetNode.ChildListOffset + childIndex++];
+
                 if (isCalculatingPreceedingEmptySpace)
                 {
                     if (preceedingEmptySpaceHeight + CommonService.Options_LineHeight < _treeViewMeasurements.ScrollTop)
@@ -95,24 +82,23 @@
                     break;
                 }
 
-                _indexVirtualizedNodeValueList.Add(i);
+                _indexVirtualizedNodeValueList.Add(literalIndex);
                 contentHeight += CommonService.Options_LineHeight;
 
-                var node = nodeValueList[i];
                 var cssClass = string.Empty;
-                if (i == activeNodeValueIndex)
+                if (literalIndex == activeNodeValueIndex)
                 {
                     cssClass = "ci_active ci_selected";
-                    VirtualIndexActiveNode = i;
+                    VirtualIndexActiveNode = literalIndex;
                 }
                 // class="@cssClass"
                 // style="@GetNodeElementCssStyle(node, i)"
                 <div class="@cssClass"
                      style="@CommonService.Options_LineHeight_CssStyle">
-                    @if (node.IsExpandable)
+                    @if (childNode.IsExpandable)
                     {
                         <span style="cursor: pointer;">
-                            @if (node.IsExpanded)
+                            @if (childNode.IsExpanded)
                             {
                                 @* IconKind.ChevronDown *@
                                 <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.976 10.072l4.357-4.357.62.618L8.284 11h-.618L3 6.333l.619-.618 4.357 4.357z" /></svg>
@@ -135,7 +121,7 @@
 
                     <span>
                         @* Keep the span otherwise icon disappears if treeview width is too small *@
-                        @switch (_treeViewContainer.GetIconKind(i))
+                        @switch (_treeViewContainer.GetIconKind(literalIndex))
                         {
                             case IconKind.DotNetSolutionFolder:
                                 <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-dotnetslnfolder-color)">
@@ -208,10 +194,10 @@
                                 <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 5.914l2.06-2.06v-.708L5.915 1l-.707.707.043.043.25.25 1 1h-3a2.5 2.5 0 0 0 0 5H4V7h-.5a1.5 1.5 0 1 1 0-3h3L5.207 5.293 5.914 6 6 5.914zM11 2H8.328l-1-1H12l.71.29 3 3L16 5v9l-1 1H6l-1-1V6.5l1 .847V14h9V6h-4V2zm1 0v3h3l-3-3z" /></svg>
                                 break;
                             default:
-                                @IconRenderer.Render(_treeViewContainer.GetIconKind(i), CommonService.Options_IconSizeCssValue, CommonService.Options_IconSizeCssValue)
+                                @IconRenderer.Render(_treeViewContainer.GetIconKind(literalIndex), CommonService.Options_IconSizeCssValue, CommonService.Options_IconSizeCssValue)
                                 break;
                         }
-                    
+
                     </span>
 
                     @*
@@ -219,9 +205,17 @@
                         title="@_treeViewContainer.GetHoverText(i)"
                     *@
                     <div style="display: inline;">
-                        @_treeViewContainer.GetDisplayText(i)
+                        @_treeViewContainer.GetDisplayText(literalIndex)
                     </div>
                 </div>
+
+                if (childNode.IsExpanded && childNode.ChildListLength > 0)
+                {
+                    _nodeRecursionStack.Push((targetNode, childIndex));
+                    depth++;
+                    targetNode = childNode;
+                    childIndex = 0;
+                }
             }
         </div>
 

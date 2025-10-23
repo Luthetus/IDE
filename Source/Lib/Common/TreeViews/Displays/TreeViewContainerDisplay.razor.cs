@@ -37,7 +37,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// If doing async work, be sure to NOT use '.ConfigureAwait(false)'
     /// if you intend to use this property after the task finishes.
     /// </summary>
-    private int IndexActiveNode { get; set; }
+    private int VirtualIndexActiveNode { get; set; }
 
     private TreeViewCommandArgs _treeViewContextMenuCommandArgs;
     private TreeViewContainer _treeViewContainer;
@@ -416,7 +416,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         var indexLocal = (int)(relativeY / LineHeight);
         
-        IndexActiveNode = IndexBasicValidation(indexLocal);
+        VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
         
         var relativeX = eventArgsMouseDown.X - _treeViewMeasurements.BoundingClientRectLeft + eventArgsMouseDown.ScrollLeft;
         relativeX = Math.Max(0, relativeX);
@@ -443,7 +443,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
 
         CommonService.TreeView_SetActiveNodeAction(
             _treeViewContainer.Key,
-            IndexActiveNode,
+            VirtualIndexActiveNode,
             addSelectedNodes: false,
             selectNodesBetweenCurrentAndNextActiveNode: false);
     }
@@ -466,11 +466,11 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         var indexLocal = (int)(relativeY / LineHeight);
         
-        IndexActiveNode = IndexBasicValidation(indexLocal);
+        VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
         
         await _treeViewContainer.OnClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
-            _virtualizedNodeValueList[IndexActiveNode],
+            _indexVirtualizedNodeValueList[VirtualIndexActiveNode],
             async () =>
             {
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
@@ -505,11 +505,11 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         var indexLocal = (int)(relativeY / LineHeight);
         
-        IndexActiveNode = IndexBasicValidation(indexLocal);
+        VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
         
         await _treeViewContainer.OnDoubleClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
-            _virtualizedNodeValueList[IndexActiveNode],
+            _indexVirtualizedNodeValueList[VirtualIndexActiveNode],
             async () =>
             {
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
@@ -594,24 +594,24 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         return _flatNodeList;
         */
-        return _virtualizedNodeValueList;
+        return _indexVirtualizedNodeValueList;
     }
     
-    private int IndexBasicValidation(int indexLocal)
+    private int VirtualIndexBasicValidation(int virtualIndexLocal)
     {
-        return indexLocal;
+        return virtualIndexLocal;
 
-        /*if (indexLocal < 0)
+        if (virtualIndexLocal < 0)
             return 0;
-        else if (indexLocal >= _flatNodeList.Count)
-            return _flatNodeList.Count - 1;
+        else if (virtualIndexLocal >= _indexVirtualizedNodeValueList.Count)
+            return _indexVirtualizedNodeValueList.Count - 1;
         
-        return indexLocal;*/
+        return virtualIndexLocal;
     }
     
-    private void HandleChevronOnClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
+    private Task HandleChevronOnClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
-        _treeViewContainer.ToggleExpansion(IndexActiveNode);
+        return _treeViewContainer.ToggleExpansion(VirtualIndexActiveNode);
         /*var localTreeViewNoType = _flatNodeList[IndexActiveNode];
         
         if (!localTreeViewNoType.IsExpandable)

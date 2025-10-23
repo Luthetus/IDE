@@ -156,6 +156,11 @@ public partial class CommonService
         */
     }
 
+    public void TreeView_ReRenderNodeAction()
+    {
+        CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
+    }
+
     public void TreeView_ReRenderNodeAction(Key<TreeViewContainer> containerKey, TreeViewNodeValue node, bool flatListChanged = false)
     {
         /*

@@ -115,6 +115,19 @@ public abstract class TreeViewContainer
     public virtual IconKind GetIconKind(int indexNodeValue) => IconKind.None;
     
     public abstract Task LoadChildListAsync(int indexNodeValue);
+    
+    public virtual async Task ToggleExpansion(int indexNodeValue)
+    {
+        NodeValueList[indexNodeValue] = NodeValueList[indexNodeValue] with
+        {
+            IsExpanded = !NodeValueList[indexNodeValue].IsExpanded
+        };
+
+        if (NodeValueList[indexNodeValue].IsExpanded)
+            await LoadChildListAsync(indexNodeValue);
+        
+        CommonService.TreeView_ReRenderNodeAction();
+    }
 
     /// <summary>
     /// Sets foreach child: child.Parent = this;

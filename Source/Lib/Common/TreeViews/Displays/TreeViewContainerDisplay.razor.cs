@@ -421,6 +421,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         var relativeX = eventArgsMouseDown.X - _treeViewMeasurements.BoundingClientRectLeft + eventArgsMouseDown.ScrollLeft;
         relativeX = Math.Max(0, relativeX);
         
+        if (relativeX >= 0 &&
+            relativeX <= ClairTreeViewIconWidth)
+        {
+            HandleChevronOnClick(eventArgsMouseDown);
+        }
+
         /*
         // TODO: Determine why my math is wrong...
         // ...I need to subtract 1.1 for lower bound and subtract 1 for upper bound.
@@ -605,7 +611,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     
     private void HandleChevronOnClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
-        var localTreeViewNoType = _flatNodeList[IndexActiveNode];
+        _treeViewContainer.ToggleExpansion(IndexActiveNode);
+        /*var localTreeViewNoType = _flatNodeList[IndexActiveNode];
         
         if (!localTreeViewNoType.IsExpandable)
             return;
@@ -617,14 +624,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             CommonService.Enqueue(new CommonWorkArgs
             {
                 WorkKind = CommonWorkKind.TreeView_HandleExpansionChevronOnMouseDown,
-                TreeViewNoType = localTreeViewNoType,
+                IndexNodeValue = eventArgsMouseDown.localTreeViewNoType,
                 TreeViewContainer = _treeViewContainer
             });
         }
         else
         {
             CommonService.TreeView_ReRenderNodeAction(_treeViewContainer.Key, localTreeViewNoType, flatListChanged: true);
-        }
+        }*/
     }
 
     private string GetHasActiveNodeCssClass(TreeViewContainer? treeViewContainer)

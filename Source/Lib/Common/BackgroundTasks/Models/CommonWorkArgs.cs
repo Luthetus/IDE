@@ -24,5 +24,6 @@ public struct CommonWorkArgs
     public Key<TreeViewContainer> ContainerKey { get; set; }
     public TreeViewContainer? TreeViewContainer { get; set; }
     public TreeViewNodeValue TreeViewNoType { get; set; }
+    public int IndexNodeValue { get; set; }
     public CommonWorkKind WorkKind { get; set; }
 }

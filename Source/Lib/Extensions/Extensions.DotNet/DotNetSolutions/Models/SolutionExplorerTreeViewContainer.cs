@@ -32,33 +32,39 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
         {
             case TreeViewNodeValueKind.b0:
             {
-                var childSolutionFolders = DotNetSolutionModel.SolutionFolderList
+                NodeValueList.AddRange(DotNetSolutionModel.SolutionFolderList
                     .OrderBy(x => x.DisplayName)
-                    .Select(x =>
+                    .Select((x, i) =>
                     {
-                        var z = new TreeViewNodeValue(
-                            x,
-                            CommonService,
-                            true,
-                            false);
-                        return z;
-                    });
-                NodeValueList.AddRange(childSolutionFolders);
+                        return new TreeViewNodeValue
+                        {
+                            ParentIndex = -1,
+                            IndexAmongSiblings = 0,
+                            ChildListOffset = 0,
+                            ChildListLength = 0,
+                            TreeViewNodeValueKind = TreeViewNodeValueKind.b1,
+                            TraitsIndex = i,
+                            IsExpandable = true,
+                            IsExpanded = false,
+                        };
+                    }));
 
-                var childProjects = DotNetSolutionModel.DotNetProjectList
-                    .Where(x => x.ProjectTypeGuid != SolutionFolder.SolutionFolderProjectTypeGuid)
+                NodeValueList.AddRange(DotNetSolutionModel.DotNetProjectList
                     .OrderBy(x => x.AbsolutePath.Name)
-                    .Select(x =>
+                    .Select((x, i) =>
                     {
-                        var z = new TreeViewNodeValue(
-                            x.AbsolutePath,
-                            CommonService,
-                            true,
-                            false);
-                        return z;
-                    })
-                    .ToList();
-                NodeValueList.AddRange(childProjects);
+                        return new TreeViewNodeValue
+                        {
+                            ParentIndex = -1,
+                            IndexAmongSiblings = 0,
+                            ChildListOffset = 0,
+                            ChildListLength = 0,
+                            TreeViewNodeValueKind = TreeViewNodeValueKind.b2,
+                            TraitsIndex = i,
+                            IsExpandable = true,
+                            IsExpanded = false,
+                        };
+                    }));
 
                 nodeValue.ChildListLength = NodeValueList.Count - nodeValue.ChildListOffset;
 
@@ -68,6 +74,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 for (int i = nodeValue.ChildListOffset; i < nodeValue.ChildListOffset + nodeValue.ChildListLength; i++)
                 {
                     var child = NodeValueList[i];
+                    child.IndexAmongSiblings = i - nodeValue.ChildListOffset;
                     child.ParentIndex = indexNodeValue;
                     NodeValueList[i] = child;
                 }

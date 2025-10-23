@@ -5,10 +5,7 @@ using Clair.Common.RazorLib.Icons.Displays;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.CompilerServices.DotNetSolution.Models;
-using Clair.CompilerServices.DotNetSolution.Models.Project;
 using Clair.Ide.RazorLib;
-using Clair.TextEditor.RazorLib.TextEditors.Models;
-using System;
 using System.Text;
 
 namespace Clair.Extensions.DotNet.DotNetSolutions.Models;

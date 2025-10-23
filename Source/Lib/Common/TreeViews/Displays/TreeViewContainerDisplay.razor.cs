@@ -50,7 +50,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// <summary>
     /// UI thread only.
     /// </summary>
-    private readonly List<TreeViewNodeValue> _flatNodeList = new();
+    private readonly List<int> _indexVirtualizedNodeValueList = new();
     /// <summary>
     /// UI thread only.
     /// Contains the "used to be" targetNode, and the index that it left off at.
@@ -470,7 +470,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         await _treeViewContainer.OnClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
-            _flatNodeList[IndexActiveNode],
+            _virtualizedNodeValueList[IndexActiveNode],
             async () =>
             {
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
@@ -509,7 +509,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         await _treeViewContainer.OnDoubleClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
-            _flatNodeList[IndexActiveNode],
+            _virtualizedNodeValueList[IndexActiveNode],
             async () =>
             {
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
@@ -594,7 +594,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         return _flatNodeList;
         */
-        return _flatNodeList;
+        return _virtualizedNodeValueList;
     }
     
     private int IndexBasicValidation(int indexLocal)

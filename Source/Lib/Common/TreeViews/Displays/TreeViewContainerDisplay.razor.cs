@@ -84,6 +84,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _htmlId);
         }
         
+        /*
         if (_treeViewContainer is not null)
         {
             var didValidateScrollbar = false;
@@ -94,7 +95,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.focusAndMeasureTreeView",
                     _htmlId,
-                    /*preventScroll:*/ false);
+                    /*preventScroll:*//* false);
             
                 didValidateScrollbar = true;
                 ValidateScrollbar();
@@ -162,6 +163,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 await InvokeAsync(StateHasChanged);
             }
         }
+        */
     }
     
     [JSInvokable]
@@ -172,13 +174,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         _treeViewMeasurements = _treeViewMeasurements with
         {
-            ScrollTop = _treeViewMeasurements.ScrollTop + eventArgsKeyDown.Y,
+            // The JS will scroll then provide the updated ScrollTop.
+            ScrollTop = eventArgsKeyDown.ScrollTop,
             ViewWidth = eventArgsKeyDown.ViewWidth,
             ViewHeight = eventArgsKeyDown.ViewHeight,
             ScrollWidth = eventArgsKeyDown.ScrollWidth,
             ScrollHeight = eventArgsKeyDown.ScrollHeight,
         };
-        ValidateScrollbar();
+        //ValidateScrollbar();
         StateHasChanged();
     }
     

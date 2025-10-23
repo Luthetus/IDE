@@ -480,23 +480,25 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)
             return;
 
-        await _treeViewContainer.OnDoubleClickAsync(new TreeViewCommandArgs(
-            _treeViewContainer,
-            _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index],
-            async () =>
-            {
-                _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
-                    "clairCommon.focusAndMeasureTreeView",
-                    _htmlId,
-                    /*preventScroll:*/ false);
-            },
-            contextMenuFixedPosition: null,
-            new MouseEventArgs
-            {
-                ClientX = eventArgsMouseDown.X,
-                ClientY = eventArgsMouseDown.Y,
-            },
-            keyboardEventArgs: null));
+        await _treeViewContainer.OnDoubleClickAsync(
+            new TreeViewCommandArgs(
+                _treeViewContainer,
+                _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index],
+                async () =>
+                {
+                    _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
+                        "clairCommon.focusAndMeasureTreeView",
+                        _htmlId,
+                        /*preventScroll:*/ false);
+                },
+                contextMenuFixedPosition: null,
+                new MouseEventArgs
+                {
+                    ClientX = eventArgsMouseDown.X,
+                    ClientY = eventArgsMouseDown.Y,
+                },
+                keyboardEventArgs: null),
+            _virtualizedTupleList[VirtualIndexActiveNode].Index);
     }
     
     private int VirtualIndexBasicValidation(int virtualIndexLocal)

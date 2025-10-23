@@ -288,10 +288,10 @@ public abstract class TreeViewContainer
     /// 
     /// Any overrides of this method are intended to have 'base.MethodBeingOverridden()' prior to their code.<br/><br/>
     /// </summary>
-    public virtual Task OnDoubleClickAsync(TreeViewCommandArgs commandArgs)
+    public virtual Task OnDoubleClickAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)
     {
         // Run the synchronous code first
-        OnDoubleClick(commandArgs);
+        OnDoubleClick(commandArgs, indexNodeValue);
         return Task.CompletedTask;
     }
 
@@ -331,7 +331,7 @@ public abstract class TreeViewContainer
     /// Any overrides of this method are intended to have 'base.MethodBeingOverridden()' prior to their code,
     /// but for this method it makes no difference if one puts it after their code.<br/><br/>
     /// </summary>
-    protected virtual void OnDoubleClick(TreeViewCommandArgs commandArgs)
+    protected virtual void OnDoubleClick(TreeViewCommandArgs commandArgs, int indexNodeValue)
     {
         return;
     }

@@ -8,6 +8,7 @@ using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.CompilerServices.DotNetSolution.Models;
 using Clair.Extensions.DotNet.DotNetSolutions.Displays.Internals;
 using Clair.Ide.RazorLib;
+using Clair.TextEditor.RazorLib.TextEditors.Models;
 using System.Text;
 
 namespace Clair.Extensions.DotNet.DotNetSolutions.Models;
@@ -362,22 +363,43 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
         }
     }
 
-    public override Task OnDoubleClickAsync(TreeViewCommandArgs commandArgs)
+    public override Task OnDoubleClickAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)
     {
-        base.OnDoubleClickAsync(commandArgs);
+        base.OnDoubleClickAsync(commandArgs, indexNodeValue);
 
         if (commandArgs.NodeThatReceivedMouseEvent.TreeViewNodeValueKind != TreeViewNodeValueKind.b4) // NamespacePath
             return Task.CompletedTask;
 
         IdeService.TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
         {
-            /*await IdeService.TextEditorService.OpenInEditorAsync(
+            string? path = null;
+
+            var nodeValue = NodeValueList[indexNodeValue];
+            switch (nodeValue.TreeViewNodeValueKind)
+            {
+                case TreeViewNodeValueKind.b0: // .sln
+                    return;
+                case TreeViewNodeValueKind.b1: // SolutionFolder
+                    return;
+                case TreeViewNodeValueKind.b2: // .csproj
+                    path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
+                    break;
+                case TreeViewNodeValueKind.b3: // dir
+                    return;
+                case TreeViewNodeValueKind.b4: // file
+                    path = FileTraitsList[nodeValue.TraitsIndex].Value;
+                    break;
+                default:
+                    return;
+            }
+
+            await IdeService.TextEditorService.OpenInEditorAsync(
                 editContext,
-                treeViewNamespacePath.Item.Value,
+                path,
                 true,
                 null,
                 new Category("main"),
-                editContext.TextEditorService.NewViewModelKey());*/
+                editContext.TextEditorService.NewViewModelKey());
         });
         return Task.CompletedTask;
     }

@@ -3,12 +3,16 @@
 @using Clair.Common.RazorLib.Dimensions;
 @using Clair.Common.RazorLib.Dimensions.Models;
 
-@{ _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerKey); }
+@{
+    // The state is very unsafe to just read from the reference.
+    _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerKey);
+    var activeNodeValueIndex = _treeViewContainer?.ActiveNodeValueIndex ?? 0;
+}
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
 <div id="@_htmlId"
+     class="ci_tree-view-state"
      tabindex="0">
-    @TreeViewContainerKey
     
     @if (_treeViewContainer is null)
     {
@@ -20,9 +24,15 @@
         @for (int i = 0; i < nodeValueList.Count; i++)
         {
             var node = nodeValueList[i];
+            var cssClass = string.Empty;
+            if (i == activeNodeValueIndex)
+            {
+                cssClass = "ci_active ci_selected";
+                IndexActiveNode = i;
+            }
             // class="@cssClass"
             // style="@GetNodeElementCssStyle(node, i)"
-            <div>
+            <div class="@cssClass">
                 @if (node.IsExpandable)
                 {
                     <span style="cursor: pointer;">

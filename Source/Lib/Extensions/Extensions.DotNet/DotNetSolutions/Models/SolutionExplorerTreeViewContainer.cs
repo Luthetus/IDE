@@ -169,6 +169,30 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                     }
                 }
 
+                var fileAbsolutePathList = fileList
+                    .Where(x => !x.EndsWith(CommonFacts.C_SHARP_PROJECT))
+                    .OrderBy(pathString => pathString)
+                    .Select(x =>
+                    {
+                        return new AbsolutePath(x, false, CommonService.FileSystemProvider, tokenBuilder, formattedBuilder, AbsolutePathNameKind.NameWithExtension);
+                    });
+                
+                foreach (var absolutePath in fileAbsolutePathList)
+                {
+                    FileTraitsList.Add(absolutePath);
+                    NodeValueList.Add(new TreeViewNodeValue
+                    {
+                        ParentIndex = indexNodeValue,
+                        IndexAmongSiblings = 0,
+                        ChildListOffset = 0,
+                        ChildListLength = 0,
+                        TreeViewNodeValueKind = TreeViewNodeValueKind.b4, // file
+                        TraitsIndex = FileTraitsList.Count - 1,
+                        IsExpandable = false,
+                        IsExpanded = false,
+                    });
+                }
+
                 nodeValue.ChildListLength = NodeValueList.Count - nodeValue.ChildListOffset;
 
                 /*var cSharpProjectDependenciesTreeViewNode = new TreeViewCSharpProjectDependencies(
@@ -182,23 +206,6 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 {
                     //cSharpProjectDependenciesTreeViewNode
                 };*/
-
-                
-
-                /*result.AddRange(
-                    fileList
-                        .Where(x => !x.EndsWith(CommonFacts.C_SHARP_PROJECT))
-                        .OrderBy(pathString => pathString)
-                        .Select(x =>
-                        {
-                            var absolutePath = new AbsolutePath(x, false, cSharpProjectTreeView.CommonService.FileSystemProvider, tokenBuilder, formattedBuilder, AbsolutePathNameKind.NameWithExtension);
-
-                            return new TreeViewNamespacePath(
-                                absolutePath,
-                                cSharpProjectTreeView.CommonService,
-                                false,
-                                false);
-                        }));*/
         
                 return Task.CompletedTask;
             }
@@ -223,6 +230,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 return DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Name;
             case TreeViewNodeValueKind.b3: // dir
                 return DirectoryTraitsList[nodeValue.TraitsIndex].Name;
+            case TreeViewNodeValueKind.b4: // file
+                return FileTraitsList[nodeValue.TraitsIndex].Name;
             default:
                 return "asdfg";
         }
@@ -241,6 +250,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 return IconKind.CSharpProject;
             case TreeViewNodeValueKind.b3: // dir
                 return IconKind.Folder;
+            case TreeViewNodeValueKind.b4: // file
+                return IconKind.File;
             default:
                 return IconKind.None;
         }

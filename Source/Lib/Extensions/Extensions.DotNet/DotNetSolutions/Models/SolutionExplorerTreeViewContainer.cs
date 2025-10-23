@@ -99,6 +99,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
 
                 // The parent directory gets what is left over after the
                 // children take their respective 'code behinds'
+
+                NodeValueList[indexNodeValue] = nodeValue;
                 return Task.CompletedTask;
             }
             case TreeViewNodeValueKind.b2: // .csproj
@@ -204,6 +206,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                     //cSharpProjectDependenciesTreeViewNode
                 };*/
         
+                NodeValueList[indexNodeValue] = nodeValue;
                 return Task.CompletedTask;
             }
             default:

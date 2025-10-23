@@ -15,7 +15,7 @@
     _indexVirtualizedNodeValueList.Clear();
     _nodeRecursionStack.Clear();
     int depth = 0;
-    int indexRootNode = _treeViewContainer.IndexRootNode;
+    int indexRootNode = _treeViewContainer?.IndexRootNode ?? -1;
 }
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
@@ -27,7 +27,7 @@
     {
         <div>_treeViewContainer is null</div>
     }
-    else if (indexRootNode > 0 && indexRootNode < _treeViewContainer.NodeValueList.Count)
+    else if (indexRootNode >= 0 && indexRootNode < _treeViewContainer.NodeValueList.Count)
     {
         var nodeValueList = _treeViewContainer.NodeValueList;
         <div style="height: @(CommonService.Options_LineHeight * nodeValueList.Count)px; width: 1px; position: absolute;"></div>
@@ -41,6 +41,9 @@
 
         int childIndex = 0;
         <div>
+
+            <div style="@CommonService.Options_LineHeight_CssStyle">First node probably won't render...</div>
+
             @*
                 TODO: Rewrite the comment below this.
                 Loop iterates 1 layer above in order to avoid the break case every child if the child is not expanded or ChildList.Count is == 0

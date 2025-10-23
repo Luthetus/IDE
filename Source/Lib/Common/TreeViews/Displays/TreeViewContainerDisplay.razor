@@ -4,6 +4,11 @@
 @using Clair.Common.RazorLib.Dimensions.Models;
 
 @{
+    // store the virtualization result not the entirety of the flat list
+    //
+    // each render based on the user input you can perform simple modifications to the existing virtualization result
+    // to quickly get the next.
+
     // The state is very unsafe to just read from the reference.
     _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerKey);
     var activeNodeValueIndex = _treeViewContainer?.ActiveNodeValueIndex ?? 0;

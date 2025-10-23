@@ -8,6 +8,7 @@ using Clair.CompilerServices.DotNetSolution.Models;
 using Clair.CompilerServices.DotNetSolution.Models.Project;
 using Clair.Ide.RazorLib;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
+using System;
 using System.Text;
 
 namespace Clair.Extensions.DotNet.DotNetSolutions.Models;
@@ -27,8 +28,11 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
     
     public override Key<TreeViewContainer> Key { get; init; }
     public override List<TreeViewNodeValue> NodeValueList { get; }
-    public DotNetSolutionModel DotNetSolutionModel { get; }
+
     public IdeService IdeService { get; }
+    public DotNetSolutionModel DotNetSolutionModel { get; }
+    public List<AbsolutePath> DirectoryTraitsList { get; set; } = new();
+    public List<AbsolutePath> FileTraitsList { get; set; } = new();
 
     public override Task LoadChildListAsync(int indexNodeValue)
     {
@@ -65,7 +69,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                     {
                         return new TreeViewNodeValue
                         {
-                            ParentIndex = -1,
+                            ParentIndex = indexNodeValue,
                             IndexAmongSiblings = 0,
                             ChildListOffset = 0,
                             ChildListLength = 0,
@@ -85,7 +89,6 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 {
                     var child = NodeValueList[i];
                     child.IndexAmongSiblings = i - nodeValue.ChildListOffset;
-                    child.ParentIndex = indexNodeValue;
                     NodeValueList[i] = child;
                 }
 
@@ -115,42 +118,74 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 var tokenBuilder = new StringBuilder();
                 var formattedBuilder = new StringBuilder();
 
-                var childDirectoryTreeViewModelsList = directoryList
+                var childDirectoryNamespacePathList = directoryList
                     .Where(x => !IdeFacts.IsHiddenFileByContainerFileExtension(CommonFacts.C_SHARP_PROJECT, x))
                     .OrderBy(pathString => pathString)
                     .Select(x =>
-                        new TreeViewNamespacePath(
-                            new AbsolutePath(
-                                x, true, cSharpProjectTreeView.CommonService.FileSystemProvider, tokenBuilder, formattedBuilder, AbsolutePathNameKind.NameNoExtension),
-                            cSharpProjectTreeView.CommonService,
-                            true,
-                            false));
+                    {
+                        return new AbsolutePath(
+                            x, true, CommonService.FileSystemProvider, tokenBuilder, formattedBuilder, AbsolutePathNameKind.NameNoExtension);
+                    });
 
-                var foundUniqueDirectories = new List<TreeViewNamespacePath>();
-                var foundDefaultDirectories = new List<TreeViewNamespacePath>();
-
-                foreach (var directoryTreeViewModel in childDirectoryTreeViewModelsList)
+                // The way I sort the unique to come before the default directories feels scuffed
+                // but it is an extremely minor detail relative to the task of rewriting the treeviews
+                foreach (var absolutePath in childDirectoryNamespacePathList)
                 {
-                    if (IdeFacts.IsUniqueFileByContainerFileExtension(CommonFacts.C_SHARP_PROJECT, directoryTreeViewModel.Item.Name))
-                        foundUniqueDirectories.Add(directoryTreeViewModel);
-                    else
-                        foundDefaultDirectories.Add(directoryTreeViewModel);
+                    if (IdeFacts.IsUniqueFileByContainerFileExtension(CommonFacts.C_SHARP_PROJECT, absolutePath.Name))
+                    {
+                        DirectoryTraitsList.Add(absolutePath);
+                        NodeValueList.Add(new TreeViewNodeValue
+                        {
+                            ParentIndex = indexNodeValue,
+                            IndexAmongSiblings = 0,
+                            ChildListOffset = 0,
+                            ChildListLength = 0,
+                            TreeViewNodeValueKind = TreeViewNodeValueKind.b3, // dir
+                            TraitsIndex = DirectoryTraitsList.Count - 1,
+                            IsExpandable = true,
+                            IsExpanded = false,
+                        });
+                    }
                 }
 
-                var cSharpProjectDependenciesTreeViewNode = new TreeViewCSharpProjectDependencies(
+                // The way I sort the unique to come before the default directories feels scuffed
+                // but it is an extremely minor detail relative to the task of rewriting the treeviews
+                foreach (var absolutePath in childDirectoryNamespacePathList)
+                {
+                    if (!IdeFacts.IsUniqueFileByContainerFileExtension(CommonFacts.C_SHARP_PROJECT, absolutePath.Name))
+                    {
+                        DirectoryTraitsList.Add(absolutePath);
+                        NodeValueList.Add(new TreeViewNodeValue
+                        {
+                            ParentIndex = indexNodeValue,
+                            IndexAmongSiblings = 0,
+                            ChildListOffset = 0,
+                            ChildListLength = 0,
+                            TreeViewNodeValueKind = TreeViewNodeValueKind.b3, // dir
+                            TraitsIndex = DirectoryTraitsList.Count - 1,
+                            IsExpandable = true,
+                            IsExpanded = false,
+                        });
+                    }
+                }
+
+                nodeValue.ChildListLength = NodeValueList.Count - nodeValue.ChildListOffset;
+
+                /*var cSharpProjectDependenciesTreeViewNode = new TreeViewCSharpProjectDependencies(
                     new CSharpProjectDependencies(project.AbsolutePath),
                     cSharpProjectTreeView.CommonService,
                     true,
-                    false);
+                    false);*/
 
                 // file system list vs the filtered list has a negligible length difference vs the cost of enumerating filtered list to get length / internal reallocations of list.
-                var result = new List<TreeViewNodeValue>(capacity: directoryList.Length + fileList.Length)
+                /*var result = new List<TreeViewNodeValue>(capacity: directoryList.Length + fileList.Length)
                 {
-                    cSharpProjectDependenciesTreeViewNode
-                };
-                result.AddRange(foundUniqueDirectories);
-                result.AddRange(foundDefaultDirectories);
-                result.AddRange(
+                    //cSharpProjectDependenciesTreeViewNode
+                };*/
+
+                
+
+                /*result.AddRange(
                     fileList
                         .Where(x => !x.EndsWith(CommonFacts.C_SHARP_PROJECT))
                         .OrderBy(pathString => pathString)
@@ -163,9 +198,9 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                                 cSharpProjectTreeView.CommonService,
                                 false,
                                 false);
-                        }));
+                        }));*/
         
-                return Task.FromResult(result);
+                return Task.CompletedTask;
             }
             default:
             {
@@ -186,6 +221,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 return DotNetSolutionModel.SolutionFolderList[nodeValue.TraitsIndex].DisplayName;
             case TreeViewNodeValueKind.b2: // .csproj
                 return DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Name;
+            case TreeViewNodeValueKind.b3: // dir
+                return DirectoryTraitsList[nodeValue.TraitsIndex].Name;
             default:
                 return "asdfg";
         }
@@ -202,6 +239,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 return IconKind.DotNetSolutionFolder;
             case TreeViewNodeValueKind.b2: // .csproj
                 return IconKind.CSharpProject;
+            case TreeViewNodeValueKind.b3: // dir
+                return IconKind.Folder;
             default:
                 return IconKind.None;
         }

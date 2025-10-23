@@ -16,6 +16,7 @@
     _nodeRecursionStack.Clear();
     int depth = 0;
     int indexRootNode = _treeViewContainer?.IndexRootNode ?? -1;
+    var nodeValueList = _treeViewContainer?.NodeValueList;
 }
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
@@ -27,9 +28,8 @@
     {
         <div>_treeViewContainer is null</div>
     }
-    else if (indexRootNode >= 0 && indexRootNode < _treeViewContainer.NodeValueList.Count)
+    else if (indexRootNode >= 0 && indexRootNode < nodeValueList.Count)
     {
-        var nodeValueList = _treeViewContainer.NodeValueList;
         <div style="height: @(CommonService.Options_LineHeight * nodeValueList.Count)px; width: 1px; position: absolute;"></div>
 
         var isCalculatingPreceedingEmptySpace = true;
@@ -37,7 +37,7 @@
         var contentHeight = 0;
 
         var targetNodeIndex = indexRootNode;
-        var targetNode = _treeViewContainer.NodeValueList[indexRootNode];
+        var targetNode = nodeValueList[indexRootNode];
 
         var childIndex = 0;
         var forceFirstNodeToRender = true;
@@ -74,13 +74,13 @@
                     }
 
                     literalIndex = targetNode.ChildListOffset + childIndex;
-                    childNode = _treeViewContainer.NodeValueList[targetNode.ChildListOffset + childIndex++];
+                    childNode = nodeValueList[targetNode.ChildListOffset + childIndex++];
                 }
                 else
                 {
                     // can't set the "force root node to render bool" to false here it must be done after the markup
                     literalIndex = indexRootNode;
-                    childNode = _treeViewContainer.NodeValueList[literalIndex];
+                    childNode = nodeValueList[literalIndex];
                 }
 
                 if (isCalculatingPreceedingEmptySpace)

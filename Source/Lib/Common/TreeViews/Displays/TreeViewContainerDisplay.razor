@@ -27,9 +27,28 @@
     else
     {
         var nodeValueList = _treeViewContainer.NodeValueList;
+        <div style="height: @(CommonService.Options_LineHeight * nodeValueList.Count)px; width: 1px; position: absolute;"></div>
+
+        var isCalculatingPreceedingEmptySpace = true;
+        var preceedingEmptySpaceHeight = 0;
         var contentHeight = 0;
         @for (int i = 0; i < nodeValueList.Count; i++)
         {
+            if (isCalculatingPreceedingEmptySpace)
+            {
+                if (preceedingEmptySpaceHeight + CommonService.Options_LineHeight < _treeViewMeasurements.ScrollTop)
+                {
+                    preceedingEmptySpaceHeight += CommonService.Options_LineHeight;
+                    continue;
+                }
+                isCalculatingPreceedingEmptySpace = false;
+            }
+
+            if (contentHeight > _treeViewMeasurements.ViewHeight)
+            {
+                break;
+            }
+
             _indexVirtualizedNodeValueList.Add(i);
             contentHeight += CommonService.Options_LineHeight;
 

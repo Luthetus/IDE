@@ -1,11 +1,14 @@
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Commands.Models;
+using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Icons.Displays;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.CompilerServices.DotNetSolution.Models;
+using Clair.CompilerServices.DotNetSolution.Models.Project;
 using Clair.Ide.RazorLib;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
+using System.Text;
 
 namespace Clair.Extensions.DotNet.DotNetSolutions.Models;
 
@@ -38,8 +41,9 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
             case TreeViewNodeValueKind.b0:
             {
                 NodeValueList.AddRange(DotNetSolutionModel.SolutionFolderList
-                    .OrderBy(x => x.DisplayName)
-                    .Select((x, i) =>
+                    .Select((x, i) => (x, i))
+                    .OrderBy(x => x.x.DisplayName)
+                    .Select(tuple =>
                     {
                         return new TreeViewNodeValue
                         {
@@ -48,15 +52,16 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             TreeViewNodeValueKind = TreeViewNodeValueKind.b1, // SolutionFolder
-                            TraitsIndex = i,
+                            TraitsIndex = tuple.i,
                             IsExpandable = true,
                             IsExpanded = false,
                         };
                     }));
 
                 NodeValueList.AddRange(DotNetSolutionModel.DotNetProjectList
-                    .OrderBy(x => x.AbsolutePath.Name)
-                    .Select((x, i) =>
+                    .Select((x, i) => (x, i))
+                    .OrderBy(x => x.x.AbsolutePath.Name)
+                    .Select(tuple =>
                     {
                         return new TreeViewNodeValue
                         {
@@ -65,7 +70,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             TreeViewNodeValueKind = TreeViewNodeValueKind.b2, // .csproj
-                            TraitsIndex = i,
+                            TraitsIndex = tuple.i,
                             IsExpandable = true,
                             IsExpanded = false,
                         };
@@ -98,12 +103,14 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
             }
             case TreeViewNodeValueKind.b2: // .csproj
             {
-                var directoryAbsolutePathString = cSharpProjectTreeView.Item.CreateSubstringParentDirectory();
-                if (directoryAbsolutePathString is null)
-                    return Task.FromResult(new List<TreeViewNoType>());
+                var project = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex];
 
-                var directoryList = cSharpProjectTreeView.CommonService.FileSystemProvider.Directory.GetDirectories(directoryAbsolutePathString);
-                var fileList = cSharpProjectTreeView.CommonService.FileSystemProvider.Directory.GetFiles(directoryAbsolutePathString);
+                var directoryAbsolutePathString = project.AbsolutePath.CreateSubstringParentDirectory();
+                if (directoryAbsolutePathString is null)
+                    return Task.CompletedTask;
+
+                var directoryList = CommonService.FileSystemProvider.Directory.GetDirectories(directoryAbsolutePathString);
+                var fileList = CommonService.FileSystemProvider.Directory.GetFiles(directoryAbsolutePathString);
 
                 var tokenBuilder = new StringBuilder();
                 var formattedBuilder = new StringBuilder();
@@ -131,13 +138,13 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 }
 
                 var cSharpProjectDependenciesTreeViewNode = new TreeViewCSharpProjectDependencies(
-                    new CSharpProjectDependencies(cSharpProjectTreeView.Item),
+                    new CSharpProjectDependencies(project.AbsolutePath),
                     cSharpProjectTreeView.CommonService,
                     true,
                     false);
 
                 // file system list vs the filtered list has a negligible length difference vs the cost of enumerating filtered list to get length / internal reallocations of list.
-                var result = new List<TreeViewNoType>(capacity: directoryList.Length + fileList.Length)
+                var result = new List<TreeViewNodeValue>(capacity: directoryList.Length + fileList.Length)
                 {
                     cSharpProjectDependenciesTreeViewNode
                 };
@@ -151,7 +158,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                         {
                             var absolutePath = new AbsolutePath(x, false, cSharpProjectTreeView.CommonService.FileSystemProvider, tokenBuilder, formattedBuilder, AbsolutePathNameKind.NameWithExtension);
 
-                            return (TreeViewNoType)new TreeViewNamespacePath(
+                            return new TreeViewNamespacePath(
                                 absolutePath,
                                 cSharpProjectTreeView.CommonService,
                                 false,

@@ -275,7 +275,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
 
         // Do not ConfigureAwait(false) here, the _flatNodeList is made on the UI thread
         // and after this await we need to read the _flatNodeList to scroll the newly active node into view.
-        await _treeViewContainer.OnKeyDownAsync(treeViewCommandArgs);
+        await _treeViewContainer.OnKeyDownAsync(treeViewCommandArgs, _virtualizedTupleList[VirtualIndexActiveNode].Index);
         
         var treeViewContainerLocal = CommonService.GetTreeViewContainer(TreeViewContainerKey);
         if (treeViewContainerLocal is null)

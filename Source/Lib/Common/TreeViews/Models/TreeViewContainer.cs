@@ -115,19 +115,7 @@ public abstract class TreeViewContainer
     public virtual IconKind GetIconKind(int indexNodeValue) => IconKind.None;
     
     public abstract Task LoadChildListAsync(int indexNodeValue);
-    
-    public virtual async Task ToggleExpansion(int indexNodeValue)
-    {
-        NodeValueList[indexNodeValue] = NodeValueList[indexNodeValue] with
-        {
-            IsExpanded = !NodeValueList[indexNodeValue].IsExpanded
-        };
-
-        if (NodeValueList[indexNodeValue].IsExpanded)
-            await LoadChildListAsync(indexNodeValue);
-        
-        CommonService.TreeView_ReRenderNodeAction();
-    }
+        public virtual async Task ToggleExpansion(int indexNodeValue)    {        NodeValueList[indexNodeValue] = NodeValueList[indexNodeValue] with        {            IsExpanded = !NodeValueList[indexNodeValue].IsExpanded        };        if (NodeValueList[indexNodeValue].IsExpanded)            await LoadChildListAsync(indexNodeValue);                CommonService.TreeView_ReRenderNodeAction();    }
 
     /// <summary>
     /// Sets foreach child: child.Parent = this;
@@ -203,7 +191,7 @@ public abstract class TreeViewContainer
     /// 
     /// Any overrides of this method are intended to have 'base.MethodBeingOverridden()' prior to their code.<br/><br/>
     /// </summary>
-    public virtual Task OnKeyDownAsync(TreeViewCommandArgs commandArgs)
+    public virtual Task OnKeyDownAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)
     {
         // Run the synchronous code first
         OnKeyDown(commandArgs);
@@ -394,13 +382,7 @@ public abstract class TreeViewContainer
         */
     }
 
-    public abstract Task OnContextMenuAsync(
-        int indexNodeValue,
-        bool occurredDueToMouseEvent,
-        double leftPositionInPixels,
-        double topPositionInPixels);
-
-    /// <summary>
+    public abstract Task OnContextMenuAsync(        int indexNodeValue,        bool occurredDueToMouseEvent,        double leftPositionInPixels,        double topPositionInPixels);    /// <summary>
     /// This interface should always be directly tied to UI of a TreeView actively being rendered.
     /// To maintain TreeView state beyond the lifecycle of the UI, implement the Dispose
     /// and store the TreeView yourself however you want, in an optimized manner.

@@ -433,6 +433,96 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
         });
         return Task.CompletedTask;
     }
+    
+    public override Task OnKeyDownAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)
+    {
+        if (commandArgs.KeyboardEventArgs is null)
+            return Task.CompletedTask;
+
+        base.OnKeyDownAsync(commandArgs, indexNodeValue);
+
+        switch (commandArgs.KeyboardEventArgs.Code)
+        {
+            case CommonFacts.ENTER_CODE:
+            {
+                string? path = null;
+
+                var nodeValue = NodeValueList[indexNodeValue];
+                switch (nodeValue.TreeViewNodeValueKind)
+                {
+                    case TreeViewNodeValueKind.b0: // .sln
+                        return Task.CompletedTask;
+                    case TreeViewNodeValueKind.b1: // SolutionFolder
+                        return Task.CompletedTask;
+                    case TreeViewNodeValueKind.b2: // .csproj
+                        path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
+                        break;
+                    case TreeViewNodeValueKind.b3: // dir
+                        return Task.CompletedTask;
+                    case TreeViewNodeValueKind.b4: // file
+                        path = FileTraitsList[nodeValue.TraitsIndex].Value;
+                        break;
+                    default:
+                        return Task.CompletedTask;
+                }
+                
+                if (path is null)
+                    return Task.CompletedTask;
+        
+                IdeService.TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
+                {
+                    await IdeService.TextEditorService.OpenInEditorAsync(
+                        editContext,
+                        path,
+                        shouldSetFocusToEditor: true,
+                        null,
+                        new Category("main"),
+                        editContext.TextEditorService.NewViewModelKey());
+                });
+                return Task.CompletedTask;
+            }
+            case CommonFacts.SPACE_CODE:
+            {
+                string? path = null;
+
+                var nodeValue = NodeValueList[indexNodeValue];
+                switch (nodeValue.TreeViewNodeValueKind)
+                {
+                    case TreeViewNodeValueKind.b0: // .sln
+                        return Task.CompletedTask;
+                    case TreeViewNodeValueKind.b1: // SolutionFolder
+                        return Task.CompletedTask;
+                    case TreeViewNodeValueKind.b2: // .csproj
+                        path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
+                        break;
+                    case TreeViewNodeValueKind.b3: // dir
+                        return Task.CompletedTask;
+                    case TreeViewNodeValueKind.b4: // file
+                        path = FileTraitsList[nodeValue.TraitsIndex].Value;
+                        break;
+                    default:
+                        return Task.CompletedTask;
+                }
+                
+                if (path is null)
+                    return Task.CompletedTask;
+        
+                IdeService.TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
+                {
+                    await IdeService.TextEditorService.OpenInEditorAsync(
+                        editContext,
+                        path,
+                        shouldSetFocusToEditor: false,
+                        null,
+                        new Category("main"),
+                        editContext.TextEditorService.NewViewModelKey());
+                });
+                return Task.CompletedTask;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
 
     /// <summary>
     /// If the context menu event occurred due to a "RightClick" event then

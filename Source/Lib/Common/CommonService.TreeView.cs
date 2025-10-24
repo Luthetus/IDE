@@ -446,7 +446,7 @@ public partial class CommonService
             {
                 inContainer.ActiveNodeValueIndex = activeNode.ParentIndex;
             }
-            else if (activeNode.IndexAmongSiblings < inContainer.NodeValueList[activeNode.ParentIndex].ChildListLength - 1)
+            else if (activeNode.IndexAmongSiblings < inContainer.NodeValueList[activeNode.ParentIndex].ChildListLength)
             {
                 var parent = inContainer.NodeValueList[activeNode.ParentIndex];
                 inContainer.ActiveNodeValueIndex = parent.ChildListOffset + (activeNode.IndexAmongSiblings - 1);

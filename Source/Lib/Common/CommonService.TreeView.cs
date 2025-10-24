@@ -305,13 +305,11 @@ public partial class CommonService
         }
 
         var inContainer = inState.ContainerList[indexContainer];
-        if (inContainer is null)
-        {
-            CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
-            return;
-        }
 
-        ++inContainer.ActiveNodeValueIndex;
+        if (inContainer.ActiveNodeValueIndex < inContainer.NodeValueList.Count - 1)
+            ++inContainer.ActiveNodeValueIndex;
+        else
+            inContainer.ActiveNodeValueIndex = inContainer.NodeValueList.Count - 1;
 
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
 
@@ -333,8 +331,6 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
         var indexContainer = inState.ContainerList.FindIndex(
@@ -348,15 +344,20 @@ public partial class CommonService
 
         var inContainer = inState.ContainerList[indexContainer];
         
-        var outContainer = PerformMoveUp(inContainer, containerKey, addSelectedNodes, selectNodesBetweenCurrentAndNextActiveNode);
-
-        var outContainerList = new List<TreeViewContainer>(inState.ContainerList);
-        outContainerList[indexContainer] = outContainer;
+        if (inContainer.ActiveNodeValueIndex > 0)
+            --inContainer.ActiveNodeValueIndex;
+        else
+            inContainer.ActiveNodeValueIndex = 0;
         
-        _treeViewState = inState with { ContainerList = outContainerList };
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
-        return;
-        */
+        
+        // var outContainer = PerformMoveUp(inContainer, containerKey, addSelectedNodes, selectNodesBetweenCurrentAndNextActiveNode);
+
+        // var outContainerList = new List<TreeViewContainer>(inState.ContainerList);
+        // outContainerList[indexContainer] = outContainer;
+        
+        // _treeViewState = inState with { ContainerList = outContainerList };
+        
     }
 
     public void TreeView_MoveRightAction(

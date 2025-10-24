@@ -14,8 +14,15 @@ public partial class CommonService
     {
         var inState = GetDropdownState();
     
-        var indexExistingDropdown = inState.DropdownList.FindIndex(
-            x => x.Key == dropdown.Key);
+        var indexExistingDropdown = -1;
+        for (int i = 0; i < inState.DropdownList.Count; i++)
+        {
+            if (inState.DropdownList[i].Key == dropdown.Key)
+            {
+                indexExistingDropdown = i;
+                break;
+            }
+        }
 
         if (indexExistingDropdown != -1)
         {
@@ -39,8 +46,15 @@ public partial class CommonService
     {
         var inState = GetDropdownState();
     
-        var indexExistingDropdown = inState.DropdownList.FindIndex(
-            x => x.Key == key);
+        var indexExistingDropdown = -1;
+        for (int i = 0; i < inState.DropdownList.Count; i++)
+        {
+            if (inState.DropdownList[i].Key == key)
+            {
+                indexExistingDropdown = i;
+                break;
+            }
+        }
 
         if (indexExistingDropdown == -1)
         {
@@ -78,9 +92,16 @@ public partial class CommonService
     public void Dropdown_ReduceFitOnScreenAction(DropdownRecord dropdown)
     {
         var inState = GetDropdownState();
-    
-        var indexExistingDropdown = inState.DropdownList.FindIndex(
-            x => x.Key == dropdown.Key);
+        
+        var indexExistingDropdown = -1;
+        for (int i = 0; i < inState.DropdownList.Count; i++)
+        {
+            if (inState.DropdownList[i].Key == dropdown.Key)
+            {
+                indexExistingDropdown = i;
+                break;
+            }
+        }
 
         if (indexExistingDropdown == -1)
         {

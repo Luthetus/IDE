@@ -27,8 +27,15 @@ public partial class IdeService
     {
         lock (_stateModificationLock)
         {
-            var indexOfStartupControl = _startupControlState.StartupControlList.FindIndex(
-                x => x.StartupProjectAbsolutePath.Value == startupControl.StartupProjectAbsolutePath.Value);
+            var indexOfStartupControl = -1;
+            for (int i = 0; i < _startupControlState.StartupControlList.Count; i++)
+            {
+                if (_startupControlState.StartupControlList[i].StartupProjectAbsolutePath.Value == startupControl.StartupProjectAbsolutePath.Value)
+                {
+                    indexOfStartupControl = i;
+                    break;
+                }
+            }
 
             if (indexOfStartupControl == -1 && !string.IsNullOrWhiteSpace(startupControl.StartupProjectAbsolutePath.Value))
             {
@@ -62,8 +69,15 @@ public partial class IdeService
     {
         lock (_stateModificationLock)
         {
-            var indexOfStartupControl = _startupControlState.StartupControlList.FindIndex(
-                x => x.StartupProjectAbsolutePath.Value == startupProjectAbsolutePathValue);
+            var indexOfStartupControl = -1;
+            for (int i = 0; i < _startupControlState.StartupControlList.Count; i++)
+            {
+                if (_startupControlState.StartupControlList[i].StartupProjectAbsolutePath.Value == startupProjectAbsolutePathValue)
+                {
+                    indexOfStartupControl = i;
+                    break;
+                }
+            }
 
             if (indexOfStartupControl != -1)
             {

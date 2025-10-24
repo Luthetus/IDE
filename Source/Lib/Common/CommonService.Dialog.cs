@@ -48,8 +48,15 @@ public partial class CommonService
     {
         var inState = GetDialogState();
         
-        var indexDialog = inState.DialogList.FindIndex(
-            x => x.DynamicViewModelKey == dynamicViewModelKey);
+        var indexDialog = -1;
+        for (int i = 0; i < inState.DialogList.Count; i++)
+        {
+            if (inState.DialogList[i].DynamicViewModelKey == dynamicViewModelKey)
+            {
+                indexDialog = i;
+                break;
+            }
+        }
 
         if (indexDialog == -1)
         {
@@ -83,8 +90,15 @@ public partial class CommonService
     {
         var inState = GetDialogState();
     
-        var indexDialog = inState.DialogList.FindIndex(
-            x => x.DynamicViewModelKey == dynamicViewModelKey);
+        var indexDialog = -1;
+        for (int i = 0; i < inState.DialogList.Count; i++)
+        {
+            if (inState.DialogList[i].DynamicViewModelKey == dynamicViewModelKey)
+            {
+                indexDialog = i;
+                break;
+            }
+        }
 
         if (indexDialog == -1)
         {

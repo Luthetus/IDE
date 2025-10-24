@@ -160,7 +160,16 @@ public partial class CommonService
                 return;
             }
 
-            var indexPanelTab = inPanelGroup.TabList.FindIndex(x => x.Key == panelTabKey);
+            var indexPanelTab = -1;
+            for (int i = 0; i < inPanelGroup.TabList.Count; i++)
+            {
+                if (inPanelGroup.TabList[i].Key == panelTabKey)
+                {
+                    indexPanelTab = i;
+                    break;
+                }
+            }
+
             if (indexPanelTab != -1)
             {
                 inPanelGroup.TabList[indexPanelTab].TabGroup = null;

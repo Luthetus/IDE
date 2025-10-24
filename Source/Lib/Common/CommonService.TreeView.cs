@@ -80,8 +80,15 @@ public partial class CommonService
     {
         var inState = GetTreeViewState();
     
-        var indexContainer = inState.ContainerList.FindIndex(
-            x => x.Key == containerKey);
+        var indexContainer = -1;
+        for (int i = 0; i < inState.ContainerList.Count; i++)
+        {
+            if (inState.ContainerList[i].Key == containerKey)
+            {
+                indexContainer = i;
+                break;
+            }
+        }
 
         if (indexContainer == -1)
         {
@@ -196,8 +203,15 @@ public partial class CommonService
     {
         var inState = GetTreeViewState();
     
-        var indexContainer = inState.ContainerList.FindIndex(
-            x => x.Key == containerKey);
+        var indexContainer = -1;
+        for (int i = 0; i < inState.ContainerList.Count; i++)
+        {
+            if (inState.ContainerList[i].Key == containerKey)
+            {
+                indexContainer = i;
+                break;
+            }
+        }
 
         if (indexContainer == -1)
         {
@@ -224,8 +238,15 @@ public partial class CommonService
     {
         var inState = GetTreeViewState();
     
-        var indexContainer = inState.ContainerList.FindIndex(
-            x => x.Key == containerKey);
+        var indexContainer = -1;
+        for (int i = 0; i < inState.ContainerList.Count; i++)
+        {
+            if (inState.ContainerList[i].Key == containerKey)
+            {
+                indexContainer = i;
+                break;
+            }
+        }
 
         if (indexContainer == -1)
         {
@@ -253,8 +274,15 @@ public partial class CommonService
     {
         var inState = GetTreeViewState();
     
-        var indexContainer = inState.ContainerList.FindIndex(
-            x => x.Key == containerKey);
+        var indexContainer = -1;
+        for (int i = 0; i < inState.ContainerList.Count; i++)
+        {
+            if (inState.ContainerList[i].Key == containerKey)
+            {
+                indexContainer = i;
+                break;
+            }
+        }
 
         if (indexContainer == -1)
         {
@@ -295,8 +323,15 @@ public partial class CommonService
         bool addSelectedNodes,
         bool selectNodesBetweenCurrentAndNextActiveNode)
     {
-        var inState = GetTreeViewState();        var indexContainer = inState.ContainerList.FindIndex(
-            x => x.Key == containerKey);
+        var inState = GetTreeViewState();        var indexContainer = -1;
+        for (int i = 0; i < inState.ContainerList.Count; i++)
+        {
+            if (inState.ContainerList[i].Key == containerKey)
+            {
+                indexContainer = i;
+                break;
+            }
+        }
 
         if (indexContainer == -1)
         {
@@ -333,8 +368,15 @@ public partial class CommonService
     {
         var inState = GetTreeViewState();
     
-        var indexContainer = inState.ContainerList.FindIndex(
-            x => x.Key == containerKey);
+        var indexContainer = -1;
+        for (int i = 0; i < inState.ContainerList.Count; i++)
+        {
+            if (inState.ContainerList[i].Key == containerKey)
+            {
+                indexContainer = i;
+                break;
+            }
+        }
 
         if (indexContainer == -1)
         {

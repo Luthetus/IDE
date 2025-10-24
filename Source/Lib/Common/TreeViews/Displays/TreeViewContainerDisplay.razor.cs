@@ -167,9 +167,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     public async Task ReceiveOnWheel(TreeViewEventArgsMouseDown eventArgsKeyDown)
     {
         if (_treeViewContainer is null)
-            return;
-
-        _treeViewMeasurements = _treeViewMeasurements with
+            return;        _treeViewMeasurements = _treeViewMeasurements with
         {
             ScrollTop = eventArgsKeyDown.ScrollTop + eventArgsKeyDown.Y,
             ViewWidth = eventArgsKeyDown.ViewWidth,
@@ -194,7 +192,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             {
                 var mouseEventArgs = new MouseEventArgs { Button = -1 };
                 
-                await ReceiveOnContextMenuAsync(
+                await ReceiveOnContextMenu(
                     new TreeViewEventArgsMouseDown(
                         Buttons: 0,
                         Button: -1,
@@ -215,7 +213,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             {
                 if (eventArgsKeyDown.CtrlKey)
                 {
-                    await ReceiveOnContextMenuAsync(
+                    await ReceiveOnContextMenu(
                         new TreeViewEventArgsMouseDown(
                             Buttons: 0,
                             Button: -1,
@@ -237,7 +235,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             {
                 if (eventArgsKeyDown.ShiftKey)
                 {
-                    await ReceiveOnContextMenuAsync(
+                    await ReceiveOnContextMenu(
                         new TreeViewEventArgsMouseDown(
                             Buttons: 0,
                             Button: -1,
@@ -321,7 +319,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public Task ReceiveOnContextMenuAsync(TreeViewEventArgsMouseDown eventArgsMouseDown)
+    public Task ReceiveOnContextMenu(TreeViewEventArgsMouseDown eventArgsMouseDown)
     {
         _treeViewMeasurements = new TreeViewMeasurements(
             eventArgsMouseDown.ViewWidth,
@@ -331,9 +329,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             eventArgsMouseDown.ScrollLeft,
             eventArgsMouseDown.ScrollTop,
             eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);
-
-        if (_treeViewContainer is null)
+            eventArgsMouseDown.ScrollHeight);        if (_treeViewContainer is null)
             return Task.CompletedTask;
         
         ContextMenuFixedPosition contextMenuFixedPosition;
@@ -355,9 +351,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             var indexLocal = (int)(relativeY / LineHeight);
             
             VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
-            var contextMenuTarget = _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index];
-
-            contextMenuFixedPosition = new ContextMenuFixedPosition(
+            var contextMenuTarget = _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index];            contextMenuFixedPosition = new ContextMenuFixedPosition(
                 OccurredDueToMouseEvent: true,
                 LeftPositionInPixels: eventArgsMouseDown.X,
                 TopPositionInPixels: eventArgsMouseDown.Y);
@@ -365,9 +359,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         else
         {
             return Task.CompletedTask;
-        }
-
-        return _treeViewContainer.OnContextMenuAsync(
+        }        return _treeViewContainer.OnContextMenuAsync(
             _virtualizedTupleList[VirtualIndexActiveNode].Index,
             contextMenuFixedPosition.OccurredDueToMouseEvent,
             contextMenuFixedPosition.LeftPositionInPixels,
@@ -385,25 +377,17 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             eventArgsMouseDown.ScrollLeft,
             eventArgsMouseDown.ScrollTop,
             eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);
-
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop;// + eventArgsMouseDown.ScrollTop;
+            eventArgsMouseDown.ScrollHeight);        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop;// + eventArgsMouseDown.ScrollTop;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
         
         VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
-        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)
-            return Task.CompletedTask;
-
-        var relativeX = eventArgsMouseDown.X - _treeViewMeasurements.BoundingClientRectLeft + eventArgsMouseDown.ScrollLeft;
+        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)            return Task.CompletedTask;        var relativeX = eventArgsMouseDown.X - _treeViewMeasurements.BoundingClientRectLeft + eventArgsMouseDown.ScrollLeft;
         relativeX = Math.Max(0, relativeX);
         
         if (relativeX >= (_virtualizedTupleList[VirtualIndexActiveNode].Depth * OffsetPerDepthInPixels) &&
-            relativeX <= ClairTreeViewIconWidth + (_virtualizedTupleList[VirtualIndexActiveNode].Depth * OffsetPerDepthInPixels))
-        {
-            return _treeViewContainer.ToggleExpansion(_virtualizedTupleList[VirtualIndexActiveNode].Index);
-        }
+            relativeX <= ClairTreeViewIconWidth + (_virtualizedTupleList[VirtualIndexActiveNode].Depth * OffsetPerDepthInPixels))        {            return _treeViewContainer.ToggleExpansion(_virtualizedTupleList[VirtualIndexActiveNode].Index);        }
 
         CommonService.TreeView_SetActiveNodeAction(
             _treeViewContainer.Key,
@@ -427,15 +411,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             eventArgsMouseDown.ScrollWidth,
             eventArgsMouseDown.ScrollHeight);
     
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + eventArgsMouseDown.ScrollTop;
+        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop/* + eventArgsMouseDown.ScrollTop*/;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
         
-        VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
-
-        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)
-            return;
+        VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)            return;
 
         await _treeViewContainer.OnClickAsync(new TreeViewCommandArgs(
             _treeViewContainer,
@@ -476,10 +457,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
         
-        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)
-            return;
-
-        await _treeViewContainer.OnDoubleClickAsync(
+        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)            return;        await _treeViewContainer.OnDoubleClickAsync(
             new TreeViewCommandArgs(
                 _treeViewContainer,
                 _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index],
@@ -604,9 +582,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         }
 
         // Console.WriteLine("\t" + _treeViewMeasurements.ScrollTop);
-    }
-
-    public void Dispose()
+    }    public void Dispose()
     {
         CommonService.CommonUiStateChanged -= OnTreeViewStateChanged;
         _dotNetHelper?.Dispose();

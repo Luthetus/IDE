@@ -448,7 +448,8 @@ public partial class CommonService
             }
             else if (activeNode.IndexAmongSiblings < inContainer.NodeValueList[activeNode.ParentIndex].ChildListLength - 1)
             {
-                --inContainer.ActiveNodeValueIndex;
+                var parent = inContainer.NodeValueList[activeNode.ParentIndex];
+                inContainer.ActiveNodeValueIndex = parent.ChildListOffset + (activeNode.IndexAmongSiblings - 1);
                 
                 if (inContainer.NodeValueList[inContainer.ActiveNodeValueIndex].IsExpanded)
                 {

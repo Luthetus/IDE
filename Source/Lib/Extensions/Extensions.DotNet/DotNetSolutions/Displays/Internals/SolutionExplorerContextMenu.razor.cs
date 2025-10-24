@@ -7,6 +7,7 @@ using Clair.Common.RazorLib.Menus.Models;
 using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Dynamics.Models;
+using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.CompilerServices.DotNetSolution.Models;
 using Clair.Ide.RazorLib.InputFiles.Models;
@@ -81,6 +82,10 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                     //path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
                     break;
                 case TreeViewNodeValueKind.b3: // dir
+                    var absolutePath = container.DirectoryTraitsList[treeViewModel.TraitsIndex];
+                    menuOptionList.AddRange(GetFileMenuOptions(container, absolutePath, treeViewModel, parentTreeViewModel)
+                        /*.Union(GetDirectoryMenuOptions(treeViewNamespacePath))
+                        .Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
                     break;
                 case TreeViewNodeValueKind.b4: // file
                     //path = FileTraitsList[nodeValue.TraitsIndex].Value;
@@ -505,35 +510,34 @@ public partial class SolutionExplorerContextMenu : ComponentBase
     }
 
     private MenuOptionRecord[] GetFileMenuOptions(
+        SolutionExplorerTreeViewContainer container,
+        AbsolutePath absolutePath,
         TreeViewNodeValue treeViewModel,
         TreeViewNodeValue parentTreeViewModel)
     {
-        /*
         return new[]
         {
             DotNetService.IdeService.CopyFile(
-                treeViewModel.Item,
+                absolutePath,
                 (Func<Task>)(() => {
-                    CommonFacts.DispatchInformative("Copy Action", $"Copied: {treeViewModel.Item.Name}", DotNetService.IdeService.TextEditorService.CommonService, TimeSpan.FromSeconds(7));
+                    CommonFacts.DispatchInformative("Copy Action", $"Copied: {absolutePath.Name}", DotNetService.IdeService.TextEditorService.CommonService, TimeSpan.FromSeconds(7));
                     return Task.CompletedTask;
                 })),
             DotNetService.IdeService.CutFile(
-                treeViewModel.Item,
+                absolutePath,
                 (Func<Task>)(() => {
                     DotNetService.CommonService.ParentOfCutFile = parentTreeViewModel;
-                    CommonFacts.DispatchInformative("Cut Action", $"Cut: {treeViewModel.Item.Name}", DotNetService.IdeService.TextEditorService.CommonService, TimeSpan.FromSeconds(7));
+                    CommonFacts.DispatchInformative("Cut Action", $"Cut: {absolutePath.Name}", DotNetService.IdeService.TextEditorService.CommonService, TimeSpan.FromSeconds(7));
                     return Task.CompletedTask;
                 })),
             DotNetService.IdeService.DeleteFile(
-                treeViewModel.Item,
+                absolutePath,
                 async () => await ReloadTreeViewModel(parentTreeViewModel).ConfigureAwait(false)),
             DotNetService.IdeService.RenameFile(
-                treeViewModel.Item,
+                absolutePath,
                 DotNetService.IdeService.TextEditorService.CommonService,
                 async ()  => await ReloadTreeViewModel(parentTreeViewModel).ConfigureAwait(false)),
         };
-        */
-        return Array.Empty<MenuOptionRecord>();
     }
 
     private MenuOptionRecord[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)

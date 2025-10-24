@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Dialogs.Models;
@@ -452,7 +453,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewTemplatedFile(
                 absolutePath,
-                () => GetNamespaceString(treeViewModel),
+                () => GetNamespaceString(container, treeViewModel),
                 async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewDirectory(
                 absolutePath,
@@ -476,43 +477,74 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         };
     }
 
-    private string GetNamespaceString(TreeViewNodeValue treeViewModel)
+    private string GetNamespaceString(SolutionExplorerTreeViewContainer container, TreeViewNodeValue treeViewModel)
     {
-        /*
         var targetNode = treeViewModel;
-        // This algorithm has a lot of "shifting" due to 0 index insertions and likely is NOT the most optimal solution.
-        var namespaceBuilder = new StringBuilder();
-
+    
+        if (targetNode.TreeViewNodeValueKind != TreeViewNodeValueKind.b2 /*.csproj*/ &&
+            targetNode.TreeViewNodeValueKind != TreeViewNodeValueKind.b3 /*dir*/)
+        {
+            return string.Empty;
+        }
+        
+        // The upcoming algorithm has a lot of "shifting" due to 0 index insertions and likely is NOT the most optimal solution.
+        StringBuilder namespaceBuilder;
+        if (targetNode.TreeViewNodeValueKind == TreeViewNodeValueKind.b2 /*.csproj*/)
+        {
+            namespaceBuilder = new StringBuilder(container.DotNetSolutionModel.DotNetProjectList[targetNode.TraitsIndex].AbsolutePath.Name);
+        }
+        else if (targetNode.TreeViewNodeValueKind == TreeViewNodeValueKind.b3 /*dir*/)
+        {
+            namespaceBuilder = new StringBuilder(container.DirectoryTraitsList[targetNode.TraitsIndex].Name);
+        }
+        else
+        {
+            throw new NotImplementedException($"{nameof(TreeViewNodeValueKind)}.{nameof(treeViewModel.TreeViewNodeValueKind)} is not supported.");
+        }
+        
         // for loop is an arbitrary "while-loop limit" until I prove to myself this won't infinite loop.
         for (int i = 0; i < 256; i++)
         {
-            if (targetNode is null)
+            if (targetNode.IsDefault())
                 break;
 
             // EndsWith check includes the period to ensure a direct match on the extension rather than a substring.
-            if (!targetNode.Item.IsDirectory && targetNode.Item.Name.EndsWith(".csproj"))
+            if (targetNode.TreeViewNodeValueKind == TreeViewNodeValueKind.b2 /*.csproj*/)
             {
                 if (i != 0)
+                {
                     namespaceBuilder.Insert(0, '.');
-                namespaceBuilder.Insert(0, targetNode.Item.Name.Replace(".csproj", string.Empty));
+                    // This insertion is duplicated when invoking the StringBuilder constructor for initial capacity.
+                    namespaceBuilder.Insert(0, container.DotNetSolutionModel.DotNetProjectList[targetNode.TraitsIndex].AbsolutePath.Name.Replace(".csproj", string.Empty));
+                }
                 break;
             }
             else
             {
                 if (i != 0)
+                {
                     namespaceBuilder.Insert(0, '.');
-                namespaceBuilder.Insert(0, targetNode.Item.Name);
-
-                if (targetNode.Parent is TreeViewNamespacePath parent)
-                    targetNode = parent;
-                else
+                    // This insertion is duplicated when invoking the StringBuilder constructor for initial capacity.
+                    namespaceBuilder.Insert(0, container.DirectoryTraitsList[targetNode.TraitsIndex].Name);
+                }
+                
+                if (targetNode.ParentIndex == -1)
+                {
                     break;
+                }
+                else
+                {
+                    targetNode = container.NodeValueList[targetNode.ParentIndex];
+                    if (targetNode.TreeViewNodeValueKind != TreeViewNodeValueKind.b2 /*.csproj*/ &&
+                        targetNode.TreeViewNodeValueKind != TreeViewNodeValueKind.b3 /*dir*/)
+                    {
+                        break;
+                    }
+                }
             }
         }
 
         return namespaceBuilder.ToString();
-        */
-        return string.Empty;
     }
 
     private MenuOptionRecord[] GetFileMenuOptions(

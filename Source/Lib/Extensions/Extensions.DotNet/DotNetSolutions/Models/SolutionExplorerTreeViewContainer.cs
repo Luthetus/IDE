@@ -15,8 +15,6 @@ namespace Clair.Extensions.DotNet.DotNetSolutions.Models;
 
 public class SolutionExplorerTreeViewContainer : TreeViewContainer
 {
-    // DotNetSolutionState.TreeViewSolutionExplorerStateKey
-    
     public SolutionExplorerTreeViewContainer(IdeService ideService, DotNetSolutionModel dotNetSolutionModel)
         : base(ideService.CommonService)
     {
@@ -42,7 +40,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
 
         switch (nodeValue.TreeViewNodeValueKind)
         {
-            case TreeViewNodeValueKind.b0:
+            case TreeViewNodeValueKind.b0: // .sln
             {
                 NodeValueList.AddRange(DotNetSolutionModel.SolutionFolderList
                     .Select((x, i) => (x, i))
@@ -197,6 +195,16 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
 
                 nodeValue.ChildListLength = NodeValueList.Count - nodeValue.ChildListOffset;
 
+                // The 'for loop' for `child.Parent` and the
+                // 'for loop' for `child.RemoveRelatedFilesFromParent(...)`
+                // cannot be combined.
+                for (int i = nodeValue.ChildListOffset; i < nodeValue.ChildListOffset + nodeValue.ChildListLength; i++)
+                {
+                    var child = NodeValueList[i];
+                    child.IndexAmongSiblings = i - nodeValue.ChildListOffset;
+                    NodeValueList[i] = child;
+                }
+                
                 /*var cSharpProjectDependenciesTreeViewNode = new TreeViewCSharpProjectDependencies(
                     new CSharpProjectDependencies(project.AbsolutePath),
                     cSharpProjectTreeView.CommonService,
@@ -298,6 +306,16 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 }
 
                 nodeValue.ChildListLength = NodeValueList.Count - nodeValue.ChildListOffset;
+                
+                // The 'for loop' for `child.Parent` and the
+                // 'for loop' for `child.RemoveRelatedFilesFromParent(...)`
+                // cannot be combined.
+                for (int i = nodeValue.ChildListOffset; i < nodeValue.ChildListOffset + nodeValue.ChildListLength; i++)
+                {
+                    var child = NodeValueList[i];
+                    child.IndexAmongSiblings = i - nodeValue.ChildListOffset;
+                    NodeValueList[i] = child;
+                }
 
                 /*var cSharpProjectDependenciesTreeViewNode = new TreeViewCSharpProjectDependencies(
                     new CSharpProjectDependencies(project.AbsolutePath),

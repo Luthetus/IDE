@@ -355,15 +355,49 @@ public partial class CommonService
         {
             inContainer.ActiveNodeValueIndex = activeNodeValue.ChildListOffset;
         }
-        else if (inContainer.ActiveNodeValueIndex < inContainer.NodeValueList.Count - 1)
+        else if (activeNodeValue.ParentIndex != -1)
         {
-            ++inContainer.ActiveNodeValueIndex;
-        }
-        else
-        {
-            inContainer.ActiveNodeValueIndex = inContainer.NodeValueList.Count - 1;
+            if (activeNodeValue.IndexAmongSiblings < inContainer.NodeValueList[activeNodeValue.ParentIndex].ChildListLength - 1)
+            {
+                ++inContainer.ActiveNodeValueIndex;
+            }
+            else if (activeNodeValue.IndexAmongSiblings > inContainer.NodeValueList[activeNodeValue.ParentIndex].ChildListLength - 1)
+            {
+                if (inContainer.NodeValueList[activeNodeValue.ParentIndex].ChildListLength > 0)
+                {
+                    var parent = inContainer.NodeValueList[activeNodeValue.ParentIndex];
+                    inContainer.ActiveNodeValueIndex = parent.ChildListOffset + parent.ChildListLength - 1;
+                }
+                else
+                {
+                    inContainer.ActiveNodeValueIndex = activeNodeValue.ParentIndex;
+                }
+            }
+            else
+            {
+                var targetNode = activeNodeValue;
+                while (!targetNode.IsDefault())
+                {
+                    if (targetNode.ParentIndex == -1)
+                        break;
+                        
+                    targetNode = inContainer.NodeValueList[targetNode.ParentIndex];
+                    var parent = inContainer.NodeValueList[targetNode.ParentIndex];
+                    
+                    if (!parent.IsExpanded)
+                    {
+                        inContainer.ActiveNodeValueIndex = targetNode.ParentIndex;
+                    }
+                    else if (targetNode.IndexAmongSiblings < parent.ChildListLength - 1)
+                    {
+                        inContainer.ActiveNodeValueIndex = parent.ChildListOffset + targetNode.IndexAmongSiblings + 1;
+                        goto finalize;
+                    }
+                }
+            }
         }
 
+        finalize:
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
 
         /*

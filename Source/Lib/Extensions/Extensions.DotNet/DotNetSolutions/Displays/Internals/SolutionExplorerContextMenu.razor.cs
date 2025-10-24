@@ -80,7 +80,8 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 case TreeViewNodeValueKind.b1: // SolutionFolder
                     break;
                 case TreeViewNodeValueKind.b2: // .csproj
-                    //path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
+                    //menuOptionList.AddRange(GetCSharpProjectMenuOptions(treeViewNamespacePath)
+                        /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*///);
                     break;
                 case TreeViewNodeValueKind.b3: // dir
                     var absolutePath = container.DirectoryTraitsList[treeViewModel.TraitsIndex];
@@ -89,7 +90,12 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                         /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
                     break;
                 case TreeViewNodeValueKind.b4: // file
-                    //path = FileTraitsList[nodeValue.TraitsIndex].Value;
+                    menuOptionList.AddRange(GetFileMenuOptions(
+                        container,
+                        container.FileTraitsList[treeViewModel.TraitsIndex],
+                        treeViewModel,
+                        parentTreeViewModel)
+                        /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
                     break;
                 default:
                     break;

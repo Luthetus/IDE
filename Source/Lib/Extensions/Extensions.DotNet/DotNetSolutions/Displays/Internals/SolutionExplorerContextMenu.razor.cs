@@ -80,8 +80,13 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 case TreeViewNodeValueKind.b1: // SolutionFolder
                     break;
                 case TreeViewNodeValueKind.b2: // .csproj
-                    //menuOptionList.AddRange(GetCSharpProjectMenuOptions(treeViewNamespacePath)
-                        /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*///);
+                    menuOptionList.AddRange(GetCSharpProjectMenuOptions(
+                        container,
+                        data.IndexNodeValue,
+                        container.DotNetSolutionModel.DotNetProjectList[treeViewModel.TraitsIndex],
+                        treeViewModel,
+                        parentTreeViewModel)
+                        /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
                     break;
                 case TreeViewNodeValueKind.b3: // dir
                     var absolutePath = container.DirectoryTraitsList[treeViewModel.TraitsIndex];
@@ -292,33 +297,20 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         };
     }
 
-    private MenuOptionRecord[] GetCSharpProjectMenuOptions(TreeViewNodeValue treeViewModel)
+    private MenuOptionRecord[] GetCSharpProjectMenuOptions(
+        SolutionExplorerTreeViewContainer container,
+        int indexNodeValue,
+        Clair.CompilerServices.DotNetSolution.Models.Project.IDotNetProject project,
+        TreeViewNodeValue treeViewModel,
+        TreeViewNodeValue parentTreeViewModel)
     {
-        /*
-        var parentDirectory = treeViewModel.Item.CreateSubstringParentDirectory();
+        var absolutePath = project.AbsolutePath;
+    
+        var parentDirectory = absolutePath.CreateSubstringParentDirectory();
         if (parentDirectory is null)
             return Array.Empty<MenuOptionRecord>();
 
-        var treeViewSolution = treeViewModel.Parent as TreeViewSolution;
-
-        if (treeViewSolution is null)
-        {
-            var ancestorTreeView = treeViewModel.Parent;
-
-            if (ancestorTreeView?.Parent is null)
-                return Array.Empty<MenuOptionRecord>();
-
-            // Parent could be a could be one or many levels of solution folders
-            while (ancestorTreeView.Parent is not null)
-            {
-                ancestorTreeView = ancestorTreeView.Parent;
-            }
-
-            treeViewSolution = ancestorTreeView as TreeViewSolution;
-
-            if (treeViewSolution is null)
-                return Array.Empty<MenuOptionRecord>();
-        }
+        var treeViewSolution = container.DotNetSolutionModel;
 
         var parentDirectoryAbsolutePath = new AbsolutePath(
             parentDirectory,
@@ -332,25 +324,25 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         {
             DotNetService.IdeService.NewEmptyFile(
                 parentDirectoryAbsolutePath,
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewTemplatedFile(
                 parentDirectoryAbsolutePath,
-                () => GetNamespaceString(treeViewModel),
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                () => GetNamespaceString(container, treeViewModel),
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewDirectory(
                 parentDirectoryAbsolutePath,
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.PasteClipboard(
                 parentDirectoryAbsolutePath,
                 async () =>
                 {
-                    var localParentOfCutFile = DotNetService.CommonService.ParentOfCutFile;
+                    /*var localParentOfCutFile = DotNetService.CommonService.ParentOfCutFile;
                     DotNetService.CommonService.ParentOfCutFile = null;
 
                     if (localParentOfCutFile is TreeViewNamespacePath parentTreeViewNamespacePath)
                         await ReloadTreeViewModel(parentTreeViewNamespacePath).ConfigureAwait(false);
 
-                    await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false);
+                    await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false);*/
                 }),
             DotNetService.AddProjectToProjectReference(
                 treeViewModel,
@@ -367,7 +359,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                     DotNetService.Enqueue(new DotNetWorkArgs
                     {
                         WorkKind = DotNetWorkKind.SetDotNetSolution,
-                        DotNetSolutionAbsolutePath = treeViewSolution.Item.AbsolutePath
+                        DotNetSolutionAbsolutePath = treeViewSolution.AbsolutePath
                     });
                     return Task.CompletedTask;
                 }),
@@ -395,13 +387,11 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                     DotNetService.Enqueue(new DotNetWorkArgs
                     {
                         WorkKind = DotNetWorkKind.SetDotNetSolution,
-                        DotNetSolutionAbsolutePath = treeViewSolution.Item.AbsolutePath,
+                        DotNetSolutionAbsolutePath = treeViewSolution.AbsolutePath,
                     });
                     return Task.CompletedTask;
                 }),
         };
-        */
-        return Array.Empty<MenuOptionRecord>();
     }
 
     private MenuOptionRecord[] GetCSharpProjectToProjectReferenceMenuOptions(

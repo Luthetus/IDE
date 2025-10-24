@@ -33,34 +33,63 @@ public partial class SolutionExplorerContextMenu : ComponentBase
 
     private (SolutionExplorerContextMenuData solutionExplorerContextMenuData, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
 
-    private MenuRecord GetMenuRecord(SolutionExplorerContextMenuData solutionExplorerContextMenuData)
+    private MenuRecord GetMenuRecord(SolutionExplorerContextMenuData data)
     {
         /*_previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, new MenuRecord(MenuRecord.NoMenuOptionsExistList));
         return _previousGetMenuRecordInvocation.menuRecord;*/
 
-        if (_previousGetMenuRecordInvocation.solutionExplorerContextMenuData == solutionExplorerContextMenuData)
+        if (_previousGetMenuRecordInvocation.solutionExplorerContextMenuData == data)
             return _previousGetMenuRecordInvocation.menuRecord;
 
-        //if (solutionExplorerContextMenuData.TreeViewContainer.SelectedNodeList.Count > 1)
-        //    return GetMenuRecordManySelections(solutionExplorerContextMenuData);
+        //if (data.TreeViewContainer.SelectedNodeList.Count > 1)
+        //    return GetMenuRecordManySelections(data);
 
-        if (solutionExplorerContextMenuData.IndexNodeValue == -1 ||
-            solutionExplorerContextMenuData.IndexNodeValue >= solutionExplorerContextMenuData.TreeViewContainer.NodeValueList.Count)
+        if (data.IndexNodeValue == -1 ||
+            data.IndexNodeValue >= data.TreeViewContainer.NodeValueList.Count)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
+            _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
 
         var menuOptionList = new List<MenuOptionRecord>();
-        var treeViewModel = solutionExplorerContextMenuData.TreeViewContainer.NodeValueList[solutionExplorerContextMenuData.IndexNodeValue];
+        var treeViewModel = data.TreeViewContainer.NodeValueList[data.IndexNodeValue];
         
         TreeViewNodeValue parentTreeViewModel;
         if (treeViewModel.ParentIndex == -1)
             parentTreeViewModel = default;
         else
-            parentTreeViewModel = solutionExplorerContextMenuData.TreeViewContainer.NodeValueList[treeViewModel.ParentIndex];
+            parentTreeViewModel = data.TreeViewContainer.NodeValueList[treeViewModel.ParentIndex];
 
+        if (data.TreeViewContainer is SolutionExplorerTreeViewContainer container)
+        {
+            switch (treeViewModel.TreeViewNodeValueKind)
+            {
+                case TreeViewNodeValueKind.b0: // .sln
+                    
+                    var dotNetSolutionModel = container.DotNetSolutionModel;
+                    if (container.DotNetSolutionModel.AbsolutePath.Name.EndsWith(CommonFacts.DOT_NET_SOLUTION) ||
+                        container.DotNetSolutionModel.AbsolutePath.Name.EndsWith(CommonFacts.DOT_NET_SOLUTION_X))
+                    {
+                        if (treeViewModel.ParentIndex == -1)
+                            menuOptionList.AddRange(GetDotNetSolutionMenuOptions(dotNetSolutionModel));
+                    }
+                    break;
+                case TreeViewNodeValueKind.b1: // SolutionFolder
+                    break;
+                case TreeViewNodeValueKind.b2: // .csproj
+                    //path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
+                    break;
+                case TreeViewNodeValueKind.b3: // dir
+                    break;
+                case TreeViewNodeValueKind.b4: // file
+                    //path = FileTraitsList[nodeValue.TraitsIndex].Value;
+                    break;
+                default:
+                    break;
+            }
+        }
+        
         /*var parentTreeViewNamespacePath = parentTreeViewModel as TreeViewNamespacePath;
 
         if (treeViewModel is TreeViewNamespacePath treeViewNamespacePath)
@@ -108,14 +137,14 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         if (!menuOptionList.Any())
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
+            _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
 
         // Default case
         {
             var menuRecord = new MenuRecord(menuOptionList);
-            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
+            _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
     }
@@ -193,22 +222,21 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         }*/
     }
 
-    private MenuOptionRecord[] GetDotNetSolutionMenuOptions(TreeViewNodeValue treeViewSolution)
+    private MenuOptionRecord[] GetDotNetSolutionMenuOptions(DotNetSolutionModel dotNetSolutionModel)
     {
-        /*
         // TODO: Add menu options for non C# projects perhaps a more generic option is good
 
         var addNewCSharpProject = new MenuOptionRecord(
             "New C# Project",
             MenuOptionKind.Other,
-            _ => OpenNewCSharpProjectDialog(treeViewSolution.Item));
+            _ => OpenNewCSharpProjectDialog(dotNetSolutionModel));
 
         var addExistingCSharpProject = new MenuOptionRecord(
             "Existing C# Project",
             MenuOptionKind.Other,
             _ =>
             {
-                AddExistingProjectToSolution(treeViewSolution.Item);
+                AddExistingProjectToSolution(dotNetSolutionModel);
                 return Task.CompletedTask;
             });
 
@@ -237,12 +265,12 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         var openInTextEditor = new MenuOptionRecord(
             "Open in text editor",
             MenuOptionKind.Update,
-            _ => OpenSolutionInTextEditor(treeViewSolution.Item));
+            _ => OpenSolutionInTextEditor(dotNetSolutionModel));
 
         var properties = new MenuOptionRecord(
             "Properties",
             MenuOptionKind.Update,
-            _ => OpenSolutionProperties(treeViewSolution.Item));
+            _ => OpenSolutionProperties(dotNetSolutionModel));
 
         return new[]
         {
@@ -250,8 +278,6 @@ public partial class SolutionExplorerContextMenu : ComponentBase
             openInTextEditor,
             properties,
         };
-        */
-        return Array.Empty<MenuOptionRecord>();
     }
 
     private MenuOptionRecord[] GetCSharpProjectMenuOptions(TreeViewNodeValue treeViewModel)

@@ -339,11 +339,25 @@ public partial class CommonService
         }
 
         var inContainer = inState.ContainerList[indexContainer];
+        if (inContainer.ActiveNodeValueIndex == -1)
+        {
+            return;
+        }
 
-        if (inContainer.ActiveNodeValueIndex < inContainer.NodeValueList.Count - 1)
+        var activeNodeValue = inContainer.NodeValueList[inContainer.ActiveNodeValueIndex];
+
+        if (activeNodeValue.IsExpanded && activeNodeValue.ChildListLength > 0)
+        {
+            inContainer.ActiveNodeValueIndex = activeNodeValue.ChildListOffset;
+        }
+        else if (inContainer.ActiveNodeValueIndex < inContainer.NodeValueList.Count - 1)
+        {
             ++inContainer.ActiveNodeValueIndex;
+        }
         else
+        {
             inContainer.ActiveNodeValueIndex = inContainer.NodeValueList.Count - 1;
+        }
 
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
 

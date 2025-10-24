@@ -351,7 +351,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             var indexLocal = (int)(relativeY / LineHeight);
             
             VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
-            var contextMenuTarget = _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index];            contextMenuFixedPosition = new ContextMenuFixedPosition(
+            var contextMenuTarget = _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index];
+            _treeViewContainer.ActiveNodeValueIndex = _virtualizedTupleList[VirtualIndexActiveNode].Index;
+            StateHasChanged();            contextMenuFixedPosition = new ContextMenuFixedPosition(
                 OccurredDueToMouseEvent: true,
                 LeftPositionInPixels: eventArgsMouseDown.X,
                 TopPositionInPixels: eventArgsMouseDown.Y);

@@ -16,7 +16,6 @@ using Clair.Extensions.DotNet.CommandLines.Models;
 using Clair.Extensions.DotNet.DotNetSolutions.Displays;
 using Clair.Extensions.DotNet.DotNetSolutions.Models;
 using Clair.Extensions.DotNet.Nugets.Models;
-using Clair.Extensions.DotNet.TestExplorers.Models;
 using Clair.Ide.RazorLib;
 using Clair.Ide.RazorLib.Terminals.Models;
 using Clair.TextEditor.RazorLib;
@@ -24,7 +23,6 @@ using Clair.TextEditor.RazorLib.BackgroundTasks.Models;
 using Clair.TextEditor.RazorLib.CompilerServices;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using CliWrap.EventStream;
-using Microsoft.AspNetCore.Components.Forms;
 using System.Runtime.InteropServices;
 using System.Text;
 

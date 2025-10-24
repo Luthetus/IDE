@@ -1,7 +1,6 @@
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Ide.RazorLib.FileSystems.Models;
 
 namespace Clair.Ide.RazorLib.InputFiles.Models;
 

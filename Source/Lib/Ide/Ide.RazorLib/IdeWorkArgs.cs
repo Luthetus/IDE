@@ -3,7 +3,6 @@ using Clair.Common.RazorLib.Dynamics.Models;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
-using Clair.Ide.RazorLib.FileSystems.Models;
 using Clair.Ide.RazorLib.InputFiles.Models;
 
 namespace Clair.Ide.RazorLib.BackgroundTasks.Models;

@@ -7,7 +7,6 @@ using Clair.Common.RazorLib.Installations.Models;
 using Clair.Common.RazorLib.Tabs.Models;
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Common.RazorLib.ListExtensions;
 
 namespace Clair.Common.RazorLib;
 

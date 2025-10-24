@@ -1,4 +1,3 @@
-using System.Text;
 using Microsoft.AspNetCore.Components;
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Dialogs.Models;
@@ -8,15 +7,12 @@ using Clair.Common.RazorLib.Menus.Models;
 using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Dynamics.Models;
-using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.CompilerServices.DotNetSolution.Models;
 using Clair.Ide.RazorLib.InputFiles.Models;
 using Clair.Ide.RazorLib.Terminals.Models;
 using Clair.Ide.RazorLib.BackgroundTasks.Models;
 using Clair.Extensions.DotNet.CSharpProjects.Displays;
-using Clair.Extensions.DotNet.CSharpProjects.Models;
-using Clair.Extensions.DotNet.DotNetSolutions.Models;
 using Clair.Extensions.DotNet.CommandLines.Models;
 
 namespace Clair.Extensions.DotNet.DotNetSolutions.Displays.Internals;

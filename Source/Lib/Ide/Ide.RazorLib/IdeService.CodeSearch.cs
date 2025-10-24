@@ -3,9 +3,7 @@ using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Reactives.Models;
-using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Ide.RazorLib.CodeSearches.Models;
-using Clair.TextEditor.RazorLib.Decorations.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Components;
 using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Ide.RazorLib.FolderExplorers.Models;
 
 namespace Clair.Ide.RazorLib.FolderExplorers.Displays;
 

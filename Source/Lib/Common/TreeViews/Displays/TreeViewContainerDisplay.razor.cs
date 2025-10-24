@@ -6,7 +6,6 @@ using Clair.Common.RazorLib.JavaScriptObjects.Models;
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Common.RazorLib.Dimensions.Models;
-using Clair.Common.RazorLib.BackgroundTasks.Models;
 
 namespace Clair.Common.RazorLib.TreeViews.Displays;
 

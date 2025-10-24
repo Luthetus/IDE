@@ -8,7 +8,6 @@ using Clair.Common.RazorLib.Dimensions.Models;
 using Clair.Common.RazorLib.Resizes.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.Lexers.Models;
-using Clair.Ide.RazorLib.CodeSearches.Models;
 
 namespace Clair.Ide.RazorLib.CodeSearches.Displays;
 

@@ -3,11 +3,8 @@ using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.CompilerServices.DotNetSolution.Models;
 using Clair.Ide.RazorLib.Terminals.Models;
-using Clair.Extensions.DotNet.TestExplorers.Models;
 using Clair.Extensions.DotNet.Nugets.Models;
-using Clair.Extensions.DotNet.DotNetSolutions.Models;
 //using Clair.Extensions.DotNet.Namespaces.Models;
-using Clair.Extensions.DotNet.CSharpProjects.Models;
 
 namespace Clair.Extensions.DotNet;
 

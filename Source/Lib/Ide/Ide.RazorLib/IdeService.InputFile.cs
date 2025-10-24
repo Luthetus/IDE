@@ -1,11 +1,7 @@
-using System.Text;
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Ide.RazorLib.BackgroundTasks.Models;
-using Clair.Ide.RazorLib.FileSystems.Models;
 using Clair.Ide.RazorLib.InputFiles.Models;
-using Clair.Ide.RazorLib.InputFiles.Displays;
 
 namespace Clair.Ide.RazorLib;
 

@@ -550,10 +550,15 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
             typeof(SolutionExplorerContextMenu),
             new Dictionary<string, object?>
             {
-                //{
-                    // nameof(SolutionExplorerContextMenu.TreeViewCommandArgs),
-                    // treeViewCommandArgs
-                //}
+                {
+                    nameof(SolutionExplorerContextMenu.SolutionExplorerContextMenuData),
+                    new SolutionExplorerContextMenuData(
+                        this,
+                        indexNodeValue,
+                        occurredDueToMouseEvent,
+                        leftPositionInPixels,
+                        topPositionInPixels)
+                }
             },
             null);
 

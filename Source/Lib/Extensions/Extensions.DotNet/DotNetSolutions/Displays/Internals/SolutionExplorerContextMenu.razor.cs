@@ -14,6 +14,7 @@ using Clair.Ide.RazorLib.Terminals.Models;
 using Clair.Ide.RazorLib.BackgroundTasks.Models;
 using Clair.Extensions.DotNet.CSharpProjects.Displays;
 using Clair.Extensions.DotNet.CommandLines.Models;
+using Clair.Extensions.DotNet.DotNetSolutions.Models;
 
 namespace Clair.Extensions.DotNet.DotNetSolutions.Displays.Internals;
 
@@ -23,42 +24,42 @@ public partial class SolutionExplorerContextMenu : ComponentBase
     private DotNetService DotNetService { get; set; } = null!;
 
     [Parameter, EditorRequired]
-    public TreeViewCommandArgs TreeViewCommandArgs { get; set; }
+    public SolutionExplorerContextMenuData SolutionExplorerContextMenuData { get; set; }
 
     private static readonly Key<IDynamicViewModel> _solutionPropertiesDialogKey = Key<IDynamicViewModel>.NewKey();
     private static readonly Key<IDynamicViewModel> _newCSharpProjectDialogKey = Key<IDynamicViewModel>.NewKey();
 
     public static readonly Key<DropdownRecord> ContextMenuEventDropdownKey = Key<DropdownRecord>.NewKey();
 
-    private (TreeViewCommandArgs treeViewCommandArgs, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
+    private (SolutionExplorerContextMenuData solutionExplorerContextMenuData, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
 
-    private MenuRecord GetMenuRecord(TreeViewCommandArgs commandArgs)
+    private MenuRecord GetMenuRecord(SolutionExplorerContextMenuData solutionExplorerContextMenuData)
     {
-        _previousGetMenuRecordInvocation = (commandArgs, new MenuRecord(MenuRecord.NoMenuOptionsExistList));
-        return _previousGetMenuRecordInvocation.menuRecord;
+        /*_previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, new MenuRecord(MenuRecord.NoMenuOptionsExistList));
+        return _previousGetMenuRecordInvocation.menuRecord;*/
 
-        if (_previousGetMenuRecordInvocation.treeViewCommandArgs == commandArgs)
+        if (_previousGetMenuRecordInvocation.solutionExplorerContextMenuData == solutionExplorerContextMenuData)
             return _previousGetMenuRecordInvocation.menuRecord;
 
-        //if (commandArgs.TreeViewContainer.SelectedNodeList.Count > 1)
-        //    return GetMenuRecordManySelections(commandArgs);
+        //if (solutionExplorerContextMenuData.TreeViewContainer.SelectedNodeList.Count > 1)
+        //    return GetMenuRecordManySelections(solutionExplorerContextMenuData);
 
-        if (commandArgs.TreeViewContainer.ActiveNodeValueIndex == -1 ||
-            commandArgs.TreeViewContainer.ActiveNodeValueIndex >= commandArgs.TreeViewContainer.NodeValueList.Count)
+        if (solutionExplorerContextMenuData.IndexNodeValue == -1 ||
+            solutionExplorerContextMenuData.IndexNodeValue >= solutionExplorerContextMenuData.TreeViewContainer.NodeValueList.Count)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
             return menuRecord;
         }
 
         var menuOptionList = new List<MenuOptionRecord>();
-        var treeViewModel = commandArgs.TreeViewContainer.NodeValueList[commandArgs.TreeViewContainer.ActiveNodeValueIndex];
+        var treeViewModel = solutionExplorerContextMenuData.TreeViewContainer.NodeValueList[solutionExplorerContextMenuData.IndexNodeValue];
         
         TreeViewNodeValue parentTreeViewModel;
         if (treeViewModel.ParentIndex == -1)
             parentTreeViewModel = default;
         else
-            parentTreeViewModel = commandArgs.TreeViewContainer.NodeValueList[treeViewModel.ParentIndex];
+            parentTreeViewModel = solutionExplorerContextMenuData.TreeViewContainer.NodeValueList[treeViewModel.ParentIndex];
 
         /*var parentTreeViewNamespacePath = parentTreeViewModel as TreeViewNamespacePath;
 
@@ -107,19 +108,19 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         if (!menuOptionList.Any())
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
             return menuRecord;
         }
 
         // Default case
         {
             var menuRecord = new MenuRecord(menuOptionList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
             return menuRecord;
         }
     }
 
-    private MenuRecord GetMenuRecordManySelections(TreeViewCommandArgs commandArgs)
+    private MenuRecord GetMenuRecordManySelections(TreeViewCommandArgs solutionExplorerContextMenuData)
     {
         return new MenuRecord(MenuRecord.NoMenuOptionsExistList);
 
@@ -129,7 +130,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         var getFileOptions = true;
         var filenameList = new List<string>();
 
-        foreach (var selectedNode in commandArgs.TreeViewContainer.SelectedNodeList)
+        foreach (var selectedNode in solutionExplorerContextMenuData.TreeViewContainer.SelectedNodeList)
         {
             if (selectedNode is TreeViewNamespacePath treeViewNamespacePath)
             {
@@ -161,33 +162,33 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                         nameof(BooleanPromptOrCancelDisplay.OnAfterAcceptFunc),
                         async () =>
                         {
-                            await commandArgs.RestoreFocusToTreeView
+                            await solutionExplorerContextMenuData.RestoreFocusToTreeView
                                 .Invoke()
                                 .ConfigureAwait(false);
 
                             DotNetService.Enqueue(new DotNetWorkArgs
                             {
                                 WorkKind = DotNetWorkKind.SolutionExplorer_TreeView_MultiSelect_DeleteFiles,
-                                TreeViewCommandArgs = commandArgs,
+                                TreeViewCommandArgs = solutionExplorerContextMenuData,
                             });
                         }
                     },
-                    { nameof(BooleanPromptOrCancelDisplay.OnAfterDeclineFunc), commandArgs.RestoreFocusToTreeView },
-                    { nameof(BooleanPromptOrCancelDisplay.OnAfterCancelFunc), commandArgs.RestoreFocusToTreeView },
+                    { nameof(BooleanPromptOrCancelDisplay.OnAfterDeclineFunc), solutionExplorerContextMenuData.RestoreFocusToTreeView },
+                    { nameof(BooleanPromptOrCancelDisplay.OnAfterCancelFunc), solutionExplorerContextMenuData.RestoreFocusToTreeView },
                 }*//*));
         }
 
         if (!menuOptionList.Any())
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
             return menuRecord;
         }
 
         // Default case
         {
             var menuRecord = new MenuRecord(menuOptionList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
             return menuRecord;
         }*/
     }

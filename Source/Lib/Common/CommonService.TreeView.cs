@@ -344,10 +344,51 @@ public partial class CommonService
 
         var inContainer = inState.ContainerList[indexContainer];
         
-        if (inContainer.ActiveNodeValueIndex > 0)
-            --inContainer.ActiveNodeValueIndex;
+        var activeNode = inContainer.NodeValueList[inContainer.ActiveNodeValueIndex];
+        
+        if (activeNode.ParentIndex != -1)
+        {
+            if (activeNode.IndexAmongSiblings <= 0)
+            {
+                inContainer.ActiveNodeValueIndex = activeNode.ParentIndex;
+            }
+            else if (activeNode.IndexAmongSiblings < inContainer.NodeValueList[activeNode.ParentIndex].ChildListLength - 1)
+            {
+                --inContainer.ActiveNodeValueIndex;
+                
+                if (inContainer.NodeValueList[inContainer.ActiveNodeValueIndex].IsExpanded)
+                {
+                    var targetNode = inContainer.NodeValueList[inContainer.ActiveNodeValueIndex];
+                    while (!targetNode.IsDefault())
+                    {
+                        if (targetNode.IsExpanded && targetNode.ChildListLength > 0)
+                        {
+                            // The TreeViewContainer reference is quite unsafe so just repeat the math for the index
+                            // out of fear that some other thread will modify `inContainer.ActiveNodeValueIndex`
+                            // and that this code will somehow enter an infinite loop.
+                            //
+                            // If there's no fear of an infinite loop then using directly `inContainer.ActiveNodeValueIndex`
+                            // maybe isn't that big of a deal (i.e.: everytime I use the value I'll use discretion).
+                            //
+                            inContainer.ActiveNodeValueIndex = targetNode.ChildListOffset + targetNode.ChildListLength - 1;
+                            targetNode = inContainer.NodeValueList[targetNode.ChildListOffset + targetNode.ChildListLength - 1];
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                inContainer.ActiveNodeValueIndex = inContainer.NodeValueList[activeNode.ParentIndex].ChildListLength - 1;
+            }
+        }
         else
+        {
             inContainer.ActiveNodeValueIndex = 0;
+        }
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
         

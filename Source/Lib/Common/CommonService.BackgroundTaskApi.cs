@@ -70,35 +70,11 @@ public partial class CommonService
             .ConfigureAwait(false);
     }
 
-    public async ValueTask Do_TreeViewService_LoadChildList(Key<TreeViewContainer> containerKey, TreeViewNodeValue treeViewNoType)
+    public async ValueTask Do_TreeViewService_LoadChildList(TreeViewContainer container, int indexNodeValue)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
-        try
-        {
-            var inState = GetTreeViewState();
-    
-            var indexContainer = inState.ContainerList.FindIndex(
-                x => x.Key == containerKey);
-    
-            if (indexContainer == -1)
-                return;
-    
-            var inContainer = inState.ContainerList[indexContainer];
-        
-            await treeViewNoType.LoadChildListAsync(inContainer).ConfigureAwait(false);
-
-            TreeView_ReRenderNodeAction(
-                containerKey,
-                treeViewNoType,
-                flatListChanged: true);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
-        */
+        var inState = GetTreeViewState();
+        await container.LoadChildListAsync(indexNodeValue).ConfigureAwait(false);
+        TreeView_ReRenderNodeAction();
     }
     
     public ValueTask HandleEvent()
@@ -119,7 +95,7 @@ public partial class CommonService
             case CommonWorkKind.TreeView_ManuallyPropagateOnContextMenu:
                 return Do_TreeView_ManuallyPropagateOnContextMenu(workArgs.HandleTreeViewOnContextMenu, workArgs.MouseEventArgs, workArgs.ContainerKey, workArgs.TreeViewNoType);
             case CommonWorkKind.TreeViewService_LoadChildList:
-                return Do_TreeViewService_LoadChildList(workArgs.ContainerKey, workArgs.TreeViewNoType);
+                return Do_TreeViewService_LoadChildList(workArgs.TreeViewContainer, workArgs.IndexNodeValue);
             default:
                 Console.WriteLine($"{nameof(CommonService)} {nameof(HandleEvent)} default case");
                 return ValueTask.CompletedTask;

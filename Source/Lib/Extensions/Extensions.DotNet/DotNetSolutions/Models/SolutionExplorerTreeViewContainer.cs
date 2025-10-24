@@ -396,33 +396,33 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
     public override Task OnDoubleClickAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)
     {
         base.OnDoubleClickAsync(commandArgs, indexNodeValue);
+        
+        string? path = null;
 
-        if (commandArgs.NodeThatReceivedMouseEvent.TreeViewNodeValueKind != TreeViewNodeValueKind.b4) // NamespacePath
+        var nodeValue = NodeValueList[indexNodeValue];
+        switch (nodeValue.TreeViewNodeValueKind)
+        {
+            case TreeViewNodeValueKind.b0: // .sln
+                return Task.CompletedTask;
+            case TreeViewNodeValueKind.b1: // SolutionFolder
+                return Task.CompletedTask;
+            case TreeViewNodeValueKind.b2: // .csproj
+                path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
+                break;
+            case TreeViewNodeValueKind.b3: // dir
+                return Task.CompletedTask;
+            case TreeViewNodeValueKind.b4: // file
+                path = FileTraitsList[nodeValue.TraitsIndex].Value;
+                break;
+            default:
+                return Task.CompletedTask;
+        }
+        
+        if (path is null)
             return Task.CompletedTask;
 
         IdeService.TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
         {
-            string? path = null;
-
-            var nodeValue = NodeValueList[indexNodeValue];
-            switch (nodeValue.TreeViewNodeValueKind)
-            {
-                case TreeViewNodeValueKind.b0: // .sln
-                    return;
-                case TreeViewNodeValueKind.b1: // SolutionFolder
-                    return;
-                case TreeViewNodeValueKind.b2: // .csproj
-                    path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
-                    break;
-                case TreeViewNodeValueKind.b3: // dir
-                    return;
-                case TreeViewNodeValueKind.b4: // file
-                    path = FileTraitsList[nodeValue.TraitsIndex].Value;
-                    break;
-                default:
-                    return;
-            }
-
             await IdeService.TextEditorService.OpenInEditorAsync(
                 editContext,
                 path,

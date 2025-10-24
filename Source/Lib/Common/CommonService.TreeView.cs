@@ -306,7 +306,12 @@ public partial class CommonService
             {
                 IsExpanded = false
             };
-            TreeView_ReRenderNodeAction();
+            CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
+        }
+        else if (nodeValue.ParentIndex != -1)
+        {
+            inContainer.ActiveNodeValueIndex = nodeValue.ParentIndex;
+            CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
         }
         
         /*var outContainer = PerformMoveLeft(inContainer, containerKey, addSelectedNodes, selectNodesBetweenCurrentAndNextActiveNode);

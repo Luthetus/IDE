@@ -42,6 +42,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
         {
             case TreeViewNodeValueKind.b0: // .sln
             {
+                var indexAmongSiblings = 0;
+            
                 NodeValueList.AddRange(DotNetSolutionModel.SolutionFolderList
                     .Select((x, i) => (x, i))
                     .OrderBy(x => x.x.DisplayName)
@@ -49,8 +51,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                     {
                         return new TreeViewNodeValue
                         {
-                            ParentIndex = -1,
-                            IndexAmongSiblings = 0,
+                            ParentIndex = indexNodeValue,
+                            IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             TreeViewNodeValueKind = TreeViewNodeValueKind.b1, // SolutionFolder
@@ -68,7 +70,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                         return new TreeViewNodeValue
                         {
                             ParentIndex = indexNodeValue,
-                            IndexAmongSiblings = 0,
+                            IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             TreeViewNodeValueKind = TreeViewNodeValueKind.b2, // .csproj
@@ -80,6 +82,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
 
                 nodeValue.ChildListLength = NodeValueList.Count - nodeValue.ChildListOffset;
 
+                /*
                 // The 'for loop' for `child.Parent` and the
                 // 'for loop' for `child.RemoveRelatedFilesFromParent(...)`
                 // cannot be combined.
@@ -89,6 +92,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                     child.IndexAmongSiblings = i - nodeValue.ChildListOffset;
                     NodeValueList[i] = child;
                 }
+                */
 
                 // The 'for loop' for `child.Parent` and the
                 // 'for loop' for `child.RemoveRelatedFilesFromParent(...)`
@@ -106,6 +110,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
             }
             case TreeViewNodeValueKind.b2: // .csproj
             {
+                var indexAmongSiblings = 0;
+            
                 var project = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex];
 
                 var directoryAbsolutePathString = project.AbsolutePath.CreateSubstringParentDirectory();
@@ -137,7 +143,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                         NodeValueList.Add(new TreeViewNodeValue
                         {
                             ParentIndex = indexNodeValue,
-                            IndexAmongSiblings = 0,
+                            IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             TreeViewNodeValueKind = TreeViewNodeValueKind.b3, // dir
@@ -158,7 +164,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                         NodeValueList.Add(new TreeViewNodeValue
                         {
                             ParentIndex = indexNodeValue,
-                            IndexAmongSiblings = 0,
+                            IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             TreeViewNodeValueKind = TreeViewNodeValueKind.b3, // dir
@@ -183,7 +189,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                     NodeValueList.Add(new TreeViewNodeValue
                     {
                         ParentIndex = indexNodeValue,
-                        IndexAmongSiblings = 0,
+                        IndexAmongSiblings = indexAmongSiblings++,
                         ChildListOffset = 0,
                         ChildListLength = 0,
                         TreeViewNodeValueKind = TreeViewNodeValueKind.b4, // file
@@ -195,6 +201,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
 
                 nodeValue.ChildListLength = NodeValueList.Count - nodeValue.ChildListOffset;
 
+                /*
                 // The 'for loop' for `child.Parent` and the
                 // 'for loop' for `child.RemoveRelatedFilesFromParent(...)`
                 // cannot be combined.
@@ -204,6 +211,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                     child.IndexAmongSiblings = i - nodeValue.ChildListOffset;
                     NodeValueList[i] = child;
                 }
+                */
                 
                 /*var cSharpProjectDependenciesTreeViewNode = new TreeViewCSharpProjectDependencies(
                     new CSharpProjectDependencies(project.AbsolutePath),
@@ -222,6 +230,8 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
             }
             case TreeViewNodeValueKind.b3: // dir
             {
+                var indexAmongSiblings = 0;
+                
                 var directoryAbsolutePath = DirectoryTraitsList[nodeValue.TraitsIndex];
 
                 var directoryList = CommonService.FileSystemProvider.Directory.GetDirectories(directoryAbsolutePath.Value);
@@ -249,7 +259,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                         NodeValueList.Add(new TreeViewNodeValue
                         {
                             ParentIndex = indexNodeValue,
-                            IndexAmongSiblings = 0,
+                            IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             TreeViewNodeValueKind = TreeViewNodeValueKind.b3, // dir
@@ -270,7 +280,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                         NodeValueList.Add(new TreeViewNodeValue
                         {
                             ParentIndex = indexNodeValue,
-                            IndexAmongSiblings = 0,
+                            IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             TreeViewNodeValueKind = TreeViewNodeValueKind.b3, // dir
@@ -295,7 +305,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                     NodeValueList.Add(new TreeViewNodeValue
                     {
                         ParentIndex = indexNodeValue,
-                        IndexAmongSiblings = 0,
+                        IndexAmongSiblings = indexAmongSiblings++,
                         ChildListOffset = 0,
                         ChildListLength = 0,
                         TreeViewNodeValueKind = TreeViewNodeValueKind.b4, // file
@@ -307,6 +317,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
 
                 nodeValue.ChildListLength = NodeValueList.Count - nodeValue.ChildListOffset;
                 
+                /*
                 // The 'for loop' for `child.Parent` and the
                 // 'for loop' for `child.RemoveRelatedFilesFromParent(...)`
                 // cannot be combined.
@@ -316,6 +327,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                     child.IndexAmongSiblings = i - nodeValue.ChildListOffset;
                     NodeValueList[i] = child;
                 }
+                */
 
                 /*var cSharpProjectDependenciesTreeViewNode = new TreeViewCSharpProjectDependencies(
                     new CSharpProjectDependencies(project.AbsolutePath),

@@ -84,8 +84,8 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 case TreeViewNodeValueKind.b3: // dir
                     var absolutePath = container.DirectoryTraitsList[treeViewModel.TraitsIndex];
                     menuOptionList.AddRange(GetFileMenuOptions(container, absolutePath, treeViewModel, parentTreeViewModel)
-                        /*.Union(GetDirectoryMenuOptions(treeViewNamespacePath))
-                        .Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
+                        .Union(GetDirectoryMenuOptions(container, data.IndexNodeValue, absolutePath, treeViewModel, parentTreeViewModel))
+                        /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
                     break;
                 case TreeViewNodeValueKind.b4: // file
                     //path = FileTraitsList[nodeValue.TraitsIndex].Value;
@@ -438,36 +438,42 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         return Array.Empty<MenuOptionRecord>();
     }
 
-    private MenuOptionRecord[] GetDirectoryMenuOptions(TreeViewNodeValue treeViewModel)
+    private MenuOptionRecord[] GetDirectoryMenuOptions(
+        SolutionExplorerTreeViewContainer container,
+        int indexNodeValue,
+        AbsolutePath absolutePath,
+        TreeViewNodeValue treeViewModel,
+        TreeViewNodeValue parentTreeViewModel)
     {
-        /*
         return new[]
         {
             DotNetService.IdeService.NewEmptyFile(
-                treeViewModel.Item,
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                absolutePath,
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewTemplatedFile(
-                treeViewModel.Item,
+                absolutePath,
                 () => GetNamespaceString(treeViewModel),
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewDirectory(
-                treeViewModel.Item,
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                absolutePath,
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.PasteClipboard(
-                treeViewModel.Item,
+                absolutePath,
                 async () =>
                 {
-                    var localParentOfCutFile = DotNetService.CommonService.ParentOfCutFile;
-                    DotNetService.CommonService.ParentOfCutFile = null;
-
-                    if (localParentOfCutFile is TreeViewNamespacePath parentTreeViewNamespacePath)
-                        await ReloadTreeViewModel(parentTreeViewNamespacePath).ConfigureAwait(false);
-
-                    await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false);
+                    /*if (DotNetService.CommonService.IndexParentOfCutFile >= 0 &&
+                        DotNetService.CommonService.IndexParentOfCutFile < container.NodeValueList.Count)
+                    {
+                        var localParentOfCutFile = container.NodeValueList[DotNetService.CommonService.IndexParentOfCutFile];
+                        if (localParentOfCutFile is TreeViewNamespacePath parentTreeViewNamespacePath)
+                            await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false);
+    
+                        await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false);
+                    }
+                    
+                    DotNetService.CommonService.IndexParentOfCutFile = -1;*/
                 }),
         };
-        */
-        return Array.Empty<MenuOptionRecord>();
     }
 
     private string GetNamespaceString(TreeViewNodeValue treeViewModel)
@@ -526,17 +532,17 @@ public partial class SolutionExplorerContextMenu : ComponentBase
             DotNetService.IdeService.CutFile(
                 absolutePath,
                 (Func<Task>)(() => {
-                    DotNetService.CommonService.ParentOfCutFile = parentTreeViewModel;
+                    //DotNetService.CommonService.ParentOfCutFile = parentTreeViewModel;
                     CommonFacts.DispatchInformative("Cut Action", $"Cut: {absolutePath.Name}", DotNetService.IdeService.TextEditorService.CommonService, TimeSpan.FromSeconds(7));
                     return Task.CompletedTask;
                 })),
             DotNetService.IdeService.DeleteFile(
                 absolutePath,
-                async () => await ReloadTreeViewModel(parentTreeViewModel).ConfigureAwait(false)),
+                async () => await ReloadTreeViewModel(container, treeViewModel.ParentIndex).ConfigureAwait(false)),
             DotNetService.IdeService.RenameFile(
                 absolutePath,
                 DotNetService.IdeService.TextEditorService.CommonService,
-                async ()  => await ReloadTreeViewModel(parentTreeViewModel).ConfigureAwait(false)),
+                async ()  => await ReloadTreeViewModel(container, treeViewModel.ParentIndex).ConfigureAwait(false)),
         };
     }
 
@@ -661,26 +667,27 @@ public partial class SolutionExplorerContextMenu : ComponentBase
     /// as the root. But this method erroneously reloads the old root.
     /// </summary>
     /// <param name="treeViewModel"></param>
-    private async Task ReloadTreeViewModel(TreeViewNodeValue treeViewModel)
+    private async Task ReloadTreeViewModel(SolutionExplorerTreeViewContainer container, int indexNodeValue)
     {
-        /*
-        if (treeViewModel is null)
+        if (indexNodeValue < 0 ||
+            indexNodeValue >= container.NodeValueList.Count)
+        {
             return;
+        }
 
         if (!DotNetService.CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
             return;
 
-        await treeViewModel.LoadChildListAsync(treeViewContainer).ConfigureAwait(false);
+        await container.LoadChildListAsync(indexNodeValue).ConfigureAwait(false);
 
         DotNetService.IdeService.TextEditorService.CommonService.TreeView_MoveUpAction(
             DotNetSolutionState.TreeViewSolutionExplorerStateKey,
             false,
             false);
 
-        DotNetService.IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(
+        /*DotNetService.IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(
             DotNetSolutionState.TreeViewSolutionExplorerStateKey,
             treeViewModel,
-            flatListChanged: true);
-        */
+            flatListChanged: true);*/
     }
 }

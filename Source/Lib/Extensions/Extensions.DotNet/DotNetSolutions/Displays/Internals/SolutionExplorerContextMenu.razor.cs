@@ -332,24 +332,24 @@ public partial class SolutionExplorerContextMenu : ComponentBase
             DotNetService.IdeService.NewDirectory(
                 parentDirectoryAbsolutePath,
                 async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
-            DotNetService.IdeService.PasteClipboard(
+            /*DotNetService.IdeService.PasteClipboard(
                 parentDirectoryAbsolutePath,
                 async () =>
                 {
-                    /*var localParentOfCutFile = DotNetService.CommonService.ParentOfCutFile;
+                    var localParentOfCutFile = DotNetService.CommonService.ParentOfCutFile;
                     DotNetService.CommonService.ParentOfCutFile = null;
 
                     if (localParentOfCutFile is TreeViewNamespacePath parentTreeViewNamespacePath)
                         await ReloadTreeViewModel(parentTreeViewNamespacePath).ConfigureAwait(false);
 
-                    await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false);*/
-                }),
-            DotNetService.AddProjectToProjectReference(
+                    await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false);
+                }),*/
+            /*DotNetService.AddProjectToProjectReference(
                 treeViewModel,
                 DotNetService.IdeService.GetTerminalState().GeneralTerminal,
                 DotNetService.IdeService,
-                () => Task.CompletedTask),
-            DotNetService.MoveProjectToSolutionFolder(
+                () => Task.CompletedTask),*/
+            /*DotNetService.MoveProjectToSolutionFolder(
                 treeViewSolution,
                 treeViewModel,
                 DotNetService.IdeService.GetTerminalState().GeneralTerminal,
@@ -362,8 +362,8 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                         DotNetSolutionAbsolutePath = treeViewSolution.AbsolutePath
                     });
                     return Task.CompletedTask;
-                }),
-            new MenuOptionRecord(
+                }),*/
+            /*new MenuOptionRecord(
                 "Set as Startup Project",
                 MenuOptionKind.Other,
                 _ =>
@@ -376,8 +376,8 @@ public partial class SolutionExplorerContextMenu : ComponentBase
 
                     DotNetService.IdeService.Ide_SetActiveStartupControlKey(startupControl.StartupProjectAbsolutePath.Value);
                     return Task.CompletedTask;
-                }),
-            DotNetService.RemoveCSharpProjectReferenceFromSolution(
+                }),*/
+            /*DotNetService.RemoveCSharpProjectReferenceFromSolution(
                 treeViewSolution,
                 treeViewModel,
                 DotNetService.IdeService.GetTerminalState().GeneralTerminal,
@@ -390,7 +390,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                         DotNetSolutionAbsolutePath = treeViewSolution.AbsolutePath,
                     });
                     return Task.CompletedTask;
-                }),
+                }),*/
         };
     }
 

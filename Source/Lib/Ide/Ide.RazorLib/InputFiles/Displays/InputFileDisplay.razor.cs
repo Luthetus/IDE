@@ -28,19 +28,57 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
     {
         if (firstRender)
         {
+            IdeService.CommonService.TreeView_DisposeContainerAction(InputFileSidebar_TreeViewContainerKey, shouldFireStateChangedEvent: false);
+                
+            var treeViewContainer = new InputFileTreeViewContainer(IdeService);
+            
+            var rootNode = new TreeViewNodeValue
+            {
+                ParentIndex = -1,
+                IndexAmongSiblings = 0,
+                ChildListOffset = 1,
+                ChildListLength = 2,
+                ByteKind = InputFileTreeViewContainer.ByteKind_Aaa,
+                TraitsIndex = 0,
+                IsExpandable = true,
+                IsExpanded = true
+            };
+            treeViewContainer.NodeValueList.Add(rootNode);
+            
+            treeViewContainer.DirectoryTraitsList.Add(IdeService.CommonService.FileSystemProvider.HomeDirectoryAbsolutePath);
+            treeViewContainer.DirectoryTraitsList.Add(IdeService.CommonService.FileSystemProvider.RootDirectoryAbsolutePath);
+            
+            // Home
+            treeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+            {
+                ParentIndex = 0,
+                IndexAmongSiblings = 0,
+                ChildListOffset = treeViewContainer.NodeValueList.Count,
+                ChildListLength = 0,
+                ByteKind = InputFileTreeViewContainer.ByteKind_Dir,
+                TraitsIndex = 0,
+                IsExpandable = true,
+                IsExpanded = false
+            });
+            
+            // Root
+            treeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+            {
+                ParentIndex = 0,
+                IndexAmongSiblings = 1,
+                ChildListOffset = treeViewContainer.NodeValueList.Count,
+                ChildListLength = 0,
+                ByteKind = InputFileTreeViewContainer.ByteKind_Dir,
+                TraitsIndex = 1,
+                IsExpandable = true,
+                IsExpanded = false
+            });
+    
+            IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);
+            
             /*
             // 2025-10-22 (rewrite TreeViews)
-            var directoryHomeNode = new TreeViewAbsolutePath(
-                IdeService.CommonService.FileSystemProvider.HomeDirectoryAbsolutePath,
-                IdeService.CommonService,
-                true,
-                false);
-
-            var directoryRootNode = new TreeViewAbsolutePath(
-                IdeService.CommonService.FileSystemProvider.RootDirectoryAbsolutePath,
-                IdeService.CommonService,
-                true,
-                false);
+            
 
             if (!IdeService.CommonService.TryGetTreeViewContainer(InputFileSidebar_TreeViewContainerKey, out var treeViewContainer))
             {

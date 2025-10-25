@@ -148,24 +148,18 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
 
     private string GetSelectedTreeViewModelAbsolutePathString(InputFileState inputFileState)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
-        var selectedAbsolutePath = inputFileState.SelectedTreeViewModel?.Item;
+        var selectedAbsolutePath = inputFileState.SelectedTreeViewModel;
 
-        if (selectedAbsolutePath is null)
+        if (selectedAbsolutePath.Value is null)
             return "Selection is null";
 
-        return selectedAbsolutePath.Value.Value;
-        */
-        return string.Empty;
+        return selectedAbsolutePath.Value;
     }
 
     private async Task FireOnAfterSubmit()
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
         var valid = await IdeService.GetInputFileState().SelectionIsValidFunc
-            .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel?.Item ?? default)
+            .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel)
             .ConfigureAwait(false);
 
         if (valid)
@@ -174,20 +168,15 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
                 IdeService.CommonService.Dialog_ReduceDisposeAction(DialogRecord.DynamicViewModelKey);
 
             await IdeService.GetInputFileState().OnAfterSubmitFunc
-                .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel?.Item ?? default)
+                .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel)
                 .ConfigureAwait(false);
         }
-        */
     }
 
     private bool OnAfterSubmitIsDisabled()
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
-        return !IdeService.GetInputFileState().SelectionIsValidFunc.Invoke(IdeService.GetInputFileState().SelectedTreeViewModel?.Item ?? default)
+        return !IdeService.GetInputFileState().SelectionIsValidFunc.Invoke(IdeService.GetInputFileState().SelectedTreeViewModel)
             .Result;
-        */
-        return true;
     }
 
     private Task CancelOnClick()

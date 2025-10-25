@@ -165,61 +165,25 @@ public class OutputTreeViewContainer : TreeViewContainer
         {
             case CommonFacts.ENTER_CODE:
             {
-                string? path = null;
-
                 var nodeValue = NodeValueList[indexNodeValue];
-                switch (nodeValue.ByteKind)
-                {
-                    case OutputTreeViewContainer.ByteKind_Aaa:
-                        path = string.Empty;
-                        return Task.CompletedTask;
-                    default:
-                        return Task.CompletedTask;
-                }
-                
-                if (path is null)
+                if (nodeValue.ByteKind != ByteKind_Diagnostic)
                     return Task.CompletedTask;
-        
-                DotNetService.TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
-                {
-                    await DotNetService.TextEditorService.OpenInEditorAsync(
-                        editContext,
-                        path,
-                        true,
-                        null,
-                        new Category("main"),
-                        editContext.TextEditorService.NewViewModelKey());
-                });
-                return Task.CompletedTask;
+                
+                return OutputTextSpanHelper.OpenInEditorOnClick(
+                    DotNetRunParseResult.AllDiagnosticLineList[nodeValue.TraitsIndex],
+                    true,
+                    DotNetService.TextEditorService);
             }
             case CommonFacts.SPACE_CODE:
             {
-                string? path = null;
-
                 var nodeValue = NodeValueList[indexNodeValue];
-                switch (nodeValue.ByteKind)
-                {
-                    case OutputTreeViewContainer.ByteKind_Aaa:
-                        path = string.Empty;
-                        return Task.CompletedTask;
-                    default:
-                        return Task.CompletedTask;
-                }
-                
-                if (path is null)
+                if (nodeValue.ByteKind != ByteKind_Diagnostic)
                     return Task.CompletedTask;
-        
-                DotNetService.TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
-                {
-                    await DotNetService.TextEditorService.OpenInEditorAsync(
-                        editContext,
-                        path,
-                        true,
-                        null,
-                        new Category("main"),
-                        editContext.TextEditorService.NewViewModelKey());
-                });
-                return Task.CompletedTask;
+                
+                return OutputTextSpanHelper.OpenInEditorOnClick(
+                    DotNetRunParseResult.AllDiagnosticLineList[nodeValue.TraitsIndex],
+                    false,
+                    DotNetService.TextEditorService);
             }
         }
 

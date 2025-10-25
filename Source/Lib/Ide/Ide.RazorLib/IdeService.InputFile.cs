@@ -32,7 +32,7 @@ public partial class IdeService
         IdeStateChanged?.Invoke(IdeStateChangedKind.InputFileStateChanged);
     }
 
-    public void InputFile_SetSelectedTreeViewModel(TreeViewNodeValue selectedTreeViewModel)
+    public void InputFile_SetSelectedTreeViewModel(AbsolutePath selectedTreeViewModel)
     {
         lock (_stateModificationLock)
         {

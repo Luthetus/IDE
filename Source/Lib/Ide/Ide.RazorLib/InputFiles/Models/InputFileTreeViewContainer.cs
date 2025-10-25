@@ -161,6 +161,15 @@ public class InputFileTreeViewContainer : TreeViewContainer
                 return IconKind.None;
         }
     }
+    
+    public override Task OnClickAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)
+    {
+        base.OnClickAsync(commandArgs, indexNodeValue);
+        
+        SetSelectedTreeViewModel(commandArgs, indexNodeValue);
+        
+        return Task.CompletedTask;
+    }
 
     public override Task OnDoubleClickAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)
     {
@@ -180,15 +189,32 @@ public class InputFileTreeViewContainer : TreeViewContainer
         {
             case CommonFacts.ENTER_CODE:
             {
+                SetSelectedTreeViewModel(commandArgs, indexNodeValue);
                 return Task.CompletedTask;
             }
             case CommonFacts.SPACE_CODE:
             {
+                SetSelectedTreeViewModel(commandArgs, indexNodeValue);
                 return Task.CompletedTask;
             }
         }
 
         return Task.CompletedTask;
+    }
+    
+    private void SetSelectedTreeViewModel(TreeViewCommandArgs commandArgs, int indexNodeValue)
+    {
+        var activeNode = NodeValueList[indexNodeValue];
+        
+        switch (activeNode.ByteKind)
+        {
+            case InputFileTreeViewContainer.ByteKind_Dir:
+                IdeService.InputFile_SetSelectedTreeViewModel(DirectoryTraitsList[activeNode.TraitsIndex]);
+                break;
+            case InputFileTreeViewContainer.ByteKind_File:
+                IdeService.InputFile_SetSelectedTreeViewModel(FileTraitsList[activeNode.TraitsIndex]);
+                break;
+        }
     }
 
     /// <summary>

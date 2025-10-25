@@ -7,7 +7,7 @@ namespace Clair.Ide.RazorLib.InputFiles.Models;
 public record struct InputFileState(
     int IndexInHistory,
     IReadOnlyList<TreeViewNodeValue> OpenedTreeViewModelHistoryList,
-    TreeViewNodeValue SelectedTreeViewModel,
+    AbsolutePath SelectedTreeViewModel,
     Func<AbsolutePath, Task> OnAfterSubmitFunc,
     Func<AbsolutePath, Task<bool>> SelectionIsValidFunc,
     IReadOnlyList<InputFilePattern> InputFilePatternsList,

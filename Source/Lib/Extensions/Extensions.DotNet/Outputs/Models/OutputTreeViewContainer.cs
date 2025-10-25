@@ -93,6 +93,9 @@ public class OutputTreeViewContainer : TreeViewContainer
         {
             case OutputTreeViewContainer.ByteKind_Aaa:
                 return nameof(ByteKind_Aaa);
+            case OutputTreeViewContainer.ByteKind_Diagnostic:
+                var diagnostic = DotNetRunParseResult.AllDiagnosticLineList[nodeValue.TraitsIndex];
+                return diagnostic.TextShort;
             default:
                 return "asdfg";
         }
@@ -259,5 +262,5 @@ public class OutputTreeViewContainer : TreeViewContainer
     }
     
     public const byte ByteKind_Aaa = 1;
-    public const byte ByteKind_Bbb = 2;
+    public const byte ByteKind_Diagnostic = 2;
 }

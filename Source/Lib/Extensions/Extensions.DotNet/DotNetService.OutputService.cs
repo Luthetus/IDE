@@ -66,7 +66,7 @@ public partial class DotNetService
                     IndexAmongSiblings = indexAmongSiblings++,
                     ChildListOffset = treeViewContainer.NodeValueList.Count,
                     ChildListLength = 0,
-                    ByteKind = OutputTreeViewContainer.ByteKind_Bbb,
+                    ByteKind = OutputTreeViewContainer.ByteKind_Diagnostic,
                     TraitsIndex = i,
                     IsExpandable = false,
                     IsExpanded = false

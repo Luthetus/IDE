@@ -15,9 +15,7 @@ using Clair.Extensions.DotNet.AppDatas.Models;
 using Clair.Extensions.DotNet.CommandLines.Models;
 using Clair.Extensions.DotNet.DotNetSolutions.Displays;
 using Clair.Extensions.DotNet.DotNetSolutions.Models;
-using Clair.Extensions.DotNet.Namespaces.Models;
 using Clair.Extensions.DotNet.Nugets.Models;
-using Clair.Extensions.DotNet.TestExplorers.Models;
 using Clair.Ide.RazorLib;
 using Clair.Ide.RazorLib.Terminals.Models;
 using Clair.TextEditor.RazorLib;
@@ -25,7 +23,6 @@ using Clair.TextEditor.RazorLib.BackgroundTasks.Models;
 using Clair.TextEditor.RazorLib.CompilerServices;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using CliWrap.EventStream;
-using Microsoft.AspNetCore.Components.Forms;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -101,7 +98,7 @@ public partial class DotNetService
         ReduceSetMostRecentQueryResultAction(localNugetResult);
     }
 
-    public ValueTask Do_RunTestByFullyQualifiedName(TreeViewStringFragment treeViewStringFragment, string fullyQualifiedName, TreeViewProjectTestModel treeViewProjectTestModel)
+    /*public ValueTask Do_RunTestByFullyQualifiedName(TreeViewStringFragment treeViewStringFragment, string fullyQualifiedName, TreeViewProjectTestModel treeViewProjectTestModel)
     {
         var parentDirectory = treeViewProjectTestModel.Item.AbsolutePath.CreateSubstringParentDirectory();
         if (parentDirectory is null)
@@ -199,6 +196,7 @@ public partial class DotNetService
         treeViewStringFragment.Item.TerminalCommandRequest = terminalCommandRequest;
         IdeService.GetTerminalState().ExecutionTerminal.EnqueueCommand(terminalCommandRequest);
     }
+    */
 
     #region DotNetSolutionIdeApi
     private const int GET_TEXT_BUFFER_SIZE = 32;
@@ -912,36 +910,34 @@ public partial class DotNetService
 
     public async ValueTask Do_SetDotNetSolutionTreeView(Key<DotNetSolutionModel> dotNetSolutionModelKey)
     {
-        var dotNetSolutionState = GetDotNetSolutionState();
+        CommonService.TreeView_DisposeContainerAction(DotNetSolutionState.TreeViewSolutionExplorerStateKey, shouldFireStateChangedEvent: false);
 
+        var dotNetSolutionState = GetDotNetSolutionState();
+        
         var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
         if (dotNetSolutionModel is null)
             return;
 
-        var rootNode = new TreeViewSolution(
-            dotNetSolutionModel,
-            IdeService.TextEditorService.CommonService,
-            true,
-            true);
+        if (!CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
+        {
+            treeViewContainer = new SolutionExplorerTreeViewContainer(IdeService, dotNetSolutionModel);
+            
+            var rootNode = new TreeViewNodeValue
+            {
+                ParentIndex = -1,
+                IndexAmongSiblings = 0,
+                ChildListOffset = treeViewContainer.NodeValueList.Count,
+                ChildListLength = 0,
+                ByteKind = SolutionExplorerTreeViewContainer.ByteKind_Solution,
+                TraitsIndex = 0,
+                IsExpandable = true,
+                IsExpanded = true
+            };
+            treeViewContainer.NodeValueList.Add(rootNode);
 
-        if (!IdeService.CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
-        {
-            IdeService.CommonService.TreeView_RegisterContainerAction(new TreeViewContainer(
-                DotNetSolutionState.TreeViewSolutionExplorerStateKey,
-                rootNode: null,
-                selectedNodeList: Array.Empty<TreeViewNoType>()));
-        }
-        if (IdeService.CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out treeViewContainer))
-        {
-            await rootNode.LoadChildListAsync(treeViewContainer).ConfigureAwait(false);
-            
-            IdeService.CommonService.TreeView_WithRootNodeAction(DotNetSolutionState.TreeViewSolutionExplorerStateKey, rootNode);
-            
-            IdeService.CommonService.TreeView_SetActiveNodeAction(
-                DotNetSolutionState.TreeViewSolutionExplorerStateKey,
-                rootNode,
-                true,
-                false);
+            await treeViewContainer.LoadChildListAsync(indexNodeValue: 0).ConfigureAwait(false);
+
+            CommonService.TreeView_RegisterContainerAction(treeViewContainer);
         }
     }
 

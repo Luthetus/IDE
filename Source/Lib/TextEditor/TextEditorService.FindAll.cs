@@ -1,10 +1,8 @@
-using System.Text;
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Reactives.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.TextEditor.RazorLib.FindAlls.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 
@@ -14,17 +12,7 @@ public partial class TextEditorService
 {
     private readonly object _stateModificationLock = new();
 
-    private readonly Throttle _throttleSetSearchQuery = new Throttle(TimeSpan.FromMilliseconds(500));
-    private readonly Throttle _throttleUiUpdate = new Throttle(CommonFacts.ThrottleFacts_TwentyFour_Frames_Per_Second);
-
-    private readonly object _flushSearchResultsLock = new();
-
-    /// <summary>
-    /// Each instance of the state will share this cancellation token source because the 'with' keyword
-    /// will copy any private members too, and <see cref="CancellationTokenSource"/> is a reference type.
-    /// </summary>
     private CancellationTokenSource _searchCancellationTokenSource = new();
-
     private TextEditorFindAllState _findAllState = new();
 
     public TextEditorFindAllState GetFindAllState() => _findAllState;
@@ -61,8 +49,6 @@ public partial class TextEditorService
         {
             _searchCancellationTokenSource.Cancel();
             _searchCancellationTokenSource = new();
-
-            _findAllState = _findAllState with { };
         }
 
         SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
@@ -70,6 +56,8 @@ public partial class TextEditorService
 
     public void SetProgressBarModel(ProgressBarModel progressBarModel)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         lock (_stateModificationLock)
         {
             _findAllState = _findAllState with
@@ -77,12 +65,14 @@ public partial class TextEditorService
                 ProgressBarModel = progressBarModel,
             };
         }
+        */
 
         SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
     }
 
     public void FlushSearchResults(List<(string SourceText, ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList)
     {
+        /*
         lock (_stateModificationLock)
         {
             var inState = GetFindAllState();
@@ -100,6 +90,7 @@ public partial class TextEditorService
                 SearchResultList = localSearchResultList
             };
         }
+        */
 
         SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
     }
@@ -121,6 +112,8 @@ public partial class TextEditorService
 
     public Task HandleStartSearchAction()
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         _throttleSetSearchQuery.Run(async _ =>
         {
             CancelSearch();
@@ -154,6 +147,7 @@ public partial class TextEditorService
                 Console.WriteLine(e);
             }
         });
+        */
 
         return Task.CompletedTask;
     }
@@ -290,6 +284,8 @@ public partial class TextEditorService
 
         void ShowFilesProcessedCountOnUi(double decimalPercentProgress, bool shouldDisposeProgressBarModel = false)
         {
+            /*
+            // 2025-10-22 (rewrite TreeViews)
             _throttleUiUpdate.Run(_ =>
             {
                 progressBarModel.SetProgress(
@@ -306,18 +302,21 @@ public partial class TextEditorService
 
                 return Task.CompletedTask;
             });
+            */
         }
     }
 
     private void ConstructTreeView(TextEditorFindAllState textEditorFindAllState)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(TextEditorFindAllState.TreeViewFindAllContainerKey);
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
         var container = new TreeViewContainer(
     		TextEditorFindAllState.TreeViewFindAllContainerKey,
     		rootNode: null,
-    		selectedNodeList: Array.Empty<TreeViewNoType>());
+    		selectedNodeList: Array.Empty<TreeViewNodeValue>());
     
         var groupedResults = textEditorFindAllState.SearchResultList.GroupBy(x => x.ResourceUri);
 
@@ -362,6 +361,7 @@ public partial class TextEditorService
         CommonService.TreeView_RegisterContainerAction(
         	container,
         	shouldFireStateChangedEvent: true);
+    	*/
     }
 
     public void Dispose()
@@ -372,16 +372,14 @@ public partial class TextEditorService
     public record struct TextEditorFindAllState(
         string SearchQuery,
         string StartingDirectoryPath,
-        List<(string SourceText, ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList,
-        ProgressBarModel? ProgressBarModel)
+        List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList)
     {
         public static readonly Key<TreeViewContainer> TreeViewFindAllContainerKey = Key<TreeViewContainer>.NewKey();
 
         public TextEditorFindAllState() : this(
-            string.Empty,
-            string.Empty,
-            new(),
-            null)
+            SearchQuery: string.Empty,
+            StartingDirectoryPath: string.Empty,
+            SearchResultList: new())
         {
         }
     }

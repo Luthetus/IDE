@@ -5,7 +5,6 @@ using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.Dynamics.Models;
 using Clair.Ide.RazorLib.InputFiles.Models;
-using Clair.Ide.RazorLib.FileSystems.Models;
 
 namespace Clair.Ide.RazorLib.InputFiles.Displays;
 
@@ -17,41 +16,77 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
     [CascadingParameter]
     public IDialog? DialogRecord { get; set; }
 
-    private InputFileTreeViewMouseEventHandler _inputFileTreeViewMouseEventHandler = null!;
-    private InputFileTreeViewKeyboardEventHandler _inputFileTreeViewKeyboardEventHandler = null!;
-
     public static readonly Key<TreeViewContainer> InputFileSidebar_TreeViewContainerKey = Key<TreeViewContainer>.NewKey();
     private TreeViewContainerParameter InputFileSidebar_treeViewContainerParameter;
 
     protected override void OnInitialized()
     {
-        _inputFileTreeViewMouseEventHandler = new InputFileTreeViewMouseEventHandler(IdeService);
-        _inputFileTreeViewKeyboardEventHandler = new InputFileTreeViewKeyboardEventHandler(IdeService);
-
-        InputFileSidebar_treeViewContainerParameter = new(
-            InputFileSidebar_TreeViewContainerKey,
-            _inputFileTreeViewKeyboardEventHandler,
-            _inputFileTreeViewMouseEventHandler,
-            OnTreeViewContextMenuFunc);
-        
         IdeService.IdeStateChanged += OnInputFileStateChanged;
     }
     
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var directoryHomeNode = new TreeViewAbsolutePath(
-                IdeService.CommonService.FileSystemProvider.HomeDirectoryAbsolutePath,
-                IdeService.CommonService,
-                true,
-                false);
+            IdeService.CommonService.TreeView_DisposeContainerAction(InputFileSidebar_TreeViewContainerKey, shouldFireStateChangedEvent: false);
+                
+            var treeViewContainer = new InputFileTreeViewContainer(IdeService);
+            
+            var rootNode = new TreeViewNodeValue
+            {
+                ParentIndex = -1,
+                IndexAmongSiblings = 0,
+                ChildListOffset = 1,
+                ChildListLength = 2,
+                ByteKind = InputFileTreeViewContainer.ByteKind_Aaa,
+                TraitsIndex = 0,
+                IsExpandable = true,
+                IsExpanded = true
+            };
+            treeViewContainer.NodeValueList.Add(rootNode);
+            
+            treeViewContainer.DirectoryTraitsList.Add(IdeService.CommonService.FileSystemProvider.HomeDirectoryAbsolutePath);
+            treeViewContainer.DirectoryTraitsList.Add(IdeService.CommonService.FileSystemProvider.RootDirectoryAbsolutePath);
+            
+            // Home
+            treeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+            {
+                ParentIndex = 0,
+                IndexAmongSiblings = 0,
+                ChildListOffset = treeViewContainer.NodeValueList.Count,
+                ChildListLength = 0,
+                ByteKind = InputFileTreeViewContainer.ByteKind_Dir,
+                TraitsIndex = 0,
+                IsExpandable = true,
+                IsExpanded = false
+            });
+            
+            // Root
+            treeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+            {
+                ParentIndex = 0,
+                IndexAmongSiblings = 1,
+                ChildListOffset = treeViewContainer.NodeValueList.Count,
+                ChildListLength = 0,
+                ByteKind = InputFileTreeViewContainer.ByteKind_Dir,
+                TraitsIndex = 1,
+                IsExpandable = true,
+                IsExpanded = false
+            });
+    
+            IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);
 
-            var directoryRootNode = new TreeViewAbsolutePath(
-                IdeService.CommonService.FileSystemProvider.RootDirectoryAbsolutePath,
-                IdeService.CommonService,
-                true,
-                false);
+            _ = Task.Run(async () =>
+            {
+                // TODO: Why is the first render not showing the directories????
+                await Task.Delay(100);
+                IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);
+            });
+            
+
+            /*
+            // 2025-10-22 (rewrite TreeViews)
+            
 
             if (!IdeService.CommonService.TryGetTreeViewContainer(InputFileSidebar_TreeViewContainerKey, out var treeViewContainer))
             {
@@ -71,9 +106,10 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
                     addSelectedNodes: true,
                     selectNodesBetweenCurrentAndNextActiveNode: false);
             }
+            */
         }
 
-        return Task.CompletedTask;
+        //return Task.CompletedTask;
     }
 
     public async void OnInputFileStateChanged(IdeStateChangedKind ideStateChangedKind)
@@ -120,18 +156,18 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
 
     private string GetSelectedTreeViewModelAbsolutePathString(InputFileState inputFileState)
     {
-        var selectedAbsolutePath = inputFileState.SelectedTreeViewModel?.Item;
+        var selectedAbsolutePath = inputFileState.SelectedTreeViewModel;
 
-        if (selectedAbsolutePath is null)
+        if (selectedAbsolutePath.Value is null)
             return "Selection is null";
 
-        return selectedAbsolutePath.Value.Value;
+        return selectedAbsolutePath.Value;
     }
 
     private async Task FireOnAfterSubmit()
     {
         var valid = await IdeService.GetInputFileState().SelectionIsValidFunc
-            .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel?.Item ?? default)
+            .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel)
             .ConfigureAwait(false);
 
         if (valid)
@@ -140,14 +176,14 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
                 IdeService.CommonService.Dialog_ReduceDisposeAction(DialogRecord.DynamicViewModelKey);
 
             await IdeService.GetInputFileState().OnAfterSubmitFunc
-                .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel?.Item ?? default)
+                .Invoke(IdeService.GetInputFileState().SelectedTreeViewModel)
                 .ConfigureAwait(false);
         }
     }
 
     private bool OnAfterSubmitIsDisabled()
     {
-        return !IdeService.GetInputFileState().SelectionIsValidFunc.Invoke(IdeService.GetInputFileState().SelectedTreeViewModel?.Item ?? default)
+        return !IdeService.GetInputFileState().SelectionIsValidFunc.Invoke(IdeService.GetInputFileState().SelectedTreeViewModel)
             .Result;
     }
 

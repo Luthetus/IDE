@@ -22,6 +22,11 @@ public record DotNetSolutionModel : IDotNetSolution
 
     public Key<DotNetSolutionModel> Key { get; init; }
     public AbsolutePath AbsolutePath { get; init; }
+    /// <summary>
+    /// This "long term" must not contain the solution folders.
+    /// TODO: It may or may not contain the solution folders temporarily
+    /// when initially parsing the .sln I'm not sure and I need to find time to verify.
+    /// </summary>
     public List<IDotNetProject> DotNetProjectList { get; set; }
     public List<SolutionFolder> SolutionFolderList { get; init; }
     public List<GuidNestedProjectEntry> GuidNestedProjectEntryList { get; init; }

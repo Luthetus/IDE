@@ -21,7 +21,6 @@ using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
-using System.IO;
 using System.Text;
 
 namespace Clair.CompilerServices.CSharp.CompilerServiceCase;

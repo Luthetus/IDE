@@ -1,6 +1,7 @@
+/*
+// 2025-10-22 (rewrite TreeViews)
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Common.RazorLib.TreeViews.Models.Utils;
 using Clair.Common.RazorLib.Icons.Displays;
 using Clair.CompilerServices.DotNetSolution.Models;
 
@@ -48,7 +49,7 @@ public class TreeViewSolution : TreeViewWithType<DotNetSolutionModel>
                     Item.NamespacePath
                 },
             });
-    }*/
+    }*//*// 2025-10-22 (rewrite TreeViews)
 
     public override async Task LoadChildListAsync(TreeViewContainer container)
     {
@@ -84,3 +85,4 @@ public class TreeViewSolution : TreeViewWithType<DotNetSolutionModel>
         return;
     }
 }
+*/

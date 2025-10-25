@@ -8,7 +8,6 @@ using Clair.Common.RazorLib.Dimensions.Models;
 using Clair.Common.RazorLib.Resizes.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.Lexers.Models;
-using Clair.Ide.RazorLib.CodeSearches.Models;
 
 namespace Clair.Ide.RazorLib.CodeSearches.Displays;
 
@@ -48,12 +47,6 @@ public sealed partial class CodeSearchDisplay : ComponentBase, IDisposable
     {
         IdeService.IdeStateChanged += OnCodeSearchStateChanged;
         IdeService.CommonService.CommonUiStateChanged += OnCommonUiStateChanged;
-        
-        _treeViewContainerParameter = new(
-            CodeSearchState.TreeViewCodeSearchContainerKey,
-            new CodeSearchTreeViewKeyboardEventHandler(IdeService.TextEditorService),
-            new CodeSearchTreeViewMouseEventHandler(IdeService.TextEditorService),
-            OnTreeViewContextMenuFunc);
     }
     
     protected override void OnAfterRender(bool firstRender)

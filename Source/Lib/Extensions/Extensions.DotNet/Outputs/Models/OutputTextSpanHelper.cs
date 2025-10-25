@@ -1,17 +1,18 @@
 using System.Text;
 using Clair.TextEditor.RazorLib;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
+using Clair.Extensions.DotNet.CommandLines.Models;
 
 namespace Clair.Extensions.DotNet.Outputs.Models;
 
 public static class OutputTextSpanHelper
 {
     public static Task OpenInEditorOnClick(
-        TreeViewDiagnosticLine treeViewDiagnosticLine,
+        DiagnosticLine diagnosticLine,
         bool shouldSetFocusToEditor,
         TextEditorService textEditorService)
     {
-        var lineAndColumnIndicesString = treeViewDiagnosticLine.Item.LineAndColumnIndicesTextSpan.Text;
+        var lineAndColumnIndicesString = diagnosticLine.LineAndColumnIndicesTextSpan.Text;
         var position = 0;
         
         int? lineNumber = null;
@@ -63,7 +64,7 @@ public static class OutputTextSpanHelper
         {
             await textEditorService.OpenInEditorAsync(
                 editContext,
-                treeViewDiagnosticLine.Item.FilePathTextSpan.Text,
+                diagnosticLine.FilePathTextSpan.Text,
                 shouldSetFocusToEditor,
                 lineIndex,
                 columnIndex,

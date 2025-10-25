@@ -22,7 +22,7 @@ public sealed partial class DotNetService : IBackgroundTaskGroup, IDisposable
         AppDataService = appDataService;
         _httpClient = httpClient;
         
-        DotNetStateChanged += OnDotNetSolutionStateChanged;
+        //DotNetStateChanged += OnDotNetSolutionStateChanged;
     }
     
     public Key<IBackgroundTaskGroup> BackgroundTaskKey { get; } = Key<IBackgroundTaskGroup>.NewKey();
@@ -52,8 +52,6 @@ public sealed partial class DotNetService : IBackgroundTaskGroup, IDisposable
                 return Do_SolutionExplorer_TreeView_MultiSelect_DeleteFiles(workArgs.TreeViewCommandArgs);
             case DotNetWorkKind.SubmitNuGetQuery:
                 return Do_SubmitNuGetQuery(workArgs.NugetPackageManagerQuery);
-            case DotNetWorkKind.RunTestByFullyQualifiedName:
-                return Do_RunTestByFullyQualifiedName(workArgs.TreeViewStringFragment, workArgs.FullyQualifiedName, workArgs.TreeViewProjectTestModel);
             case DotNetWorkKind.SetDotNetSolution:
                 return Do_SetDotNetSolution(workArgs.DotNetSolutionAbsolutePath);
             case DotNetWorkKind.SetDotNetSolutionTreeView:
@@ -64,47 +62,6 @@ public sealed partial class DotNetService : IBackgroundTaskGroup, IDisposable
                     workArgs.ProjectTemplateShortName,
                     workArgs.CSharpProjectName,
                     workArgs.CSharpProjectAbsolutePath);
-            case DotNetWorkKind.PerformRemoveCSharpProjectReferenceFromSolution:
-            {
-                return Do_PerformRemoveCSharpProjectReferenceFromSolution(
-                    workArgs.TreeViewSolution, workArgs.ProjectNode, workArgs.Terminal, CommonService, workArgs.OnAfterCompletion);
-            }
-            case DotNetWorkKind.PerformRemoveProjectToProjectReference:
-            {
-                return Do_PerformRemoveProjectToProjectReference(
-                    workArgs.TreeViewCSharpProjectToProjectReference,
-                    workArgs.Terminal,
-                    CommonService,
-                    workArgs.OnAfterCompletion);
-            }
-            case DotNetWorkKind.PerformMoveProjectToSolutionFolder:
-            {
-                return Do_PerformMoveProjectToSolutionFolder(
-                    workArgs.TreeViewSolution,
-                    workArgs.TreeViewProjectToMove,
-                    workArgs.SolutionFolderPath,
-                    workArgs.Terminal,
-                    CommonService,
-                    workArgs.OnAfterCompletion);
-            }
-            case DotNetWorkKind.PerformRemoveNuGetPackageReferenceFromProject:
-            {
-                return Do_PerformRemoveNuGetPackageReferenceFromProject(
-                    workArgs.ModifyProjectAbsolutePath,
-                    workArgs.ModifyProjectNamespaceString,
-                    workArgs.TreeViewCSharpProjectNugetPackageReference,
-                    workArgs.Terminal,
-                    CommonService,
-                    workArgs.OnAfterCompletion);
-            }
-            case DotNetWorkKind.ConstructTreeView:
-            {
-                return TestExplorer_Do_ConstructTreeView();
-            }
-            case DotNetWorkKind.DiscoverTests:
-            {
-                return Do_DiscoverTests();
-            }
             default:
                 Console.WriteLine($"{nameof(DotNetService)} {nameof(HandleEvent)} default case");
                 return ValueTask.CompletedTask;
@@ -113,6 +70,5 @@ public sealed partial class DotNetService : IBackgroundTaskGroup, IDisposable
     
     public void Dispose()
     {
-        DotNetStateChanged -= OnDotNetSolutionStateChanged;
     }
 }

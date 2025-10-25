@@ -5,7 +5,6 @@ using Clair.Common.RazorLib.BackgroundTasks.Models;
 using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Extensions.DotNet.Outputs.Models;
 
 namespace Clair.Extensions.DotNet.Outputs.Displays.Internals;
 
@@ -20,12 +19,6 @@ public sealed partial class OutputDisplay : ComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        _treeViewContainerParameter = new(
-            OutputState.TreeViewContainerKey,
-            new OutputTreeViewKeyboardEventHandler(DotNetService.TextEditorService),
-            new OutputTreeViewMouseEventHandler(DotNetService.TextEditorService),
-            OnTreeViewContextMenuFunc);
-    
         DotNetService.DotNetStateChanged += DotNetCliOutputParser_StateChanged;
         
         if (DotNetService.GetOutputState().DotNetRunParseResultId != DotNetService.GetDotNetRunParseResult().Id)

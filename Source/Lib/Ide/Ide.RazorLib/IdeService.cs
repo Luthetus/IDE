@@ -4,12 +4,9 @@ using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Dialogs.Models;
 using Clair.Common.RazorLib.BackgroundTasks.Models;
 using Clair.Common.RazorLib.FileSystems.Models;
-using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.TextEditor.RazorLib;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
-using Clair.Ide.RazorLib.FileSystems.Models;
-using Clair.Ide.RazorLib.FolderExplorers.Models;
 using Clair.Ide.RazorLib.InputFiles.Models;
 using Clair.Ide.RazorLib.BackgroundTasks.Models;
 
@@ -152,6 +149,8 @@ public partial class IdeService : IBackgroundTaskGroup
 
     private async ValueTask Do_SetFolderExplorerTreeView(AbsolutePath folderAbsolutePath)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         CommonService.FileSystemProvider.DeletionPermittedRegister(
             new(folderAbsolutePath.Value, true),
             tokenBuilder: new StringBuilder(),
@@ -175,6 +174,7 @@ public partial class IdeService : IBackgroundTaskGroup
         CommonService.TreeView_RegisterContainerAction(
             container,
             shouldFireStateChangedEvent: false);
+        */
     }
 
     public void FolderExplorer_ShowInputFile()

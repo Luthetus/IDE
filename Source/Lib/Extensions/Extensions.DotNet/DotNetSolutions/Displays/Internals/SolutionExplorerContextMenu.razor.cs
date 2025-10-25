@@ -15,10 +15,8 @@ using Clair.Ide.RazorLib.InputFiles.Models;
 using Clair.Ide.RazorLib.Terminals.Models;
 using Clair.Ide.RazorLib.BackgroundTasks.Models;
 using Clair.Extensions.DotNet.CSharpProjects.Displays;
-using Clair.Extensions.DotNet.CSharpProjects.Models;
-using Clair.Extensions.DotNet.DotNetSolutions.Models;
 using Clair.Extensions.DotNet.CommandLines.Models;
-using Clair.Extensions.DotNet.Namespaces.Models;
+using Clair.Extensions.DotNet.DotNetSolutions.Models;
 
 namespace Clair.Extensions.DotNet.DotNetSolutions.Displays.Internals;
 
@@ -28,34 +26,88 @@ public partial class SolutionExplorerContextMenu : ComponentBase
     private DotNetService DotNetService { get; set; } = null!;
 
     [Parameter, EditorRequired]
-    public TreeViewCommandArgs TreeViewCommandArgs { get; set; }
+    public SolutionExplorerContextMenuData SolutionExplorerContextMenuData { get; set; }
 
     private static readonly Key<IDynamicViewModel> _solutionPropertiesDialogKey = Key<IDynamicViewModel>.NewKey();
     private static readonly Key<IDynamicViewModel> _newCSharpProjectDialogKey = Key<IDynamicViewModel>.NewKey();
 
     public static readonly Key<DropdownRecord> ContextMenuEventDropdownKey = Key<DropdownRecord>.NewKey();
 
-    private (TreeViewCommandArgs treeViewCommandArgs, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
+    private (SolutionExplorerContextMenuData solutionExplorerContextMenuData, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
 
-    private MenuRecord GetMenuRecord(TreeViewCommandArgs commandArgs)
+    private MenuRecord GetMenuRecord(SolutionExplorerContextMenuData data)
     {
-        if (_previousGetMenuRecordInvocation.treeViewCommandArgs == commandArgs)
+        /*_previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, new MenuRecord(MenuRecord.NoMenuOptionsExistList));
+        return _previousGetMenuRecordInvocation.menuRecord;*/
+
+        if (_previousGetMenuRecordInvocation.solutionExplorerContextMenuData == data)
             return _previousGetMenuRecordInvocation.menuRecord;
 
-        if (commandArgs.TreeViewContainer.SelectedNodeList.Count > 1)
-            return GetMenuRecordManySelections(commandArgs);
+        //if (data.TreeViewContainer.SelectedNodeList.Count > 1)
+        //    return GetMenuRecordManySelections(data);
 
-        if (commandArgs.TreeViewContainer.ActiveNode is null)
+        if (data.IndexNodeValue == -1 ||
+            data.IndexNodeValue >= data.TreeViewContainer.NodeValueList.Count)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
 
         var menuOptionList = new List<MenuOptionRecord>();
-        var treeViewModel = commandArgs.TreeViewContainer.ActiveNode;
-        var parentTreeViewModel = treeViewModel.Parent;
-        var parentTreeViewNamespacePath = parentTreeViewModel as TreeViewNamespacePath;
+        var treeViewModel = data.TreeViewContainer.NodeValueList[data.IndexNodeValue];
+        
+        TreeViewNodeValue parentTreeViewModel;
+        if (treeViewModel.ParentIndex == -1)
+            parentTreeViewModel = default;
+        else
+            parentTreeViewModel = data.TreeViewContainer.NodeValueList[treeViewModel.ParentIndex];
+
+        if (data.TreeViewContainer is SolutionExplorerTreeViewContainer container)
+        {
+            switch (treeViewModel.ByteKind)
+            {
+                case SolutionExplorerTreeViewContainer.ByteKind_Solution:
+                    
+                    var dotNetSolutionModel = container.DotNetSolutionModel;
+                    if (container.DotNetSolutionModel.AbsolutePath.Name.EndsWith(CommonFacts.DOT_NET_SOLUTION) ||
+                        container.DotNetSolutionModel.AbsolutePath.Name.EndsWith(CommonFacts.DOT_NET_SOLUTION_X))
+                    {
+                        if (treeViewModel.ParentIndex == -1)
+                            menuOptionList.AddRange(GetDotNetSolutionMenuOptions(dotNetSolutionModel));
+                    }
+                    break;
+                case SolutionExplorerTreeViewContainer.ByteKind_SolutionFolder:
+                    break;
+                case SolutionExplorerTreeViewContainer.ByteKind_Csproj:
+                    menuOptionList.AddRange(GetCSharpProjectMenuOptions(
+                        container,
+                        data.IndexNodeValue,
+                        container.DotNetSolutionModel.DotNetProjectList[treeViewModel.TraitsIndex],
+                        treeViewModel,
+                        parentTreeViewModel)
+                        /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
+                    break;
+                case SolutionExplorerTreeViewContainer.ByteKind_Dir:
+                    var absolutePath = container.DirectoryTraitsList[treeViewModel.TraitsIndex];
+                    menuOptionList.AddRange(GetFileMenuOptions(container, absolutePath, treeViewModel, parentTreeViewModel)
+                        .Union(GetDirectoryMenuOptions(container, data.IndexNodeValue, absolutePath, treeViewModel, parentTreeViewModel))
+                        /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
+                    break;
+                case SolutionExplorerTreeViewContainer.ByteKind_File:
+                    menuOptionList.AddRange(GetFileMenuOptions(
+                        container,
+                        container.FileTraitsList[treeViewModel.TraitsIndex],
+                        treeViewModel,
+                        parentTreeViewModel)
+                        /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        /*var parentTreeViewNamespacePath = parentTreeViewModel as TreeViewNamespacePath;
 
         if (treeViewModel is TreeViewNamespacePath treeViewNamespacePath)
         {
@@ -97,34 +149,34 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         {
             menuOptionList.AddRange(GetTreeViewLightWeightNugetPackageRecordMenuOptions(
                 treeViewCSharpProjectNugetPackageReference));
-        }
+        }*/
 
         if (!menuOptionList.Any())
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
 
         // Default case
         {
             var menuRecord = new MenuRecord(menuOptionList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
     }
 
-    private MenuRecord GetMenuRecordManySelections(TreeViewCommandArgs commandArgs)
+    private MenuRecord GetMenuRecordManySelections(TreeViewCommandArgs solutionExplorerContextMenuData)
     {
         return new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-        
+
         /*
         var menuOptionList = new List<MenuOptionRecord>();
 
         var getFileOptions = true;
         var filenameList = new List<string>();
 
-        foreach (var selectedNode in commandArgs.TreeViewContainer.SelectedNodeList)
+        foreach (var selectedNode in solutionExplorerContextMenuData.TreeViewContainer.SelectedNodeList)
         {
             if (selectedNode is TreeViewNamespacePath treeViewNamespacePath)
             {
@@ -156,52 +208,52 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                         nameof(BooleanPromptOrCancelDisplay.OnAfterAcceptFunc),
                         async () =>
                         {
-                            await commandArgs.RestoreFocusToTreeView
+                            await solutionExplorerContextMenuData.RestoreFocusToTreeView
                                 .Invoke()
                                 .ConfigureAwait(false);
 
                             DotNetService.Enqueue(new DotNetWorkArgs
                             {
                                 WorkKind = DotNetWorkKind.SolutionExplorer_TreeView_MultiSelect_DeleteFiles,
-                                TreeViewCommandArgs = commandArgs,
+                                TreeViewCommandArgs = solutionExplorerContextMenuData,
                             });
                         }
                     },
-                    { nameof(BooleanPromptOrCancelDisplay.OnAfterDeclineFunc), commandArgs.RestoreFocusToTreeView },
-                    { nameof(BooleanPromptOrCancelDisplay.OnAfterCancelFunc), commandArgs.RestoreFocusToTreeView },
+                    { nameof(BooleanPromptOrCancelDisplay.OnAfterDeclineFunc), solutionExplorerContextMenuData.RestoreFocusToTreeView },
+                    { nameof(BooleanPromptOrCancelDisplay.OnAfterCancelFunc), solutionExplorerContextMenuData.RestoreFocusToTreeView },
                 }*//*));
         }
 
         if (!menuOptionList.Any())
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
             return menuRecord;
         }
 
         // Default case
         {
             var menuRecord = new MenuRecord(menuOptionList);
-            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);
             return menuRecord;
         }*/
     }
 
-    private MenuOptionRecord[] GetDotNetSolutionMenuOptions(TreeViewSolution treeViewSolution)
+    private MenuOptionRecord[] GetDotNetSolutionMenuOptions(DotNetSolutionModel dotNetSolutionModel)
     {
         // TODO: Add menu options for non C# projects perhaps a more generic option is good
 
         var addNewCSharpProject = new MenuOptionRecord(
             "New C# Project",
             MenuOptionKind.Other,
-            _ => OpenNewCSharpProjectDialog(treeViewSolution.Item));
+            _ => OpenNewCSharpProjectDialog(dotNetSolutionModel));
 
         var addExistingCSharpProject = new MenuOptionRecord(
             "Existing C# Project",
             MenuOptionKind.Other,
             _ =>
             {
-                AddExistingProjectToSolution(treeViewSolution.Item);
+                AddExistingProjectToSolution(dotNetSolutionModel);
                 return Task.CompletedTask;
             });
 
@@ -220,7 +272,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                     menuOptionOnClickArgs.MenuMeasurements,
                     menuOptionOnClickArgs.TopOffsetOptionFromMenu,
                     elementIdToRestoreFocusToOnClose: menuOptionOnClickArgs.MenuHtmlId);
-                    
+
                 return Task.CompletedTask;
             })
         {
@@ -230,12 +282,12 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         var openInTextEditor = new MenuOptionRecord(
             "Open in text editor",
             MenuOptionKind.Update,
-            _ => OpenSolutionInTextEditor(treeViewSolution.Item));
-            
+            _ => OpenSolutionInTextEditor(dotNetSolutionModel));
+
         var properties = new MenuOptionRecord(
             "Properties",
             MenuOptionKind.Update,
-            _ => OpenSolutionProperties(treeViewSolution.Item));
+            _ => OpenSolutionProperties(dotNetSolutionModel));
 
         return new[]
         {
@@ -245,32 +297,20 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         };
     }
 
-    private MenuOptionRecord[] GetCSharpProjectMenuOptions(TreeViewNamespacePath treeViewModel)
+    private MenuOptionRecord[] GetCSharpProjectMenuOptions(
+        SolutionExplorerTreeViewContainer container,
+        int indexNodeValue,
+        Clair.CompilerServices.DotNetSolution.Models.Project.IDotNetProject project,
+        TreeViewNodeValue treeViewModel,
+        TreeViewNodeValue parentTreeViewModel)
     {
-        var parentDirectory = treeViewModel.Item.CreateSubstringParentDirectory();
+        var absolutePath = project.AbsolutePath;
+    
+        var parentDirectory = absolutePath.CreateSubstringParentDirectory();
         if (parentDirectory is null)
             return Array.Empty<MenuOptionRecord>();
-        
-        var treeViewSolution = treeViewModel.Parent as TreeViewSolution;
 
-        if (treeViewSolution is null)
-        {
-            var ancestorTreeView = treeViewModel.Parent;
-
-            if (ancestorTreeView?.Parent is null)
-                return Array.Empty<MenuOptionRecord>();
-
-            // Parent could be a could be one or many levels of solution folders
-            while (ancestorTreeView.Parent is not null)
-            {
-                ancestorTreeView = ancestorTreeView.Parent;
-            }
-
-            treeViewSolution = ancestorTreeView as TreeViewSolution;
-
-            if (treeViewSolution is null)
-                return Array.Empty<MenuOptionRecord>();
-        }
+        var treeViewSolution = container.DotNetSolutionModel;
 
         var parentDirectoryAbsolutePath = new AbsolutePath(
             parentDirectory,
@@ -284,15 +324,15 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         {
             DotNetService.IdeService.NewEmptyFile(
                 parentDirectoryAbsolutePath,
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewTemplatedFile(
                 parentDirectoryAbsolutePath,
-                () => GetNamespaceString(treeViewModel),
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                () => GetNamespaceString(container, treeViewModel),
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewDirectory(
                 parentDirectoryAbsolutePath,
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
-            DotNetService.IdeService.PasteClipboard(
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
+            /*DotNetService.IdeService.PasteClipboard(
                 parentDirectoryAbsolutePath,
                 async () =>
                 {
@@ -303,13 +343,13 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                         await ReloadTreeViewModel(parentTreeViewNamespacePath).ConfigureAwait(false);
 
                     await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false);
-                }),
-            DotNetService.AddProjectToProjectReference(
+                }),*/
+            /*DotNetService.AddProjectToProjectReference(
                 treeViewModel,
                 DotNetService.IdeService.GetTerminalState().GeneralTerminal,
                 DotNetService.IdeService,
-                () => Task.CompletedTask),
-            DotNetService.MoveProjectToSolutionFolder(
+                () => Task.CompletedTask),*/
+            /*DotNetService.MoveProjectToSolutionFolder(
                 treeViewSolution,
                 treeViewModel,
                 DotNetService.IdeService.GetTerminalState().GeneralTerminal,
@@ -319,25 +359,25 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                     DotNetService.Enqueue(new DotNetWorkArgs
                     {
                         WorkKind = DotNetWorkKind.SetDotNetSolution,
-                        DotNetSolutionAbsolutePath = treeViewSolution.Item.AbsolutePath
+                        DotNetSolutionAbsolutePath = treeViewSolution.AbsolutePath
                     });
                     return Task.CompletedTask;
-                }),
-            new MenuOptionRecord(
+                }),*/
+            /*new MenuOptionRecord(
                 "Set as Startup Project",
                 MenuOptionKind.Other,
                 _ =>
                 {
                     var startupControl = DotNetService.IdeService.GetIdeStartupControlState().StartupControlList.FirstOrDefault(
                         x => x.StartupProjectAbsolutePath.Value == treeViewModel.Item.Value);
-                        
+
                     if (startupControl.StartupProjectAbsolutePath.Value is null)
                         return Task.CompletedTask;
-                    
+
                     DotNetService.IdeService.Ide_SetActiveStartupControlKey(startupControl.StartupProjectAbsolutePath.Value);
                     return Task.CompletedTask;
-                }),
-            DotNetService.RemoveCSharpProjectReferenceFromSolution(
+                }),*/
+            /*DotNetService.RemoveCSharpProjectReferenceFromSolution(
                 treeViewSolution,
                 treeViewModel,
                 DotNetService.IdeService.GetTerminalState().GeneralTerminal,
@@ -347,16 +387,17 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                     DotNetService.Enqueue(new DotNetWorkArgs
                     {
                         WorkKind = DotNetWorkKind.SetDotNetSolution,
-                        DotNetSolutionAbsolutePath = treeViewSolution.Item.AbsolutePath,
+                        DotNetSolutionAbsolutePath = treeViewSolution.AbsolutePath,
                     });
                     return Task.CompletedTask;
-                }),
+                }),*/
         };
     }
 
     private MenuOptionRecord[] GetCSharpProjectToProjectReferenceMenuOptions(
-        TreeViewCSharpProjectToProjectReference treeViewCSharpProjectToProjectReference)
+        TreeViewNodeValue treeViewCSharpProjectToProjectReference)
     {
+        /*
         return new[]
         {
             DotNetService.RemoveProjectToProjectReference(
@@ -365,11 +406,14 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 DotNetService.IdeService.TextEditorService.CommonService,
                 () => Task.CompletedTask),
         };
+        */
+        return Array.Empty<MenuOptionRecord>();
     }
 
     private IReadOnlyList<MenuOptionRecord> GetTreeViewLightWeightNugetPackageRecordMenuOptions(
-        TreeViewCSharpProjectNugetPackageReference treeViewCSharpProjectNugetPackageReference)
+        TreeViewNodeValue treeViewCSharpProjectNugetPackageReference)
     {
+        /*
         if (treeViewCSharpProjectNugetPackageReference.Parent
                 is not TreeViewCSharpProjectNugetPackageReferences treeViewCSharpProjectNugetPackageReferences)
         {
@@ -386,110 +430,161 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 DotNetService.IdeService.TextEditorService.CommonService,
                 () => Task.CompletedTask),
         };
+        */
+
+        return Array.Empty<MenuOptionRecord>();
     }
 
-    private MenuOptionRecord[] GetDirectoryMenuOptions(TreeViewNamespacePath treeViewModel)
+    private MenuOptionRecord[] GetDirectoryMenuOptions(
+        SolutionExplorerTreeViewContainer container,
+        int indexNodeValue,
+        AbsolutePath absolutePath,
+        TreeViewNodeValue treeViewModel,
+        TreeViewNodeValue parentTreeViewModel)
     {
         return new[]
         {
             DotNetService.IdeService.NewEmptyFile(
-                treeViewModel.Item,
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                absolutePath,
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewTemplatedFile(
-                treeViewModel.Item,
-                () => GetNamespaceString(treeViewModel),
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                absolutePath,
+                () => GetNamespaceString(container, treeViewModel),
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.NewDirectory(
-                treeViewModel.Item,
-                async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
+                absolutePath,
+                async () => await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false)),
             DotNetService.IdeService.PasteClipboard(
-                treeViewModel.Item,
+                absolutePath,
                 async () =>
                 {
-                    var localParentOfCutFile = DotNetService.CommonService.ParentOfCutFile;
-                    DotNetService.CommonService.ParentOfCutFile = null;
-
-                    if (localParentOfCutFile is TreeViewNamespacePath parentTreeViewNamespacePath)
-                        await ReloadTreeViewModel(parentTreeViewNamespacePath).ConfigureAwait(false);
-
-                    await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false);
+                    /*if (DotNetService.CommonService.IndexParentOfCutFile >= 0 &&
+                        DotNetService.CommonService.IndexParentOfCutFile < container.NodeValueList.Count)
+                    {
+                        var localParentOfCutFile = container.NodeValueList[DotNetService.CommonService.IndexParentOfCutFile];
+                        if (localParentOfCutFile is TreeViewNamespacePath parentTreeViewNamespacePath)
+                            await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false);
+    
+                        await ReloadTreeViewModel(container, indexNodeValue).ConfigureAwait(false);
+                    }
+                    
+                    DotNetService.CommonService.IndexParentOfCutFile = -1;*/
                 }),
         };
     }
-    
-    private string GetNamespaceString(TreeViewNamespacePath treeViewModel)
+
+    private string GetNamespaceString(SolutionExplorerTreeViewContainer container, TreeViewNodeValue treeViewModel)
     {
         var targetNode = treeViewModel;
-        // This algorithm has a lot of "shifting" due to 0 index insertions and likely is NOT the most optimal solution.
-        var namespaceBuilder = new StringBuilder();
     
+        if (targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Csproj &&
+            targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Dir)
+        {
+            return string.Empty;
+        }
+        
+        // The upcoming algorithm has a lot of "shifting" due to 0 index insertions and likely is NOT the most optimal solution.
+        StringBuilder namespaceBuilder;
+        if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Csproj)
+        {
+            namespaceBuilder = new StringBuilder(container.DotNetSolutionModel.DotNetProjectList[targetNode.TraitsIndex].AbsolutePath.Name);
+        }
+        else if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Dir)
+        {
+            namespaceBuilder = new StringBuilder(container.DirectoryTraitsList[targetNode.TraitsIndex].Name);
+        }
+        else
+        {
+            throw new NotImplementedException($"{nameof(TreeViewNodeValue.ByteKind)} of {targetNode.ByteKind} is not supported. Check {nameof(SolutionExplorerTreeViewContainer)} for the supported 'ByteKind_...' values.");
+        }
+        
         // for loop is an arbitrary "while-loop limit" until I prove to myself this won't infinite loop.
         for (int i = 0; i < 256; i++)
         {
-            if (targetNode is null)
+            if (targetNode.IsDefault())
                 break;
-        
+
             // EndsWith check includes the period to ensure a direct match on the extension rather than a substring.
-            if (!targetNode.Item.IsDirectory && targetNode.Item.Name.EndsWith(".csproj"))
+            if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Csproj)
             {
                 if (i != 0)
+                {
                     namespaceBuilder.Insert(0, '.');
-                namespaceBuilder.Insert(0, targetNode.Item.Name.Replace(".csproj", string.Empty));
+                    // This insertion is duplicated when invoking the StringBuilder constructor for initial capacity.
+                    namespaceBuilder.Insert(0, container.DotNetSolutionModel.DotNetProjectList[targetNode.TraitsIndex].AbsolutePath.Name.Replace(".csproj", string.Empty));
+                }
                 break;
             }
             else
             {
                 if (i != 0)
+                {
                     namespaceBuilder.Insert(0, '.');
-                namespaceBuilder.Insert(0, targetNode.Item.Name);
+                    // This insertion is duplicated when invoking the StringBuilder constructor for initial capacity.
+                    namespaceBuilder.Insert(0, container.DirectoryTraitsList[targetNode.TraitsIndex].Name);
+                }
                 
-                if (targetNode.Parent is TreeViewNamespacePath parent)
-                    targetNode = parent;
-                else
+                if (targetNode.ParentIndex == -1)
+                {
                     break;
+                }
+                else
+                {
+                    targetNode = container.NodeValueList[targetNode.ParentIndex];
+                    if (targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Csproj &&
+                        targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Dir)
+                    {
+                        break;
+                    }
+                }
             }
         }
-        
+
         return namespaceBuilder.ToString();
     }
 
     private MenuOptionRecord[] GetFileMenuOptions(
-        TreeViewNamespacePath treeViewModel,
-        TreeViewNamespacePath? parentTreeViewModel)
+        SolutionExplorerTreeViewContainer container,
+        AbsolutePath absolutePath,
+        TreeViewNodeValue treeViewModel,
+        TreeViewNodeValue parentTreeViewModel)
     {
         return new[]
         {
             DotNetService.IdeService.CopyFile(
-                treeViewModel.Item,
+                absolutePath,
                 (Func<Task>)(() => {
-                    CommonFacts.DispatchInformative("Copy Action", $"Copied: {treeViewModel.Item.Name}", DotNetService.IdeService.TextEditorService.CommonService, TimeSpan.FromSeconds(7));
+                    CommonFacts.DispatchInformative("Copy Action", $"Copied: {absolutePath.Name}", DotNetService.IdeService.TextEditorService.CommonService, TimeSpan.FromSeconds(7));
                     return Task.CompletedTask;
                 })),
             DotNetService.IdeService.CutFile(
-                treeViewModel.Item,
+                absolutePath,
                 (Func<Task>)(() => {
-                    DotNetService.CommonService.ParentOfCutFile = parentTreeViewModel;
-                    CommonFacts.DispatchInformative("Cut Action", $"Cut: {treeViewModel.Item.Name}", DotNetService.IdeService.TextEditorService.CommonService, TimeSpan.FromSeconds(7));
+                    //DotNetService.CommonService.ParentOfCutFile = parentTreeViewModel;
+                    CommonFacts.DispatchInformative("Cut Action", $"Cut: {absolutePath.Name}", DotNetService.IdeService.TextEditorService.CommonService, TimeSpan.FromSeconds(7));
                     return Task.CompletedTask;
                 })),
             DotNetService.IdeService.DeleteFile(
-                treeViewModel.Item,
-                async () => await ReloadTreeViewModel(parentTreeViewModel).ConfigureAwait(false)),
+                absolutePath,
+                async () => await ReloadTreeViewModel(container, treeViewModel.ParentIndex).ConfigureAwait(false)),
             DotNetService.IdeService.RenameFile(
-                treeViewModel.Item,
+                absolutePath,
                 DotNetService.IdeService.TextEditorService.CommonService,
-                async ()  => await ReloadTreeViewModel(parentTreeViewModel).ConfigureAwait(false)),
+                async ()  => await ReloadTreeViewModel(container, treeViewModel.ParentIndex).ConfigureAwait(false)),
         };
     }
 
-    private MenuOptionRecord[] GetDebugMenuOptions(TreeViewNamespacePath treeViewModel)
+    private MenuOptionRecord[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)
     {
+        /*
         return new MenuOptionRecord[]
         {
             // new MenuOptionRecord(
             //     $"namespace: {treeViewModel.Item.Namespace}",
             //     MenuOptionKind.Read)
         };
+        */
+        return Array.Empty<MenuOptionRecord>();
     }
 
     private Task OpenNewCSharpProjectDialog(DotNetSolutionModel dotNetSolutionModel)
@@ -542,7 +637,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                         return Task.CompletedTask;
                     }
                 };
-                    
+
                 DotNetService.IdeService.GetTerminalState().GeneralTerminal.EnqueueCommand(terminalCommandRequest);
                 return Task.CompletedTask;
             },
@@ -576,7 +671,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         });
         return Task.CompletedTask;
     }
-    
+
     private Task OpenSolutionProperties(DotNetSolutionModel dotNetSolutionModel)
     {
         DotNetService.IdeService.TextEditorService.CommonService.Dialog_ReduceRegisterAction(new DialogViewModel(
@@ -600,24 +695,27 @@ public partial class SolutionExplorerContextMenu : ComponentBase
     /// as the root. But this method erroneously reloads the old root.
     /// </summary>
     /// <param name="treeViewModel"></param>
-    private async Task ReloadTreeViewModel(TreeViewNoType? treeViewModel)
+    private async Task ReloadTreeViewModel(SolutionExplorerTreeViewContainer container, int indexNodeValue)
     {
-        if (treeViewModel is null)
+        if (indexNodeValue < 0 ||
+            indexNodeValue >= container.NodeValueList.Count)
+        {
             return;
+        }
 
         if (!DotNetService.CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
             return;
-        
-        await treeViewModel.LoadChildListAsync(treeViewContainer).ConfigureAwait(false);
+
+        await container.LoadChildListAsync(indexNodeValue).ConfigureAwait(false);
 
         DotNetService.IdeService.TextEditorService.CommonService.TreeView_MoveUpAction(
             DotNetSolutionState.TreeViewSolutionExplorerStateKey,
             false,
             false);
 
-        DotNetService.IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(
+        /*DotNetService.IdeService.TextEditorService.CommonService.TreeView_ReRenderNodeAction(
             DotNetSolutionState.TreeViewSolutionExplorerStateKey,
             treeViewModel,
-            flatListChanged: true);
+            flatListChanged: true);*/
     }
 }

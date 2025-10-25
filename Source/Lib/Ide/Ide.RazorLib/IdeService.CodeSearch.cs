@@ -3,9 +3,7 @@ using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Reactives.Models;
-using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Ide.RazorLib.CodeSearches.Models;
-using Clair.TextEditor.RazorLib.Decorations.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 
@@ -165,13 +163,15 @@ public partial class IdeService
 
     private void CodeSearch_ConstructTreeView(CodeSearchState codeSearchState)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(CodeSearchState.TreeViewCodeSearchContainerKey);
         CommonService.TreeView_DisposeContainerAction(CodeSearchState.TreeViewCodeSearchContainerKey, shouldFireStateChangedEvent: false);
     
         var container = new TreeViewContainer(
         	CodeSearchState.TreeViewCodeSearchContainerKey,
         	rootNode: null,
-        	selectedNodeList: Array.Empty<TreeViewNoType>())
+        	selectedNodeList: Array.Empty<TreeViewNodeValue>())
     	{
     	    FlatListVersion = flatListVersion
     	};
@@ -210,10 +210,13 @@ public partial class IdeService
             true,
             false,
             shouldFireStateChangedEvent: true);
+        */
     }
 
     public async Task CodeSearch_UpdateContent(ResourceUri providedResourceUri)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
         {
             Console.WriteLine(nameof(CodeSearch_UpdateContent));
@@ -272,5 +275,6 @@ public partial class IdeService
                 }
             }
         });
+        */
     }
 }

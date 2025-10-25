@@ -7,7 +7,6 @@
 	
 	@{
 		var dotNetRunParseResult = DotNetService.GetDotNetRunParseResult();
-		var appOptionsState = DotNetService.TextEditorService.CommonService.GetAppOptionsState();
 	}
 	
 	<div class="ci_output-display-top-row" style="height: 1.8em;">
@@ -19,6 +18,6 @@
 	</div>
 
 	<div class="ci_output-display-body" style="height: calc(100% - 1.8em);">
-        <TreeViewContainerDisplay TreeViewContainerParameter="_treeViewContainerParameter"/>
+        <TreeViewContainerDisplay TreeViewContainerKey="OutputState.TreeViewContainerKey"/>
 	</div>
 </div>

@@ -7,7 +7,6 @@ using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Notifications.Models;
 using Clair.Common.RazorLib.Reactives.Models;
 using Clair.TextEditor.RazorLib.BackgroundTasks.Models;
-using Clair.TextEditor.RazorLib.Decorations.Models;
 using Clair.TextEditor.RazorLib.Groups.Models;
 using Clair.TextEditor.RazorLib.JsRuntimes.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;

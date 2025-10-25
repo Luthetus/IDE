@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Components;
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.TextEditor.RazorLib.FindAlls.Models;
 
 namespace Clair.TextEditor.RazorLib.FindAlls.Displays;
 
@@ -37,11 +36,14 @@ public sealed partial class FindAllDisplay : ComponentBase, IDisposable
     {
         TextEditorService.SecondaryChanged += OnFindAllStateChanged;
         
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         _treeViewContainerParameter = new(
             TextEditorService.TextEditorFindAllState.TreeViewFindAllContainerKey,
             new FindAllTreeViewKeyboardEventHandler(TextEditorService),
             new FindAllTreeViewMouseEventHandler(TextEditorService),
             OnTreeViewContextMenuFunc);
+        */
     }
     
     private Task OnTreeViewContextMenuFunc(TreeViewCommandArgs treeViewCommandArgs)

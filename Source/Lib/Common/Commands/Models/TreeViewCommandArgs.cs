@@ -11,7 +11,7 @@ public record struct TreeViewCommandArgs
 {
     public TreeViewCommandArgs(
         TreeViewContainer treeViewContainer,
-        TreeViewNoType? nodeThatReceivedMouseEvent,
+        TreeViewNodeValue nodeThatReceivedMouseEvent,
         Func<Task> restoreFocusToTreeView,
         ContextMenuFixedPosition? contextMenuFixedPosition,
         MouseEventArgs? mouseEventArgs,
@@ -26,7 +26,7 @@ public record struct TreeViewCommandArgs
     }
 
     public TreeViewContainer TreeViewContainer { get; }
-    public TreeViewNoType? NodeThatReceivedMouseEvent { get; }
+    public TreeViewNodeValue NodeThatReceivedMouseEvent { get; }
     public Func<Task> RestoreFocusToTreeView { get; }
     public ContextMenuFixedPosition? ContextMenuFixedPosition { get; }
     public MouseEventArgs? MouseEventArgs { get; }

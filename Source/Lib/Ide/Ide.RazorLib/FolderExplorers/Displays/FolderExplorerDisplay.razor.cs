@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Components;
 using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Ide.RazorLib.FolderExplorers.Models;
 
 namespace Clair.Ide.RazorLib.FolderExplorers.Displays;
 
@@ -16,12 +15,6 @@ public sealed partial class FolderExplorerDisplay : ComponentBase, IDisposable
     protected override void OnInitialized()
     {
         IdeService.IdeStateChanged += OnFolderExplorerStateChanged;
-    
-        _treeViewContainerParameter = new(
-            FolderExplorerState.TreeViewContentStateKey,
-            new FolderExplorerTreeViewKeyboardEventHandler(IdeService),
-            new FolderExplorerTreeViewMouseEventHandler(IdeService),
-            OnTreeViewContextMenuFunc);
     }
 
     private Task OnTreeViewContextMenuFunc(TreeViewCommandArgs treeViewCommandArgs)

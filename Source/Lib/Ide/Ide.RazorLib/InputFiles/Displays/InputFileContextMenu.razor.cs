@@ -4,7 +4,6 @@ using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Menus.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Ide.RazorLib.FileSystems.Models;
 
 namespace Clair.Ide.RazorLib.InputFiles.Displays;
 
@@ -22,6 +21,12 @@ public partial class InputFileContextMenu : ComponentBase
 
     private MenuRecord GetMenuRecord(TreeViewCommandArgs commandArgs)
     {
+        var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+        _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+        return menuRecord;
+        
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (_previousGetMenuRecordInvocation.treeViewCommandArgs == commandArgs)
             return _previousGetMenuRecordInvocation.menuRecord;
 
@@ -67,12 +72,15 @@ public partial class InputFileContextMenu : ComponentBase
             _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
             return menuRecord;
         }
+        */
     }
 
-    private MenuOptionRecord[] GetDirectoryMenuOptions(TreeViewAbsolutePath treeViewModel)
+    private MenuOptionRecord[] GetDirectoryMenuOptions(TreeViewNodeValue treeViewModel)
     {
-        return new[]
+        return new MenuOptionRecord[]
         {
+            /*
+            // 2025-10-22 (rewrite TreeViews)
             IdeService.NewEmptyFile(
                 treeViewModel.Item,
                 async () => await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false)),
@@ -90,13 +98,14 @@ public partial class InputFileContextMenu : ComponentBase
                         await ReloadTreeViewModel(localParentOfCutFile).ConfigureAwait(false);
 
                     await ReloadTreeViewModel(treeViewModel).ConfigureAwait(false);
-                }),*/
+                }),*//*// 2025-10-22 (rewrite TreeViews)
+            */
         };
     }
 
     private MenuOptionRecord[] GetFileMenuOptions(
-        TreeViewAbsolutePath treeViewModel,
-        TreeViewAbsolutePath? parentTreeViewModel)
+        TreeViewNodeValue treeViewModel,
+        TreeViewNodeValue parentTreeViewModel)
     {
         return Array.Empty<MenuOptionRecord>();
         /*return new[]
@@ -124,7 +133,7 @@ public partial class InputFileContextMenu : ComponentBase
         };*/
     }
 
-    private MenuOptionRecord[] GetDebugMenuOptions(TreeViewAbsolutePath treeViewModel)
+    private MenuOptionRecord[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)
     {
         return new MenuOptionRecord[]
         {
@@ -144,8 +153,10 @@ public partial class InputFileContextMenu : ComponentBase
     /// as the root. But this method erroneously reloads the old root.
     /// </summary>
     /// <param name="treeViewModel"></param>
-    private async Task ReloadTreeViewModel(TreeViewNoType? treeViewModel)
+    private async Task ReloadTreeViewModel(TreeViewNodeValue treeViewModel)
     {
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (treeViewModel is null)
             return;
 
@@ -163,5 +174,6 @@ public partial class InputFileContextMenu : ComponentBase
             InputFileDisplay.InputFileSidebar_TreeViewContainerKey,
             treeViewModel,
             flatListChanged: true);
+        */
     }
 }

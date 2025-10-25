@@ -20,17 +20,23 @@ public partial class FindAllContextMenu : ComponentBase
         if (_previousGetMenuRecordInvocation.treeViewCommandArgs == commandArgs)
             return _previousGetMenuRecordInvocation.menuRecord;
 
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (commandArgs.TreeViewContainer.SelectedNodeList.Count > 1)
         {
             return GetMultiSelectionMenuRecord(commandArgs);
         }
+        */
 
+        /*
+        // 2025-10-22 (rewrite TreeViews)
         if (commandArgs.NodeThatReceivedMouseEvent is null)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
             return menuRecord;
         }
+        */
 
         var menuRecordsList = new List<MenuOptionRecord>();
 

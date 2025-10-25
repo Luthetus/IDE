@@ -280,6 +280,8 @@ ul.ci_indent-child-content {
     overflow: hidden;
     outline: none;
     position: relative;
+    /*display: flex;*/
+    justify-content: flex-start;
 }
 
     .ci_tree-view-state:focus-within > div.ci_selected {
@@ -294,7 +296,7 @@ ul.ci_indent-child-content {
         background-color: var(--ci_active-with-focus-background-color);
     }
 
-    .ci_tree-view-state > div {
+    /*.ci_tree-view-state > div {
         display: flex;
         white-space: nowrap;
         outline: none;
@@ -302,7 +304,11 @@ ul.ci_indent-child-content {
         position: absolute;
         left: 0;
         width: 100%;
-    }
+    }*/
+
+        .ci_tree-view-state > div {
+            white-space: nowrap;
+        }
 
         .ci_tree-view-state > div.ci_selected {
             background-color: var(--ci_active-no-focus-background-color);
@@ -316,9 +322,9 @@ ul.ci_indent-child-content {
                 background-color: var(--ci_active-with-focus-background-color);
             }
             
-    .ci_tree-view-state > div > div {
+    /*.ci_tree-view-state > div > div {
         margin-left: 3px;
-    }
+    }*/
 
 .ci_tree-view-children-border {
     border-left: 1.5px solid var(--ci_tree-view-children-border-color);

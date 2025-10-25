@@ -3,190 +3,275 @@
 @using Clair.Common.RazorLib.Dimensions;
 @using Clair.Common.RazorLib.Dimensions.Models;
 
-@*@{ _treeViewContainer = null; }*@
 @{
-    _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerParameter.TreeViewContainerKey);
+    // store the virtualization result not the entirety of the flat list
+    //
+    // each render based on the user input you can perform simple modifications to the existing virtualization result
+    // to quickly get the next.
+
+    // Contiguous depths can be grouped perhaps?
+    //
+
+    // The state is very unsafe to just read from the reference.
+    _treeViewContainer = CommonService.GetTreeViewContainer(TreeViewContainerKey);
+    var activeNodeValueIndex = _treeViewContainer?.ActiveNodeValueIndex ?? 0;
+    _virtualizedTupleList.Clear();
+    _nodeRecursionStack.Clear();
+    int depth = 0;
+    int indexRootNode = _treeViewContainer?.IndexRootNode ?? -1;
+    var nodeValueList = _treeViewContainer?.NodeValueList;
 }
 
+@* class="@GetContainerElementCssClass(_treeViewContainer)" *@
 <div id="@_htmlId"
-     class="@GetContainerElementCssClass(_treeViewContainer)"
+     class="ci_tree-view-state ci_unselectable"
      tabindex="0">
-
+    
     @if (_treeViewContainer is null)
     {
-        <div>@nameof(_treeViewContainer) was null</div>
+        <div>_treeViewContainer is null</div>
     }
-    else
+    else if (indexRootNode >= 0 && indexRootNode < nodeValueList.Count)
     {
-        if (_previousTreeViewContainerKey != TreeViewContainerParameter.TreeViewContainerKey ||
-            _previousContainerVersion != _treeViewContainer.FlatListVersion)
-        {
-            _previousTreeViewContainerKey = TreeViewContainerParameter.TreeViewContainerKey;
-            _previousContainerVersion = _treeViewContainer.FlatListVersion;
-            GetFlatNodes();
-            _shouldValidateScrollbarOnAfterRender = true;
-        }
-    
-        _treeViewContainer.ElementIdOfComponentRenderingThis = _htmlId;
-    
-        var list = _flatNodeList;
-        IndexActiveNode = 0;
-        string? cssClass;
+        var isCalculatingPreceedingEmptySpace = true;
+        var preceedingEmptySpaceHeight = 0;
+        var contentHeight = 0;
+        var isCalculatingEndingEmptySpace = false;
+        var endingEmptySpaceHeight = 0;
 
-        var startingIndex = (int)(_treeViewMeasurements.ScrollTop / CommonService.Options_LineHeight);
-        if (startingIndex > 1)
-            startingIndex -= 2;
-        else if (startingIndex > 0)
-            startingIndex -= 1;
-        
-        if (startingIndex < 0)
-        {
-            startingIndex = 0;
-        }
-            
-        var upperLimitIndex = (int)Math.Ceiling(_treeViewMeasurements.ViewHeight / CommonService.Options_LineHeight) + startingIndex;
-        upperLimitIndex += 2;
-        if (upperLimitIndex > list.Count)
-        {
-            upperLimitIndex = list.Count;
-        }
-        
-        if (upperLimitIndex < 0)
-        {
-            upperLimitIndex = 0;
-        }
+        var targetNodeIndex = indexRootNode;
+        var targetNode = nodeValueList[indexRootNode];
 
-        <div style="height: @(CommonService.Options_LineHeight * list.Count)px; width: 1px; position: absolute;"></div>
+        var childIndex = 0;
+        bool forceFirstNodeToRender;
+        if (_treeViewMeasurements.ScrollTop > CommonService.Options_LineHeight)
+            forceFirstNodeToRender = false;
+        else
+            forceFirstNodeToRender = true;
+        @*<div>*@
+            @*
+                TODO: Rewrite the comment below this.
+                Loop iterates 1 layer above in order to avoid the break case every child if the child is not expanded or ChildList.Count is == 0
+                Thus, the root case has to be handled entirely outside the loop.
+            *@
 
-        for (int i = startingIndex; i < upperLimitIndex; i++)
-        {
-            var node = list[i];
-        
-            if ((_treeViewContainer.ActiveNode?.Key ?? 0) == node.Key)
+            //@{
+                int literalIndex;
+                TreeViewNodeValue childNode;
+                bool skipNodeUi;
+            //}
+
+            @while (true)
             {
-                cssClass = "ci_active ci_selected";
-                IndexActiveNode = i;
-            }
-            else
-            {
-                cssClass = null;
-            }
-        
-            <div class="@cssClass"
-                 style="@GetNodeElementCssStyle(node, i)">
+                skipNodeUi = false;
 
-                @if (node.IsExpandable)
+                if (!forceFirstNodeToRender)
                 {
-                    <span style="cursor: pointer;">
-                        @if (node.IsExpanded)
+                    if (childIndex >= targetNode.ChildListLength)
+                    {
+                        if (_nodeRecursionStack.Count > 0)
                         {
-                            @* IconKind.ChevronDown *@
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.976 10.072l4.357-4.357.62.618L8.284 11h-.618L3 6.333l.619-.618 4.357 4.357z" /></svg>
+                            var recursionEntry = _nodeRecursionStack.Pop();
+                            depth--;
+                            targetNode = recursionEntry.Node;
+                            childIndex = recursionEntry.Index;
+                            continue;
                         }
                         else
                         {
-                            @* IconKind.ChevronRight *@
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z" /></svg>
+                            break;
                         }
-                    </span>
+                    }
+
+                    literalIndex = targetNode.ChildListOffset + childIndex;
+                    childNode = nodeValueList[targetNode.ChildListOffset + childIndex++];
                 }
                 else
                 {
-                    <span>
-                        @* Keep the span otherwise icon disappears if treeview width is too small *@
-                        @* IconKind.Blank *@
-                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor" />
-                    </span>
+                    // can't set the "force root node to render bool" to false here it must be done after the markup
+                    literalIndex = indexRootNode;
+                    childNode = nodeValueList[literalIndex];
                 }
 
-                <span>
-                    @* Keep the span otherwise icon disappears if treeview width is too small *@
-                    @switch (node.IconKind)
+                if (isCalculatingPreceedingEmptySpace)
+                {
+                    if (preceedingEmptySpaceHeight + CommonService.Options_LineHeight < _treeViewMeasurements.ScrollTop)
                     {
-                        case IconKind.DotNetSolutionFolder:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-dotnetslnfolder-color)">
-                                <path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3zm-.51 8.49V13h-12V7h4.49l.35-.15.86-.86H14v1.5l-.01 4zm0-6.49h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99z" />
-                            </svg>
-                            break;
-                        case IconKind.CSharpProject:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-project-color)">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 1h13l.5.5v13l-.5.5h-13l-.5-.5v-13l.5-.5zM2 14h12V2H2v12zM3 3h2v10H3V3zm6 0H7v6h2V3zm2 0h2v8h-2V3z" />
-                            </svg>
-                            break;
-                        case IconKind.CSharpClass:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-cs-color)">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.57 1.14l3.28 3.3.15.36v9.7l-.5.5h-11l-.5-.5v-13l.5-.5h7.72l.35.14zM10 5h3l-3-3v3zM3 2v12h10V6H9.5L9 5.5V2H3zm2.062 7.533l1.817-1.828L6.17 7 4 9.179v.707l2.171 2.174.707-.707-1.816-1.82zM8.8 7.714l.7-.709 2.189 2.175v.709L9.5 12.062l-.705-.709 1.831-1.82L8.8 7.714z" />
-                            </svg>
-                            break;
-                        case IconKind.Cshtml:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-cshtml-color)">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.832 2.688A4.056 4.056 0 0 0 8.02 1.5h-.04a4.056 4.056 0 0 0-4 4c-.013.75.198 1.487.606 2.117L7.734 14h.533l3.147-6.383c.409-.63.62-1.367.606-2.117a4.056 4.056 0 0 0-1.188-2.812zM7.925 2.5l.082.01.074-.01a3.075 3.075 0 0 1 2.941 3.037 2.74 2.74 0 0 1-.467 1.568l-.02.034-.017.035L8 12.279l-2.517-5.1-.017-.039-.02-.034a2.74 2.74 0 0 1-.467-1.568A3.074 3.074 0 0 1 7.924 2.5zm.612 2.169a1 1 0 1 0-1.112 1.663 1 1 0 0 0 1.112-1.663zM6.87 3.837a2 2 0 1 1 2.22 3.326 2 2 0 0 1-2.22-3.326z" />
-                            </svg>
-                            break;
-                        case IconKind.Css:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-css-color)">
-                                <path d="M14.54 11.811l-1.14-3.12v-.06l-4.91-4.91v-1.24a1.66 1.66 0 0 0-.11-.58 1.48 1.48 0 0 0-.83-.8 1.42 1.42 0 0 0-.58-.1 1.47 1.47 0 0 0-1.48 1.48v3.26l-3.06 3a1.52 1.52 0 0 0 0 2.12l3.63 3.63c.14.141.307.253.49.33a1.53 1.53 0 0 0 1.14 0 1.51 1.51 0 0 0 .49-.33l4.93-4.92-.66 2.2a1.19 1.19 0 0 0 0 .46c.033.152.098.296.19.42.098.121.216.223.35.3.14.07.294.11.45.12a1 1 0 0 0 .48-.09 1.14 1.14 0 0 0 .39-.29.98.98 0 0 0 .22-.44c.032-.145.035-.294.01-.44zm-8-9.33a.46.46 0 0 1 0-.2.52.52 0 0 1 .12-.17.64.64 0 0 1 .18-.1.5.5 0 0 1 .21 0 .5.5 0 0 1 .32.15.5.5 0 0 1 .12.33v1.26l-1 1 .05-2.27zm1 11.35a.36.36 0 0 1-.16.11.47.47 0 0 1-.38 0 .361.361 0 0 1-.16-.11l-3.63-3.62a.5.5 0 0 1 0-.71l4.35-4.35v2.85a.74.74 0 0 0-.24.55.75.75 0 1 0 1.17-.55v-2.83l3.85 3.87-4.8 4.79z" />
-                            </svg>
-                            break;
-                        case IconKind.File:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M13.71 4.29l-3-3L10 1H4L3 2v12l1 1h9l1-1V5l-.29-.71zM13 14H4V2h5v4h4v8zm-3-9V2l3 3h-3z" />
-                            </svg>
-                            break;
-                        case IconKind.Folder:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-dir-color)">
-                                <path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3zm-.51 8.49V13h-12V7h4.49l.35-.15.86-.86H14v1.5l-.01 4zm0-6.49h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99z" />
-                            </svg>
-                            break;
-                        case IconKind.Js:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-js-color)">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M13.617 3.844a2.87 2.87 0 0 0-.451-.868l1.354-1.36L13.904 1l-1.36 1.354a2.877 2.877 0 0 0-.868-.452 3.073 3.073 0 0 0-2.14.075 3.03 3.03 0 0 0-.991.664L7 4.192l4.327 4.328 1.552-1.545c.287-.287.508-.618.663-.992a3.074 3.074 0 0 0 .075-2.14zm-.889 1.804a2.15 2.15 0 0 1-.471.705l-.93.93-3.09-3.09.93-.93a2.15 2.15 0 0 1 .704-.472 2.134 2.134 0 0 1 1.689.007c.264.114.494.271.69.472.2.195.358.426.472.69a2.134 2.134 0 0 1 .007 1.688zm-4.824 4.994l1.484-1.545-.616-.622-1.49 1.551-1.86-1.859 1.491-1.552L6.291 6 4.808 7.545l-.616-.615-1.551 1.545a3 3 0 0 0-.663.998 3.023 3.023 0 0 0-.233 1.169c0 .332.05.656.15.97.105.31.258.597.459.862L1 13.834l.615.615 1.36-1.353c.265.2.552.353.862.458.314.1.638.15.97.15.406 0 .796-.077 1.17-.232.378-.155.71-.376.998-.663l1.545-1.552-.616-.615zm-2.262 2.023a2.16 2.16 0 0 1-.834.164c-.301 0-.586-.057-.855-.17a2.278 2.278 0 0 1-.697-.466 2.28 2.28 0 0 1-.465-.697 2.167 2.167 0 0 1-.17-.854 2.16 2.16 0 0 1 .642-1.545l.93-.93 3.09 3.09-.93.93a2.22 2.22 0 0 1-.711.478z" />
-                            </svg>
-                            break;
-                        case IconKind.Json:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-json-color)">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M6 2.984V2h-.09c-.313 0-.616.062-.909.185a2.33 2.33 0 0 0-.775.53 2.23 2.23 0 0 0-.493.753v.001a3.542 3.542 0 0 0-.198.83v.002a6.08 6.08 0 0 0-.024.863c.012.29.018.58.018.869 0 .203-.04.393-.117.572v.001a1.504 1.504 0 0 1-.765.787 1.376 1.376 0 0 1-.558.115H2v.984h.09c.195 0 .38.04.556.121l.001.001c.178.078.329.184.455.318l.002.002c.13.13.233.285.307.465l.001.002c.078.18.117.368.117.566 0 .29-.006.58-.018.869-.012.296-.004.585.024.87v.001c.033.283.099.558.197.824v.001c.106.273.271.524.494.753.223.23.482.407.775.53.293.123.596.185.91.185H6v-.984h-.09c-.2 0-.387-.038-.563-.115a1.613 1.613 0 0 1-.457-.32 1.659 1.659 0 0 1-.309-.467c-.074-.18-.11-.37-.11-.573 0-.228.003-.453.011-.672.008-.228.008-.45 0-.665a4.639 4.639 0 0 0-.055-.64 2.682 2.682 0 0 0-.168-.609A2.284 2.284 0 0 0 3.522 8a2.284 2.284 0 0 0 .738-.955c.08-.192.135-.393.168-.602.033-.21.051-.423.055-.64.008-.22.008-.442 0-.666-.008-.224-.012-.45-.012-.678a1.47 1.47 0 0 1 .877-1.354 1.33 1.33 0 0 1 .563-.121H6zm4 10.032V14h.09c.313 0 .616-.062.909-.185.293-.123.552-.3.775-.53.223-.23.388-.48.493-.753v-.001c.1-.266.165-.543.198-.83v-.002c.028-.28.036-.567.024-.863-.012-.29-.018-.58-.018-.869 0-.203.04-.393.117-.572v-.001a1.502 1.502 0 0 1 .765-.787 1.38 1.38 0 0 1 .558-.115H14v-.984h-.09c-.196 0-.381-.04-.557-.121l-.001-.001a1.376 1.376 0 0 1-.455-.318l-.002-.002a1.415 1.415 0 0 1-.307-.465v-.002a1.405 1.405 0 0 1-.118-.566c0-.29.006-.58.018-.869a6.174 6.174 0 0 0-.024-.87v-.001a3.537 3.537 0 0 0-.197-.824v-.001a2.23 2.23 0 0 0-.494-.753 2.331 2.331 0 0 0-.775-.53 2.325 2.325 0 0 0-.91-.185H10v.984h.09c.2 0 .387.038.562.115.174.082.326.188.457.32.127.134.23.29.309.467.074.18.11.37.11.573 0 .228-.003.452-.011.672-.008.228-.008.45 0 .665.004.222.022.435.055.64.033.214.089.416.168.609a2.285 2.285 0 0 0 .738.955 2.285 2.285 0 0 0-.738.955 2.689 2.689 0 0 0-.168.602c-.033.21-.051.423-.055.64a9.15 9.15 0 0 0 0 .666c.008.224.012.45.012.678a1.471 1.471 0 0 1-.877 1.354 1.33 1.33 0 0 1-.563.121H10z" />
-                            </svg>
-                            break;
-                        case IconKind.None:
-                            @* No markup for this case *@
-                            break;
-                        case IconKind.NuGetPackages:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 1h13l.5.5v12l-.5.5h-13l-.5-.5v-12l.5-.5zM2 5v8h12V5H2zm0-1h12V2H2v2z" /></svg>
-                            break;
-                        case IconKind.Package:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.61 3l5.74 1.53L15 5v6.74l-.37.48-6.13 1.69-6.14-1.69-.36-.48V5l.61-.47L8.34 3h.27zm-.09 1l-4 1 .55.2 3.43.9 3-.81.95-.29-3.93-1zM3 11.36l5 1.37V7L3 5.66v5.7zM9 7v5.73l5-1.37V5.63l-2.02.553V8.75l-1 .26V6.457L9 7z" /></svg>
-                            break;
-                        case IconKind.ProjectDependencies:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 12h-1.793L10 10.293V6.5L9.5 6H8V4h.5l.5-.5v-2L8.5 1h-2l-.5.5v2l.5.5H7v2H5.5l-.5.5v3.793L3.293 12H1.5l-.5.5v2l.5.5h2l.5-.5v-1.793L5.707 11h3.586L11 12.707V14.5l.5.5h2l.5-.5v-2l-.5-.5zM7 2h1v1H7V2zM6 7h3v3H6V7zm-3 7H2v-1h1v1zm10 0h-1v-1h1v1z" /></svg>
-                            break;
-                        case IconKind.Razor:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-razor-color)">
-                                <path d="M10.465 12.36a5.516 5.516 0 0 1-3.053.736 4.262 4.262 0 0 1-4.57-4.543 5.381 5.381 0 0 1 5.391-5.571c2.377 0 4.413 1.375 4.413 4.006 0 2.182-1.292 3.66-2.9 3.66-.676 0-1.1-.274-1.126-.917a2.012 2.012 0 0 1-1.756.913c-.969 0-1.629-.645-1.629-1.923 0-1.763 1.148-3.4 2.62-3.4a1.314 1.314 0 0 1 1.427.93l.211-.809h.9L9.6 8.646c-.226.916-.13 1.215.342 1.215.984 0 1.833-1.21 1.833-2.825 0-2.068-1.445-3.265-3.61-3.265-2.643 0-4.374 2.132-4.382 4.786a3.443 3.443 0 0 0 3.686 3.717c.973.04 1.94-.179 2.8-.634l.196.72zM6.217 8.639c0 .788.307 1.206.913 1.206.758 0 1.38-.6 1.683-1.831C9.136 6.746 8.85 6.1 7.94 6.1c-1.04 0-1.723 1.339-1.723 2.539z" />
-                            </svg>
-                            break;
-                        case IconKind.Ts:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_ide_icon-ts-font-color)">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M13.617 3.844a2.87 2.87 0 0 0-.451-.868l1.354-1.36L13.904 1l-1.36 1.354a2.877 2.877 0 0 0-.868-.452 3.073 3.073 0 0 0-2.14.075 3.03 3.03 0 0 0-.991.664L7 4.192l4.327 4.328 1.552-1.545c.287-.287.508-.618.663-.992a3.074 3.074 0 0 0 .075-2.14zm-.889 1.804a2.15 2.15 0 0 1-.471.705l-.93.93-3.09-3.09.93-.93a2.15 2.15 0 0 1 .704-.472 2.134 2.134 0 0 1 1.689.007c.264.114.494.271.69.472.2.195.358.426.472.69a2.134 2.134 0 0 1 .007 1.688zm-4.824 4.994l1.484-1.545-.616-.622-1.49 1.551-1.86-1.859 1.491-1.552L6.291 6 4.808 7.545l-.616-.615-1.551 1.545a3 3 0 0 0-.663.998 3.023 3.023 0 0 0-.233 1.169c0 .332.05.656.15.97.105.31.258.597.459.862L1 13.834l.615.615 1.36-1.353c.265.2.552.353.862.458.314.1.638.15.97.15.406 0 .796-.077 1.17-.232.378-.155.71-.376.998-.663l1.545-1.552-.616-.615zm-2.262 2.023a2.16 2.16 0 0 1-.834.164c-.301 0-.586-.057-.855-.17a2.278 2.278 0 0 1-.697-.466 2.28 2.28 0 0 1-.465-.697 2.167 2.167 0 0 1-.17-.854 2.16 2.16 0 0 1 .642-1.545l.93-.93 3.09 3.09-.93.93a2.22 2.22 0 0 1-.711.478z" />
-                            </svg>
-                            break;
-                        case IconKind.GoToFile:
-                            <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 5.914l2.06-2.06v-.708L5.915 1l-.707.707.043.043.25.25 1 1h-3a2.5 2.5 0 0 0 0 5H4V7h-.5a1.5 1.5 0 1 1 0-3h3L5.207 5.293 5.914 6 6 5.914zM11 2H8.328l-1-1H12l.71.29 3 3L16 5v9l-1 1H6l-1-1V6.5l1 .847V14h9V6h-4V2zm1 0v3h3l-3-3z" /></svg>
-                            break;
-                        default:
-                            @IconRenderer.Render(node.IconKind, CommonService.Options_IconSizeCssValue, CommonService.Options_IconSizeCssValue)
-                            break;
+                        preceedingEmptySpaceHeight += CommonService.Options_LineHeight;
+                        skipNodeUi = true;
                     }
-                    
-                </span>
+                    else
+                    {
+                        isCalculatingPreceedingEmptySpace = false;
+                        <div style="width: 1px; height: @(preceedingEmptySpaceHeight)px;"></div>
+                    }
+                }
 
-                <div class="@node.GetDisplayTextCssClass()" title="@node.GetHoverText()">
-                    @node.GetDisplayText()
-                </div>
-            </div>
-        }
+                if (!skipNodeUi)
+                {
+                    if (contentHeight > _treeViewMeasurements.ViewHeight)
+                    {
+                        isCalculatingEndingEmptySpace = true;
+                    }
+
+                    if (!isCalculatingEndingEmptySpace)
+                    {
+                        _virtualizedTupleList.Add((literalIndex, depth));
+                        contentHeight += CommonService.Options_LineHeight;
+
+                        var cssClass = string.Empty;
+                        if (literalIndex == activeNodeValueIndex)
+                        {
+                            cssClass = "ci_active ci_selected";
+                            VirtualIndexActiveNode = _virtualizedTupleList.Count - 1;
+                        }
+                        // class="@cssClass"
+                        // style="@GetNodeElementCssStyle(node, i)"
+                        <div class="@cssClass"
+                             style="@GetNodeElementCssStyle(childNode, depth)">
+                            @if (childNode.IsExpandable)
+                            {
+                                <span style="cursor: pointer;">
+                                    @if (childNode.IsExpanded)
+                                    {
+                                        @* IconKind.ChevronDown *@
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.976 10.072l4.357-4.357.62.618L8.284 11h-.618L3 6.333l.619-.618 4.357 4.357z" /></svg>
+                                    }
+                                    else
+                                    {
+                                        @* IconKind.ChevronRight *@
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z" /></svg>
+                                    }
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                    @* Keep the span otherwise icon disappears if treeview width is too small *@
+                                    @* IconKind.Blank *@
+                                    <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor" />
+                                </span>
+                            }
+
+                            <span>
+                                @* Keep the span otherwise icon disappears if treeview width is too small *@
+                                @switch (_treeViewContainer.GetIconKind(literalIndex))
+                                {
+                                    case IconKind.DotNetSolutionFolder:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-dotnetslnfolder-color)">
+                                            <path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3zm-.51 8.49V13h-12V7h4.49l.35-.15.86-.86H14v1.5l-.01 4zm0-6.49h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.CSharpProject:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-project-color)">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 1h13l.5.5v13l-.5.5h-13l-.5-.5v-13l.5-.5zM2 14h12V2H2v12zM3 3h2v10H3V3zm6 0H7v6h2V3zm2 0h2v8h-2V3z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.CSharpClass:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-cs-color)">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10.57 1.14l3.28 3.3.15.36v9.7l-.5.5h-11l-.5-.5v-13l.5-.5h7.72l.35.14zM10 5h3l-3-3v3zM3 2v12h10V6H9.5L9 5.5V2H3zm2.062 7.533l1.817-1.828L6.17 7 4 9.179v.707l2.171 2.174.707-.707-1.816-1.82zM8.8 7.714l.7-.709 2.189 2.175v.709L9.5 12.062l-.705-.709 1.831-1.82L8.8 7.714z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.Cshtml:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-cshtml-color)">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10.832 2.688A4.056 4.056 0 0 0 8.02 1.5h-.04a4.056 4.056 0 0 0-4 4c-.013.75.198 1.487.606 2.117L7.734 14h.533l3.147-6.383c.409-.63.62-1.367.606-2.117a4.056 4.056 0 0 0-1.188-2.812zM7.925 2.5l.082.01.074-.01a3.075 3.075 0 0 1 2.941 3.037 2.74 2.74 0 0 1-.467 1.568l-.02.034-.017.035L8 12.279l-2.517-5.1-.017-.039-.02-.034a2.74 2.74 0 0 1-.467-1.568A3.074 3.074 0 0 1 7.924 2.5zm.612 2.169a1 1 0 1 0-1.112 1.663 1 1 0 0 0 1.112-1.663zM6.87 3.837a2 2 0 1 1 2.22 3.326 2 2 0 0 1-2.22-3.326z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.Css:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-css-color)">
+                                            <path d="M14.54 11.811l-1.14-3.12v-.06l-4.91-4.91v-1.24a1.66 1.66 0 0 0-.11-.58 1.48 1.48 0 0 0-.83-.8 1.42 1.42 0 0 0-.58-.1 1.47 1.47 0 0 0-1.48 1.48v3.26l-3.06 3a1.52 1.52 0 0 0 0 2.12l3.63 3.63c.14.141.307.253.49.33a1.53 1.53 0 0 0 1.14 0 1.51 1.51 0 0 0 .49-.33l4.93-4.92-.66 2.2a1.19 1.19 0 0 0 0 .46c.033.152.098.296.19.42.098.121.216.223.35.3.14.07.294.11.45.12a1 1 0 0 0 .48-.09 1.14 1.14 0 0 0 .39-.29.98.98 0 0 0 .22-.44c.032-.145.035-.294.01-.44zm-8-9.33a.46.46 0 0 1 0-.2.52.52 0 0 1 .12-.17.64.64 0 0 1 .18-.1.5.5 0 0 1 .21 0 .5.5 0 0 1 .32.15.5.5 0 0 1 .12.33v1.26l-1 1 .05-2.27zm1 11.35a.36.36 0 0 1-.16.11.47.47 0 0 1-.38 0 .361.361 0 0 1-.16-.11l-3.63-3.62a.5.5 0 0 1 0-.71l4.35-4.35v2.85a.74.74 0 0 0-.24.55.75.75 0 1 0 1.17-.55v-2.83l3.85 3.87-4.8 4.79z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.File:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.71 4.29l-3-3L10 1H4L3 2v12l1 1h9l1-1V5l-.29-.71zM13 14H4V2h5v4h4v8zm-3-9V2l3 3h-3z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.Folder:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-dir-color)">
+                                            <path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3zm-.51 8.49V13h-12V7h4.49l.35-.15.86-.86H14v1.5l-.01 4zm0-6.49h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.Js:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-js-color)">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.617 3.844a2.87 2.87 0 0 0-.451-.868l1.354-1.36L13.904 1l-1.36 1.354a2.877 2.877 0 0 0-.868-.452 3.073 3.073 0 0 0-2.14.075 3.03 3.03 0 0 0-.991.664L7 4.192l4.327 4.328 1.552-1.545c.287-.287.508-.618.663-.992a3.074 3.074 0 0 0 .075-2.14zm-.889 1.804a2.15 2.15 0 0 1-.471.705l-.93.93-3.09-3.09.93-.93a2.15 2.15 0 0 1 .704-.472 2.134 2.134 0 0 1 1.689.007c.264.114.494.271.69.472.2.195.358.426.472.69a2.134 2.134 0 0 1 .007 1.688zm-4.824 4.994l1.484-1.545-.616-.622-1.49 1.551-1.86-1.859 1.491-1.552L6.291 6 4.808 7.545l-.616-.615-1.551 1.545a3 3 0 0 0-.663.998 3.023 3.023 0 0 0-.233 1.169c0 .332.05.656.15.97.105.31.258.597.459.862L1 13.834l.615.615 1.36-1.353c.265.2.552.353.862.458.314.1.638.15.97.15.406 0 .796-.077 1.17-.232.378-.155.71-.376.998-.663l1.545-1.552-.616-.615zm-2.262 2.023a2.16 2.16 0 0 1-.834.164c-.301 0-.586-.057-.855-.17a2.278 2.278 0 0 1-.697-.466 2.28 2.28 0 0 1-.465-.697 2.167 2.167 0 0 1-.17-.854 2.16 2.16 0 0 1 .642-1.545l.93-.93 3.09 3.09-.93.93a2.22 2.22 0 0 1-.711.478z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.Json:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-json-color)">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M6 2.984V2h-.09c-.313 0-.616.062-.909.185a2.33 2.33 0 0 0-.775.53 2.23 2.23 0 0 0-.493.753v.001a3.542 3.542 0 0 0-.198.83v.002a6.08 6.08 0 0 0-.024.863c.012.29.018.58.018.869 0 .203-.04.393-.117.572v.001a1.504 1.504 0 0 1-.765.787 1.376 1.376 0 0 1-.558.115H2v.984h.09c.195 0 .38.04.556.121l.001.001c.178.078.329.184.455.318l.002.002c.13.13.233.285.307.465l.001.002c.078.18.117.368.117.566 0 .29-.006.58-.018.869-.012.296-.004.585.024.87v.001c.033.283.099.558.197.824v.001c.106.273.271.524.494.753.223.23.482.407.775.53.293.123.596.185.91.185H6v-.984h-.09c-.2 0-.387-.038-.563-.115a1.613 1.613 0 0 1-.457-.32 1.659 1.659 0 0 1-.309-.467c-.074-.18-.11-.37-.11-.573 0-.228.003-.453.011-.672.008-.228.008-.45 0-.665a4.639 4.639 0 0 0-.055-.64 2.682 2.682 0 0 0-.168-.609A2.284 2.284 0 0 0 3.522 8a2.284 2.284 0 0 0 .738-.955c.08-.192.135-.393.168-.602.033-.21.051-.423.055-.64.008-.22.008-.442 0-.666-.008-.224-.012-.45-.012-.678a1.47 1.47 0 0 1 .877-1.354 1.33 1.33 0 0 1 .563-.121H6zm4 10.032V14h.09c.313 0 .616-.062.909-.185.293-.123.552-.3.775-.53.223-.23.388-.48.493-.753v-.001c.1-.266.165-.543.198-.83v-.002c.028-.28.036-.567.024-.863-.012-.29-.018-.58-.018-.869 0-.203.04-.393.117-.572v-.001a1.502 1.502 0 0 1 .765-.787 1.38 1.38 0 0 1 .558-.115H14v-.984h-.09c-.196 0-.381-.04-.557-.121l-.001-.001a1.376 1.376 0 0 1-.455-.318l-.002-.002a1.415 1.415 0 0 1-.307-.465v-.002a1.405 1.405 0 0 1-.118-.566c0-.29.006-.58.018-.869a6.174 6.174 0 0 0-.024-.87v-.001a3.537 3.537 0 0 0-.197-.824v-.001a2.23 2.23 0 0 0-.494-.753 2.331 2.331 0 0 0-.775-.53 2.325 2.325 0 0 0-.91-.185H10v.984h.09c.2 0 .387.038.562.115.174.082.326.188.457.32.127.134.23.29.309.467.074.18.11.37.11.573 0 .228-.003.452-.011.672-.008.228-.008.45 0 .665.004.222.022.435.055.64.033.214.089.416.168.609a2.285 2.285 0 0 0 .738.955 2.285 2.285 0 0 0-.738.955 2.689 2.689 0 0 0-.168.602c-.033.21-.051.423-.055.64a9.15 9.15 0 0 0 0 .666c.008.224.012.45.012.678a1.471 1.471 0 0 1-.877 1.354 1.33 1.33 0 0 1-.563.121H10z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.None:
+                                        @* No markup for this case *@
+                                        break;
+                                    case IconKind.NuGetPackages:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 1h13l.5.5v12l-.5.5h-13l-.5-.5v-12l.5-.5zM2 5v8h12V5H2zm0-1h12V2H2v2z" /></svg>
+                                        break;
+                                    case IconKind.Package:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.61 3l5.74 1.53L15 5v6.74l-.37.48-6.13 1.69-6.14-1.69-.36-.48V5l.61-.47L8.34 3h.27zm-.09 1l-4 1 .55.2 3.43.9 3-.81.95-.29-3.93-1zM3 11.36l5 1.37V7L3 5.66v5.7zM9 7v5.73l5-1.37V5.63l-2.02.553V8.75l-1 .26V6.457L9 7z" /></svg>
+                                        break;
+                                    case IconKind.ProjectDependencies:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 12h-1.793L10 10.293V6.5L9.5 6H8V4h.5l.5-.5v-2L8.5 1h-2l-.5.5v2l.5.5H7v2H5.5l-.5.5v3.793L3.293 12H1.5l-.5.5v2l.5.5h2l.5-.5v-1.793L5.707 11h3.586L11 12.707V14.5l.5.5h2l.5-.5v-2l-.5-.5zM7 2h1v1H7V2zM6 7h3v3H6V7zm-3 7H2v-1h1v1zm10 0h-1v-1h1v1z" /></svg>
+                                        break;
+                                    case IconKind.Razor:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_i-razor-color)">
+                                            <path d="M10.465 12.36a5.516 5.516 0 0 1-3.053.736 4.262 4.262 0 0 1-4.57-4.543 5.381 5.381 0 0 1 5.391-5.571c2.377 0 4.413 1.375 4.413 4.006 0 2.182-1.292 3.66-2.9 3.66-.676 0-1.1-.274-1.126-.917a2.012 2.012 0 0 1-1.756.913c-.969 0-1.629-.645-1.629-1.923 0-1.763 1.148-3.4 2.62-3.4a1.314 1.314 0 0 1 1.427.93l.211-.809h.9L9.6 8.646c-.226.916-.13 1.215.342 1.215.984 0 1.833-1.21 1.833-2.825 0-2.068-1.445-3.265-3.61-3.265-2.643 0-4.374 2.132-4.382 4.786a3.443 3.443 0 0 0 3.686 3.717c.973.04 1.94-.179 2.8-.634l.196.72zM6.217 8.639c0 .788.307 1.206.913 1.206.758 0 1.38-.6 1.683-1.831C9.136 6.746 8.85 6.1 7.94 6.1c-1.04 0-1.723 1.339-1.723 2.539z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.Ts:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="var(--ci_ide_icon-ts-font-color)">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.617 3.844a2.87 2.87 0 0 0-.451-.868l1.354-1.36L13.904 1l-1.36 1.354a2.877 2.877 0 0 0-.868-.452 3.073 3.073 0 0 0-2.14.075 3.03 3.03 0 0 0-.991.664L7 4.192l4.327 4.328 1.552-1.545c.287-.287.508-.618.663-.992a3.074 3.074 0 0 0 .075-2.14zm-.889 1.804a2.15 2.15 0 0 1-.471.705l-.93.93-3.09-3.09.93-.93a2.15 2.15 0 0 1 .704-.472 2.134 2.134 0 0 1 1.689.007c.264.114.494.271.69.472.2.195.358.426.472.69a2.134 2.134 0 0 1 .007 1.688zm-4.824 4.994l1.484-1.545-.616-.622-1.49 1.551-1.86-1.859 1.491-1.552L6.291 6 4.808 7.545l-.616-.615-1.551 1.545a3 3 0 0 0-.663.998 3.023 3.023 0 0 0-.233 1.169c0 .332.05.656.15.97.105.31.258.597.459.862L1 13.834l.615.615 1.36-1.353c.265.2.552.353.862.458.314.1.638.15.97.15.406 0 .796-.077 1.17-.232.378-.155.71-.376.998-.663l1.545-1.552-.616-.615zm-2.262 2.023a2.16 2.16 0 0 1-.834.164c-.301 0-.586-.057-.855-.17a2.278 2.278 0 0 1-.697-.466 2.28 2.28 0 0 1-.465-.697 2.167 2.167 0 0 1-.17-.854 2.16 2.16 0 0 1 .642-1.545l.93-.93 3.09 3.09-.93.93a2.22 2.22 0 0 1-.711.478z" />
+                                        </svg>
+                                        break;
+                                    case IconKind.GoToFile:
+                                        <svg width="@CommonService.Options_IconSizeCssValue" height="@CommonService.Options_IconSizeCssValue" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 5.914l2.06-2.06v-.708L5.915 1l-.707.707.043.043.25.25 1 1h-3a2.5 2.5 0 0 0 0 5H4V7h-.5a1.5 1.5 0 1 1 0-3h3L5.207 5.293 5.914 6 6 5.914zM11 2H8.328l-1-1H12l.71.29 3 3L16 5v9l-1 1H6l-1-1V6.5l1 .847V14h9V6h-4V2zm1 0v3h3l-3-3z" /></svg>
+                                        break;
+                                    default:
+                                        @IconRenderer.Render(_treeViewContainer.GetIconKind(literalIndex), CommonService.Options_IconSizeCssValue, CommonService.Options_IconSizeCssValue)
+                                        break;
+                                }
+
+                            </span>
+
+                            @*
+                                class="@_treeViewContainer.GetDisplayTextCssClass(i)"
+                                title="@_treeViewContainer.GetHoverText(i)"
+                            *@
+                            <div style="display: inline;">
+                                @_treeViewContainer.GetDisplayText(literalIndex)
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        endingEmptySpaceHeight += CommonService.Options_LineHeight;
+                    }
+                }
+
+                if (!skipNodeUi && forceFirstNodeToRender)
+                {
+                    forceFirstNodeToRender = false;
+                    depth++;
+                }
+                else if (childNode.IsExpanded && childNode.ChildListLength > 0)
+                {
+                    _nodeRecursionStack.Push((targetNode, childIndex));
+                    depth++;
+                    targetNode = childNode;
+                    childIndex = 0;
+                }
+            }
+        @*</div>*@
+
+        @* position: absolute; top: @(preceedingEmptySpaceHeight + contentHeight)px; *@
+        @*<div style="width: 1px; height: @(endingEmptySpaceHeight)px;"></div>*@
+
+        <div style="width: 1px; height: @(preceedingEmptySpaceHeight + contentHeight + endingEmptySpaceHeight + /*useful??? padding*/CommonService.Options_LineHeight)px; position: absolute;"></div>
     }
-    
+</div>
+
+
     @*<div class="ci_te_scrollbar-section">
 		
 		<div class="ci_te_scrollbar ci_te_scrollbar-horizontal"
@@ -212,4 +297,4 @@
 		        id="@CONNECTOR_ScrollbarElementId">
 		</div>
 	</div>*@
-</div>
+

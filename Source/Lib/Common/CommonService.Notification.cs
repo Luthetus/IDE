@@ -1,6 +1,5 @@
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Dynamics.Models;
-using Clair.Common.RazorLib.ListExtensions;
 
 namespace Clair.Common.RazorLib;
 
@@ -26,8 +25,15 @@ public partial class CommonService
     {
         lock (_stateModificationLock)
         {
-            var indexNotification = _notificationState.DefaultList.FindIndex(
-                x => x.DynamicViewModelKey == key);
+            var indexNotification = -1;
+            for (int i = 0; i < _notificationState.DefaultList.Count; i++)
+            {
+                if (_notificationState.DefaultList[i].DynamicViewModelKey == key)
+                {
+                    indexNotification = i;
+                    break;
+                }
+            }
     
             if (indexNotification != -1)
             {

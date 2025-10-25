@@ -7,7 +7,6 @@ using Clair.Common.RazorLib.Installations.Models;
 using Clair.Common.RazorLib.Tabs.Models;
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
-using Clair.Common.RazorLib.ListExtensions;
 
 namespace Clair.Common.RazorLib;
 
@@ -56,13 +55,13 @@ public partial class CommonService
         }
     }
 
-    public async ValueTask Do_TreeView_HandleExpansionChevronOnMouseDown(TreeViewNoType localTreeViewNoType, TreeViewContainer treeViewContainer)
+    public async ValueTask Do_TreeView_HandleExpansionChevronOnMouseDown(int indexNodeValue, TreeViewContainer treeViewContainer)
     {
-        await localTreeViewNoType.LoadChildListAsync(treeViewContainer).ConfigureAwait(false);
-        TreeView_ReRenderNodeAction(treeViewContainer.Key, localTreeViewNoType, flatListChanged: true);
+        await treeViewContainer.LoadChildListAsync(indexNodeValue).ConfigureAwait(false);
+        TreeView_ReRenderNodeAction();
     }
 
-    public async ValueTask Do_TreeView_ManuallyPropagateOnContextMenu(Func<MouseEventArgs?, Key<TreeViewContainer>, TreeViewNoType?, Task> handleTreeViewOnContextMenu, MouseEventArgs mouseEventArgs, Key<TreeViewContainer> key, TreeViewNoType treeViewNoType)
+    public async ValueTask Do_TreeView_ManuallyPropagateOnContextMenu(Func<MouseEventArgs?, Key<TreeViewContainer>, TreeViewNodeValue, Task> handleTreeViewOnContextMenu, MouseEventArgs mouseEventArgs, Key<TreeViewContainer> key, TreeViewNodeValue treeViewNoType)
     {
         await handleTreeViewOnContextMenu.Invoke(
                 mouseEventArgs,
@@ -71,32 +70,11 @@ public partial class CommonService
             .ConfigureAwait(false);
     }
 
-    public async ValueTask Do_TreeViewService_LoadChildList(Key<TreeViewContainer> containerKey, TreeViewNoType treeViewNoType)
+    public async ValueTask Do_TreeViewService_LoadChildList(TreeViewContainer container, int indexNodeValue)
     {
-        try
-        {
-            var inState = GetTreeViewState();
-    
-            var indexContainer = inState.ContainerList.FindIndex(
-                x => x.Key == containerKey);
-    
-            if (indexContainer == -1)
-                return;
-    
-            var inContainer = inState.ContainerList[indexContainer];
-        
-            await treeViewNoType.LoadChildListAsync(inContainer).ConfigureAwait(false);
-
-            TreeView_ReRenderNodeAction(
-                containerKey,
-                treeViewNoType,
-                flatListChanged: true);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+        var inState = GetTreeViewState();
+        await container.LoadChildListAsync(indexNodeValue).ConfigureAwait(false);
+        TreeView_ReRenderNodeAction();
     }
     
     public ValueTask HandleEvent()
@@ -113,11 +91,11 @@ public partial class CommonService
             case CommonWorkKind.TreeView_HandleTreeViewOnContextMenu:
                 return Do_TreeView_HandleTreeViewOnContextMenu(workArgs.OnContextMenuFunc, workArgs.TreeViewContextMenuCommandArgs);
             case CommonWorkKind.TreeView_HandleExpansionChevronOnMouseDown:
-                return Do_TreeView_HandleExpansionChevronOnMouseDown(workArgs.TreeViewNoType, workArgs.TreeViewContainer);
+                return Do_TreeView_HandleExpansionChevronOnMouseDown(workArgs.IndexNodeValue, workArgs.TreeViewContainer);
             case CommonWorkKind.TreeView_ManuallyPropagateOnContextMenu:
                 return Do_TreeView_ManuallyPropagateOnContextMenu(workArgs.HandleTreeViewOnContextMenu, workArgs.MouseEventArgs, workArgs.ContainerKey, workArgs.TreeViewNoType);
             case CommonWorkKind.TreeViewService_LoadChildList:
-                return Do_TreeViewService_LoadChildList(workArgs.ContainerKey, workArgs.TreeViewNoType);
+                return Do_TreeViewService_LoadChildList(workArgs.TreeViewContainer, workArgs.IndexNodeValue);
             default:
                 Console.WriteLine($"{nameof(CommonService)} {nameof(HandleEvent)} default case");
                 return ValueTask.CompletedTask;

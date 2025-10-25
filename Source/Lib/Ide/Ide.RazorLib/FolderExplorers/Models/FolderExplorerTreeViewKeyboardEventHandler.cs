@@ -1,3 +1,4 @@
+/*
 using System.Text;
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Commands.Models;
@@ -229,3 +230,4 @@ public class FolderExplorerTreeViewKeyboardEventHandler : TreeViewKeyboardEventH
             flatListChanged: true);
     }
 }
+*/

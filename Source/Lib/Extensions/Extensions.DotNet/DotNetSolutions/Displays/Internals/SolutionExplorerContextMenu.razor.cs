@@ -65,9 +65,9 @@ public partial class SolutionExplorerContextMenu : ComponentBase
 
         if (data.TreeViewContainer is SolutionExplorerTreeViewContainer container)
         {
-            switch (treeViewModel.TreeViewNodeValueKind)
+            switch (treeViewModel.KindByte)
             {
-                case TreeViewNodeValueKind.b0: // .sln
+                case SolutionExplorerTreeViewContainer.KindByte_Solution:
                     
                     var dotNetSolutionModel = container.DotNetSolutionModel;
                     if (container.DotNetSolutionModel.AbsolutePath.Name.EndsWith(CommonFacts.DOT_NET_SOLUTION) ||
@@ -77,9 +77,9 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                             menuOptionList.AddRange(GetDotNetSolutionMenuOptions(dotNetSolutionModel));
                     }
                     break;
-                case TreeViewNodeValueKind.b1: // SolutionFolder
+                case SolutionExplorerTreeViewContainer.KindByte_SolutionFolder:
                     break;
-                case TreeViewNodeValueKind.b2: // .csproj
+                case SolutionExplorerTreeViewContainer.KindByte_Csproj:
                     menuOptionList.AddRange(GetCSharpProjectMenuOptions(
                         container,
                         data.IndexNodeValue,
@@ -88,13 +88,13 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                         parentTreeViewModel)
                         /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
                     break;
-                case TreeViewNodeValueKind.b3: // dir
+                case SolutionExplorerTreeViewContainer.KindByte_Dir:
                     var absolutePath = container.DirectoryTraitsList[treeViewModel.TraitsIndex];
                     menuOptionList.AddRange(GetFileMenuOptions(container, absolutePath, treeViewModel, parentTreeViewModel)
                         .Union(GetDirectoryMenuOptions(container, data.IndexNodeValue, absolutePath, treeViewModel, parentTreeViewModel))
                         /*.Union(GetDebugMenuOptions(treeViewNamespacePath))*/);
                     break;
-                case TreeViewNodeValueKind.b4: // file
+                case SolutionExplorerTreeViewContainer.KindByte_File:
                     menuOptionList.AddRange(GetFileMenuOptions(
                         container,
                         container.FileTraitsList[treeViewModel.TraitsIndex],
@@ -477,25 +477,25 @@ public partial class SolutionExplorerContextMenu : ComponentBase
     {
         var targetNode = treeViewModel;
     
-        if (targetNode.TreeViewNodeValueKind != TreeViewNodeValueKind.b2 /*.csproj*/ &&
-            targetNode.TreeViewNodeValueKind != TreeViewNodeValueKind.b3 /*dir*/)
+        if (targetNode.KindByte != SolutionExplorerTreeViewContainer.KindByte_Csproj &&
+            targetNode.KindByte != SolutionExplorerTreeViewContainer.KindByte_Dir)
         {
             return string.Empty;
         }
         
         // The upcoming algorithm has a lot of "shifting" due to 0 index insertions and likely is NOT the most optimal solution.
         StringBuilder namespaceBuilder;
-        if (targetNode.TreeViewNodeValueKind == TreeViewNodeValueKind.b2 /*.csproj*/)
+        if (targetNode.KindByte == SolutionExplorerTreeViewContainer.KindByte_Csproj)
         {
             namespaceBuilder = new StringBuilder(container.DotNetSolutionModel.DotNetProjectList[targetNode.TraitsIndex].AbsolutePath.Name);
         }
-        else if (targetNode.TreeViewNodeValueKind == TreeViewNodeValueKind.b3 /*dir*/)
+        else if (targetNode.KindByte == SolutionExplorerTreeViewContainer.KindByte_Dir)
         {
             namespaceBuilder = new StringBuilder(container.DirectoryTraitsList[targetNode.TraitsIndex].Name);
         }
         else
         {
-            throw new NotImplementedException($"{nameof(TreeViewNodeValueKind)}.{nameof(treeViewModel.TreeViewNodeValueKind)} is not supported.");
+            throw new NotImplementedException($"{nameof(TreeViewNodeValue.KindByte)} of {targetNode.KindByte} is not supported. Check {nameof(SolutionExplorerTreeViewContainer)} for the supported 'KindByte_...' values.");
         }
         
         // for loop is an arbitrary "while-loop limit" until I prove to myself this won't infinite loop.
@@ -505,7 +505,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 break;
 
             // EndsWith check includes the period to ensure a direct match on the extension rather than a substring.
-            if (targetNode.TreeViewNodeValueKind == TreeViewNodeValueKind.b2 /*.csproj*/)
+            if (targetNode.KindByte == SolutionExplorerTreeViewContainer.KindByte_Csproj)
             {
                 if (i != 0)
                 {
@@ -531,8 +531,8 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 else
                 {
                     targetNode = container.NodeValueList[targetNode.ParentIndex];
-                    if (targetNode.TreeViewNodeValueKind != TreeViewNodeValueKind.b2 /*.csproj*/ &&
-                        targetNode.TreeViewNodeValueKind != TreeViewNodeValueKind.b3 /*dir*/)
+                    if (targetNode.KindByte != SolutionExplorerTreeViewContainer.KindByte_Csproj &&
+                        targetNode.KindByte != SolutionExplorerTreeViewContainer.KindByte_Dir)
                     {
                         break;
                     }

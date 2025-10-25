@@ -31,10 +31,10 @@ public struct TreeViewNodeValue
     public int ChildListLength { get; set; }
     
     /// <summary>
-    /// '.None' should NEVER be used.
+    /// '0' should NEVER be used.
     /// It marks whether a nodeValue is the default value or not.
     /// </summary>
-    public TreeViewNodeValueKind TreeViewNodeValueKind { get; set; }
+    public byte KindByte { get; set; }
     
     /// <summary>
     /// All data should be stored on the ITreeViewContainer.
@@ -54,5 +54,5 @@ public struct TreeViewNodeValue
     public bool IsExpandable { get; set; }
     public bool IsExpanded { get; set; }
     
-    public bool IsDefault() => TreeViewNodeValueKind == TreeViewNodeValueKind.None;
+    public bool IsDefault() => KindByte == 0;
 }

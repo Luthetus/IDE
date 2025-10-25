@@ -24,7 +24,7 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
         IdeService.IdeStateChanged += OnInputFileStateChanged;
     }
     
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
@@ -75,7 +75,15 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
             });
     
             IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);
+
+            _ = Task.Run(async () =>
+            {
+                // TODO: Why is the first render not showing the directories????
+                await Task.Delay(100);
+                IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);
+            });
             
+
             /*
             // 2025-10-22 (rewrite TreeViews)
             
@@ -101,7 +109,7 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
             */
         }
 
-        return Task.CompletedTask;
+        //return Task.CompletedTask;
     }
 
     public async void OnInputFileStateChanged(IdeStateChangedKind ideStateChangedKind)

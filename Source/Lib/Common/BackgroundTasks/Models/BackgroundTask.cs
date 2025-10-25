@@ -1,5 +1,5 @@
 using Clair.Common.RazorLib.Keys.Models;
-s
+
 namespace Clair.Common.RazorLib.BackgroundTasks.Models;
 
 public class BackgroundTask : IBackgroundTaskGroup

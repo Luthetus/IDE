@@ -117,7 +117,16 @@ public class OutputTreeViewContainer : TreeViewContainer
     {
         base.OnDoubleClickAsync(commandArgs, indexNodeValue);
         
-        string? path = null;
+        var nodeValue = NodeValueList[indexNodeValue];
+        if (nodeValue.ByteKind != ByteKind_Diagnostic)
+            return Task.CompletedTask;
+        
+        return OutputTextSpanHelper.OpenInEditorOnClick(
+            DotNetRunParseResult.AllDiagnosticLineList[nodeValue.TraitsIndex],
+            true,
+            DotNetService.TextEditorService);
+        
+        /*string? path = null;
 
         var nodeValue = NodeValueList[indexNodeValue];
         switch (nodeValue.ByteKind)
@@ -142,7 +151,7 @@ public class OutputTreeViewContainer : TreeViewContainer
                 new Category("main"),
                 editContext.TextEditorService.NewViewModelKey());
         });
-        return Task.CompletedTask;
+        return Task.CompletedTask;*/
     }
     
     public override Task OnKeyDownAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)

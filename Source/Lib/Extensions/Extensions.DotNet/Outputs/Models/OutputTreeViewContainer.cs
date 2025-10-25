@@ -4,23 +4,26 @@ using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Common.RazorLib.Commands.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
+using Clair.Extensions.DotNet.CommandLines.Models;
 
 namespace Clair.Extensions.DotNet.Outputs.Models;
 
 public class OutputTreeViewContainer : TreeViewContainer
 {
-    public OutputTreeViewContainer(DotNetService dotNetService)
+    public OutputTreeViewContainer(DotNetService dotNetService, DotNetRunParseResult dotNetRunParseResult)
         : base(dotNetService.CommonService)
     {
         Key = OutputState.TreeViewContainerKey;
         NodeValueList = new();
         DotNetService = dotNetService;
+        DotNetRunParseResult = dotNetRunParseResult;
     }
     
     public override Key<TreeViewContainer> Key { get; init; }
     public override List<TreeViewNodeValue> NodeValueList { get; }
 
     public DotNetService DotNetService { get; }
+    public DotNetRunParseResult DotNetRunParseResult { get; }
 
     public override Task LoadChildListAsync(int indexNodeValue)
     {

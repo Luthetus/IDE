@@ -1,4 +1,5 @@
 using Clair.Common.RazorLib.Reactives.Models;
+using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Extensions.DotNet.Outputs.Models;
 
 namespace Clair.Extensions.DotNet;
@@ -30,10 +31,34 @@ public partial class DotNetService
         return Task.CompletedTask;
     }
 
-    public ValueTask OutputService_Do_ConstructTreeView()
+    public async ValueTask OutputService_Do_ConstructTreeView()
     {
-        /*
-        var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(OutputState.TreeViewContainerKey);
+        var dotNetRunParseResult = GetDotNetRunParseResult();
+            
+        CommonService.TreeView_DisposeContainerAction(OutputState.TreeViewContainerKey, shouldFireStateChangedEvent: false);
+            
+        var treeViewContainer = new OutputTreeViewContainer(this, dotNetRunParseResult);
+        
+        var rootNode = new TreeViewNodeValue
+        {
+            ParentIndex = -1,
+            IndexAmongSiblings = 0,
+            ChildListOffset = treeViewContainer.NodeValueList.Count,
+            ChildListLength = 0,
+            ByteKind = OutputTreeViewContainer.ByteKind_Aaa,
+            TraitsIndex = 0,
+            IsExpandable = true,
+            IsExpanded = true
+        };
+        treeViewContainer.NodeValueList.Add(rootNode);
+
+        await treeViewContainer.LoadChildListAsync(indexNodeValue: 0).ConfigureAwait(false);
+
+        CommonService.TreeView_RegisterContainerAction(treeViewContainer);
+    
+    
+    
+        /*var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(OutputState.TreeViewContainerKey);
         CommonService.TreeView_DisposeContainerAction(OutputState.TreeViewContainerKey);
         
         CommonService.TreeView_RegisterContainerAction(new TreeViewContainer(
@@ -188,8 +213,7 @@ public partial class DotNetService
                 false);
         
             ReduceStateHasChangedAction(dotNetRunParseResult.Id);
-        }
-        */
-        return ValueTask.CompletedTask;
+        }*/
+        //return ValueTask.CompletedTask;
     }
 }

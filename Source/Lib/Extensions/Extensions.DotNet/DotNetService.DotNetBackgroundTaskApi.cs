@@ -910,28 +910,12 @@ public partial class DotNetService
 
     public async ValueTask Do_SetDotNetSolutionTreeView(Key<DotNetSolutionModel> dotNetSolutionModelKey)
     {
-        // !!!!!!!!!!!!!
-        // This is probably the most important thing to do next.
-        //
-        // I changed my AppData so the app would auto open a .NET Solution without
-        // having to use the input file dialog (which is currently broken).
-        // !!!!!!!!!!!!!
-        
         var dotNetSolutionState = GetDotNetSolutionState();
         
         var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
         if (dotNetSolutionModel is null)
             return;
             
-        // I said there is an emphasis on tying the TreeViewContainer directly to the UI lifecycle
-        // and then DisposeContainer() is invoked when the UI disappears
-        // was an opportunity to create more optimized storage of the TreeView
-        /// so you could recreate it when the UI later was shown again.
-        //
-        // I need to just get something on sscreen though so I'm gonna ignore what I said for now.
-        //
-        // Oh no way my mom might've just gotten home with food totally epic
-        
         if (!CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
         {
             treeViewContainer = new SolutionExplorerTreeViewContainer(IdeService, dotNetSolutionModel);
@@ -952,39 +936,7 @@ public partial class DotNetService
             await treeViewContainer.LoadChildListAsync(indexNodeValue: 0).ConfigureAwait(false);
 
             CommonService.TreeView_RegisterContainerAction(treeViewContainer);
-            
-            
         }
-        
-        /*
-        var dotNetSolutionState = GetDotNetSolutionState();
-
-        var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
-        if (dotNetSolutionModel is null)
-            return;
-
-        
-
-        if (!IdeService.CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
-        {
-            IdeService.CommonService.TreeView_RegisterContainerAction(new TreeViewContainer(
-                DotNetSolutionState.TreeViewSolutionExplorerStateKey,
-                rootNode: null,
-                selectedNodeList: Array.Empty<TreeViewNoType>()));
-        }
-        if (IdeService.CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out treeViewContainer))
-        {
-            await rootNode.LoadChildListAsync(treeViewContainer).ConfigureAwait(false);
-            
-            IdeService.CommonService.TreeView_WithRootNodeAction(DotNetSolutionState.TreeViewSolutionExplorerStateKey, rootNode);
-            
-            IdeService.CommonService.TreeView_SetActiveNodeAction(
-                DotNetSolutionState.TreeViewSolutionExplorerStateKey,
-                rootNode,
-                true,
-                false);
-        }
-        */
     }
 
     private void RegisterStartupControl_Range(List<IDotNetProject> projectList)

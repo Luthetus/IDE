@@ -910,12 +910,14 @@ public partial class DotNetService
 
     public async ValueTask Do_SetDotNetSolutionTreeView(Key<DotNetSolutionModel> dotNetSolutionModelKey)
     {
+        CommonService.TreeView_DisposeContainerAction(DotNetSolutionState.TreeViewSolutionExplorerStateKey, shouldFireStateChangedEvent: false);
+
         var dotNetSolutionState = GetDotNetSolutionState();
         
         var dotNetSolutionModel = dotNetSolutionState.DotNetSolutionModel;
         if (dotNetSolutionModel is null)
             return;
-            
+
         if (!CommonService.TryGetTreeViewContainer(DotNetSolutionState.TreeViewSolutionExplorerStateKey, out var treeViewContainer))
         {
             treeViewContainer = new SolutionExplorerTreeViewContainer(IdeService, dotNetSolutionModel);

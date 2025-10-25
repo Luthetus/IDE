@@ -38,9 +38,9 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
         nodeValue.ChildListLength = 0;
         nodeValue.ChildListOffset = NodeValueList.Count;
 
-        switch (nodeValue.KindByte)
+        switch (nodeValue.ByteKind)
         {
-            case SolutionExplorerTreeViewContainer.KindByte_Solution:
+            case SolutionExplorerTreeViewContainer.ByteKind_Solution:
             {
                 var indexAmongSiblings = 0;
             
@@ -55,7 +55,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
-                            KindByte = SolutionExplorerTreeViewContainer.KindByte_SolutionFolder,
+                            ByteKind = SolutionExplorerTreeViewContainer.ByteKind_SolutionFolder,
                             TraitsIndex = tuple.i,
                             IsExpandable = true,
                             IsExpanded = false,
@@ -73,7 +73,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
-                            KindByte = SolutionExplorerTreeViewContainer.KindByte_Csproj,
+                            ByteKind = SolutionExplorerTreeViewContainer.ByteKind_Csproj,
                             TraitsIndex = tuple.i,
                             IsExpandable = true,
                             IsExpanded = false,
@@ -108,7 +108,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 NodeValueList[indexNodeValue] = nodeValue;
                 return Task.CompletedTask;
             }
-            case SolutionExplorerTreeViewContainer.KindByte_Csproj:
+            case SolutionExplorerTreeViewContainer.ByteKind_Csproj:
             {
                 var indexAmongSiblings = 0;
             
@@ -146,7 +146,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
-                            KindByte = SolutionExplorerTreeViewContainer.KindByte_Dir,
+                            ByteKind = SolutionExplorerTreeViewContainer.ByteKind_Dir,
                             TraitsIndex = DirectoryTraitsList.Count - 1,
                             IsExpandable = true,
                             IsExpanded = false,
@@ -167,7 +167,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
-                            KindByte = SolutionExplorerTreeViewContainer.KindByte_Dir,
+                            ByteKind = SolutionExplorerTreeViewContainer.ByteKind_Dir,
                             TraitsIndex = DirectoryTraitsList.Count - 1,
                             IsExpandable = true,
                             IsExpanded = false,
@@ -192,7 +192,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                         IndexAmongSiblings = indexAmongSiblings++,
                         ChildListOffset = 0,
                         ChildListLength = 0,
-                        KindByte = SolutionExplorerTreeViewContainer.KindByte_File,
+                        ByteKind = SolutionExplorerTreeViewContainer.ByteKind_File,
                         TraitsIndex = FileTraitsList.Count - 1,
                         IsExpandable = false,
                         IsExpanded = false,
@@ -228,7 +228,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 NodeValueList[indexNodeValue] = nodeValue;
                 return Task.CompletedTask;
             }
-            case SolutionExplorerTreeViewContainer.KindByte_Dir:
+            case SolutionExplorerTreeViewContainer.ByteKind_Dir:
             {
                 var indexAmongSiblings = 0;
                 
@@ -262,7 +262,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
-                            KindByte = SolutionExplorerTreeViewContainer.KindByte_Dir,
+                            ByteKind = SolutionExplorerTreeViewContainer.ByteKind_Dir,
                             TraitsIndex = DirectoryTraitsList.Count - 1,
                             IsExpandable = true,
                             IsExpanded = false,
@@ -283,7 +283,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                             IndexAmongSiblings = indexAmongSiblings++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
-                            KindByte = SolutionExplorerTreeViewContainer.KindByte_Dir,
+                            ByteKind = SolutionExplorerTreeViewContainer.ByteKind_Dir,
                             TraitsIndex = DirectoryTraitsList.Count - 1,
                             IsExpandable = true,
                             IsExpanded = false,
@@ -308,7 +308,7 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                         IndexAmongSiblings = indexAmongSiblings++,
                         ChildListOffset = 0,
                         ChildListLength = 0,
-                        KindByte = SolutionExplorerTreeViewContainer.KindByte_File,
+                        ByteKind = SolutionExplorerTreeViewContainer.ByteKind_File,
                         TraitsIndex = FileTraitsList.Count - 1,
                         IsExpandable = false,
                         IsExpanded = false,
@@ -355,17 +355,17 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
     public override string GetDisplayText(int indexNodeValue)
     {
         var nodeValue = NodeValueList[indexNodeValue];
-        switch (nodeValue.KindByte)
+        switch (nodeValue.ByteKind)
         {
-            case SolutionExplorerTreeViewContainer.KindByte_Solution:
+            case SolutionExplorerTreeViewContainer.ByteKind_Solution:
                 return DotNetSolutionModel.AbsolutePath.Name;
-            case SolutionExplorerTreeViewContainer.KindByte_SolutionFolder:
+            case SolutionExplorerTreeViewContainer.ByteKind_SolutionFolder:
                 return DotNetSolutionModel.SolutionFolderList[nodeValue.TraitsIndex].DisplayName;
-            case SolutionExplorerTreeViewContainer.KindByte_Csproj:
+            case SolutionExplorerTreeViewContainer.ByteKind_Csproj:
                 return DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Name;
-            case SolutionExplorerTreeViewContainer.KindByte_Dir:
+            case SolutionExplorerTreeViewContainer.ByteKind_Dir:
                 return DirectoryTraitsList[nodeValue.TraitsIndex].Name;
-            case SolutionExplorerTreeViewContainer.KindByte_File:
+            case SolutionExplorerTreeViewContainer.ByteKind_File:
                 return FileTraitsList[nodeValue.TraitsIndex].Name;
             default:
                 return "asdfg";
@@ -375,17 +375,17 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
     public override IconKind GetIconKind(int indexNodeValue)
     {
         var nodeValue = NodeValueList[indexNodeValue];
-        switch (nodeValue.KindByte)
+        switch (nodeValue.ByteKind)
         {
-            case SolutionExplorerTreeViewContainer.KindByte_Solution:
+            case SolutionExplorerTreeViewContainer.ByteKind_Solution:
                 return IconKind.DotNetSolution;
-            case SolutionExplorerTreeViewContainer.KindByte_SolutionFolder:
+            case SolutionExplorerTreeViewContainer.ByteKind_SolutionFolder:
                 return IconKind.DotNetSolutionFolder;
-            case SolutionExplorerTreeViewContainer.KindByte_Csproj:
+            case SolutionExplorerTreeViewContainer.ByteKind_Csproj:
                 return IconKind.CSharpProject;
-            case SolutionExplorerTreeViewContainer.KindByte_Dir:
+            case SolutionExplorerTreeViewContainer.ByteKind_Dir:
                 return IconKind.Folder;
-            case SolutionExplorerTreeViewContainer.KindByte_File:
+            case SolutionExplorerTreeViewContainer.ByteKind_File:
                 var file = FileTraitsList[nodeValue.TraitsIndex];
                 return IdeFacts.GetIconKind(file);
             default:
@@ -400,18 +400,18 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
         string? path = null;
 
         var nodeValue = NodeValueList[indexNodeValue];
-        switch (nodeValue.KindByte)
+        switch (nodeValue.ByteKind)
         {
-            case SolutionExplorerTreeViewContainer.KindByte_Solution:
+            case SolutionExplorerTreeViewContainer.ByteKind_Solution:
                 return Task.CompletedTask;
-            case SolutionExplorerTreeViewContainer.KindByte_SolutionFolder:
+            case SolutionExplorerTreeViewContainer.ByteKind_SolutionFolder:
                 return Task.CompletedTask;
-            case SolutionExplorerTreeViewContainer.KindByte_Csproj:
+            case SolutionExplorerTreeViewContainer.ByteKind_Csproj:
                 path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
                 break;
-            case SolutionExplorerTreeViewContainer.KindByte_Dir:
+            case SolutionExplorerTreeViewContainer.ByteKind_Dir:
                 return Task.CompletedTask;
-            case SolutionExplorerTreeViewContainer.KindByte_File:
+            case SolutionExplorerTreeViewContainer.ByteKind_File:
                 path = FileTraitsList[nodeValue.TraitsIndex].Value;
                 break;
             default:
@@ -448,18 +448,18 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 string? path = null;
 
                 var nodeValue = NodeValueList[indexNodeValue];
-                switch (nodeValue.KindByte)
+                switch (nodeValue.ByteKind)
                 {
-                    case SolutionExplorerTreeViewContainer.KindByte_Solution:
+                    case SolutionExplorerTreeViewContainer.ByteKind_Solution:
                         return Task.CompletedTask;
-                    case SolutionExplorerTreeViewContainer.KindByte_SolutionFolder:
+                    case SolutionExplorerTreeViewContainer.ByteKind_SolutionFolder:
                         return Task.CompletedTask;
-                    case SolutionExplorerTreeViewContainer.KindByte_Csproj: // .csproj
+                    case SolutionExplorerTreeViewContainer.ByteKind_Csproj: // .csproj
                         path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
                         break;
-                    case SolutionExplorerTreeViewContainer.KindByte_Dir:
+                    case SolutionExplorerTreeViewContainer.ByteKind_Dir:
                         return Task.CompletedTask;
-                    case SolutionExplorerTreeViewContainer.KindByte_File:
+                    case SolutionExplorerTreeViewContainer.ByteKind_File:
                         path = FileTraitsList[nodeValue.TraitsIndex].Value;
                         break;
                     default:
@@ -486,18 +486,18 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
                 string? path = null;
 
                 var nodeValue = NodeValueList[indexNodeValue];
-                switch (nodeValue.KindByte)
+                switch (nodeValue.ByteKind)
                 {
-                    case SolutionExplorerTreeViewContainer.KindByte_Solution:
+                    case SolutionExplorerTreeViewContainer.ByteKind_Solution:
                         return Task.CompletedTask;
-                    case SolutionExplorerTreeViewContainer.KindByte_SolutionFolder:
+                    case SolutionExplorerTreeViewContainer.ByteKind_SolutionFolder:
                         return Task.CompletedTask;
-                    case SolutionExplorerTreeViewContainer.KindByte_Csproj:
+                    case SolutionExplorerTreeViewContainer.ByteKind_Csproj:
                         path = DotNetSolutionModel.DotNetProjectList[nodeValue.TraitsIndex].AbsolutePath.Value;
                         break;
-                    case SolutionExplorerTreeViewContainer.KindByte_Dir:
+                    case SolutionExplorerTreeViewContainer.ByteKind_Dir:
                         return Task.CompletedTask;
-                    case SolutionExplorerTreeViewContainer.KindByte_File:
+                    case SolutionExplorerTreeViewContainer.ByteKind_File:
                         path = FileTraitsList[nodeValue.TraitsIndex].Value;
                         break;
                     default:
@@ -566,9 +566,9 @@ public class SolutionExplorerTreeViewContainer : TreeViewContainer
         return Task.CompletedTask;
     }
     
-    public const byte KindByte_Solution = 1;
-    public const byte KindByte_SolutionFolder = 2;
-    public const byte KindByte_Csproj = 3;
-    public const byte KindByte_Dir = 4;
-    public const byte KindByte_File = 5;
+    public const byte ByteKind_Solution = 1;
+    public const byte ByteKind_SolutionFolder = 2;
+    public const byte ByteKind_Csproj = 3;
+    public const byte ByteKind_Dir = 4;
+    public const byte ByteKind_File = 5;
 }

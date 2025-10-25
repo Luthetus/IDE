@@ -34,10 +34,10 @@ public struct TreeViewNodeValue
     /// '0' should NEVER be used.
     /// It marks whether a nodeValue is the default value or not.
     /// </summary>
-    public byte KindByte { get; set; }
+    public byte ByteKind { get; set; }
     
     /// <summary>
-    /// All data should be stored on the ITreeViewContainer.
+    /// All data should be stored on the TreeViewContainer.
     ///
     /// This property either can be an index within some List wherein
     /// the nodeValue's data is stored.
@@ -54,5 +54,5 @@ public struct TreeViewNodeValue
     public bool IsExpandable { get; set; }
     public bool IsExpanded { get; set; }
     
-    public bool IsDefault() => KindByte == 0;
+    public bool IsDefault() => ByteKind == 0;
 }

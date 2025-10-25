@@ -942,7 +942,7 @@ public partial class DotNetService
                 IndexAmongSiblings = 0,
                 ChildListOffset = treeViewContainer.NodeValueList.Count,
                 ChildListLength = 0,
-                KindByte = SolutionExplorerTreeViewContainer.KindByte_Solution,
+                ByteKind = SolutionExplorerTreeViewContainer.ByteKind_Solution,
                 TraitsIndex = 0,
                 IsExpandable = true,
                 IsExpanded = true

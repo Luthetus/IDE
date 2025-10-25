@@ -259,4 +259,5 @@ public class OutputTreeViewContainer : TreeViewContainer
     }
     
     public const byte ByteKind_Aaa = 1;
+    public const byte ByteKind_Bbb = 2;
 }

@@ -276,6 +276,16 @@ public partial class TextEditorService
                 
                 // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
                 
+                Console.WriteLine($"projectRespectedList.Count:{projectRespectedList.Count}");
+
+                Console.WriteLine($"searchResultOffset:{searchResultOffset}");
+                Console.WriteLine($"searchResultLength:{searchResultLength}");
+                Console.WriteLine($"fileGroupOffset:{fileGroupOffset}");
+                Console.WriteLine($"fileGroupLength:{fileGroupLength}");
+                Console.WriteLine($"csprojOffset:{csprojOffset}");
+                Console.WriteLine($"csprojLength:{csprojLength}");
+                Console.WriteLine($"projectRespectedListIndex:{projectRespectedListIndex}");
+                
                 for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
                 {
                     var searchResult = findAllTreeViewContainer.SearchResultList[i];

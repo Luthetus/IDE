@@ -307,10 +307,10 @@ public partial class TextEditorService
             streamReaderPooledBufferWrap.ReInitialize(streamReaderPooledBuffer);
             
             var positionInSearch = 0;
-            bool fileContainedSearch = false;
             
             while (!streamReaderPooledBufferWrap.IsEof)
             {
+                continue_outer_while_loop:
                 if (streamReaderPooledBufferWrap.CurrentCharacter == search[positionInSearch])
                 {
                     var originBytePosition = streamReaderPooledBufferWrap.ByteIndex;;
@@ -325,9 +325,21 @@ public partial class TextEditorService
                     {
                         if (positionInSearch == search.Length)
                         {
+                            searchResultList.Add(
+                            (
+                                resourceUri,
+                                new TextEditorTextSpan(
+                                    startInclusiveIndex: originCharacterPosition,
+                                    endExclusiveIndex: streamReaderPooledBufferWrap.PositionIndex,
+                                    decorationByte: 0,
+                                    byteIndex: originBytePosition)
+                            ));
+                            
                             positionInSearch = 0;
-                            fileContainedSearch = true;
-                            break;
+                            streamReaderPooledBufferWrap.Unsafe_Seek_SeekOriginBegin(
+                                bytePosition, characterPosition, characterLength: 0);
+                            
+                            goto continue_outer_while_loop;
                         }
                         else if (streamReaderPooledBufferWrap.CurrentCharacter != search[positionInSearch])
                         {
@@ -341,20 +353,6 @@ public partial class TextEditorService
                             positionInSearch++;
                             _ = streamReaderPooledBufferWrap.ReadCharacter();
                         }
-                    }
-                    
-                    if (fileContainedSearch)
-                    {
-                        searchResultList.Add(
-                            (
-                                resourceUri,
-                                new TextEditorTextSpan(
-                                    startInclusiveIndex: originCharacterPosition,
-                                    endExclusiveIndex: streamReaderPooledBufferWrap.PositionIndex,
-                                    decorationByte: 0,
-                                    byteIndex: originBytePosition)
-                            ));
-                        break;
                     }
                 }
             

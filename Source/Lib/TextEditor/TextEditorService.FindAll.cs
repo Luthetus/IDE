@@ -107,6 +107,14 @@ public partial class TextEditorService
                 charBuffer: new char[utf8_MaxCharCount]);
             
             ParseFilesRecursive(searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+            
+            // Track the .csproj you've seen when recursing from the parent dir of the .NET solution.
+            // 
+            // Then iterate over every .csproj that the .NET solution specifies in the .sln file.
+            //
+            // Each iteration will recurse from the parent dir of that .csproj 
+            // BUT at the start of each .csproj check whether the .sln recurse step had seen the .csproj file already.
+            // IF SO, then skip that iteration.
         }
         catch (Exception e)
         {

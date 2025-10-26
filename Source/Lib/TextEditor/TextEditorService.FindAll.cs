@@ -89,7 +89,7 @@ public partial class TextEditorService
         
         The csharp projects as well need to be added last since they would otherwise fragment the children of the root.
         
-        When you've seen a .csproj file you add to projectSeenHashSet so you can change this to a List,
+        When you've seen a .csproj file you add to projectSeenMap so you can change this to a List,
         entry can be a value tuple of (string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)
         
         Then you'd have to write the search through the List but this may or may not be an issue
@@ -133,9 +133,9 @@ public partial class TextEditorService
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
-        var projectSeenMap = new Dictionary<string ProjectAbsolutePath, (int ChildListOffset, int ChildListLength)>();
+        var projectSeenMap = new Dictionary<string /*ProjectAbsolutePath*/, (int ChildListOffset, int ChildListLength)>();
         
-        int fileCount;
+        int fileCount = 0;
         
         var findAllTreeViewContainer = new FindAllTreeViewContainer(this, searchResultList);
         findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
@@ -173,10 +173,10 @@ public partial class TextEditorService
             ParseFilesRecursive(
                 /*findAllTreeViewContainer, */
                 depth: 0,
-                csprojDepth: -1,
+                csprojMark: (-1, string.Empty),
                 tokenBuilder,
                 formattedBuilder,
-                projectSeenHashSet,
+                projectSeenMap,
                 searchResultList,
                 textEditorFindAllState.SearchQuery,
                 parentDirectory,
@@ -186,20 +186,22 @@ public partial class TextEditorService
             
             foreach (var projectAbsolutePath in textEditorFindAllState.ProjectList)
             {
-                if (projectSeenHashSet.Add(projectAbsolutePath.Value))
+                if (!projectSeenMap.ContainsKey(projectAbsolutePath.Value))
+                {
                     ParseFilesRecursive(
                         /*findAllTreeViewContainer, */
-                        depth: 0,
-                        csprojDepth: 0,
+                        depth: -1,
+                        csprojMark: (-1, string.Empty),
                         tokenBuilder,
                         formattedBuilder,
-                        projectSeenHashSet,
+                        projectSeenMap,
                         searchResultList,
                         textEditorFindAllState.SearchQuery,
                         projectAbsolutePath.CreateSubstringParentDirectory(),
                         streamReaderPooledBufferWrap,
                         streamReaderPooledBuffer,
                         ref fileCount);
+                }
             }
             
             // Track the .csproj you've seen when recursing from the parent dir of the .NET solution.
@@ -331,7 +333,7 @@ public partial class TextEditorService
         (int Depth, string FormattedAbsolutePath) csprojMark,
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
-        HashSet<string> projectSeenHashSet,
+        Dictionary<string /*ProjectAbsolutePath*/, (int ChildListOffset, int ChildListLength)> projectSeenMap,
         List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
         string search,
         string currentDirectory,
@@ -378,7 +380,7 @@ public partial class TextEditorService
                     // the first one that was found.
                     csprojMark = (depth, formattedAbsolutePath);
                     
-                    projectSeenHashSet.Add(
+                    projectSeenMap.Add(
                         formattedAbsolutePath,
                         (
                             csprojChildListOffset,
@@ -388,7 +390,7 @@ public partial class TextEditorService
                 else
                 {
                     // TODO: Support value tuple named parameters.
-                    projectSeenHashSet.Add(
+                    projectSeenMap.Add(
                         formattedAbsolutePath,
                         (
                             -1,
@@ -488,7 +490,7 @@ public partial class TextEditorService
                     csprojMark,
                     tokenBuilder,
                     formattedBuilder,
-                    projectSeenHashSet,
+                    projectSeenMap,
                     searchResultList,
                     search,
                     subDirectory,
@@ -500,10 +502,10 @@ public partial class TextEditorService
         
         if (csprojMark.Depth == depth)
         {
-            projectSeenHashSet[csprojMark.FormattedAbsolutePath] =
+            projectSeenMap[csprojMark.FormattedAbsolutePath] =
             (
                 csprojChildListOffset,
-                searchResultList.Count - countUponEntry,
+                searchResultList.Count - countUponEntry
             );
         }
     }

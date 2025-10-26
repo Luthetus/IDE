@@ -368,6 +368,29 @@ public partial class TextEditorService
                         previousFileGroupChildListLength = 1;
                     }
                 }
+                
+                if (projectRespectedListIndex < projectRespectedList.Count &&
+                    previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
+                {
+                    findAllTreeViewContainer.NodeValueList[csprojOffset + csprojLength] =
+                        new TreeViewNodeValue
+                        {
+                            ParentIndex = 0,
+                            IndexAmongSiblings = csprojLength,
+                            ChildListOffset = previousProjectChildListOffset,
+                            ChildListLength = previousProjectChildListLength,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
+                            TraitsIndex = projectRespectedListIndex,
+                            IsExpandable = true,
+                            IsExpanded = false
+                        };
+                    ++csprojLength;
+                    ++projectRespectedListIndex;
+                    
+                    previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
+                    previousProjectChildListLength = 0;
+                    previousProjectFilesLength = 0;
+                }
             }
             
             lock (_stateModificationLock)

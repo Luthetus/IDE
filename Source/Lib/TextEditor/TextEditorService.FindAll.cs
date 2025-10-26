@@ -157,7 +157,7 @@ public partial class TextEditorService
             // then iterate the groups to get the children of groups
             // because children MUST be contiguous in the NodeValueList.
             
-            var previousResourceUri = string.Empty;
+            var previousResourceUri = ResourceUri.Empty;
             
             for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
             {
@@ -174,7 +174,7 @@ public partial class TextEditorService
                         ChildListLength = 0,
                         ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
                         TraitsIndex = i,
-                        IsExpandable = false,
+                        IsExpandable = true,
                         IsExpanded = false
                     });
                 }
@@ -182,33 +182,44 @@ public partial class TextEditorService
             findAllTreeViewContainer.NodeValueList[0] = findAllTreeViewContainer.NodeValueList[0] with
             {
                 ChildListLength = findAllTreeViewContainer.NodeValueList.Count - 1
-            }
+            };
 
-            for (int i = findAllTreeViewContainer.NodeValueList[0].ChildListOffset; i < findAllTreeViewContainer.NodeValueList[0].ChildListOffset + findAllTreeViewContainer.NodeValueList[0].ChildListLength; i++)
+            for (int outerIndex = findAllTreeViewContainer.NodeValueList[0].ChildListOffset; outerIndex < findAllTreeViewContainer.NodeValueList[0].ChildListOffset + findAllTreeViewContainer.NodeValueList[0].ChildListLength; outerIndex++)
             {
-                var groupNodeValue = findAllTreeViewContainer.NodeValueList[i];
+                var groupNodeValue = findAllTreeViewContainer.NodeValueList[outerIndex];
                 var groupSearchResult = findAllTreeViewContainer.SearchResultList[groupNodeValue.TraitsIndex];
-                var childLength = 0;
-                while ()
-                {
-                    ++childLength;
-                }
-                findAllTreeViewContainer.NodeValueList[i] = findAllTreeViewContainer.NodeValueList[i] with
-                {
-                    ChildListLength = childLength
-                };
+                var childListOffset = findAllTreeViewContainer.NodeValueList.Count;
+                var childListLength = 0;
                 
-                findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+                var indexSearchResult = groupNodeValue.TraitsIndex;
+                while (indexSearchResult < findAllTreeViewContainer.SearchResultList.Count)
                 {
-                    ParentIndex = 0,
-                    IndexAmongSiblings = indexAmongSiblings++,
-                    ChildListOffset = findAllTreeViewContainer.NodeValueList.Count,
-                    ChildListLength = 0,
-                    ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                    TraitsIndex = i,
-                    IsExpandable = false,
-                    IsExpanded = false
-                });
+                    var childSearchResult = findAllTreeViewContainer.SearchResultList[indexSearchResult];
+                    if (childSearchResult.ResourceUri == groupSearchResult.ResourceUri)
+                    {
+                        findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+                        {
+                            ParentIndex = outerIndex,
+                            IndexAmongSiblings = childListLength++,
+                            ChildListOffset = 0,
+                            ChildListLength = 0,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                            TraitsIndex = indexSearchResult,
+                            IsExpandable = false,
+                            IsExpanded = false
+                        });
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    ++indexSearchResult;
+                }
+                findAllTreeViewContainer.NodeValueList[outerIndex] = findAllTreeViewContainer.NodeValueList[outerIndex] with
+                {
+                    ChildListOffset = childListOffset,
+                    ChildListLength = childListLength
+                };
             }
             
             lock (_stateModificationLock)

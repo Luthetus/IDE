@@ -362,12 +362,18 @@ public partial class TextEditorService
                     csprojDepth = depth;
                 }
             
-                projectSeenHashSet.Add(AbsolutePath.GetFormattedStringOnly(
-                    file,
-                    isDirectory: false,
-                    fileSystemProvider: CommonService.FileSystemProvider,
-                    tokenBuilder,
-                    formattedBuilder));
+                // TODO: Support value tuple named parameters.
+                projectSeenHashSet.Add(
+                    AbsolutePath.GetFormattedStringOnly(
+                        file,
+                        isDirectory: false,
+                        fileSystemProvider: CommonService.FileSystemProvider,
+                        tokenBuilder,
+                        formattedBuilder),
+                    (
+                        csprojChildListOffset,
+                        -1
+                    ));
             }
             
             var resourceUri = new ResourceUri(file);

@@ -236,6 +236,7 @@ public partial class TextEditorService
                 var fileGroupOffset = 1 + searchResultList.Count;
                 var fileGroupLength = 0;
                 
+                Console.WriteLine($"fileCount:{fileCount}");
                 var csprojOffset = fileGroupOffset + fileCount;
                 var csprojLength = 0;
                 

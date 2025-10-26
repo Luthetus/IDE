@@ -248,6 +248,12 @@ public partial class TextEditorService
             
             if (TextEditorState._modelMap.TryGetValue(resourceUri, out var textEditorModel))
             {
+                // If the formatting of the absolute path is off in any way
+                // then the model won't be found.
+                //
+                // I don't think this conditional branch is getting hit, presumably the
+                // absolute path always is slightly different.
+                //
                 streamReaderPooledBuffer.DiscardBufferedData(
                     new MemoryStream(Encoding.UTF8.GetBytes(textEditorModel.GetAllText())));
             }

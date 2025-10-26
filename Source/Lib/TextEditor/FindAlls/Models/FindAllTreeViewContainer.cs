@@ -164,4 +164,5 @@ public class FindAllTreeViewContainer : TreeViewContainer
     
     public const byte ByteKind_Aaa = 1;
     public const byte ByteKind_SearchResult = 2;
+    public const byte ByteKind_SearchResultGroup = 3;
 }

@@ -88,6 +88,7 @@ public partial class TextEditorService
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
+        var projectSeenList = new List<string>();
         
         Exception? exception = null;
         
@@ -106,7 +107,11 @@ public partial class TextEditorService
                 byteBuffer: new byte[StreamReaderPooledBuffer.DefaultBufferSize],
                 charBuffer: new char[utf8_MaxCharCount]);
             
-            ParseFilesRecursive(searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+            ParseFilesRecursive(projectSeenList, searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+            
+            foreach (var project in )
+            {
+            }
             
             // Track the .csproj you've seen when recursing from the parent dir of the .NET solution.
             // 
@@ -180,7 +185,7 @@ public partial class TextEditorService
     /// This entire situation is a huge pain because I'm so strict throughout the codebase with how the formatting of the path is.
     /// When I use DirectoryInfo I get the drive prepended to the path and windows directory separators and it breaks everything.
     /// </summary>
-    private void ParseFilesRecursive(List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList, string search, string currentDirectory, StreamReaderPooledBufferWrap streamReaderPooledBufferWrap, StreamReaderPooledBuffer streamReaderPooledBuffer)
+    private void ParseFilesRecursive(List<string> projectSeenList, List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList, string search, string currentDirectory, StreamReaderPooledBufferWrap streamReaderPooledBufferWrap, StreamReaderPooledBuffer streamReaderPooledBuffer)
     {
         // Enumerate files in the current directory
         foreach (string file in Directory.EnumerateFiles(currentDirectory))
@@ -199,6 +204,10 @@ public partial class TextEditorService
                 file.EndsWith(".gif"))
             {
                 continue;
+            }
+            if (file.EndsWith(".csproj"))
+            {
+                ProjectSeenList.Add(file);
             }
             
             var resourceUri = new ResourceUri(file);
@@ -288,7 +297,7 @@ public partial class TextEditorService
             if (!IFileSystemProvider.IsDirectoryIgnored(subDirectory))
             {
                 // Recursively call for non-excluded subdirectories
-                ParseFilesRecursive(searchResultList, search, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+                ParseFilesRecursive(projectSeenList, searchResultList, search, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
             }
         }
     }
@@ -298,9 +307,18 @@ public partial class TextEditorService
         CancelSearch();
     }
 
+    /// <summary>
+    /// ProjectList is used for searching .csproj which can't be recursively found by
+    /// searching from the .sln's parent dir.
+    /// ...
+    /// The ProjectList should contain every project whether it is one that
+    /// can or cannot be found. If a project can be found,
+    /// then it is skipped during the iteration of ProjectList.
+    /// </summary>
     public record struct TextEditorFindAllState(
         string SearchQuery,
         string StartingDirectoryPath,
+        IEnumerable<string> ProjectList,
         List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList,
         Exception Exception)
     {

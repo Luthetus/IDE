@@ -124,7 +124,22 @@ public partial class TextEditorService
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
-        var projectSeenHashSet = new HashSet<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)>();
+        var projectSeenMap = new Dictionary<string ProjectAbsolutePath, (int ChildListOffset, int ChildListLength)>();
+        
+        int fileCount;
+        
+        var findAllTreeViewContainer = new FindAllTreeViewContainer(this, searchResultList);
+        findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+        {
+            ParentIndex = -1,
+            IndexAmongSiblings = 0,
+            ChildListOffset = 1,
+            ChildListLength = 0,
+            ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
+            TraitsIndex = 0,
+            IsExpandable = true,
+            IsExpanded = true
+        });
         
         Exception? exception = null;
         
@@ -146,12 +161,36 @@ public partial class TextEditorService
             var tokenBuilder = new StringBuilder();
             var formattedBuilder = new StringBuilder();
             
-            ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+            ParseFilesRecursive(
+                /*findAllTreeViewContainer, */
+                depth: 0,
+                csprojDepth: -1,
+                tokenBuilder,
+                formattedBuilder,
+                projectSeenHashSet,
+                searchResultList,
+                textEditorFindAllState.SearchQuery,
+                parentDirectory,
+                streamReaderPooledBufferWrap,
+                streamReaderPooledBuffer,
+                ref fileCount);
             
             foreach (var projectAbsolutePath in textEditorFindAllState.ProjectList)
             {
                 if (projectSeenHashSet.Add(projectAbsolutePath.Value))
-                    ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, textEditorFindAllState.SearchQuery, projectAbsolutePath.CreateSubstringParentDirectory(), streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+                    ParseFilesRecursive(
+                        /*findAllTreeViewContainer, */
+                        depth: 0,
+                        csprojDepth: 0,
+                        tokenBuilder,
+                        formattedBuilder,
+                        projectSeenHashSet,
+                        searchResultList,
+                        textEditorFindAllState.SearchQuery,
+                        projectAbsolutePath.CreateSubstringParentDirectory(),
+                        streamReaderPooledBufferWrap,
+                        streamReaderPooledBuffer,
+                        ref fileCount);
             }
             
             // Track the .csproj you've seen when recursing from the parent dir of the .NET solution.
@@ -171,9 +210,7 @@ public partial class TextEditorService
         {
             streamReaderPooledBuffer?.Dispose();
             
-            var findAllTreeViewContainer = new FindAllTreeViewContainer(this, searchResultList);
-            
-            var rootNode = new TreeViewNodeValue
+            /*var rootNode = new TreeViewNodeValue
             {
                 ParentIndex = -1,
                 IndexAmongSiblings = 0,
@@ -184,7 +221,7 @@ public partial class TextEditorService
                 IsExpandable = true,
                 IsExpanded = true
             };
-            findAllTreeViewContainer.NodeValueList.Add(rootNode);
+            findAllTreeViewContainer.NodeValueList.Add(rootNode);*/
 
             var groupIndexAmongSiblings = 0;
             
@@ -280,6 +317,9 @@ public partial class TextEditorService
     /// When I use DirectoryInfo I get the drive prepended to the path and windows directory separators and it breaks everything.
     /// </summary>
     private void ParseFilesRecursive(
+        int depth,
+        int csprojDepth,
+        //FindAllTreeViewContainer container,
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
         HashSet<string> projectSeenHashSet,
@@ -287,10 +327,10 @@ public partial class TextEditorService
         string search,
         string currentDirectory,
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap,
-        StreamReaderPooledBuffer streamReaderPooledBuffer)
+        StreamReaderPooledBuffer streamReaderPooledBuffer,
+        ref int fileCount)
     {
-        var csprojChildListOffset = ;
-        // var csprojChildListLength;
+        var csprojChildListOffset = searchResultList.Count + 1 /* '+ 1' is the root node */;
         
         // Enumerate files in the current directory
         foreach (string file in Directory.EnumerateFiles(currentDirectory))
@@ -310,8 +350,18 @@ public partial class TextEditorService
             {
                 continue;
             }
+            
+            ++fileCount;
+            
             if (file.EndsWith(".csproj"))
             {
+                if (csprojDepth == -1)
+                {
+                    // If anyone has "recursive" csproj files then this code only respects
+                    // the first one that was found.
+                    csprojDepth = depth;
+                }
+            
                 projectSeenHashSet.Add(AbsolutePath.GetFormattedStringOnly(
                     file,
                     isDirectory: false,
@@ -405,8 +455,25 @@ public partial class TextEditorService
             if (!IFileSystemProvider.IsDirectoryIgnored(subDirectory))
             {
                 // Recursively call for non-excluded subdirectories
-                ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, search, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+                ParseFilesRecursive(
+                    /*container, */
+                    depth + 1,
+                    csprojDepth,
+                    tokenBuilder,
+                    formattedBuilder,
+                    projectSeenHashSet,
+                    searchResultList,
+                    search,
+                    subDirectory,
+                    streamReaderPooledBufferWrap,
+                    streamReaderPooledBuffer,
+                    ref fileCount);
             }
+        }
+        
+        if (csprojDepth == depth)
+        {
+            
         }
     }
 

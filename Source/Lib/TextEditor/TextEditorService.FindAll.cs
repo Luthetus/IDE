@@ -1,3 +1,4 @@
+using System.Text;
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Keys.Models;
@@ -5,6 +6,7 @@ using Clair.Common.RazorLib.Reactives.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
+using Clair.TextEditor.RazorLib.FindAlls.Models;
 
 namespace Clair.TextEditor.RazorLib;
 
@@ -115,22 +117,25 @@ public partial class TextEditorService
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
         var textEditorFindAllState = GetFindAllState();
-        var dotNetSolutionState = GetDotNetSolutionState();
-        var solutionModel = dotNetSolutionState.DotNetSolutionModel;
+        var startingDirectoryPath = textEditorFindAllState.StartingDirectoryPath;
+        // var solutionModel = dotNetSolutionState.DotNetSolutionModel;
         
         if (string.IsNullOrWhiteSpace(textEditorFindAllState.SearchQuery))
-            return;
+            return Task.CompletedTask;
         
-        StreamReaderPooledBuffer streamReaderPooledBuffer;
+        StreamReaderPooledBuffer? streamReaderPooledBuffer = null;
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
         
+        Exception? exception = null;
+        
         try
         {
-            var parentDirectory = solutionModel.AbsolutePath.CreateSubstringParentDirectory();
+            var parentDirectory = startingDirectoryPath;
+            //var parentDirectory = solutionModel.AbsolutePath.CreateSubstringParentDirectory();
             if (parentDirectory is null)
-                return;
+                return Task.CompletedTask;
     
             var utf8Encoding = Encoding.UTF8;
             var utf8_MaxCharCount = utf8Encoding.GetMaxCharCount(StreamReaderPooledBuffer.DefaultBufferSize);
@@ -145,22 +150,58 @@ public partial class TextEditorService
         }
         catch (Exception e)
         {
+            exception = e;
             Console.WriteLine(e);
         }
         finally
         {
             streamReaderPooledBuffer?.Dispose();
+            
+            var findAllTreeViewContainer = new FindAllTreeViewContainer(this, searchResultList);
+            
+            var rootNode = new TreeViewNodeValue
+            {
+                ParentIndex = -1,
+                IndexAmongSiblings = 0,
+                ChildListOffset = 1,
+                ChildListLength = searchResultList.Count,
+                ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
+                TraitsIndex = 0,
+                IsExpandable = true,
+                IsExpanded = true
+            };
+            findAllTreeViewContainer.NodeValueList.Add(rootNode);
+
+            var indexAmongSiblings = 0;
+
+            for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
+            {
+                var result = findAllTreeViewContainer.SearchResultList[i];
+                findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+                {
+                    ParentIndex = -1,
+                    IndexAmongSiblings = indexAmongSiblings++,
+                    ChildListOffset = findAllTreeViewContainer.NodeValueList.Count,
+                    ChildListLength = 0,
+                    ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                    TraitsIndex = i,
+                    IsExpandable = false,
+                    IsExpanded = false
+                });
+            }
+            
             lock (_stateModificationLock)
             {
+                CommonService.TreeView_RegisterContainerAction(findAllTreeViewContainer);
                 _findAllState = _findAllState with
                 {
-                    SearchResultList = searchResultList
+                    SearchResultList = searchResultList,
+                    Exception = exception
                 };
             }
+            
             SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
         }
-        
-        
 
         return Task.CompletedTask;
     }
@@ -200,7 +241,7 @@ public partial class TextEditorService
             if (TextEditorState._modelMap.TryGetValue(resourceUri, out var textEditorModel))
             {
                 streamReaderPooledBuffer.DiscardBufferedData(
-                    new MemoryStream(Encoding.UTF8.GetBytes(textEditorModel.GetAllText());
+                    new MemoryStream(Encoding.UTF8.GetBytes(textEditorModel.GetAllText())));
             }
             else
             {
@@ -210,7 +251,7 @@ public partial class TextEditorService
             
             streamReaderPooledBufferWrap.ReInitialize(streamReaderPooledBuffer);
             
-            var positionInSearch;
+            var positionInSearch = 0;
             bool fileContainedSearch = false;
             
             while (!streamReaderPooledBufferWrap.IsEof)
@@ -263,7 +304,7 @@ public partial class TextEditorService
             if (!IFileSystemProvider.IsDirectoryIgnored(subDirectory))
             {
                 // Recursively call for non-excluded subdirectories
-                ParseFilesRecursive(searchResultList, textEditorFindAllState.SearchQuery, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+                ParseFilesRecursive(searchResultList, search, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
             }
         }
     }
@@ -424,6 +465,7 @@ public partial class TextEditorService
 
     private void ConstructTreeView(TextEditorFindAllState textEditorFindAllState)
     {
+        /*
         var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(TextEditorFindAllState.TreeViewFindAllContainerKey);
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
@@ -475,6 +517,7 @@ public partial class TextEditorService
         CommonService.TreeView_RegisterContainerAction(
         	container,
         	shouldFireStateChangedEvent: true);
+        */
     }
 
     public void Dispose()

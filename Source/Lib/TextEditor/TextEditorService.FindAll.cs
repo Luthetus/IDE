@@ -396,6 +396,33 @@ public partial class TextEditorService
                     previousProjectChildListLength = 0;
                     previousProjectFilesLength = 0;
                 }
+                
+                /*
+                ==============
+            	searchResultList.Count:5
+            	csprojOffset + projectRespectedList.Count:8
+            	projectRespectedList.Count:1
+            	searchResultOffset:1
+            	searchResultLength:5
+            	fileGroupOffset:6
+            	fileGroupLength:0
+            	csprojOffset:7
+            	csprojLength:1
+            	projectRespectedListIndex:1
+            	==============
+                */
+                Console.WriteLine("\n\t==============");
+                Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
+                Console.WriteLine($"\tcsprojOffset + projectRespectedList.Count:{csprojOffset + projectRespectedList.Count}");
+                Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");
+                Console.WriteLine($"\tsearchResultOffset:{searchResultOffset}");
+                Console.WriteLine($"\tsearchResultLength:{searchResultLength}");
+                Console.WriteLine($"\tfileGroupOffset:{fileGroupOffset}");
+                Console.WriteLine($"\tfileGroupLength:{fileGroupLength}");
+                Console.WriteLine($"\tcsprojOffset:{csprojOffset}");
+                Console.WriteLine($"\tcsprojLength:{csprojLength}");
+                Console.WriteLine($"\tprojectRespectedListIndex:{projectRespectedListIndex}");
+                Console.WriteLine("\t==============\n");
             }
             
             lock (_stateModificationLock)

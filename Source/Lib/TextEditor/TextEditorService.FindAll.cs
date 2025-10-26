@@ -88,6 +88,12 @@ public partial class TextEditorService
         OR you can store a separate List that contains all the misc entries then move them to the NodeValueList at the end.
         
         The csharp projects as well need to be added last since they would otherwise fragment the children of the root.
+        
+        When you've seen a .csproj file you add to projectSeenHashSet so you can change this to a List,
+        entry can be a value tuple of (string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)
+        
+        Then you'd have to write the search through the List but this may or may not be an issue
+        I don't think people would have thousands of projects in their .sln.
         */
     
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);

@@ -32,13 +32,14 @@ public partial class TextEditorService
         SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
     }
 
-    public void SetStartingDirectoryPath(string startingDirectoryPath)
+    public void SetStartingDirectoryPath(string startingDirectoryPath, IEnumerable<AbsolutePath> projectList)
     {
         lock (_stateModificationLock)
         {
             _findAllState = _findAllState with
             {
-                StartingDirectoryPath = startingDirectoryPath
+                StartingDirectoryPath = startingDirectoryPath,
+                ProjectList = projectList
             };
         }
 
@@ -88,7 +89,7 @@ public partial class TextEditorService
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
-        var projectSeenList = new List<string>();
+        var projectSeenHashSet = new HashSet<string>();
         
         Exception? exception = null;
         
@@ -107,10 +108,16 @@ public partial class TextEditorService
                 byteBuffer: new byte[StreamReaderPooledBuffer.DefaultBufferSize],
                 charBuffer: new char[utf8_MaxCharCount]);
             
-            ParseFilesRecursive(projectSeenList, searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+            var tokenBuilder = new StringBuilder();
+            var formattedBuilder = new StringBuilder();
             
-            foreach (var project in )
+            ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+            
+            foreach (var projectAbsolutePath in textEditorFindAllState.ProjectList)
             {
+                Console.WriteLine("foreach:" + projectAbsolutePath.Value);
+                if (projectSeenHashSet.Add(projectAbsolutePath.Value))
+                    ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, textEditorFindAllState.SearchQuery, projectAbsolutePath.CreateSubstringParentDirectory(), streamReaderPooledBufferWrap, streamReaderPooledBuffer);
             }
             
             // Track the .csproj you've seen when recursing from the parent dir of the .NET solution.
@@ -185,7 +192,15 @@ public partial class TextEditorService
     /// This entire situation is a huge pain because I'm so strict throughout the codebase with how the formatting of the path is.
     /// When I use DirectoryInfo I get the drive prepended to the path and windows directory separators and it breaks everything.
     /// </summary>
-    private void ParseFilesRecursive(List<string> projectSeenList, List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList, string search, string currentDirectory, StreamReaderPooledBufferWrap streamReaderPooledBufferWrap, StreamReaderPooledBuffer streamReaderPooledBuffer)
+    private void ParseFilesRecursive(
+        StringBuilder tokenBuilder,
+        StringBuilder formattedBuilder,
+        HashSet<string> projectSeenHashSet,
+        List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
+        string search,
+        string currentDirectory,
+        StreamReaderPooledBufferWrap streamReaderPooledBufferWrap,
+        StreamReaderPooledBuffer streamReaderPooledBuffer)
     {
         // Enumerate files in the current directory
         foreach (string file in Directory.EnumerateFiles(currentDirectory))
@@ -207,7 +222,13 @@ public partial class TextEditorService
             }
             if (file.EndsWith(".csproj"))
             {
-                ProjectSeenList.Add(file);
+                Console.WriteLine("file.EndsWith(...):" + file);
+                projectSeenHashSet.Add(AbsolutePath.GetFormattedStringOnly(
+                    file,
+                    isDirectory: false,
+                    fileSystemProvider: CommonService.FileSystemProvider,
+                    tokenBuilder,
+                    formattedBuilder));
             }
             
             var resourceUri = new ResourceUri(file);
@@ -297,7 +318,7 @@ public partial class TextEditorService
             if (!IFileSystemProvider.IsDirectoryIgnored(subDirectory))
             {
                 // Recursively call for non-excluded subdirectories
-                ParseFilesRecursive(projectSeenList, searchResultList, search, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+                ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, search, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
             }
         }
     }
@@ -318,7 +339,7 @@ public partial class TextEditorService
     public record struct TextEditorFindAllState(
         string SearchQuery,
         string StartingDirectoryPath,
-        IEnumerable<string> ProjectList,
+        IEnumerable<AbsolutePath> ProjectList,
         List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList,
         Exception Exception)
     {
@@ -327,6 +348,7 @@ public partial class TextEditorService
         public TextEditorFindAllState() : this(
             SearchQuery: string.Empty,
             StartingDirectoryPath: string.Empty,
+            ProjectList: Enumerable.Empty<AbsolutePath>(),
             SearchResultList: new(),
             Exception: null)
         {

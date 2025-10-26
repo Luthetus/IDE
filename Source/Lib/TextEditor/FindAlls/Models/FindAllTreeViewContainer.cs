@@ -9,11 +9,14 @@ namespace Clair.TextEditor.RazorLib.FindAlls.Models;
 
 public class FindAllTreeViewContainer : TreeViewContainer
 {
-    public FindAllTreeViewContainer(TextEditorService textEditorService, List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList)
+    public FindAllTreeViewContainer(
+            TextEditorService textEditorService,
+            List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
+            int nodeValueListInitialCapacity)
         : base(textEditorService.CommonService)
     {
         Key = TextEditorService.TextEditorFindAllState.TreeViewFindAllContainerKey;
-        NodeValueList = new();
+        NodeValueList = new(capacity: nodeValueListInitialCapacity);
         SearchResultList = searchResultList;
         TextEditorService = textEditorService;
     }

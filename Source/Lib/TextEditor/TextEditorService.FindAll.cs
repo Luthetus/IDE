@@ -227,13 +227,13 @@ public partial class TextEditorService
             streamReaderPooledBuffer?.Dispose();
             
             var searchResultOffset = 1;
-            var searchResultIndexAmongSiblings = 0;
+            var searchResultLength = 0;
             
             var fileGroupOffset = 1 + searchResultList.Count;
-            var fileGroupIndexAmongSiblings = 0;
+            var fileGroupLength = 0;
             
             var csprojOffset = fileGroupOffset + fileCount;
-            var csprojIndexAmongSiblings = 0;
+            var csprojLength = 0;
             
             var findAllTreeViewContainer = new FindAllTreeViewContainer(
                 this,
@@ -244,8 +244,8 @@ public partial class TextEditorService
             {
                 ParentIndex = -1,
                 IndexAmongSiblings = 0,
-                ChildListOffset = 1,
-                ChildListLength = 0,
+                ChildListOffset = csprojOffset,
+                ChildListLength = respectedProjectCount,
                 ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
                 TraitsIndex = 0,
                 IsExpandable = true,

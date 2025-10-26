@@ -226,172 +226,137 @@ public partial class TextEditorService
         {
             streamReaderPooledBuffer?.Dispose();
             
-            var searchResultOffset = 1;
-            var searchResultLength = 0;
+            FindAllTreeViewContainer? findAllTreeViewContainer = null;
             
-            var fileGroupOffset = 1 + searchResultList.Count;
-            var fileGroupLength = 0;
-            
-            var csprojOffset = fileGroupOffset + fileCount;
-            var csprojLength = 0;
-            
-            var projectRespectedListIndex = 0;
-            
-            var findAllTreeViewContainer = new FindAllTreeViewContainer(
-                this,
-                searchResultList,
-                nodeValueListInitialCapacity: csprojOffset + projectRespectedList.Count,
-                projectRespectedList);
+            if (searchResultList.Count > 0)
+            {
+                var searchResultOffset = 1;
+                var searchResultLength = 0;
                 
-            for (int aaa = 0; aaa < csprojOffset + projectRespectedList.Count; aaa++)
-            {
-                findAllTreeViewContainer.NodeValueList.Add(default);
-            }
-            
-            var rootNode = new TreeViewNodeValue
-            {
-                ParentIndex = -1,
-                IndexAmongSiblings = 0,
-                ChildListOffset = csprojOffset,
-                ChildListLength = projectRespectedList.Count,
-                ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
-                TraitsIndex = 0,
-                IsExpandable = true,
-                IsExpanded = true
-            };
-            findAllTreeViewContainer.NodeValueList[0] = rootNode;
-
-            var previousResourceUri = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
-            
-            var previousFileGroupChildListOffset = searchResultOffset;
-            var previousFileGroupChildListLength = 0;
-            
-            var previousProjectChildListOffset = fileGroupOffset;
-            var previousProjectChildListLength = 0;
-            var previousProjectFilesLength = 0;
-            
-            // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
-            
-            for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
-            {
-                var searchResult = findAllTreeViewContainer.SearchResultList[i];
+                var fileGroupOffset = 1 + searchResultList.Count;
+                var fileGroupLength = 0;
                 
-                if (previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
+                var csprojOffset = fileGroupOffset + fileCount;
+                var csprojLength = 0;
+                
+                var projectRespectedListIndex = 0;
+                
+                findAllTreeViewContainer = new FindAllTreeViewContainer(
+                    this,
+                    searchResultList,
+                    nodeValueListInitialCapacity: csprojOffset + projectRespectedList.Count,
+                    projectRespectedList);
+                    
+                for (int aaa = 0; aaa < csprojOffset + projectRespectedList.Count; aaa++)
                 {
-                    findAllTreeViewContainer.NodeValueList[csprojOffset + csprojLength] =
+                    findAllTreeViewContainer.NodeValueList.Add(default);
+                }
+                
+                var rootNode = new TreeViewNodeValue
+                {
+                    ParentIndex = -1,
+                    IndexAmongSiblings = 0,
+                    ChildListOffset = csprojOffset,
+                    ChildListLength = projectRespectedList.Count,
+                    ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
+                    TraitsIndex = 0,
+                    IsExpandable = true,
+                    IsExpanded = true
+                };
+                findAllTreeViewContainer.NodeValueList[0] = rootNode;
+    
+                var previousResourceUri = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
+                
+                var previousFileGroupChildListOffset = searchResultOffset;
+                var previousFileGroupChildListLength = 0;
+                
+                var previousProjectChildListOffset = fileGroupOffset;
+                var previousProjectChildListLength = 0;
+                var previousProjectFilesLength = 0;
+                
+                // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
+                
+                for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
+                {
+                    var searchResult = findAllTreeViewContainer.SearchResultList[i];
+                    
+                    Console.WriteLine($"if ({previousProjectFilesLength} == {projectRespectedList[projectRespectedListIndex].ChildListLength})");
+                    if (previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
+                    {
+                        findAllTreeViewContainer.NodeValueList[csprojOffset + csprojLength] =
+                            new TreeViewNodeValue
+                            {
+                                ParentIndex = fileGroupOffset + fileGroupLength,
+                                IndexAmongSiblings = searchResultLength,
+                                ChildListOffset = previousProjectChildListOffset,
+                                ChildListLength = previousProjectChildListLength,
+                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
+                                TraitsIndex = projectRespectedListIndex,
+                                IsExpandable = false,
+                                IsExpanded = false
+                            };
+                        ++csprojLength;
+                        ++projectRespectedListIndex;
+                        
+                        previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
+                        previousProjectChildListLength = 0;
+                        previousProjectFilesLength = 0;
+                    }
+                    
+                    Console.WriteLine($"\tif ({i} + {1} == {projectRespectedList[projectRespectedListIndex].ChildListOffset})");
+                    if (i + 1/*rootnode*/ == projectRespectedList[projectRespectedListIndex].ChildListOffset)
+                    {
+                        previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
+                        previousProjectChildListLength = 0;
+                        previousProjectFilesLength = 0;
+                    }
+                    
+                    findAllTreeViewContainer.NodeValueList[searchResultOffset + searchResultLength] =
                         new TreeViewNodeValue
                         {
                             ParentIndex = fileGroupOffset + fileGroupLength,
                             IndexAmongSiblings = searchResultLength,
-                            ChildListOffset = previousProjectChildListOffset,
-                            ChildListLength = previousProjectChildListLength,
-                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
-                            TraitsIndex = projectRespectedListIndex,
-                            IsExpandable = false,
-                            IsExpanded = false
-                        };
-                    ++csprojLength;
-                    ++projectRespectedListIndex;
-                    
-                    previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
-                    previousProjectChildListLength = 0;
-                    previousProjectFilesLength = 0;
-                }
-                                
-                if (i + 1/*rootnode*/ == projectRespectedList[projectRespectedListIndex].ChildListOffset)
-                {
-                    previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
-                    previousProjectChildListLength = 0;
-                    previousProjectFilesLength = 0;
-                }
-                
-                findAllTreeViewContainer.NodeValueList[searchResultOffset + searchResultLength] =
-                    new TreeViewNodeValue
-                    {
-                        ParentIndex = fileGroupOffset + fileGroupLength,
-                        IndexAmongSiblings = searchResultLength,
-                        ChildListOffset = 0,
-                        ChildListLength = 0,
-                        ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                        TraitsIndex = i,
-                        IsExpandable = false,
-                        IsExpanded = false
-                    };
-                ++searchResultLength;
-                ++previousProjectFilesLength;
-                
-                if (previousResourceUri == searchResult.ResourceUri.Value)
-                {
-                    ++previousFileGroupChildListLength;
-                }
-                else
-                {
-                    previousProjectChildListOffset++;
-                    previousResourceUri = searchResult.ResourceUri.Value;
-                    findAllTreeViewContainer.NodeValueList[fileGroupOffset + fileGroupLength] =
-                        new TreeViewNodeValue
-                        {
-                            ParentIndex = 0,
-                            IndexAmongSiblings = fileGroupLength,
-                            ChildListOffset = previousFileGroupChildListOffset,
-                            ChildListLength = previousFileGroupChildListLength,
-                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                            TraitsIndex = i,
-                            IsExpandable = true,
-                            IsExpanded = false
-                        };
-                    ++fileGroupLength;
-                    previousFileGroupChildListOffset = searchResultOffset + searchResultLength;
-                    previousFileGroupChildListLength = 1;
-                }
-            }
-            
-            /*findAllTreeViewContainer.NodeValueList[0] = findAllTreeViewContainer.NodeValueList[0] with
-            {
-                ChildListLength = findAllTreeViewContainer.NodeValueList.Count - 1
-            };
-
-            for (int outerIndex = findAllTreeViewContainer.NodeValueList[0].ChildListOffset; outerIndex < findAllTreeViewContainer.NodeValueList[0].ChildListOffset + findAllTreeViewContainer.NodeValueList[0].ChildListLength; outerIndex++)
-            {
-                var groupNodeValue = findAllTreeViewContainer.NodeValueList[outerIndex];
-                var groupSearchResult = findAllTreeViewContainer.SearchResultList[groupNodeValue.TraitsIndex];
-                var childListOffset = findAllTreeViewContainer.NodeValueList.Count;
-                var childListLength = 0;
-                
-                var indexSearchResult = groupNodeValue.TraitsIndex;
-                while (indexSearchResult < findAllTreeViewContainer.SearchResultList.Count)
-                {
-                    var childSearchResult = findAllTreeViewContainer.SearchResultList[indexSearchResult];
-                    if (childSearchResult.ResourceUri == groupSearchResult.ResourceUri)
-                    {
-                        findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
-                        {
-                            ParentIndex = outerIndex,
-                            IndexAmongSiblings = childListLength++,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                            TraitsIndex = indexSearchResult,
+                            TraitsIndex = i,
                             IsExpandable = false,
                             IsExpanded = false
-                        });
+                        };
+                    ++searchResultLength;
+                    ++previousProjectFilesLength;
+                    
+                    if (previousResourceUri == searchResult.ResourceUri.Value)
+                    {
+                        ++previousFileGroupChildListLength;
                     }
                     else
                     {
-                        break;
+                        previousProjectChildListLength++;
+                        previousResourceUri = searchResult.ResourceUri.Value;
+                        findAllTreeViewContainer.NodeValueList[fileGroupOffset + fileGroupLength] =
+                            new TreeViewNodeValue
+                            {
+                                ParentIndex = 0,
+                                IndexAmongSiblings = fileGroupLength,
+                                ChildListOffset = previousFileGroupChildListOffset,
+                                ChildListLength = previousFileGroupChildListLength,
+                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
+                                TraitsIndex = i,
+                                IsExpandable = true,
+                                IsExpanded = false
+                            };
+                        ++fileGroupLength;
+                        previousFileGroupChildListOffset = searchResultOffset + searchResultLength;
+                        previousFileGroupChildListLength = 1;
                     }
-                    ++indexSearchResult;
                 }
-                findAllTreeViewContainer.NodeValueList[outerIndex] = findAllTreeViewContainer.NodeValueList[outerIndex] with
-                {
-                    ChildListOffset = childListOffset,
-                    ChildListLength = childListLength
-                };
-            }*/
+            }
             
             lock (_stateModificationLock)
             {
-                CommonService.TreeView_RegisterContainerAction(findAllTreeViewContainer);
+                if (findAllTreeViewContainer is not null)
+                    CommonService.TreeView_RegisterContainerAction(findAllTreeViewContainer);
                 _findAllState = _findAllState with
                 {
                     SearchResultList = searchResultList,

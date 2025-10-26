@@ -58,7 +58,7 @@ public class FindAllTreeViewContainer : TreeViewContainer
             case FindAllTreeViewContainer.ByteKind_SearchResult:
                 return SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex.ToString();
             default:
-                return "asdfg";
+                return nameof(nodeValue.ByteKind) + nodeValue.ByteKind.ToString();
         }
     }
     

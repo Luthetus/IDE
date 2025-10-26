@@ -94,6 +94,8 @@ public partial class TextEditorService
         
         Then you'd have to write the search through the List but this may or may not be an issue
         I don't think people would have thousands of projects in their .sln.
+        
+        Groups need to not be defragmented too though...
         */
     
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
@@ -111,7 +113,7 @@ public partial class TextEditorService
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
-        var projectSeenHashSet = new HashSet<string>();
+        var projectSeenHashSet = new HashSet<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)>();
         
         Exception? exception = null;
         
@@ -276,6 +278,9 @@ public partial class TextEditorService
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap,
         StreamReaderPooledBuffer streamReaderPooledBuffer)
     {
+        var csprojChildListOffset = ;
+        // var csprojChildListLength;
+        
         // Enumerate files in the current directory
         foreach (string file in Directory.EnumerateFiles(currentDirectory))
         {

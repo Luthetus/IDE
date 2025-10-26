@@ -274,7 +274,6 @@ public partial class TextEditorService
             }
             if (file.EndsWith(".csproj"))
             {
-                Console.WriteLine("file.EndsWith(...):" + file);
                 projectSeenHashSet.Add(AbsolutePath.GetFormattedStringOnly(
                     file,
                     isDirectory: false,

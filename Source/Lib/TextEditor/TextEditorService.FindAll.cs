@@ -82,6 +82,10 @@ public partial class TextEditorService
         Then you "brace match" by tracking directory depth until you've returned to the parent dir, then unset the owning csproj.
         Anything that isn't owned by a csproj is marked under the "misc files" but the issue here is that I think they'll
         be fragmented under these conditions so I gotta figure that out.
+        
+        Anything that is owned by a csproj isn't fragmented,
+        but the misc you can either duplicate or move data around in the NodeValueList
+        OR you can store a separate List that contains all the misc entries then move them to the NodeValueList at the end.
         */
     
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);

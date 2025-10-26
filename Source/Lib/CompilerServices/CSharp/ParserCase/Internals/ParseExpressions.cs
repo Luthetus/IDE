@@ -2384,14 +2384,38 @@ public static partial class Parser
             
             return EmptyExpressionNode.Empty;
         }
-    
-        var ambiguousParenthesizedNode = new AmbiguousParenthesizedNode(
-            token,
-            isParserContextKindForceStatementExpression: parserModel.ParserContextKind == CSharpParserContextKind.ForceStatementExpression ||
+
+        var isParserContextKindForceStatementExpression = parserModel.ParserContextKind == CSharpParserContextKind.ForceStatementExpression;
+        if (!isParserContextKindForceStatementExpression)
+        {
+            foreach (var tuple in parserModel.ExpressionList)
+            {
                 // '(List<(int, bool)>)' required the following hack because the CSharpParserContextKind.ForceStatementExpression enum
                 // is reset after the first TypeClauseNode in a statement is made, and there was no clear way to set it back again in this situation.;
                 // TODO: Don't do this '(List<(int, bool)>)', instead figure out how to have CSharpParserContextKind.ForceStatementExpression live longer in a statement that has many TypeClauseNode(s).
-                parserModel.ExpressionList.Any(x => x.ExpressionNode is IGenericParameterNode genericParameterNode && genericParameterNode.IsParsingGenericParameters));
+                var syntaxKind = tuple.ExpressionNode?.SyntaxKind ?? SyntaxKind.NotApplicable;
+                switch (syntaxKind)
+                {
+                    case SyntaxKind.AmbiguousIdentifierNode:
+                    case SyntaxKind.FunctionDefinitionNode:
+                    case SyntaxKind.FunctionInvocationNode:
+                    case SyntaxKind.TypeClauseNode:
+                    case SyntaxKind.TypeDefinitionNode:
+                        if (((IGenericParameterNode)tuple.ExpressionNode!).IsParsingGenericParameters)
+                        {
+                            isParserContextKindForceStatementExpression = true;
+                            goto exit_isParserContextKindForceStatementExpression;
+                        }
+                        break;
+                }
+            }
+        }
+
+        exit_isParserContextKindForceStatementExpression:
+
+        var ambiguousParenthesizedNode = new AmbiguousParenthesizedNode(
+            token,
+            isParserContextKindForceStatementExpression);
             
         parserModel.ExpressionList.Add((SyntaxKind.CloseParenthesisToken, ambiguousParenthesizedNode));
         parserModel.ExpressionList.Add((SyntaxKind.CommaToken, ambiguousParenthesizedNode));

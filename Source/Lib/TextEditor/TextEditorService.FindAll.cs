@@ -115,7 +115,6 @@ public partial class TextEditorService
             
             foreach (var projectAbsolutePath in textEditorFindAllState.ProjectList)
             {
-                Console.WriteLine("foreach:" + projectAbsolutePath.Value);
                 if (projectSeenHashSet.Add(projectAbsolutePath.Value))
                     ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, textEditorFindAllState.SearchQuery, projectAbsolutePath.CreateSubstringParentDirectory(), streamReaderPooledBufferWrap, streamReaderPooledBuffer);
             }

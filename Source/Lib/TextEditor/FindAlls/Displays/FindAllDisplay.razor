@@ -9,7 +9,6 @@
     var appOptionsState = TextEditorService.CommonService.GetAppOptionsState();
 }
 
-@*
 <div class="ci_te_find-all">
     <div class="ci_te_find-all-body">
 
@@ -22,44 +21,31 @@
 				   @bind:event="oninput" />
 		</div>
 
-		<div class="ci_te_find-all-starting-directory-path">
+		@*<div class="ci_te_find-all-starting-directory-path">
 			StartingDirectoryPath:&nbsp;
 			<input class="ci_ide_input ci_ide_input-text"
 				   style="width: 100%;"
 				   placeholder="@nameof(StartingDirectoryPath)"
 				   @bind="StartingDirectoryPath"
 				   @bind:event="oninput" />
-		</div>
+		</div>*@
 
-		@if (findAllState.ProgressBarModel is null || findAllState.ProgressBarModel.IsDisposed)
-		{
-			<button class="ci_button"
-	                @onclick="DoSearchOnClick">
-	            Find All
-	        </button>
-	        
-	        <div>Not Searching</div>
-	        
-	        if (findAllState.ProgressBarModel is not null)
-	        {
-	        	<ProgressBarDisplay ProgressBarModel="findAllState.ProgressBarModel"/>
-	        }
-		}
-		else
-		{
-			<button class="ci_button"
-	                @onclick="CancelSearchOnClick">
-	            Cancel
-	        </button>
-	        
-	        <ProgressBarDisplay ProgressBarModel="findAllState.ProgressBarModel"/>
-		}
+		<button class="ci_button"
+                @onclick="DoSearchOnClick">
+            Find in Solution
+        </button>
 		
 		<div>Results: @($"{findAllState.SearchResultList.Count:N0}")</div>
 	
 		<div class="ci_te_search-engine-file-system-results" style="height: 300px;">
-            <TreeViewContainerDisplay TreeViewContainerParameter="_treeViewContainerParameter"/>
+		    @if (findAllState.Exception is not null)
+		    {
+		        @findAllState.Exception.ToString()
+		    }
+		    else
+		    {
+                <TreeViewContainerDisplay TreeViewContainerKey="TextEditorService.TextEditorFindAllState.TreeViewFindAllContainerKey"/>
+            }
 		</div>
     </div>
 </div>
-*@

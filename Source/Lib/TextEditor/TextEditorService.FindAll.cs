@@ -1,3 +1,4 @@
+using System.Text;
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Keys.Models;
@@ -5,6 +6,7 @@ using Clair.Common.RazorLib.Reactives.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
+using Clair.TextEditor.RazorLib.FindAlls.Models;
 
 namespace Clair.TextEditor.RazorLib;
 
@@ -112,44 +114,223 @@ public partial class TextEditorService
 
     public Task HandleStartSearchAction()
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
-        _throttleSetSearchQuery.Run(async _ =>
+        CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
+        
+        var textEditorFindAllState = GetFindAllState();
+        // var solutionModel = dotNetSolutionState.DotNetSolutionModel;
+        
+        if (string.IsNullOrWhiteSpace(textEditorFindAllState.SearchQuery) ||
+            string.IsNullOrWhiteSpace(textEditorFindAllState.StartingDirectoryPath))
         {
-            CancelSearch();
-            ClearSearch();
-
-            var textEditorFindAllState = GetFindAllState();
-
-            if (string.IsNullOrWhiteSpace(textEditorFindAllState.StartingDirectoryPath) ||
-                string.IsNullOrWhiteSpace(textEditorFindAllState.SearchQuery))
+            return Task.CompletedTask;
+        }
+        
+        StreamReaderPooledBuffer? streamReaderPooledBuffer = null;
+        StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
+        
+        var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
+        
+        Exception? exception = null;
+        
+        try
+        {
+            var absolutePath = new AbsolutePath(
+                textEditorFindAllState.StartingDirectoryPath,
+                isDirectory: false,
+                fileSystemProvider: CommonService.FileSystemProvider,
+                tokenBuilder: new(),
+                formattedBuilder: new(),
+                AbsolutePathNameKind.NameWithExtension);
+            var parentDirectory = absolutePath.CreateSubstringParentDirectory();
+            if (parentDirectory is null)
+                return Task.CompletedTask;
+    
+            var utf8Encoding = Encoding.UTF8;
+            var utf8_MaxCharCount = utf8Encoding.GetMaxCharCount(StreamReaderPooledBuffer.DefaultBufferSize);
+            
+            streamReaderPooledBuffer = new StreamReaderPooledBuffer(
+                stream: null,
+                utf8Encoding,
+                byteBuffer: new byte[StreamReaderPooledBuffer.DefaultBufferSize],
+                charBuffer: new char[utf8_MaxCharCount]);
+            
+            ParseFilesRecursive(searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+        }
+        catch (Exception e)
+        {
+            exception = e;
+            Console.WriteLine(e);
+        }
+        finally
+        {
+            streamReaderPooledBuffer?.Dispose();
+            
+            var findAllTreeViewContainer = new FindAllTreeViewContainer(this, searchResultList);
+            
+            var rootNode = new TreeViewNodeValue
             {
-                CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
-                return;
-            }
+                ParentIndex = -1,
+                IndexAmongSiblings = 0,
+                ChildListOffset = 1,
+                ChildListLength = searchResultList.Count,
+                ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
+                TraitsIndex = 0,
+                IsExpandable = true,
+                IsExpanded = true
+            };
+            findAllTreeViewContainer.NodeValueList.Add(rootNode);
 
-            var cancellationToken = _searchCancellationTokenSource.Token;
-            var progressBarModel = new ProgressBarModel();
+            var indexAmongSiblings = 0;
 
-            ConstructTreeView(textEditorFindAllState);
-
-            SetProgressBarModel(progressBarModel);
-
-            try
+            for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
             {
-                await StartSearchTask(
-                    progressBarModel,
-                    textEditorFindAllState,
-                    cancellationToken);
+                var result = findAllTreeViewContainer.SearchResultList[i];
+                findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+                {
+                    ParentIndex = 0,
+                    IndexAmongSiblings = indexAmongSiblings++,
+                    ChildListOffset = findAllTreeViewContainer.NodeValueList.Count,
+                    ChildListLength = 0,
+                    ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                    TraitsIndex = i,
+                    IsExpandable = false,
+                    IsExpanded = false
+                });
             }
-            catch (Exception e)
+            
+            lock (_stateModificationLock)
             {
-                Console.WriteLine(e);
+                CommonService.TreeView_RegisterContainerAction(findAllTreeViewContainer);
+                _findAllState = _findAllState with
+                {
+                    SearchResultList = searchResultList,
+                    Exception = exception
+                };
             }
-        });
-        */
+            
+            SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
+        }
 
         return Task.CompletedTask;
+    }
+    
+    /// <summary>
+    /// The google AI Overview for "c# enumerate files recursively but exclude certain directories" gave me a near perfect method implementation for this.
+    /// 
+    /// This entire situation is a huge pain because I'm so strict throughout the codebase with how the formatting of the path is.
+    /// When I use DirectoryInfo I get the drive prepended to the path and windows directory separators and it breaks everything.
+    /// </summary>
+    private void ParseFilesRecursive(List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList, string search, string currentDirectory, StreamReaderPooledBufferWrap streamReaderPooledBufferWrap, StreamReaderPooledBuffer streamReaderPooledBuffer)
+    {
+        // Enumerate files in the current directory
+        foreach (string file in Directory.EnumerateFiles(currentDirectory))
+        {
+            // TODO: Don't hardcode file extensions here to avoid searching through them.
+            //       Reason being, hardcoding them isn't going to work well as a long term solution.
+            //       How does one detect if a file is not text?
+            //       |
+            //       I seem to get away with opening some non-text files, but I think a gif I opened
+            //       had 1 million characters in it? So this takes 2 million bytes in a 2byte char?
+            //       I'm not sure exactly what happened, I opened the gif and the app froze,
+            //       I saw the character only at a glance. (2024-07-20)
+            if (file.EndsWith(".jpg") ||
+                file.EndsWith(".png") ||
+                file.EndsWith(".pdf") ||
+                file.EndsWith(".gif"))
+            {
+                continue;
+            }
+            
+            var resourceUri = new ResourceUri(file);
+            
+            MemoryStream memoryStream;
+            StreamReaderPooledBuffer sr;
+            
+            if (TextEditorState._modelMap.TryGetValue(resourceUri, out var textEditorModel))
+            {
+                // If the formatting of the absolute path is off in any way
+                // then the model won't be found.
+                //
+                // I don't think this conditional branch is getting hit, presumably the
+                // absolute path always is slightly different.
+                //
+                streamReaderPooledBuffer.DiscardBufferedData(
+                    new MemoryStream(Encoding.UTF8.GetBytes(textEditorModel.GetAllText())));
+            }
+            else
+            {
+                streamReaderPooledBuffer.DiscardBufferedData(
+                    new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, StreamReaderPooledBuffer.DefaultFileStreamBufferSize));
+            }
+            
+            streamReaderPooledBufferWrap.ReInitialize(streamReaderPooledBuffer);
+            
+            var positionInSearch = 0;
+            bool fileContainedSearch = false;
+            
+            while (!streamReaderPooledBufferWrap.IsEof)
+            {
+                if (streamReaderPooledBufferWrap.CurrentCharacter == search[positionInSearch])
+                {
+                    var originBytePosition = streamReaderPooledBufferWrap.ByteIndex;;
+                    var originCharacterPosition = streamReaderPooledBufferWrap.PositionIndex;
+                    _ = streamReaderPooledBufferWrap.ReadCharacter();
+                    positionInSearch++;
+                    // This is 1 "character" further than the entry point so we can backtrack if it isn't a match.
+                    var bytePosition = streamReaderPooledBufferWrap.ByteIndex;
+                    var characterPosition = streamReaderPooledBufferWrap.PositionIndex;
+                    
+                    while (!streamReaderPooledBufferWrap.IsEof)
+                    {
+                        if (positionInSearch == search.Length)
+                        {
+                            positionInSearch = 0;
+                            fileContainedSearch = true;
+                            break;
+                        }
+                        else if (streamReaderPooledBufferWrap.CurrentCharacter != search[positionInSearch])
+                        {
+                            positionInSearch = 0;
+                            streamReaderPooledBufferWrap.Unsafe_Seek_SeekOriginBegin(
+                                bytePosition, characterPosition, characterLength: 0);
+                            break;
+                        }
+                        else
+                        {
+                            positionInSearch++;
+                            _ = streamReaderPooledBufferWrap.ReadCharacter();
+                        }
+                    }
+                    
+                    if (fileContainedSearch)
+                    {
+                        searchResultList.Add(
+                            (
+                                resourceUri,
+                                new TextEditorTextSpan(
+                                    startInclusiveIndex: originCharacterPosition,
+                                    endExclusiveIndex: streamReaderPooledBufferWrap.PositionIndex,
+                                    decorationByte: 0,
+                                    byteIndex: originBytePosition)
+                            ));
+                        break;
+                    }
+                }
+            
+                _ = streamReaderPooledBufferWrap.ReadCharacter();
+            }
+        }
+
+        // Enumerate subdirectories
+        foreach (string subDirectory in Directory.EnumerateDirectories(currentDirectory))
+        {
+            // Check if the subdirectory should be excluded
+            if (!IFileSystemProvider.IsDirectoryIgnored(subDirectory))
+            {
+                // Recursively call for non-excluded subdirectories
+                ParseFilesRecursive(searchResultList, search, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+            }
+        }
     }
 
     private async Task StartSearchTask(
@@ -309,7 +490,6 @@ public partial class TextEditorService
     private void ConstructTreeView(TextEditorFindAllState textEditorFindAllState)
     {
         /*
-        // 2025-10-22 (rewrite TreeViews)
         var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(TextEditorFindAllState.TreeViewFindAllContainerKey);
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
@@ -361,7 +541,7 @@ public partial class TextEditorService
         CommonService.TreeView_RegisterContainerAction(
         	container,
         	shouldFireStateChangedEvent: true);
-    	*/
+        */
     }
 
     public void Dispose()
@@ -372,14 +552,16 @@ public partial class TextEditorService
     public record struct TextEditorFindAllState(
         string SearchQuery,
         string StartingDirectoryPath,
-        List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList)
+        List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList,
+        Exception Exception)
     {
         public static readonly Key<TreeViewContainer> TreeViewFindAllContainerKey = Key<TreeViewContainer>.NewKey();
 
         public TextEditorFindAllState() : this(
             SearchQuery: string.Empty,
             StartingDirectoryPath: string.Empty,
-            SearchResultList: new())
+            SearchResultList: new(),
+            Exception: null)
         {
         }
     }

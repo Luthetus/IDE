@@ -1,20 +1,28 @@
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Keys.Models;
+using Clair.Common.RazorLib.Commands.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
+using Clair.TextEditor.RazorLib.Lexers.Models;
+using Clair.TextEditor.RazorLib.TextEditors.Models;
 
 namespace Clair.TextEditor.RazorLib.FindAlls.Models;
 
 public class FindAllTreeViewContainer : TreeViewContainer
 {
-    public FindAllTreeViewContainer(CommonService commonService)
-        : base(commonService)
+    public FindAllTreeViewContainer(TextEditorService textEditorService, List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList)
+        : base(textEditorService.CommonService)
     {
-        Key = Key<TreeViewContainer>.NewKey();
+        Key = TextEditorService.TextEditorFindAllState.TreeViewFindAllContainerKey;
         NodeValueList = new();
+        SearchResultList = searchResultList;
+        TextEditorService = textEditorService;
     }
     
     public override Key<TreeViewContainer> Key { get; init; }
     public override List<TreeViewNodeValue> NodeValueList { get; }
+    
+    public TextEditorService TextEditorService { get; set; }
+    public List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList { get; set; }
 
     public override Task LoadChildListAsync(int indexNodeValue)
     {
@@ -29,4 +37,131 @@ public class FindAllTreeViewContainer : TreeViewContainer
     {
         return Task.CompletedTask;
     }
+    
+    public override string GetDisplayText(int indexNodeValue)
+    {
+        var nodeValue = NodeValueList[indexNodeValue];
+        switch (nodeValue.ByteKind)
+        {
+            case FindAllTreeViewContainer.ByteKind_Aaa:
+                return nameof(ByteKind_Aaa);
+            case FindAllTreeViewContainer.ByteKind_SearchResult:
+                return SearchResultList[nodeValue.TraitsIndex].ResourceUri.Value;
+            default:
+                return "asdfg";
+        }
+    }
+    
+    public override Task OnDoubleClickAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)
+    {
+        base.OnDoubleClickAsync(commandArgs, indexNodeValue);
+        
+        string? path = null;
+
+        var nodeValue = NodeValueList[indexNodeValue];
+        switch (nodeValue.ByteKind)
+        {
+            case FindAllTreeViewContainer.ByteKind_Aaa:
+                return Task.CompletedTask;
+            case FindAllTreeViewContainer.ByteKind_SearchResult:
+                path = SearchResultList[nodeValue.TraitsIndex].ResourceUri.Value;
+                break;
+            default:
+                return Task.CompletedTask;
+        }
+        
+        if (path is null)
+            return Task.CompletedTask;
+
+        TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
+        {
+            await TextEditorService.OpenInEditorAsync(
+                editContext,
+                path,
+                shouldSetFocusToEditor: true,
+                cursorPositionIndex: SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex,
+                new Category("main"),
+                editContext.TextEditorService.NewViewModelKey());
+        });
+        return Task.CompletedTask;
+    }
+    
+    public override Task OnKeyDownAsync(TreeViewCommandArgs commandArgs, int indexNodeValue)
+    {
+        if (commandArgs.KeyboardEventArgs is null)
+            return Task.CompletedTask;
+
+        base.OnKeyDownAsync(commandArgs, indexNodeValue);
+
+        switch (commandArgs.KeyboardEventArgs.Code)
+        {
+            case CommonFacts.ENTER_CODE:
+            {
+                string? path = null;
+
+                var nodeValue = NodeValueList[indexNodeValue];
+                switch (nodeValue.ByteKind)
+                {
+                    case FindAllTreeViewContainer.ByteKind_Aaa:
+                        return Task.CompletedTask;
+                    case FindAllTreeViewContainer.ByteKind_SearchResult:
+                        path = SearchResultList[nodeValue.TraitsIndex].ResourceUri.Value;
+                        break;
+                    default:
+                        return Task.CompletedTask;
+                }
+                
+                if (path is null)
+                    return Task.CompletedTask;
+        
+                TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
+                {
+                    await TextEditorService.OpenInEditorAsync(
+                        editContext,
+                        path,
+                        shouldSetFocusToEditor: true,
+                        cursorPositionIndex: SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex,
+                        new Category("main"),
+                        editContext.TextEditorService.NewViewModelKey());
+                });
+                return Task.CompletedTask;
+            }
+            case CommonFacts.SPACE_CODE:
+            {
+                string? path = null;
+
+                var nodeValue = NodeValueList[indexNodeValue];
+                switch (nodeValue.ByteKind)
+                {
+                    case FindAllTreeViewContainer.ByteKind_Aaa:
+                        return Task.CompletedTask;
+                    case FindAllTreeViewContainer.ByteKind_SearchResult:
+                        path = SearchResultList[nodeValue.TraitsIndex].ResourceUri.Value;
+                        break;
+                    default:
+                        return Task.CompletedTask;
+                }
+                
+                if (path is null)
+                    return Task.CompletedTask;
+        
+                TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
+                {
+                    await TextEditorService.OpenInEditorAsync(
+                        editContext,
+                        path,
+                        shouldSetFocusToEditor: false,
+                        cursorPositionIndex: SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex,
+                        new Category("main"),
+                        editContext.TextEditorService.NewViewModelKey());
+                });
+                return Task.CompletedTask;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+    
+    public const byte ByteKind_Aaa = 1;
+    public const byte ByteKind_SearchResult = 2;
 }

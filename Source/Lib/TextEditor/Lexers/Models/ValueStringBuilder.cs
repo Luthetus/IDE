@@ -1,4 +1,4 @@
-﻿// !!!
+// !!!
 // !!!
 // !!!
 // !!!
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 
 #nullable enable
 
-namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
+namespace Clair.TextEditor.RazorLib.Lexers.Models;
 
 internal ref partial struct ValueStringBuilder
 {

@@ -95,7 +95,7 @@ public partial class TextEditorService
         Then you'd have to write the search through the List but this may or may not be an issue
         I don't think people would have thousands of projects in their .sln.
         
-        Groups need to not be defragmented too though...
+        Groups need not be fragmented too though...
         */
     
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);

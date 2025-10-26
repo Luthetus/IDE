@@ -290,6 +290,9 @@ public partial class TextEditorService
                 Console.WriteLine($"projectRespectedListIndex:{projectRespectedListIndex}");
                 Console.WriteLine("==============\n");
                 
+                //    0,   1,   2,   3,   4,   5,   6,   7
+                // [  R,   S,   S,   S,   S,   S,   F,   P  ]
+                
                 for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
                 {
                     var searchResult = findAllTreeViewContainer.SearchResultList[i];
@@ -298,6 +301,7 @@ public partial class TextEditorService
                     if (projectRespectedListIndex < projectRespectedList.Count &&
                         previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
                     {
+                        // WARNING: this code is duplicated after the for loop to write the final entry.
                         findAllTreeViewContainer.NodeValueList[csprojOffset + csprojLength] =
                             new TreeViewNodeValue
                             {
@@ -372,6 +376,7 @@ public partial class TextEditorService
                 if (projectRespectedListIndex < projectRespectedList.Count &&
                     previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
                 {
+                    // WARNING: this code is duplicated inside the for loop (this duplicate will write the final entry).
                     findAllTreeViewContainer.NodeValueList[csprojOffset + csprojLength] =
                         new TreeViewNodeValue
                         {

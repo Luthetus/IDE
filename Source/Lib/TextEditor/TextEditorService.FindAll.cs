@@ -262,6 +262,7 @@ public partial class TextEditorService
             var previousFileGroupChildListLength = 0;
             
             var previousProjectChildListOffset = fileGroupOffset;
+            var previousProjectChildListLength = fileGroupOffset;
             var previousProjectFilesLength = 0;
             
             // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
@@ -278,15 +279,17 @@ public partial class TextEditorService
                         {
                             ParentIndex = fileGroupOffset + fileGroupLength,
                             IndexAmongSiblings = searchResultLength,
-                            ChildListOffset = 0,
-                            ChildListLength = 0,
+                            ChildListOffset = searchResultOffset,
+                            ChildListLength = searchResultLength,
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
-                            TraitsIndex = i,
+                            TraitsIndex = projectRespectedListIndex,
                             IsExpandable = false,
                             IsExpanded = false
                         });
-                    ++searchResultLength;
+                    ++csprojLength;
                     ++projectRespectedListIndex;
+                    
+                    
                 }
                                 
                 if (i + 1/*rootnode*/ == projectRespectedList[i].ChildListOffset)

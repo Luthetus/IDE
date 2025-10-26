@@ -86,6 +86,8 @@ public partial class TextEditorService
         Anything that is owned by a csproj isn't fragmented,
         but the misc you can either duplicate or move data around in the NodeValueList
         OR you can store a separate List that contains all the misc entries then move them to the NodeValueList at the end.
+        
+        The csharp projects as well need to be added last since they would otherwise fragment the children of the root.
         */
     
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);

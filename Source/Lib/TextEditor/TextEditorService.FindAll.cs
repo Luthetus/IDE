@@ -117,11 +117,13 @@ public partial class TextEditorService
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
         var textEditorFindAllState = GetFindAllState();
-        var startingDirectoryPath = textEditorFindAllState.StartingDirectoryPath;
         // var solutionModel = dotNetSolutionState.DotNetSolutionModel;
         
-        if (string.IsNullOrWhiteSpace(textEditorFindAllState.SearchQuery))
+        if (string.IsNullOrWhiteSpace(textEditorFindAllState.SearchQuery) ||
+            string.IsNullOrWhiteSpace(textEditorFindAllState.StartingDirectoryPath))
+        {
             return Task.CompletedTask;
+        }
         
         StreamReaderPooledBuffer? streamReaderPooledBuffer = null;
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
@@ -132,8 +134,14 @@ public partial class TextEditorService
         
         try
         {
-            var parentDirectory = startingDirectoryPath;
-            //var parentDirectory = solutionModel.AbsolutePath.CreateSubstringParentDirectory();
+            var absolutePath = new AbsolutePath(
+                textEditorFindAllState.StartingDirectoryPath,
+                isDirectory: false,
+                fileSystemProvider: CommonService.FileSystemProvider,
+                tokenBuilder: new(),
+                formattedBuilder: new(),
+                AbsolutePathNameKind.NameWithExtension);
+            var parentDirectory = absolutePath.CreateSubstringParentDirectory();
             if (parentDirectory is null)
                 return Task.CompletedTask;
     

@@ -187,7 +187,7 @@ public partial class TextEditorService
                 var result = findAllTreeViewContainer.SearchResultList[i];
                 findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
                 {
-                    ParentIndex = -1,
+                    ParentIndex = 0,
                     IndexAmongSiblings = indexAmongSiblings++,
                     ChildListOffset = findAllTreeViewContainer.NodeValueList.Count,
                     ChildListLength = 0,

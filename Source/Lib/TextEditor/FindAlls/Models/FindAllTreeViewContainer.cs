@@ -12,13 +12,15 @@ public class FindAllTreeViewContainer : TreeViewContainer
     public FindAllTreeViewContainer(
             TextEditorService textEditorService,
             List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
-            int nodeValueListInitialCapacity)
+            int nodeValueListInitialCapacity,
+            List<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)> projectRespectedList)
         : base(textEditorService.CommonService)
     {
         Key = TextEditorService.TextEditorFindAllState.TreeViewFindAllContainerKey;
         NodeValueList = new(capacity: nodeValueListInitialCapacity);
         SearchResultList = searchResultList;
         TextEditorService = textEditorService;
+        ProjectRespectedList = projectRespectedList;
     }
     
     public override Key<TreeViewContainer> Key { get; init; }
@@ -26,6 +28,7 @@ public class FindAllTreeViewContainer : TreeViewContainer
     
     public TextEditorService TextEditorService { get; set; }
     public List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList { get; set; }
+    public List<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)> ProjectRespectedList { get; set; }
 
     public override Task LoadChildListAsync(int indexNodeValue)
     {
@@ -48,6 +51,8 @@ public class FindAllTreeViewContainer : TreeViewContainer
         {
             case FindAllTreeViewContainer.ByteKind_Aaa:
                 return nameof(ByteKind_Aaa);
+            case FindAllTreeViewContainer.ByteKind_SearchResultProject:
+                return ProjectRespectedList[nodeValue.TraitsIndex].ProjectAbsolutePath;
             case FindAllTreeViewContainer.ByteKind_SearchResultGroup:
                 return SearchResultList[nodeValue.TraitsIndex].ResourceUri.Value;
             case FindAllTreeViewContainer.ByteKind_SearchResult:
@@ -170,4 +175,5 @@ public class FindAllTreeViewContainer : TreeViewContainer
     public const byte ByteKind_Aaa = 1;
     public const byte ByteKind_SearchResult = 2;
     public const byte ByteKind_SearchResultGroup = 3;
+    public const byte ByteKind_SearchResultProject = 4;
 }

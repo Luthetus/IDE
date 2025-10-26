@@ -240,7 +240,8 @@ public partial class TextEditorService
             var findAllTreeViewContainer = new FindAllTreeViewContainer(
                 this,
                 searchResultList,
-                nodeValueListInitialCapacity: csprojOffset + projectRespectedList.Count);
+                nodeValueListInitialCapacity: csprojOffset + projectRespectedList.Count,
+                projectRespectedList);
             
             var rootNode = new TreeViewNodeValue
             {
@@ -260,23 +261,53 @@ public partial class TextEditorService
             var previousFileGroupChildListOffset = searchResultOffset;
             var previousFileGroupChildListLength = 0;
             
+            var previousProjectChildListOffset = fileGroupOffset;
+            var previousProjectFilesLength = 0;
+            
             // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
             
             for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
             {
                 var searchResult = findAllTreeViewContainer.SearchResultList[i];
                 
-                findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
+                if (previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
                 {
-                    ParentIndex = fileGroupOffset + fileGroupLength,
-                    IndexAmongSiblings = searchResultLength++,
-                    ChildListOffset = 0,
-                    ChildListLength = 0,
-                    ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                    TraitsIndex = i,
-                    IsExpandable = false,
-                    IsExpanded = false
-                });
+                    findAllTreeViewContainer.NodeValueList.Insert(
+                        csprojOffset + csprojLength,
+                        new TreeViewNodeValue
+                        {
+                            ParentIndex = fileGroupOffset + fileGroupLength,
+                            IndexAmongSiblings = searchResultLength,
+                            ChildListOffset = 0,
+                            ChildListLength = 0,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
+                            TraitsIndex = i,
+                            IsExpandable = false,
+                            IsExpanded = false
+                        });
+                    ++searchResultLength;
+                    ++projectRespectedListIndex;
+                }
+                                
+                if (i + 1/*rootnode*/ == projectRespectedList[i].ChildListOffset)
+                {
+                    previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
+                }
+                
+                findAllTreeViewContainer.NodeValueList.Insert(
+                    searchResultOffset + searchResultLength,
+                    new TreeViewNodeValue
+                    {
+                        ParentIndex = fileGroupOffset + fileGroupLength,
+                        IndexAmongSiblings = searchResultLength,
+                        ChildListOffset = 0,
+                        ChildListLength = 0,
+                        ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                        TraitsIndex = i,
+                        IsExpandable = false,
+                        IsExpanded = false
+                    });
+                ++searchResultLength;
                 
                 if (previousResourceUri == searchResult.ResourceUri.Value)
                 {
@@ -284,11 +315,12 @@ public partial class TextEditorService
                 }
                 else
                 {
+                    previousProjectChildListOffset++;
                     previousResourceUri = searchResult.ResourceUri.Value;
                     findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
                     {
                         ParentIndex = 0,
-                        IndexAmongSiblings = fileGroupLength++,
+                        IndexAmongSiblings = fileGroupLength,
                         ChildListOffset = previousFileGroupChildListOffset,
                         ChildListLength = previousFileGroupChildListLength,
                         ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
@@ -296,6 +328,7 @@ public partial class TextEditorService
                         IsExpandable = true,
                         IsExpanded = false
                     });
+                    ++fileGroupLength;
                     previousFileGroupChildListOffset = searchResultOffset + searchResultLength;
                     previousFileGroupChildListLength = 1;
                 }

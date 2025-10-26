@@ -93,14 +93,7 @@ public partial class TextEditorService
         
         try
         {
-            var absolutePath = new AbsolutePath(
-                textEditorFindAllState.StartingDirectoryPath,
-                isDirectory: false,
-                fileSystemProvider: CommonService.FileSystemProvider,
-                tokenBuilder: new(),
-                formattedBuilder: new(),
-                AbsolutePathNameKind.NameWithExtension);
-            var parentDirectory = absolutePath.CreateSubstringParentDirectory();
+            var parentDirectory = textEditorFindAllState.StartingDirectoryPath;
             if (parentDirectory is null)
                 return Task.CompletedTask;
     

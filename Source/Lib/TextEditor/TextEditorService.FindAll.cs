@@ -133,10 +133,10 @@ public partial class TextEditorService
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
-        var projectSeenMap = new Dictionary<string /*ProjectAbsolutePath*/, (int ChildListOffset, int ChildListLength)>();
+        var projectSeenHashSet = new HashSet<string /*ProjectAbsolutePath*/>();
+        var projectRespectedList = new List<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)>();
         
         int fileCount = 0;
-        int respectedProjectCount = 0;
         
         /*
         var findAllTreeViewContainer = new FindAllTreeViewContainer(this, searchResultList);
@@ -179,14 +179,14 @@ public partial class TextEditorService
                 csprojMark: (-1, string.Empty),
                 tokenBuilder,
                 formattedBuilder,
-                projectSeenMap,
+                projectSeenHashSet,
+                projectRespectedList,
                 searchResultList,
                 textEditorFindAllState.SearchQuery,
                 parentDirectory,
                 streamReaderPooledBufferWrap,
                 streamReaderPooledBuffer,
-                ref fileCount,
-                ref respectedProjectCount);
+                ref fileCount);
             
             foreach (var projectAbsolutePath in textEditorFindAllState.ProjectList)
             {
@@ -198,14 +198,14 @@ public partial class TextEditorService
                         csprojMark: (-1, string.Empty),
                         tokenBuilder,
                         formattedBuilder,
-                        projectSeenMap,
+                        projectSeenHashSet,
+                        projectRespectedList,
                         searchResultList,
                         textEditorFindAllState.SearchQuery,
                         projectAbsolutePath.CreateSubstringParentDirectory(),
                         streamReaderPooledBufferWrap,
                         streamReaderPooledBuffer,
-                        ref fileCount,
-                        ref respectedProjectCount);
+                        ref fileCount);
                 }
             }
             
@@ -238,7 +238,7 @@ public partial class TextEditorService
             var findAllTreeViewContainer = new FindAllTreeViewContainer(
                 this,
                 searchResultList,
-                nodeValueListInitialCapacity: csprojOffset + respectedProjectCount);
+                nodeValueListInitialCapacity: csprojOffset + projectRespectedList.Count);
             
             var rootNode = new TreeViewNodeValue
             {
@@ -253,32 +253,49 @@ public partial class TextEditorService
             };
             findAllTreeViewContainer.NodeValueList.Add(rootNode);
 
-            var groupIndexAmongSiblings = 0;
+            var previousResourceUri = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
             
-            // you have to iterate once to get the groups,
-            // then iterate the groups to get the children of groups
-            // because children MUST be contiguous in the NodeValueList.
+            var previousFileGroupChildListOffset = searchResultOffset;
+            var previousFileGroupChildListLength = 0;
             
-            var previousResourceUri = ResourceUri.Empty;
+            // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
             
             for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
             {
-                var groupByFileSearchResult = findAllTreeViewContainer.SearchResultList[i];
+                var searchResult = findAllTreeViewContainer.SearchResultList[i];
                 
-                if (previousResourceUri != groupByFileSearchResult.ResourceUri)
+                findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
                 {
-                    previousResourceUri = groupByFileSearchResult.ResourceUri;
+                    ParentIndex = fileGroupOffset + fileGroupLength,
+                    IndexAmongSiblings = searchResultLength++,
+                    ChildListOffset = 0,
+                    ChildListLength = 0,
+                    ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                    TraitsIndex = indexSearchResult,
+                    IsExpandable = false,
+                    IsExpanded = false
+                });
+                
+                if (previousResourceUri == searchResult.ResourceUri)
+                {
+                    ++previousFileGroupChildListLength;
+                }
+                else
+                {
+                    previousResourceUri = searchResult.ResourceUri;
                     findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
                     {
                         ParentIndex = 0,
-                        IndexAmongSiblings = groupIndexAmongSiblings++,
-                        ChildListOffset = 0,
-                        ChildListLength = 0,
+                        IndexAmongSiblings = fileGroupLength++,
+                        ChildListOffset = previousFileGroupChildListOffset,
+                        ChildListLength = previousFileGroupChildListLength,
                         ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
                         TraitsIndex = i,
                         IsExpandable = true,
                         IsExpanded = false
                     });
+                    previousFileGroupChildListOffset = searchResultOffset + searchResultLength;
+                    previousFileGroupChildListLength = 1;
                 }
             }
             findAllTreeViewContainer.NodeValueList[0] = findAllTreeViewContainer.NodeValueList[0] with
@@ -349,20 +366,22 @@ public partial class TextEditorService
     private void ParseFilesRecursive(
         //FindAllTreeViewContainer container,
         int depth,
-        (int Depth, string FormattedAbsolutePath) csprojMark,
+        int csprojDepthMark, // used for the recursion to ignore "recursive" csproj files
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
-        Dictionary<string /*ProjectAbsolutePath*/, (int ChildListOffset, int ChildListLength)> projectSeenMap,
+        HashSet<string /*ProjectAbsolutePath*/> projectSeenHashSet,
+        List<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)> projectRespectedList,
         List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
         string search,
         string currentDirectory,
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap,
         StreamReaderPooledBuffer streamReaderPooledBuffer,
-        ref int fileCount,
-        ref int respectedProjectCount)
+        ref int fileCount)
     {
         var csprojChildListOffset = searchResultList.Count + 1 /* '+ 1' is the root node */;
         var countUponEntry = searchResultList.Count;
+        
+        int projectRespectedListIndex = -1;
         
         // Enumerate files in the current directory
         foreach (string file in Directory.EnumerateFiles(currentDirectory))
@@ -394,27 +413,25 @@ public partial class TextEditorService
                     tokenBuilder,
                     formattedBuilder);
             
+                // TODO: Support value tuple named parameters.
+                projectSeenHashSet.Add(
+                    formattedAbsolutePath,
+                    (
+                        -1,
+                        -1
+                    ));
+                
                 if (csprojMark.Depth == -1)
                 {
                     // If anyone has "recursive" csproj files then this code only respects
                     // the first one that was found.
-                    ++respectedProjectCount;
-                    csprojMark = (depth, formattedAbsolutePath);
+                    csprojDepthMark = depth;
                     
-                    projectSeenMap.Add(
-                        formattedAbsolutePath,
+                    projectRespectedListIndex = projectRespectedList.Count;
+                    projectRespectedList.Add(
                         (
+                            formattedAbsolutePath,
                             csprojChildListOffset,
-                            -1
-                        ));
-                }
-                else
-                {
-                    // TODO: Support value tuple named parameters.
-                    projectSeenMap.Add(
-                        formattedAbsolutePath,
-                        (
-                            -1,
                             -1
                         ));
                 }
@@ -508,24 +525,25 @@ public partial class TextEditorService
                 ParseFilesRecursive(
                     /*container, */
                     depth + 1,
-                    csprojMark,
+                    csprojDepthMark,
                     tokenBuilder,
                     formattedBuilder,
-                    projectSeenMap,
+                    projectSeenHashSet,
+                    projectRespectedList,
                     searchResultList,
                     search,
                     subDirectory,
                     streamReaderPooledBufferWrap,
                     streamReaderPooledBuffer,
-                    ref fileCount,
-                    ref respectedProjectCount);
+                    ref fileCount);
             }
         }
         
-        if (csprojMark.Depth == depth)
+        if (projectRespectedListIndex != -1)
         {
-            projectSeenMap[csprojMark.FormattedAbsolutePath] =
+            projectRespectedList[projectRespectedListIndex] =
             (
+                projectRespectedList[projectRespectedListIndex].ProjectAbsolutePath,
                 csprojChildListOffset,
                 searchResultList.Count - countUponEntry
             );

@@ -96,6 +96,17 @@ public partial class TextEditorService
         I don't think people would have thousands of projects in their .sln.
         
         Groups need not be fragmented too though...
+        
+        You know the amount of SearchResults and the amount of C# projects
+        
+        You can determine the amount of filename grouped keys by tracking this during the enumeration of files step.
+        
+        So you predetermine which contiguous indices will correspond to the SearchResult nodes.
+        
+        Then predetermine the filename group nodes...
+        and the C# project nodes...
+        
+        And you write out the data with gaps between each section.
         */
     
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);

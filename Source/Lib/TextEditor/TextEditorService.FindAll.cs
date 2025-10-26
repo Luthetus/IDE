@@ -74,6 +74,16 @@ public partial class TextEditorService
 
     public Task HandleStartSearchAction()
     {
+        /*
+        project grouping is a "late" brace matching algorithm, you are enumerating so you'll see files that are non .csproj
+        prior to the .csproj but once you do see the .csproj you mark that directory and any recursive to be owned
+        by that respective .csproj.
+        
+        Then you "brace match" by tracking directory depth until you've returned to the parent dir, then unset the owning csproj.
+        Anything that isn't owned by a csproj is marked under the "misc files" but the issue here is that I think they'll
+        be fragmented under these conditions so I gotta figure that out.
+        */
+    
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
         var textEditorFindAllState = GetFindAllState();

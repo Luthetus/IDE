@@ -141,7 +141,7 @@ public partial class TextEditorService
                 byteBuffer: new byte[StreamReaderPooledBuffer.DefaultBufferSize],
                 charBuffer: new char[utf8_MaxCharCount]);
             
-            ParseFilesRecursive(searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer));
+            ParseFilesRecursive(searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
         }
         catch (Exception e)
         {
@@ -150,7 +150,17 @@ public partial class TextEditorService
         finally
         {
             streamReaderPooledBuffer?.Dispose();
+            lock (_stateModificationLock)
+            {
+                _findAllState = _findAllState with
+                {
+                    SearchResultList = searchResultList
+                };
+            }
+            SecondaryChanged?.Invoke(SecondaryChangedKind.FindAllStateChanged);
         }
+        
+        
 
         return Task.CompletedTask;
     }
@@ -207,11 +217,15 @@ public partial class TextEditorService
             {
                 if (streamReaderPooledBufferWrap.CurrentCharacter == search[positionInSearch])
                 {
+                    _ = streamReaderPooledBufferWrap.ReadCharacter();
                     positionInSearch++;
+                    // This is 1 "character" further than the entry point so we can backtrack if it isn't a match.
+                    var bytePosition = streamReaderPooledBufferWrap.ByteIndex;
+                    var characterPosition = streamReaderPooledBufferWrap.PositionIndex;
                     
                     while (!streamReaderPooledBufferWrap.IsEof)
                     {
-                        if (positionInSearch == positionInSearch)
+                        if (positionInSearch == search.Length)
                         {
                             positionInSearch = 0;
                             fileContainedSearch = true;
@@ -220,6 +234,8 @@ public partial class TextEditorService
                         else if (streamReaderPooledBufferWrap.CurrentCharacter != search[positionInSearch])
                         {
                             positionInSearch = 0;
+                            streamReaderPooledBufferWrap.Unsafe_Seek_SeekOriginBegin(
+                                bytePosition, characterPosition, characterLength: 0);
                             break;
                         }
                         else
@@ -247,7 +263,7 @@ public partial class TextEditorService
             if (!IFileSystemProvider.IsDirectoryIgnored(subDirectory))
             {
                 // Recursively call for non-excluded subdirectories
-                ParseFilesRecursive(subDirectory, compilerService, editContext, compilationUnitKind);
+                ParseFilesRecursive(searchResultList, textEditorFindAllState.SearchQuery, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
             }
         }
     }
@@ -469,14 +485,16 @@ public partial class TextEditorService
     public record struct TextEditorFindAllState(
         string SearchQuery,
         string StartingDirectoryPath,
-        List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList)
+        List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList,
+        Exception Exception)
     {
         public static readonly Key<TreeViewContainer> TreeViewFindAllContainerKey = Key<TreeViewContainer>.NewKey();
 
         public TextEditorFindAllState() : this(
             SearchQuery: string.Empty,
             StartingDirectoryPath: string.Empty,
-            SearchResultList: new())
+            SearchResultList: new(),
+            Exception: null)
         {
         }
     }

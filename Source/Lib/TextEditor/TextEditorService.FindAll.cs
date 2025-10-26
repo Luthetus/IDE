@@ -176,7 +176,7 @@ public partial class TextEditorService
             ParseFilesRecursive(
                 /*findAllTreeViewContainer, */
                 depth: 0,
-                csprojMark: (-1, string.Empty),
+                csprojDepthMark: -1,
                 tokenBuilder,
                 formattedBuilder,
                 projectSeenHashSet,
@@ -190,12 +190,12 @@ public partial class TextEditorService
             
             foreach (var projectAbsolutePath in textEditorFindAllState.ProjectList)
             {
-                if (!projectSeenMap.ContainsKey(projectAbsolutePath.Value))
+                if (!projectSeenHashSet.Contains(projectAbsolutePath.Value))
                 {
                     ParseFilesRecursive(
                         /*findAllTreeViewContainer, */
                         depth: -1,
-                        csprojMark: (-1, string.Empty),
+                        csprojDepthMark: -1,
                         tokenBuilder,
                         formattedBuilder,
                         projectSeenHashSet,
@@ -235,6 +235,8 @@ public partial class TextEditorService
             var csprojOffset = fileGroupOffset + fileCount;
             var csprojLength = 0;
             
+            var projectRespectedListIndex = 0;
+            
             var findAllTreeViewContainer = new FindAllTreeViewContainer(
                 this,
                 searchResultList,
@@ -245,7 +247,7 @@ public partial class TextEditorService
                 ParentIndex = -1,
                 IndexAmongSiblings = 0,
                 ChildListOffset = csprojOffset,
-                ChildListLength = respectedProjectCount,
+                ChildListLength = projectRespectedList.Count,
                 ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
                 TraitsIndex = 0,
                 IsExpandable = true,
@@ -271,18 +273,18 @@ public partial class TextEditorService
                     ChildListOffset = 0,
                     ChildListLength = 0,
                     ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                    TraitsIndex = indexSearchResult,
+                    TraitsIndex = i,
                     IsExpandable = false,
                     IsExpanded = false
                 });
                 
-                if (previousResourceUri == searchResult.ResourceUri)
+                if (previousResourceUri == searchResult.ResourceUri.Value)
                 {
                     ++previousFileGroupChildListLength;
                 }
                 else
                 {
-                    previousResourceUri = searchResult.ResourceUri;
+                    previousResourceUri = searchResult.ResourceUri.Value;
                     findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
                     {
                         ParentIndex = 0,
@@ -414,14 +416,9 @@ public partial class TextEditorService
                     formattedBuilder);
             
                 // TODO: Support value tuple named parameters.
-                projectSeenHashSet.Add(
-                    formattedAbsolutePath,
-                    (
-                        -1,
-                        -1
-                    ));
+                projectSeenHashSet.Add(formattedAbsolutePath);
                 
-                if (csprojMark.Depth == -1)
+                if (csprojDepthMark == -1)
                 {
                     // If anyone has "recursive" csproj files then this code only respects
                     // the first one that was found.

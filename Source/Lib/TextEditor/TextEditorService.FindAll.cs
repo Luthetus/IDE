@@ -272,6 +272,8 @@ public partial class TextEditorService
             {
                 if (streamReaderPooledBufferWrap.CurrentCharacter == search[positionInSearch])
                 {
+                    var originBytePosition = streamReaderPooledBufferWrap.ByteIndex;;
+                    var originCharacterPosition = streamReaderPooledBufferWrap.PositionIndex;
                     _ = streamReaderPooledBufferWrap.ReadCharacter();
                     positionInSearch++;
                     // This is 1 "character" further than the entry point so we can backtrack if it isn't a match.
@@ -302,7 +304,15 @@ public partial class TextEditorService
                     
                     if (fileContainedSearch)
                     {
-                        searchResultList.Add((resourceUri, default(TextEditorTextSpan)));
+                        searchResultList.Add(
+                            (
+                                resourceUri,
+                                new TextEditorTextSpan(
+                                    startInclusiveIndex: originCharacterPosition,
+                                    endExclusiveIndex: streamReaderPooledBufferWrap.PositionIndex,
+                                    decorationByte: 0,
+                                    byteIndex: originBytePosition)
+                            ));
                         break;
                     }
                 }

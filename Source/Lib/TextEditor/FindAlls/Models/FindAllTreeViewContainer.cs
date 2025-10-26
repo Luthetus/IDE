@@ -78,8 +78,8 @@ public class FindAllTreeViewContainer : TreeViewContainer
             await TextEditorService.OpenInEditorAsync(
                 editContext,
                 path,
-                true,
-                null,
+                shouldSetFocusToEditor: true,
+                cursorPositionIndex: SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex,
                 new Category("main"),
                 editContext.TextEditorService.NewViewModelKey());
         });
@@ -119,8 +119,8 @@ public class FindAllTreeViewContainer : TreeViewContainer
                     await TextEditorService.OpenInEditorAsync(
                         editContext,
                         path,
-                        true,
-                        null,
+                        shouldSetFocusToEditor: true,
+                        cursorPositionIndex: SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex,
                         new Category("main"),
                         editContext.TextEditorService.NewViewModelKey());
                 });
@@ -150,8 +150,8 @@ public class FindAllTreeViewContainer : TreeViewContainer
                     await TextEditorService.OpenInEditorAsync(
                         editContext,
                         path,
-                        false,
-                        null,
+                        shouldSetFocusToEditor: false,
+                        cursorPositionIndex: SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex,
                         new Category("main"),
                         editContext.TextEditorService.NewViewModelKey());
                 });

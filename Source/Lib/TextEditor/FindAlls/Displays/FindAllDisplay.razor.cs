@@ -28,7 +28,7 @@ public sealed partial class FindAllDisplay : ComponentBase, IDisposable
         set
         {
             if (value is not null)
-                TextEditorService.SetStartingDirectoryPath(value);
+                TextEditorService.SetStartingDirectoryPath(value, TextEditorService.GetFindAllState().ProjectList);
         }
     }
     

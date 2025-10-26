@@ -21,14 +21,22 @@
 				   @bind:event="oninput" />
 		</div>
 
-		@*<div class="ci_te_find-all-starting-directory-path">
+		<div class="ci_te_find-all-starting-directory-path">
 			StartingDirectoryPath:&nbsp;
-			<input class="ci_ide_input ci_ide_input-text"
+			@if (string.IsNullOrWhiteSpace(findAllState.StartingDirectoryPath))
+			{
+			    <text>findAllState.StartingDirectoryPath is null</text>
+			}
+			else
+			{
+			    @findAllState.StartingDirectoryPath
+			}
+			@*<input class="ci_ide_input ci_ide_input-text"
 				   style="width: 100%;"
 				   placeholder="@nameof(StartingDirectoryPath)"
 				   @bind="StartingDirectoryPath"
-				   @bind:event="oninput" />
-		</div>*@
+				   @bind:event="oninput" />*@
+		</div>
 
 		<button class="ci_button"
                 @onclick="DoSearchOnClick">

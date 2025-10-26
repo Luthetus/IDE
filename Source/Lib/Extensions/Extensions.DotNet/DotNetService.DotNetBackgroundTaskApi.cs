@@ -244,7 +244,9 @@ public partial class DotNetService
         {
             IdeService.TextEditorService.CommonService.FileSystemProvider.DeletionPermittedRegister(new(parentDirectory, true), tokenBuilder, formattedBuilder);
 
-            IdeService.TextEditorService.SetStartingDirectoryPath(parentDirectory);
+            IdeService.TextEditorService.SetStartingDirectoryPath(
+                parentDirectory,
+                dotNetSolutionModel.DotNetProjectList.Select(x => x.AbsolutePath));
 
             IdeService.CodeSearch_With(inState => inState with
             {

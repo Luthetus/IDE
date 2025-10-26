@@ -413,6 +413,8 @@ public partial class TextEditorService
         
         int projectRespectedListIndex = -1;
         
+        var previousFile = string.Empty;
+        
         // Enumerate files in the current directory
         foreach (string file in Directory.EnumerateFiles(currentDirectory))
         {
@@ -431,8 +433,6 @@ public partial class TextEditorService
             {
                 continue;
             }
-            
-            ++fileCount;
             
             if (file.EndsWith(".csproj"))
             {
@@ -505,6 +505,11 @@ public partial class TextEditorService
                     {
                         if (positionInSearch == search.Length)
                         {
+                            if (previousFile != file)
+                            {
+                                previousFile = file;
+                                ++fileCount;
+                            }
                             searchResultList.Add(
                             (
                                 resourceUri,

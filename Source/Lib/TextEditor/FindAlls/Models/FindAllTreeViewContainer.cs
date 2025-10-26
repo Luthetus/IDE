@@ -45,8 +45,10 @@ public class FindAllTreeViewContainer : TreeViewContainer
         {
             case FindAllTreeViewContainer.ByteKind_Aaa:
                 return nameof(ByteKind_Aaa);
-            case FindAllTreeViewContainer.ByteKind_SearchResult:
+            case FindAllTreeViewContainer.ByteKind_SearchResultGroup:
                 return SearchResultList[nodeValue.TraitsIndex].ResourceUri.Value;
+            case FindAllTreeViewContainer.ByteKind_SearchResult:
+                return SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex.ToString();
             default:
                 return "asdfg";
         }

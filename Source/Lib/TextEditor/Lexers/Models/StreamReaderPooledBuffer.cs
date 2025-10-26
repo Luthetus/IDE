@@ -18,7 +18,7 @@ using global::System.Diagnostics;
 using global::System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
+namespace Clair.TextEditor.RazorLib.Lexers.Models;
 
 // This class implements a TextReader for reading characters to a Stream.
 // This is designed for character input in a particular Encoding,

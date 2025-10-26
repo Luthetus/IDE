@@ -112,44 +112,144 @@ public partial class TextEditorService
 
     public Task HandleStartSearchAction()
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
-        _throttleSetSearchQuery.Run(async _ =>
+        CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
+        
+        var textEditorFindAllState = GetFindAllState();
+        var dotNetSolutionState = GetDotNetSolutionState();
+        var solutionModel = dotNetSolutionState.DotNetSolutionModel;
+        
+        if (string.IsNullOrWhiteSpace(textEditorFindAllState.SearchQuery))
+            return;
+        
+        StreamReaderPooledBuffer streamReaderPooledBuffer;
+        StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
+        
+        var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
+        
+        try
         {
-            CancelSearch();
-            ClearSearch();
-
-            var textEditorFindAllState = GetFindAllState();
-
-            if (string.IsNullOrWhiteSpace(textEditorFindAllState.StartingDirectoryPath) ||
-                string.IsNullOrWhiteSpace(textEditorFindAllState.SearchQuery))
-            {
-                CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
+            var parentDirectory = solutionModel.AbsolutePath.CreateSubstringParentDirectory();
+            if (parentDirectory is null)
                 return;
-            }
-
-            var cancellationToken = _searchCancellationTokenSource.Token;
-            var progressBarModel = new ProgressBarModel();
-
-            ConstructTreeView(textEditorFindAllState);
-
-            SetProgressBarModel(progressBarModel);
-
-            try
-            {
-                await StartSearchTask(
-                    progressBarModel,
-                    textEditorFindAllState,
-                    cancellationToken);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        });
-        */
+    
+            var utf8Encoding = Encoding.UTF8;
+            var utf8_MaxCharCount = utf8Encoding.GetMaxCharCount(StreamReaderPooledBuffer.DefaultBufferSize);
+            
+            streamReaderPooledBuffer = new StreamReaderPooledBuffer(
+                stream: null,
+                utf8Encoding,
+                byteBuffer: new byte[StreamReaderPooledBuffer.DefaultBufferSize],
+                charBuffer: new char[utf8_MaxCharCount]);
+            
+            ParseFilesRecursive(searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        finally
+        {
+            streamReaderPooledBuffer?.Dispose();
+        }
 
         return Task.CompletedTask;
+    }
+    
+    /// <summary>
+    /// The google AI Overview for "c# enumerate files recursively but exclude certain directories" gave me a near perfect method implementation for this.
+    /// 
+    /// This entire situation is a huge pain because I'm so strict throughout the codebase with how the formatting of the path is.
+    /// When I use DirectoryInfo I get the drive prepended to the path and windows directory separators and it breaks everything.
+    /// </summary>
+    private void ParseFilesRecursive(List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList, string search, string currentDirectory, StreamReaderPooledBufferWrap streamReaderPooledBufferWrap, StreamReaderPooledBuffer streamReaderPooledBuffer)
+    {
+        // Enumerate files in the current directory
+        foreach (string file in Directory.EnumerateFiles(currentDirectory))
+        {
+            // TODO: Don't hardcode file extensions here to avoid searching through them.
+            //       Reason being, hardcoding them isn't going to work well as a long term solution.
+            //       How does one detect if a file is not text?
+            //       |
+            //       I seem to get away with opening some non-text files, but I think a gif I opened
+            //       had 1 million characters in it? So this takes 2 million bytes in a 2byte char?
+            //       I'm not sure exactly what happened, I opened the gif and the app froze,
+            //       I saw the character only at a glance. (2024-07-20)
+            if (file.EndsWith(".jpg") ||
+                file.EndsWith(".png") ||
+                file.EndsWith(".pdf") ||
+                file.EndsWith(".gif"))
+            {
+                continue;
+            }
+            
+            var resourceUri = new ResourceUri(file);
+            
+            MemoryStream memoryStream;
+            StreamReaderPooledBuffer sr;
+            
+            if (TextEditorState._modelMap.TryGetValue(resourceUri, out var textEditorModel))
+            {
+                streamReaderPooledBuffer.DiscardBufferedData(
+                    new MemoryStream(Encoding.UTF8.GetBytes(textEditorModel.GetAllText());
+            }
+            else
+            {
+                streamReaderPooledBuffer.DiscardBufferedData(
+                    new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, StreamReaderPooledBuffer.DefaultFileStreamBufferSize));
+            }
+            
+            streamReaderPooledBufferWrap.ReInitialize(streamReaderPooledBuffer);
+            
+            var positionInSearch;
+            bool fileContainedSearch = false;
+            
+            while (!streamReaderPooledBufferWrap.IsEof)
+            {
+                if (streamReaderPooledBufferWrap.CurrentCharacter == search[positionInSearch])
+                {
+                    positionInSearch++;
+                    
+                    while (!streamReaderPooledBufferWrap.IsEof)
+                    {
+                        if (positionInSearch == positionInSearch)
+                        {
+                            positionInSearch = 0;
+                            fileContainedSearch = true;
+                            break;
+                        }
+                        else if (streamReaderPooledBufferWrap.CurrentCharacter != search[positionInSearch])
+                        {
+                            positionInSearch = 0;
+                            break;
+                        }
+                        else
+                        {
+                            positionInSearch++;
+                            _ = streamReaderPooledBufferWrap.ReadCharacter();
+                        }
+                    }
+                    
+                    if (fileContainedSearch)
+                    {
+                        searchResultList.Add((resourceUri, default(TextEditorTextSpan)));
+                        break;
+                    }
+                }
+            
+                _ = streamReaderPooledBufferWrap.ReadCharacter();
+            }
+        }
+
+        // Enumerate subdirectories
+        foreach (string subDirectory in Directory.EnumerateDirectories(currentDirectory))
+        {
+            // Check if the subdirectory should be excluded
+            if (!IFileSystemProvider.IsDirectoryIgnored(subDirectory))
+            {
+                // Recursively call for non-excluded subdirectories
+                ParseFilesRecursive(subDirectory, compilerService, editContext, compilationUnitKind);
+            }
+        }
     }
 
     private async Task StartSearchTask(
@@ -308,8 +408,6 @@ public partial class TextEditorService
 
     private void ConstructTreeView(TextEditorFindAllState textEditorFindAllState)
     {
-        /*
-        // 2025-10-22 (rewrite TreeViews)
         var flatListVersion = CommonService.TreeView_GetNextFlatListVersion(TextEditorFindAllState.TreeViewFindAllContainerKey);
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
@@ -361,7 +459,6 @@ public partial class TextEditorService
         CommonService.TreeView_RegisterContainerAction(
         	container,
         	shouldFireStateChangedEvent: true);
-    	*/
     }
 
     public void Dispose()

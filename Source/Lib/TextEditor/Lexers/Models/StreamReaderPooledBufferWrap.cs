@@ -1,6 +1,6 @@
 using Clair.TextEditor.RazorLib.Exceptions;
 
-namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
+namespace Clair.TextEditor.RazorLib.Lexers.Models;
 
 public class StreamReaderPooledBufferWrap
 {

@@ -318,7 +318,7 @@ public partial class TextEditorService
     /// </summary>
     private void ParseFilesRecursive(
         int depth,
-        int csprojDepth,
+        (int Depth, string FormattedAbsolutePath) csprojMark,
         //FindAllTreeViewContainer container,
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
@@ -331,6 +331,7 @@ public partial class TextEditorService
         ref int fileCount)
     {
         var csprojChildListOffset = searchResultList.Count + 1 /* '+ 1' is the root node */;
+        var countUponEntry = searchResultList.Count;
         
         // Enumerate files in the current directory
         foreach (string file in Directory.EnumerateFiles(currentDirectory))
@@ -355,25 +356,36 @@ public partial class TextEditorService
             
             if (file.EndsWith(".csproj"))
             {
-                if (csprojDepth == -1)
+                var formattedAbsolutePath = AbsolutePath.GetFormattedStringOnly(
+                    file,
+                    isDirectory: false,
+                    fileSystemProvider: CommonService.FileSystemProvider,
+                    tokenBuilder,
+                    formattedBuilder);
+            
+                if (csprojMark.Depth == -1)
                 {
                     // If anyone has "recursive" csproj files then this code only respects
                     // the first one that was found.
-                    csprojDepth = depth;
+                    csprojMark = (depth, formattedAbsolutePath);
+                    
+                    projectSeenHashSet.Add(
+                        formattedAbsolutePath,
+                        (
+                            csprojChildListOffset,
+                            -1
+                        ));
                 }
-            
-                // TODO: Support value tuple named parameters.
-                projectSeenHashSet.Add(
-                    AbsolutePath.GetFormattedStringOnly(
-                        file,
-                        isDirectory: false,
-                        fileSystemProvider: CommonService.FileSystemProvider,
-                        tokenBuilder,
-                        formattedBuilder),
-                    (
-                        csprojChildListOffset,
-                        -1
-                    ));
+                else
+                {
+                    // TODO: Support value tuple named parameters.
+                    projectSeenHashSet.Add(
+                        formattedAbsolutePath,
+                        (
+                            -1,
+                            -1
+                        ));
+                }
             }
             
             var resourceUri = new ResourceUri(file);
@@ -477,9 +489,13 @@ public partial class TextEditorService
             }
         }
         
-        if (csprojDepth == depth)
+        if (csprojMark.Depth == depth)
         {
-            
+            projectSeenHashSet[csprojMark.FormattedAbsolutePath] =
+            (
+                csprojChildListOffset,
+                searchResultList.Count - countUponEntry,
+            );
         }
     }
 

@@ -277,6 +277,7 @@ public partial class TextEditorService
                 // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
                 
                 Console.WriteLine("\n==============");
+                Console.WriteLine($"searchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"csprojOffset + projectRespectedList.Count:{csprojOffset + projectRespectedList.Count}");
                 Console.WriteLine($"projectRespectedList.Count:{projectRespectedList.Count}");
                 Console.WriteLine($"searchResultOffset:{searchResultOffset}");
@@ -293,18 +294,19 @@ public partial class TextEditorService
                     var searchResult = findAllTreeViewContainer.SearchResultList[i];
                     
                     Console.WriteLine($"if ({previousProjectFilesLength} == {projectRespectedList[projectRespectedListIndex].ChildListLength})");
-                    if (previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
+                    if (projectRespectedListIndex < projectRespectedList.Count &&
+                        previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
                     {
                         findAllTreeViewContainer.NodeValueList[csprojOffset + csprojLength] =
                             new TreeViewNodeValue
                             {
-                                ParentIndex = fileGroupOffset + fileGroupLength,
-                                IndexAmongSiblings = searchResultLength,
+                                ParentIndex = 0,
+                                IndexAmongSiblings = csprojLength,
                                 ChildListOffset = previousProjectChildListOffset,
                                 ChildListLength = previousProjectChildListLength,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
                                 TraitsIndex = projectRespectedListIndex,
-                                IsExpandable = false,
+                                IsExpandable = true,
                                 IsExpanded = false
                             };
                         ++csprojLength;
@@ -349,7 +351,9 @@ public partial class TextEditorService
                         findAllTreeViewContainer.NodeValueList[fileGroupOffset + fileGroupLength] =
                             new TreeViewNodeValue
                             {
-                                ParentIndex = 0,
+                                ParentIndex = projectRespectedListIndex < projectRespectedList.Count
+                                    ? csprojOffset + csprojLength
+                                    : 0,
                                 IndexAmongSiblings = fileGroupLength,
                                 ChildListOffset = previousFileGroupChildListOffset,
                                 ChildListLength = previousFileGroupChildListLength,

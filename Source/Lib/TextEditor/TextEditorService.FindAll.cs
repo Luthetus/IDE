@@ -107,6 +107,15 @@ public partial class TextEditorService
         and the C# project nodes...
         
         And you write out the data with gaps between each section.
+        
+        ----
+        
+        prellocate space in the shared list for the groups by counting distinct filenames during enumeration,
+        iterate the search-results to write out the group nodes,
+        
+        then write the csproj nodes to point to the group nodes by changing the Dictionary's value tuple
+            to contain the offset and length of the groups instead of the files. (you have to do this AFTER you
+            initially have the value tuple signify the search result offset and length that corresponds to the csproj).
         */
     
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
@@ -317,9 +326,9 @@ public partial class TextEditorService
     /// When I use DirectoryInfo I get the drive prepended to the path and windows directory separators and it breaks everything.
     /// </summary>
     private void ParseFilesRecursive(
+        //FindAllTreeViewContainer container,
         int depth,
         (int Depth, string FormattedAbsolutePath) csprojMark,
-        //FindAllTreeViewContainer container,
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
         HashSet<string> projectSeenHashSet,
@@ -476,7 +485,7 @@ public partial class TextEditorService
                 ParseFilesRecursive(
                     /*container, */
                     depth + 1,
-                    csprojDepth,
+                    csprojMark,
                     tokenBuilder,
                     formattedBuilder,
                     projectSeenHashSet,

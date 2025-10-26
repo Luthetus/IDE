@@ -136,7 +136,9 @@ public partial class TextEditorService
         var projectSeenMap = new Dictionary<string /*ProjectAbsolutePath*/, (int ChildListOffset, int ChildListLength)>();
         
         int fileCount = 0;
+        int respectedProjectCount = 0;
         
+        /*
         var findAllTreeViewContainer = new FindAllTreeViewContainer(this, searchResultList);
         findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
         {
@@ -149,6 +151,7 @@ public partial class TextEditorService
             IsExpandable = true,
             IsExpanded = true
         });
+        */
         
         Exception? exception = null;
         
@@ -182,7 +185,8 @@ public partial class TextEditorService
                 parentDirectory,
                 streamReaderPooledBufferWrap,
                 streamReaderPooledBuffer,
-                ref fileCount);
+                ref fileCount,
+                ref respectedProjectCount);
             
             foreach (var projectAbsolutePath in textEditorFindAllState.ProjectList)
             {
@@ -200,7 +204,8 @@ public partial class TextEditorService
                         projectAbsolutePath.CreateSubstringParentDirectory(),
                         streamReaderPooledBufferWrap,
                         streamReaderPooledBuffer,
-                        ref fileCount);
+                        ref fileCount,
+                        ref respectedProjectCount);
                 }
             }
             
@@ -221,7 +226,21 @@ public partial class TextEditorService
         {
             streamReaderPooledBuffer?.Dispose();
             
-            /*var rootNode = new TreeViewNodeValue
+            var searchResultOffset = 1;
+            var searchResultIndexAmongSiblings = 0;
+            
+            var fileGroupOffset = 1 + searchResultList.Count;
+            var fileGroupIndexAmongSiblings = 0;
+            
+            var csprojOffset = fileGroupOffset + fileCount;
+            var csprojIndexAmongSiblings = 0;
+            
+            var findAllTreeViewContainer = new FindAllTreeViewContainer(
+                this,
+                searchResultList,
+                nodeValueListInitialCapacity: csprojOffset + respectedProjectCount);
+            
+            var rootNode = new TreeViewNodeValue
             {
                 ParentIndex = -1,
                 IndexAmongSiblings = 0,
@@ -232,7 +251,7 @@ public partial class TextEditorService
                 IsExpandable = true,
                 IsExpanded = true
             };
-            findAllTreeViewContainer.NodeValueList.Add(rootNode);*/
+            findAllTreeViewContainer.NodeValueList.Add(rootNode);
 
             var groupIndexAmongSiblings = 0;
             
@@ -339,7 +358,8 @@ public partial class TextEditorService
         string currentDirectory,
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap,
         StreamReaderPooledBuffer streamReaderPooledBuffer,
-        ref int fileCount)
+        ref int fileCount,
+        ref int respectedProjectCount)
     {
         var csprojChildListOffset = searchResultList.Count + 1 /* '+ 1' is the root node */;
         var countUponEntry = searchResultList.Count;
@@ -378,6 +398,7 @@ public partial class TextEditorService
                 {
                     // If anyone has "recursive" csproj files then this code only respects
                     // the first one that was found.
+                    ++respectedProjectCount;
                     csprojMark = (depth, formattedAbsolutePath);
                     
                     projectSeenMap.Add(
@@ -496,7 +517,8 @@ public partial class TextEditorService
                     subDirectory,
                     streamReaderPooledBufferWrap,
                     streamReaderPooledBuffer,
-                    ref fileCount);
+                    ref fileCount,
+                    ref respectedProjectCount);
             }
         }
         

@@ -500,6 +500,16 @@ public partial class TextEditorService
                 // [  R,   S,   S,   F,   F,   P  ]
                 
                 
+                
+                
+                
+                // Passing cases:
+                // ============================
+                // [ R, S_f1, S_f2, F1, F2, P ]
+                
+                // Failing cases:
+                // ======================================
+                // [ R, S_f1, S_f1, S_f2, S_f2, F, F, P ]
             }
             
             lock (_stateModificationLock)

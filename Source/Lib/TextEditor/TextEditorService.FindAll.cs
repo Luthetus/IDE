@@ -270,7 +270,7 @@ public partial class TextEditorService
                 };
                 findAllTreeViewContainer.NodeValueList[0] = rootNode;
     
-                var previousResourceUri = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
+                var previousResourceUri = string.Empty;//findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
                 
                 var previousFileGroupChildListOffset = searchResultOffset;
                 var previousFileGroupChildListLength = 0;
@@ -281,7 +281,7 @@ public partial class TextEditorService
                 
                 // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
                 
-                /*Console.WriteLine("\n==============");
+                Console.WriteLine("\n==============");
                 Console.WriteLine($"searchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"csprojOffset + projectRespectedList.Count:{csprojOffset + projectRespectedList.Count}");
                 Console.WriteLine($"projectRespectedList.Count:{projectRespectedList.Count}");
@@ -292,10 +292,40 @@ public partial class TextEditorService
                 Console.WriteLine($"csprojOffset:{csprojOffset}");
                 Console.WriteLine($"csprojLength:{csprojLength}");
                 Console.WriteLine($"projectRespectedListIndex:{projectRespectedListIndex}");
-                Console.WriteLine("==============\n");*/
+                Console.WriteLine("==============\n");
                 
                 //    0,   1,   2,   3,   4,   5,   6,   7
                 // [  R,   S,   S,   S,   S,   S,   F,   P  ]
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                //    0,   1,   2,   3,   4,   5
+                // [  R,   S,   S,   F,   F,   P  ]
+                
+                
+                
+                
                 
                 (ResourceUri ResourceUri, TextEditorTextSpan TextSpan) searchResult = findAllTreeViewContainer.SearchResultList[0];
                 int i = 0;
@@ -381,6 +411,7 @@ public partial class TextEditorService
                     }
                 }
                 
+                /*
                 // WARNING-SIMILAR_BUT_NOT_EQUAL: this code is SIMILAR_BUT_NOT_EQUAL inside the for loop (this duplicate will write the final entry).
                 previousProjectChildListLength++;
                 previousResourceUri = searchResult.ResourceUri.Value;
@@ -397,13 +428,14 @@ public partial class TextEditorService
                         // !!!!
                         // SIMILAR_BUT_NOT_EQUAL
                         // !!!!
-                        TraitsIndex = i - 1,
+                        TraitsIndex = i,// - 1,
                         IsExpandable = true,
                         IsExpanded = false
                     };
                 ++fileGroupLength;
                 previousFileGroupChildListOffset = searchResultOffset + searchResultLength;
                 previousFileGroupChildListLength = 1;
+                */
                 
                 if (projectRespectedListIndex < projectRespectedList.Count &&
                     previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
@@ -443,7 +475,7 @@ public partial class TextEditorService
             	projectRespectedListIndex:1
             	==============
                 */
-                /*Console.WriteLine("\n\t==============");
+                Console.WriteLine("\n\t==============");
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"\tcsprojOffset + projectRespectedList.Count:{csprojOffset + projectRespectedList.Count}");
                 Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");
@@ -454,7 +486,20 @@ public partial class TextEditorService
                 Console.WriteLine($"\tcsprojOffset:{csprojOffset}");
                 Console.WriteLine($"\tcsprojLength:{csprojLength}");
                 Console.WriteLine($"\tprojectRespectedListIndex:{projectRespectedListIndex}");
-                Console.WriteLine("\t==============\n");*/
+                
+                for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
+                {
+                    var ccc = findAllTreeViewContainer.NodeValueList[bbb];
+                    
+                    Console.Write($"\t{ccc.ByteKind} {ccc.TraitsIndex}");
+                }
+                
+                Console.WriteLine("\t==============\n");
+                
+                //    0,   1,   2,   3,   4,   5
+                // [  R,   S,   S,   F,   F,   P  ]
+                
+                
             }
             
             lock (_stateModificationLock)

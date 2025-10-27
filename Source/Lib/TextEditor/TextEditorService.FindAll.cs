@@ -138,7 +138,13 @@ public partial class TextEditorService
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
         var projectSeenHashSet = new HashSet<string /*ProjectAbsolutePath*/>();
-        var projectRespectedList = new List<(string ProjectAbsolutePath, int SeachResult_ChildListOffset, int SeachResult_ChildListLength)>();
+        // Plural of "SearchResult" is used rather than "ChildList" or "Children" to ensure variable names
+        // are more distinct from eachother.
+        //
+        // Once the algorithm settles consideration to use ChildList everywhere might be of good use
+        // lest you always wonder "well what wording did they use for this variable this time...".
+        //
+        var projectRespectedList = new List<(string ProjectAbsolutePath, int SeachResultsOffset, int SeachResultsLength)>();
         
         int fileCount = 0;
         

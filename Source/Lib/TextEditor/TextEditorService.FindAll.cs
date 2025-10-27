@@ -287,9 +287,9 @@ public partial class TextEditorService
                     var searchResult = findAllTreeViewContainer.SearchResultList[i];
                     
                     if (fluid_projectRespectedListIndex < projectRespectedList.Count &&
-                            (pending_projectExclusiveMark == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength ||
+                            (pending_projectExclusiveMark == projectRespectedList[fluid_projectRespectedListIndex].SeachResult_ChildListLength ||
                             (i == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 pending_projectExclusiveMark + 1 == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength)))
+                                 pending_projectExclusiveMark + 1 == projectRespectedList[fluid_projectRespectedListIndex].SeachResult_ChildListLength)))
                     {
                         findAllTreeViewContainer.NodeValueList[fixed_projectOffset + fluid_projectLength] =
                             new TreeViewNodeValue
@@ -311,7 +311,7 @@ public partial class TextEditorService
                         pending_projectExclusiveMark = 0;
                     }
                     
-                    if (i + 1/*rootnode*/ == projectRespectedList[fluid_projectRespectedListIndex].ChildListOffset)
+                    if (i == projectRespectedList[fluid_projectRespectedListIndex].SeachResult_ChildListOffset)
                     {
                         pending_projectChildListOffset = fixed_fileGroupOffset + fluid_fileGroupLength;
                         pending_projectChildListLength = 0;
@@ -483,7 +483,7 @@ public partial class TextEditorService
                     projectRespectedList.Add(
                         (
                             formattedAbsolutePath,
-                            csprojChildListOffset,
+                            seachResult_csprojChildListOffset,
                             -1
                         ));
                 }

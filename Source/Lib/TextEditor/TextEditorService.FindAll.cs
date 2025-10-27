@@ -251,7 +251,7 @@ public partial class TextEditorService
                 var projectListCapacity = projectRespectedList.Count;
                 var projectListLength = 0;
                 
-                var projectRespectedListIndex = 0;
+                var i_project = 0;
                 
                 var nodeValueListInitialCapacity = projectListOffset + projectRespectedList.Count;
                 findAllTreeViewContainer = new FindAllTreeViewContainer(
@@ -294,10 +294,10 @@ public partial class TextEditorService
                 {
                     var searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
                     
-                    if (projectRespectedListIndex < projectRespectedList.Count &&
-                            (pending_projectExclusiveMark == projectRespectedList[projectRespectedListIndex].SeachResult_ChildListLength ||
+                    if (i_project < projectRespectedList.Count &&
+                            (pending_projectExclusiveMark == projectRespectedList[i_project].SeachResult_ChildListLength ||
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 pending_projectExclusiveMark + 1 == projectRespectedList[projectRespectedListIndex].SeachResult_ChildListLength)))
+                                 pending_projectExclusiveMark + 1 == projectRespectedList[i_project].SeachResult_ChildListLength)))
                     {
                         // Write out pending
                         findAllTreeViewContainer.NodeValueList[projectListOffset + projectListLength] =
@@ -308,19 +308,19 @@ public partial class TextEditorService
                                 ChildListOffset = pending_projectChildListOffset,
                                 ChildListLength = pending_projectChildListLength,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
-                                TraitsIndex = projectRespectedListIndex,
+                                TraitsIndex = i_project,
                                 IsExpandable = true,
                                 IsExpanded = false
                             };
                         ++projectListLength;
-                        ++projectRespectedListIndex;
+                        ++i_project;
                         
                         pending_projectChildListOffset = fileListOffset + fileListLength;
                         pending_projectChildListLength = 0;
                         pending_projectExclusiveMark = 0;
                     }
                     
-                    if (i_searchResult == projectRespectedList[projectRespectedListIndex].SeachResult_ChildListOffset)
+                    if (i_searchResult == projectRespectedList[i_project].SeachResult_ChildListOffset)
                     {
                         pending_projectChildListOffset = fileListOffset + fileListLength;
                         pending_projectChildListLength = 0;
@@ -352,7 +352,7 @@ public partial class TextEditorService
                         findAllTreeViewContainer.NodeValueList[fileListOffset + fileListLength] =
                             new TreeViewNodeValue
                             {
-                                ParentIndex = projectRespectedListIndex < projectRespectedList.Count
+                                ParentIndex = i_project < projectRespectedList.Count
                                     ? projectListOffset + projectListLength
                                     : 0,
                                 IndexAmongSiblings = 0/*fileListLength*/,
@@ -392,7 +392,7 @@ public partial class TextEditorService
                 Console.WriteLine($"\tfileListLength:{fileListLength}");
                 Console.WriteLine($"\tprojectListOffset:{projectListOffset}");
                 Console.WriteLine($"\tprojectListLength:{projectListLength}");
-                Console.WriteLine($"\tprojectRespectedListIndex:{projectRespectedListIndex}");
+                Console.WriteLine($"\ti_project:{i_project}");
                 
                 for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
                 {

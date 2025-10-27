@@ -355,7 +355,7 @@ public partial class TextEditorService
                             new TreeViewNodeValue
                             {
                                 ParentIndex = 0,
-                                IndexAmongSiblings = 0/*projectLength*/,
+                                IndexAmongSiblings = projectHeap_Length,
                                 ChildListOffset = projectNode_ChildrenOffset,
                                 ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,

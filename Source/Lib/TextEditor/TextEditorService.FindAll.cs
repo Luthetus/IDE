@@ -234,17 +234,17 @@ public partial class TextEditorService
             
             if (searchResultList.Count > 0)
             {
-                var searchResultOffset = 1;
-                var searchResultLength = 0;
+                var fixed_searchResultOffset = 1;
+                var fluid_searchResultLength = 0;
                 
-                var fileGroupOffset = 1 + searchResultList.Count;
-                var fileGroupLength = 0;
+                var fixed_fileGroupOffset = 1 + searchResultList.Count;
+                var fluid_fileGroupLength = 0;
                 
                 //Console.WriteLine($"fileCount:{fileCount}");
-                var csprojOffset = fileGroupOffset + fileCount;
-                var csprojLength = 0;
+                var fixed_csprojOffset = fixed_fileGroupOffset + fileCount;
+                var fluid_csprojLength = 0;
                 
-                var projectRespectedListIndex = 0;
+                var fluid_projectRespectedListIndex = 0;
                 
                 findAllTreeViewContainer = new FindAllTreeViewContainer(
                     this,

@@ -277,6 +277,11 @@ public partial class TextEditorService
                 var pending_ProjectChildListLength = 0;
                 var pending_ProjectExclusiveMark = 0;
                 
+                // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.
+                // ... then as you go if there isn't a csproj that claims ownership of the search result then you copy the data
+                // to the end of the NodeValueList and the misc files points to those search results you copied to the end of the NodeValueList
+                // so then you have to say the misc node itself has children offset...length.
+                
                 for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
                 {
                     var searchResult = findAllTreeViewContainer.SearchResultList[i];

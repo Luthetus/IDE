@@ -138,7 +138,7 @@ public partial class TextEditorService
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
         var projectSeenHashSet = new HashSet<string /*ProjectAbsolutePath*/>();
-        var projectRespectedList = new List<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)>();
+        var projectRespectedList = new List<(string ProjectAbsolutePath, int SeachResult_ChildListOffset, int SeachResult_ChildListLength)>();
         
         int fileCount = 0;
         
@@ -428,7 +428,7 @@ public partial class TextEditorService
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
         HashSet<string /*ProjectAbsolutePath*/> projectSeenHashSet,
-        List<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)> projectRespectedList,
+        List<(string ProjectAbsolutePath, int SeachResult_ChildListOffset, int SeachResult_ChildListLength)> projectRespectedList,
         List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
         string search,
         string currentDirectory,
@@ -436,8 +436,7 @@ public partial class TextEditorService
         StreamReaderPooledBuffer streamReaderPooledBuffer,
         ref int fileCount)
     {
-        var csprojChildListOffset = searchResultList.Count + 1 /* '+ 1' is the root node */;
-        var countUponEntry = searchResultList.Count;
+        var seachResult_csprojChildListOffset = searchResultList.Count;
         
         int projectRespectedListIndex = -1;
         
@@ -602,8 +601,8 @@ public partial class TextEditorService
             projectRespectedList[projectRespectedListIndex] =
             (
                 projectRespectedList[projectRespectedListIndex].ProjectAbsolutePath,
-                csprojChildListOffset,
-                searchResultList.Count - countUponEntry
+                seachResult_csprojChildListOffset,
+                searchResultList.Count - seachResult_csprojChildListOffset
             );
         }
     }

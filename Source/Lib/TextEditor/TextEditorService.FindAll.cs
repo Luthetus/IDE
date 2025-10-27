@@ -305,6 +305,7 @@ public partial class TextEditorService
                 };
                 
                 // The Length is calculable
+                // ...Heap_Offset + ...Heap_Length - ...Node_ChildrenOffset.
 
                 // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
                 var fileNode_ChildrenOffset = resultHeap_Offset;
@@ -312,7 +313,7 @@ public partial class TextEditorService
                 
                 // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
                 var projectNode_ChildrenOffset = fileHeap_Offset;
-                // The exclusive i_searchResult that marks the end of the project's files.
+                // The exclusive `i_searchResult` that marks the end of the project's files.
                 // (NOTE: A file is the first distinct occurrence of a filename within the search results.
                 //        That relation is why the i_searchResult can indicate this).
                 var projectNode_ExclusiveMark = -1;
@@ -359,14 +360,12 @@ public partial class TextEditorService
                         ++i_project;
                         
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                        projectNode_ChildListLength = 0;
-                        projectNode_ExclusiveMark = 0;
+                        projectNode_ExclusiveMark = -1;
                     }
                     
                     if (i_searchResult == projectRespectedList[i_project].SeachResultsOffset)
                     {
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                        projectNode_ChildListLength = 0;
                         projectNode_ExclusiveMark = 0;
                     }
                     
@@ -384,9 +383,6 @@ public partial class TextEditorService
                             IsExpanded = false
                         };
                     ++resultHeap_Length;
-                    
-                    // SearchResult: Update dependencies
-                    ++projectNode_ExclusiveMark;
                     
                     if (fileNode_InclusiveMark != searchResult.ResourceUri.Value ||
                         i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
@@ -411,9 +407,6 @@ public partial class TextEditorService
                         // FileGroup: Change pending target
                         fileNode_InclusiveMark = searchResult.ResourceUri.Value;
                         fileNode_ChildrenOffset = resultHeap_Offset + resultHeap_Length;
-                        
-                        // FileGroup: Update dependencies
-                        ++projectNode_ChildListLength;
                     }
                 }
                 

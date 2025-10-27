@@ -118,6 +118,10 @@ public partial class TextEditorService
             initially have the value tuple signify the search result offset and length that corresponds to the csproj).
         */
     
+        // I gotta wake up at 5:30 tomorrow and I Gotta take a shower / etc so I'm done for now.
+        // It is extremely close it circular points somehow but it all lazily expands.
+        // but I Think 0th entry uses the name of the 1st entry idk.
+        //
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
         var textEditorFindAllState = GetFindAllState();

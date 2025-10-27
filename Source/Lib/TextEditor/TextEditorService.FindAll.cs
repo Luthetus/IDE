@@ -370,7 +370,7 @@ public partial class TextEditorService
                         projectNode_ExclusiveMark = -1;
                     }
                     
-                    if (i_searchResult == projectRespectedList[i_project].SeachResultsOffset)
+                    if (i_searchResult == projectRespectedList[i_project].SearchResultsOffset)
                     {
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
                         projectNode_ExclusiveMark = 0;
@@ -403,7 +403,7 @@ public partial class TextEditorService
                                     : 0,
                                 IndexAmongSiblings = 0/*fileListLength*/,
                                 ChildListOffset = fileNode_ChildrenOffset,
-                                ChildListLength = resultHeap_Length - fileNode_ChildrenOffset,
+                                ChildListLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
                                 TraitsIndex = i_searchResult,
                                 IsExpandable = true,

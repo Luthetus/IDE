@@ -236,7 +236,7 @@ public partial class TextEditorService
                 var fileGroupOffset = 1 + searchResultList.Count;
                 var fileGroupLength = 0;
                 
-                Console.WriteLine($"fileCount:{fileCount}");
+                //Console.WriteLine($"fileCount:{fileCount}");
                 var csprojOffset = fileGroupOffset + fileCount;
                 var csprojLength = 0;
                 
@@ -277,7 +277,7 @@ public partial class TextEditorService
                 
                 // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
                 
-                Console.WriteLine("\n==============");
+                /*Console.WriteLine("\n==============");
                 Console.WriteLine($"searchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"csprojOffset + projectRespectedList.Count:{csprojOffset + projectRespectedList.Count}");
                 Console.WriteLine($"projectRespectedList.Count:{projectRespectedList.Count}");
@@ -288,7 +288,7 @@ public partial class TextEditorService
                 Console.WriteLine($"csprojOffset:{csprojOffset}");
                 Console.WriteLine($"csprojLength:{csprojLength}");
                 Console.WriteLine($"projectRespectedListIndex:{projectRespectedListIndex}");
-                Console.WriteLine("==============\n");
+                Console.WriteLine("==============\n");*/
                 
                 //    0,   1,   2,   3,   4,   5,   6,   7
                 // [  R,   S,   S,   S,   S,   S,   F,   P  ]
@@ -300,7 +300,7 @@ public partial class TextEditorService
                 {
                     searchResult = findAllTreeViewContainer.SearchResultList[i];
                     
-                    Console.WriteLine($"if ({previousProjectFilesLength} == {projectRespectedList[projectRespectedListIndex].ChildListLength})");
+                    //Console.WriteLine($"if ({previousProjectFilesLength} == {projectRespectedList[projectRespectedListIndex].ChildListLength})");
                     if (projectRespectedListIndex < projectRespectedList.Count &&
                         previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
                     {
@@ -325,7 +325,7 @@ public partial class TextEditorService
                         previousProjectFilesLength = 0;
                     }
                     
-                    Console.WriteLine($"\tif ({i} + {1} == {projectRespectedList[projectRespectedListIndex].ChildListOffset})");
+                    // Console.WriteLine($"\tif ({i} + {1} == {projectRespectedList[projectRespectedListIndex].ChildListOffset})");
                     if (i + 1/*rootnode*/ == projectRespectedList[projectRespectedListIndex].ChildListOffset)
                     {
                         previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
@@ -439,7 +439,7 @@ public partial class TextEditorService
             	projectRespectedListIndex:1
             	==============
                 */
-                Console.WriteLine("\n\t==============");
+                /*Console.WriteLine("\n\t==============");
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"\tcsprojOffset + projectRespectedList.Count:{csprojOffset + projectRespectedList.Count}");
                 Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");
@@ -450,7 +450,7 @@ public partial class TextEditorService
                 Console.WriteLine($"\tcsprojOffset:{csprojOffset}");
                 Console.WriteLine($"\tcsprojLength:{csprojLength}");
                 Console.WriteLine($"\tprojectRespectedListIndex:{projectRespectedListIndex}");
-                Console.WriteLine("\t==============\n");
+                Console.WriteLine("\t==============\n");*/
             }
             
             lock (_stateModificationLock)

@@ -273,7 +273,7 @@ public partial class TextEditorService
                 var previousResourceUri = string.Empty;//findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
                 
                 var previousFileGroupChildListOffset = searchResultOffset;
-                var previousFileGroupChildListLength = 0;
+                var previousFileGroupChildListLength = 1;
                 
                 var previousProjectChildListOffset = fileGroupOffset;
                 var previousProjectChildListLength = 0;
@@ -491,7 +491,7 @@ public partial class TextEditorService
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
                     
-                    Console.Write($"\t{ccc.ByteKind} {ccc.TraitsIndex}");
+                    Console.Write($"\t{ccc.ByteKind} {ccc.TraitsIndex} {ccc.ChildListOffset} {ccc.ChildListLength}");
                 }
                 
                 Console.WriteLine("\t==============\n");

@@ -270,14 +270,14 @@ public partial class TextEditorService
                 };
                 findAllTreeViewContainer.NodeValueList[0] = rootNode;
     
-                var previousResourceUri = string.Empty;//findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
+                var pending_ResourceUri = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
                 
-                var previousFileGroupChildListOffset = searchResultOffset;
-                var previousFileGroupChildListLength = 1;
+                var pending_FileGroupChildListOffset = searchResultOffset;
+                var pending_FileGroupChildListLength = 1;
                 
-                var previousProjectChildListOffset = fileGroupOffset;
-                var previousProjectChildListLength = 0;
-                var previousProjectFilesLength = 0;
+                var pending_ProjectChildListOffset = fileGroupOffset;
+                var pending_ProjectChildListLength = 0;
+                var pending_ProjectFilesLength = 0;
                 
                 // CAREFUL OF THE COUNT OF THE NODEVALUE LIST IT IS BAD NOW
                 
@@ -334,18 +334,19 @@ public partial class TextEditorService
                 {
                     searchResult = findAllTreeViewContainer.SearchResultList[i];
                     
-                    //Console.WriteLine($"if ({previousProjectFilesLength} == {projectRespectedList[projectRespectedListIndex].ChildListLength})");
+                    //Console.WriteLine($"if ({pending_ProjectFilesLength} == {projectRespectedList[projectRespectedListIndex].ChildListLength})");
                     if (projectRespectedListIndex < projectRespectedList.Count &&
-                        previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
+                            (pending_ProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength ||
+                            (i == findAllTreeViewContainer.SearchResultList.Count - 1 &&
+                                 pending_ProjectFilesLength + 1 == projectRespectedList[projectRespectedListIndex].ChildListLength)))
                     {
-                        // WARNING: this code is duplicated after the for loop to write the final entry.
                         findAllTreeViewContainer.NodeValueList[csprojOffset + csprojLength] =
                             new TreeViewNodeValue
                             {
                                 ParentIndex = 0,
                                 IndexAmongSiblings = csprojLength,
-                                ChildListOffset = previousProjectChildListOffset,
-                                ChildListLength = previousProjectChildListLength,
+                                ChildListOffset = pending_ProjectChildListOffset,
+                                ChildListLength = pending_ProjectChildListLength,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
                                 TraitsIndex = projectRespectedListIndex,
                                 IsExpandable = true,
@@ -354,17 +355,17 @@ public partial class TextEditorService
                         ++csprojLength;
                         ++projectRespectedListIndex;
                         
-                        previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
-                        previousProjectChildListLength = 0;
-                        previousProjectFilesLength = 0;
+                        pending_ProjectChildListOffset = fileGroupOffset + fileGroupLength;
+                        pending_ProjectChildListLength = 0;
+                        pending_ProjectFilesLength = 0;
                     }
                     
                     // Console.WriteLine($"\tif ({i} + {1} == {projectRespectedList[projectRespectedListIndex].ChildListOffset})");
                     if (i + 1/*rootnode*/ == projectRespectedList[projectRespectedListIndex].ChildListOffset)
                     {
-                        previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
-                        previousProjectChildListLength = 0;
-                        previousProjectFilesLength = 0;
+                        pending_ProjectChildListOffset = fileGroupOffset + fileGroupLength;
+                        pending_ProjectChildListLength = 0;
+                        pending_ProjectFilesLength = 0;
                     }
                     
                     findAllTreeViewContainer.NodeValueList[searchResultOffset + searchResultLength] =
@@ -380,18 +381,14 @@ public partial class TextEditorService
                             IsExpanded = false
                         };
                     ++searchResultLength;
-                    ++previousProjectFilesLength;
+                    ++pending_ProjectFilesLength;
                     
-                    if (previousResourceUri == searchResult.ResourceUri.Value)
-                    {
-                        ++previousFileGroupChildListLength;
-                    }
-                    else
+                    if (pending_ResourceUri != searchResult.ResourceUri.Value ||
+                        i == findAllTreeViewContainer.SearchResultList.Count - 1)
                     {
                         // Write out pending
                         {
                             // WARNING: this code is duplicated after the for loop to write the final entry.
-                            
                             findAllTreeViewContainer.NodeValueList[fileGroupOffset + fileGroupLength] =
                                 new TreeViewNodeValue
                                 {
@@ -399,72 +396,26 @@ public partial class TextEditorService
                                         ? csprojOffset + csprojLength
                                         : 0,
                                     IndexAmongSiblings = fileGroupLength,
-                                    ChildListOffset = previousFileGroupChildListOffset,
-                                    ChildListLength = previousFileGroupChildListLength,
+                                    ChildListOffset = pending_FileGroupChildListOffset,
+                                    ChildListLength = pending_FileGroupChildListLength,
                                     ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
                                     TraitsIndex = i,
                                     IsExpandable = true,
                                     IsExpanded = false
                                 };
                             ++fileGroupLength;
-                            ++previousProjectChildListLength;
+                            ++pending_ProjectChildListLength;
                         }
                         
                         // Change pending target
-                        previousResourceUri = searchResult.ResourceUri.Value;
-                        previousFileGroupChildListOffset = searchResultOffset + searchResultLength;
-                        previousFileGroupChildListLength = 1;
+                        pending_ResourceUri = searchResult.ResourceUri.Value;
+                        pending_FileGroupChildListOffset = searchResultOffset + searchResultLength;
+                        pending_FileGroupChildListLength = 1;
                     }
-                }
-                
-                /*
-                // WARNING-SIMILAR_BUT_NOT_EQUAL: this code is SIMILAR_BUT_NOT_EQUAL inside the for loop (this duplicate will write the final entry).
-                previousProjectChildListLength++;
-                previousResourceUri = searchResult.ResourceUri.Value;
-                findAllTreeViewContainer.NodeValueList[fileGroupOffset + fileGroupLength] =
-                    new TreeViewNodeValue
+                    else
                     {
-                        ParentIndex = projectRespectedListIndex < projectRespectedList.Count
-                            ? csprojOffset + csprojLength
-                            : 0,
-                        IndexAmongSiblings = fileGroupLength,
-                        ChildListOffset = previousFileGroupChildListOffset,
-                        ChildListLength = previousFileGroupChildListLength,
-                        ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                        // !!!!
-                        // SIMILAR_BUT_NOT_EQUAL
-                        // !!!!
-                        TraitsIndex = i,// - 1,
-                        IsExpandable = true,
-                        IsExpanded = false
-                    };
-                ++fileGroupLength;
-                previousFileGroupChildListOffset = searchResultOffset + searchResultLength;
-                previousFileGroupChildListLength = 1;
-                */
-                
-                if (projectRespectedListIndex < projectRespectedList.Count &&
-                    previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)
-                {
-                    // WARNING: this code is duplicated inside the for loop (this duplicate will write the final entry).
-                    findAllTreeViewContainer.NodeValueList[csprojOffset + csprojLength] =
-                        new TreeViewNodeValue
-                        {
-                            ParentIndex = 0,
-                            IndexAmongSiblings = csprojLength,
-                            ChildListOffset = previousProjectChildListOffset,
-                            ChildListLength = previousProjectChildListLength,
-                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
-                            TraitsIndex = projectRespectedListIndex,
-                            IsExpandable = true,
-                            IsExpanded = false
-                        };
-                    ++csprojLength;
-                    ++projectRespectedListIndex;
-                    
-                    previousProjectChildListOffset = fileGroupOffset + fileGroupLength;
-                    previousProjectChildListLength = 0;
-                    previousProjectFilesLength = 0;
+                        ++pending_FileGroupChildListLength;
+                    }
                 }
                 
                 /*

@@ -90,6 +90,10 @@ public partial class TextEditorService
         ResultHeap, FileHeap, and ProjectHeap.
         
         This pre-calculation of capacities is extrapolated from the data itself.
+        
+        Initially every entry in the NodeValueList is `default`.
+        Then you overwrite the respective indices by tracking the offset of each
+        heap.
         */
     
         /*

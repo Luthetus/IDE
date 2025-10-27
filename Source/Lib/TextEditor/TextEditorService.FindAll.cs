@@ -282,6 +282,8 @@ public partial class TextEditorService
                     IsExpandable = true,
                     IsExpanded = true
                 };
+                
+                // The Length is calculable 
 
                 // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
                 var pending_fileGroupChildrenOffset = resultListOffset;
@@ -301,9 +303,9 @@ public partial class TextEditorService
                     var searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
                     
                     if (i_project < projectRespectedList.Count &&
-                            (pending_projectExclusiveMark == projectRespectedList[i_project].SeachResult_ChildListLength ||
+                            (pending_projectExclusiveMark == projectRespectedList[i_project].SeachResultsLength ||
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 pending_projectExclusiveMark + 1 == projectRespectedList[i_project].SeachResult_ChildListLength)))
+                                 pending_projectExclusiveMark + 1 == projectRespectedList[i_project].SeachResultsLength)))
                     {
                         // Write out pending
                         findAllTreeViewContainer.NodeValueList[projectListOffset + projectListLength] =
@@ -311,7 +313,7 @@ public partial class TextEditorService
                             {
                                 ParentIndex = 0,
                                 IndexAmongSiblings = 0/*projectLength*/,
-                                ChildListOffset = pending_projectChildListOffset,
+                                ChildListOffset = pending_projectChildrenOffset,
                                 ChildListLength = pending_projectChildListLength,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
                                 TraitsIndex = i_project,
@@ -321,14 +323,14 @@ public partial class TextEditorService
                         ++projectListLength;
                         ++i_project;
                         
-                        pending_projectChildListOffset = fileListOffset + fileListLength;
+                        pending_projectChildrenOffset = fileListOffset + fileListLength;
                         pending_projectChildListLength = 0;
                         pending_projectExclusiveMark = 0;
                     }
                     
-                    if (i_searchResult == projectRespectedList[i_project].SeachResult_ChildListOffset)
+                    if (i_searchResult == projectRespectedList[i_project].SeachResultsOffset)
                     {
-                        pending_projectChildListOffset = fileListOffset + fileListLength;
+                        pending_projectChildrenOffset = fileListOffset + fileListLength;
                         pending_projectChildListLength = 0;
                         pending_projectExclusiveMark = 0;
                     }
@@ -362,8 +364,8 @@ public partial class TextEditorService
                                     ? projectListOffset + projectListLength
                                     : 0,
                                 IndexAmongSiblings = 0/*fileListLength*/,
-                                ChildListOffset = pending_fileGroupChildListOffset,
-                                ChildListLength = resultListLength - pending_fileGroupChildListOffset,
+                                ChildListOffset = pending_fileGroupChildrenOffset,
+                                ChildListLength = resultListLength - pending_fileGroupChildrenOffset,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
                                 TraitsIndex = i_searchResult,
                                 IsExpandable = true,
@@ -373,7 +375,7 @@ public partial class TextEditorService
                         
                         // FileGroup: Change pending target
                         pending_fileGroupInclusiveMark = searchResult.ResourceUri.Value;
-                        pending_fileGroupChildListOffset = resultListOffset + resultListLength;
+                        pending_fileGroupChildrenOffset = resultListOffset + resultListLength;
                         
                         // FileGroup: Update dependencies
                         ++pending_projectChildListLength;
@@ -440,7 +442,7 @@ public partial class TextEditorService
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
         HashSet<string /*ProjectAbsolutePath*/> projectSeenHashSet,
-        List<(string ProjectAbsolutePath, int SeachResult_ChildListOffset, int SeachResult_ChildListLength)> projectRespectedList,
+        List<(string ProjectAbsolutePath, int SeachResultsOffset, int SeachResultsLength)> projectRespectedList,
         List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
         string search,
         string currentDirectory,

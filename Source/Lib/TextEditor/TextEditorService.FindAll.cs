@@ -75,6 +75,16 @@ public partial class TextEditorService
     public Task HandleStartSearchAction()
     {
         /*
+        TreeViewContainer:
+        NodeValueList = [ROOT, ResultHeap..., FileHeap..., ProjectHeap...]
+        
+        ResultHeap traits exist in the `SearchResultList`
+        FileHeap traits exist in the `SearchResultList`
+            - In particular FileHeap traits are the first occurrence of a distinct filename for a SearchResult.
+        ProjectHeap traits exist in the `ProjectRespectedList`
+        */
+    
+        /*
         project grouping is a "late" brace matching algorithm, you are enumerating so you'll see files that are non .csproj
         prior to the .csproj but once you do see the .csproj you mark that directory and any recursive to be owned
         by that respective .csproj.

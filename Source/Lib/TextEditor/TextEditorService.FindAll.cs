@@ -419,11 +419,14 @@ public partial class TextEditorService
                 
                 // Passing cases:
                 // ============================
-                // [ R, S_f1, S_f2, F1, F2, P ] // 
+                // [ R, S_f1, S_f2, F1, F2, P1 ] // 
                 
                 // Failing cases:
                 // ========================================
-                // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P ] // 
+                // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P1 ] // 
+                //
+                //   0  1     2     3     4     5     6   7
+                // [ R, S_f1, S_f1, S_f1, S_f1, S_f1, F1, P1 ]
                 
                 Console.WriteLine("\n\t==============");
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");

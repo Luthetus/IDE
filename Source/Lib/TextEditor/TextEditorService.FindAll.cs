@@ -318,7 +318,7 @@ public partial class TextEditorService
                 //        That relation is why the i_searchResult can indicate this).
                 var projectNode_ExclusiveMark = -1;
                 
-                // Somewhat of a "Downranking" pattern?
+                // Somewhat of a "ranking" pattern?
                 // ====================================
                 // When using a `projectNode_ChildrenOffset` you use the Heap that is one group "smaller" than the node itself.
                 // So `projectNode_ChildrenOffset` uses `fileHeap_...`.

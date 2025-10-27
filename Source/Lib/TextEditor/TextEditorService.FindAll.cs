@@ -269,13 +269,13 @@ public partial class TextEditorService
                     IsExpanded = true
                 };
 
-                var pending_FileGroupChildListOffset = fixed_searchResultOffset;
-                var pending_FileGroupChildListLength = 1;
+                var pending_fileGroupChildListOffset = fixed_searchResultOffset;
+                var pending_fileGroupChildListLength = 1;
                 var pending_fileGroupInclusiveMark = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
                 
-                var pending_ProjectChildListOffset = fixed_fileGroupOffset;
-                var pending_ProjectChildListLength = 0;
-                var pending_ProjectExclusiveMark = 0;
+                var pending_projectChildListOffset = fixed_fileGroupOffset;
+                var pending_projectChildListLength = 0;
+                var pending_projectExclusiveMark = 0;
                 
                 // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.
                 // ... then as you go if there isn't a csproj that claims ownership of the search result then you copy the data
@@ -287,17 +287,17 @@ public partial class TextEditorService
                     var searchResult = findAllTreeViewContainer.SearchResultList[i];
                     
                     if (fluid_projectRespectedListIndex < projectRespectedList.Count &&
-                            (pending_ProjectExclusiveMark == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength ||
+                            (pending_projectExclusiveMark == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength ||
                             (i == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 pending_ProjectExclusiveMark + 1 == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength)))
+                                 pending_projectExclusiveMark + 1 == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength)))
                     {
                         findAllTreeViewContainer.NodeValueList[fixed_projectOffset + fluid_projectLength] =
                             new TreeViewNodeValue
                             {
                                 ParentIndex = 0,
                                 IndexAmongSiblings = fluid_projectLength,
-                                ChildListOffset = pending_ProjectChildListOffset,
-                                ChildListLength = pending_ProjectChildListLength,
+                                ChildListOffset = pending_projectChildListOffset,
+                                ChildListLength = pending_projectChildListLength,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
                                 TraitsIndex = fluid_projectRespectedListIndex,
                                 IsExpandable = true,
@@ -306,16 +306,16 @@ public partial class TextEditorService
                         ++fluid_projectLength;
                         ++fluid_projectRespectedListIndex;
                         
-                        pending_ProjectChildListOffset = fixed_fileGroupOffset + fluid_fileGroupLength;
-                        pending_ProjectChildListLength = 0;
-                        pending_ProjectExclusiveMark = 0;
+                        pending_projectChildListOffset = fixed_fileGroupOffset + fluid_fileGroupLength;
+                        pending_projectChildListLength = 0;
+                        pending_projectExclusiveMark = 0;
                     }
                     
                     if (i + 1/*rootnode*/ == projectRespectedList[fluid_projectRespectedListIndex].ChildListOffset)
                     {
-                        pending_ProjectChildListOffset = fixed_fileGroupOffset + fluid_fileGroupLength;
-                        pending_ProjectChildListLength = 0;
-                        pending_ProjectExclusiveMark = 0;
+                        pending_projectChildListOffset = fixed_fileGroupOffset + fluid_fileGroupLength;
+                        pending_projectChildListLength = 0;
+                        pending_projectExclusiveMark = 0;
                     }
                     
                     findAllTreeViewContainer.NodeValueList[fixed_searchResultOffset + fluid_searchResultLength] =
@@ -331,7 +331,7 @@ public partial class TextEditorService
                             IsExpanded = false
                         };
                     ++fluid_searchResultLength;
-                    ++pending_ProjectExclusiveMark;
+                    ++pending_projectExclusiveMark;
                     
                     if (pending_fileGroupInclusiveMark != searchResult.ResourceUri.Value ||
                         i == findAllTreeViewContainer.SearchResultList.Count - 1)
@@ -346,25 +346,25 @@ public partial class TextEditorService
                                         ? fixed_projectOffset + fluid_projectLength
                                         : 0,
                                     IndexAmongSiblings = fluid_fileGroupLength,
-                                    ChildListOffset = pending_FileGroupChildListOffset,
-                                    ChildListLength = pending_FileGroupChildListLength,
+                                    ChildListOffset = pending_fileGroupChildListOffset,
+                                    ChildListLength = pending_fileGroupChildListLength,
                                     ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
                                     TraitsIndex = i,
                                     IsExpandable = true,
                                     IsExpanded = false
                                 };
                             ++fluid_fileGroupLength;
-                            ++pending_ProjectChildListLength;
+                            ++pending_projectChildListLength;
                         }
                         
                         // Change pending target
                         pending_fileGroupInclusiveMark = searchResult.ResourceUri.Value;
-                        pending_FileGroupChildListOffset = fixed_searchResultOffset + fluid_searchResultLength;
-                        pending_FileGroupChildListLength = 1;
+                        pending_fileGroupChildListOffset = fixed_searchResultOffset + fluid_searchResultLength;
+                        pending_fileGroupChildListLength = 1;
                     }
                     else
                     {
-                        ++pending_FileGroupChildListLength;
+                        ++pending_fileGroupChildListLength;
                     }
                 }
                 

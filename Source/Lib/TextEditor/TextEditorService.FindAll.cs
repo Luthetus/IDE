@@ -245,18 +245,19 @@ public partial class TextEditorService
                 
                 var fluid_projectRespectedListIndex = 0;
                 
+                var nodeValueListInitialCapacity = fixed_projectOffset + projectRespectedList.Count;
                 findAllTreeViewContainer = new FindAllTreeViewContainer(
                     this,
                     searchResultList,
-                    nodeValueListInitialCapacity: fixed_projectOffset + projectRespectedList.Count,
+                    nodeValueListInitialCapacity,
                     projectRespectedList);
                     
-                for (int aaa = 0; aaa < fixed_projectOffset + projectRespectedList.Count; aaa++)
+                for (int capacityCounter = 0; capacityCounter < nodeValueListInitialCapacity; capacityCounter++)
                 {
                     findAllTreeViewContainer.NodeValueList.Add(default);
                 }
                 
-                var rootNode = new TreeViewNodeValue
+                findAllTreeViewContainer.NodeValueList[0] = new TreeViewNodeValue
                 {
                     ParentIndex = -1,
                     IndexAmongSiblings = 0,
@@ -267,25 +268,23 @@ public partial class TextEditorService
                     IsExpandable = true,
                     IsExpanded = true
                 };
-                findAllTreeViewContainer.NodeValueList[0] = rootNode;
-    
-                var pending_ResourceUri = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
-                
+
                 var pending_FileGroupChildListOffset = fixed_searchResultOffset;
                 var pending_FileGroupChildListLength = 1;
+                var pending_fileGroupInclusiveMark = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
                 
                 var pending_ProjectChildListOffset = fixed_fileGroupOffset;
                 var pending_ProjectChildListLength = 0;
-                var pending_ProjectFilesLength = 0;
+                var pending_ProjectExclusiveMark = 0;
                 
                 for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
                 {
                     var searchResult = findAllTreeViewContainer.SearchResultList[i];
                     
                     if (fluid_projectRespectedListIndex < projectRespectedList.Count &&
-                            (pending_ProjectFilesLength == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength ||
+                            (pending_ProjectExclusiveMark == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength ||
                             (i == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 pending_ProjectFilesLength + 1 == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength)))
+                                 pending_ProjectExclusiveMark + 1 == projectRespectedList[fluid_projectRespectedListIndex].ChildListLength)))
                     {
                         findAllTreeViewContainer.NodeValueList[fixed_projectOffset + fluid_projectLength] =
                             new TreeViewNodeValue
@@ -304,15 +303,14 @@ public partial class TextEditorService
                         
                         pending_ProjectChildListOffset = fixed_fileGroupOffset + fluid_fileGroupLength;
                         pending_ProjectChildListLength = 0;
-                        pending_ProjectFilesLength = 0;
+                        pending_ProjectExclusiveMark = 0;
                     }
                     
-                    // Console.WriteLine($"\tif ({i} + {1} == {projectRespectedList[fluid_projectRespectedListIndex].ChildListOffset})");
                     if (i + 1/*rootnode*/ == projectRespectedList[fluid_projectRespectedListIndex].ChildListOffset)
                     {
                         pending_ProjectChildListOffset = fixed_fileGroupOffset + fluid_fileGroupLength;
                         pending_ProjectChildListLength = 0;
-                        pending_ProjectFilesLength = 0;
+                        pending_ProjectExclusiveMark = 0;
                     }
                     
                     findAllTreeViewContainer.NodeValueList[fixed_searchResultOffset + fluid_searchResultLength] =
@@ -328,9 +326,9 @@ public partial class TextEditorService
                             IsExpanded = false
                         };
                     ++fluid_searchResultLength;
-                    ++pending_ProjectFilesLength;
+                    ++pending_ProjectExclusiveMark;
                     
-                    if (pending_ResourceUri != searchResult.ResourceUri.Value ||
+                    if (pending_fileGroupInclusiveMark != searchResult.ResourceUri.Value ||
                         i == findAllTreeViewContainer.SearchResultList.Count - 1)
                     {
                         // Write out pending
@@ -355,7 +353,7 @@ public partial class TextEditorService
                         }
                         
                         // Change pending target
-                        pending_ResourceUri = searchResult.ResourceUri.Value;
+                        pending_fileGroupInclusiveMark = searchResult.ResourceUri.Value;
                         pending_FileGroupChildListOffset = fixed_searchResultOffset + fluid_searchResultLength;
                         pending_FileGroupChildListLength = 1;
                     }

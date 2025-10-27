@@ -92,8 +92,7 @@ public partial class TextEditorService
         This pre-calculation of capacities is extrapolated from the data itself.
         
         Initially every entry in the NodeValueList is `default`.
-        Then you overwrite the respective indices by tracking the offset of each
-        heap.
+        Then you overwrite the respective indices by tracking the offset of each heap.
         */
     
         /*
@@ -313,7 +312,10 @@ public partial class TextEditorService
                 
                 // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
                 var projectNode_ChildrenOffset = fileHeap_Offset;
-                var projectNode_ExclusiveMark = 0;
+                // The exclusive i_searchResult that marks the end of the project's files.
+                // (NOTE: A file is the first distinct occurrence of a filename within the search results.
+                //        That relation is why the i_searchResult can indicate this).
+                var projectNode_ExclusiveMark = -1;
                 
                 // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.
                 // ... then as you go if there isn't a csproj that claims ownership of the search result then you copy the data
@@ -323,6 +325,17 @@ public partial class TextEditorService
                 for (int i_searchResult = 0; i_searchResult < findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
                 {
                     var searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
+                    
+                    if (projectRespectedList.Count > 0 && projectNode_ExclusiveMark == -1)
+                    {
+                        // If there is a search result, there is guaranteed to be a file.
+                        // But there is no guarantee of there being a project.
+                        if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
+                        {
+                            projectNode_ExclusiveMark = projectRespectedList[i_project].SeachResultsOffset +
+                                                        projectRespectedList[i_project].SeachResultsLength;
+                        }
+                    }
                     
                     if (i_project < projectRespectedList.Count &&
                             (projectNode_ExclusiveMark == projectRespectedList[i_project].SeachResultsLength ||

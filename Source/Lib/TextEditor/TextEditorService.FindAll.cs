@@ -277,12 +277,12 @@ public partial class TextEditorService
                     IsExpanded = true
                 };
 
-                var pending_fileGroupChildListOffset = resultListOffset;
-                //var pending_fileGroupChildListLength = 1;
+                // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
+                var pending_fileGroupChildrenOffset = resultListOffset;
                 var pending_fileGroupInclusiveMark = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
                 
-                var pending_projectChildListOffset = fileListOffset;
-                var pending_projectChildListLength = 0;
+                // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
+                var pending_projectChildrenOffset = fileListOffset;
                 var pending_projectExclusiveMark = 0;
                 
                 // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.

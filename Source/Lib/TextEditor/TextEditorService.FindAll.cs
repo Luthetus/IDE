@@ -390,7 +390,7 @@ public partial class TextEditorService
                         new TreeViewNodeValue
                         {
                             ParentIndex = fileHeap_Offset + fileHeap_Length,
-                            IndexAmongSiblings = fileHeap_Offset + fileHeap_Length - fileNode_ChildrenOffset,
+                            IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
@@ -482,7 +482,7 @@ public partial class TextEditorService
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
                     
-                    Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength}");
+                    Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings}");
                 }
                 
                 Console.WriteLine("\t==============\n");

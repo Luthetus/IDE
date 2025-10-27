@@ -435,6 +435,14 @@ public partial class TextEditorService
                 // k... 0 length for the project children everytime at the moment... moved code around got 0 everytime... I missed something.
                 //
                 // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 1	==============
+                //
+                // =========================================
+                //
+                // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P1 ]
+                // # am getting both file groups displaying with the same name.
+                // # as well a result from f2 is showing under f1.
+                // # (whether it was f2 showing under f1 or vice versa, I don't actually know).
+                // 
                 
                 Console.WriteLine("\n\t==============");
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");

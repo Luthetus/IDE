@@ -82,6 +82,9 @@ public partial class TextEditorService
         FileHeap traits exist in the `SearchResultList`
             - In particular FileHeap traits are the first occurrence of a distinct filename for a SearchResult.
         ProjectHeap traits exist in the `ProjectRespectedList`
+        
+        Every node's children are a contiguous span of any heap.
+        The offsets are always relative to the NodeValueList itself.
         */
     
         /*

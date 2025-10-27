@@ -346,6 +346,45 @@ public partial class TextEditorService
                         }
                     }
                     
+                    if (fileNode_InclusiveMark != searchResult.ResourceUri.Value ||
+                        i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
+                    {
+                        var parentIndex = projectNode_ExclusiveMark == -1
+                            ? 0
+                            : projectHeap_Offset + projectHeap_Length;
+                        var indexAmongSiblings = projectNode_ExclusiveMark == -1
+                            ? 0
+                            : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset;
+                    
+                        var childrenLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
+                        var next_childrenOffset = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
+                        if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
+                            fileNode_InclusiveMark == searchResult.ResourceUri.Value)
+                        {
+                            ++childrenLength;
+                            ++next_childrenOffset;
+                        }
+                        
+                        // FileGroup: Write out pending
+                        findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] =
+                            new TreeViewNodeValue
+                            {
+                                ParentIndex = parentIndex,
+                                IndexAmongSiblings = indexAmongSiblings,
+                                ChildListOffset = fileNode_ChildrenOffset,
+                                ChildListLength = childrenLength,
+                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
+                                TraitsIndex = i_searchResult,
+                                IsExpandable = true,
+                                IsExpanded = false
+                            };
+                        ++fileHeap_Length;
+                        
+                        // FileGroup: Change pending target
+                        fileNode_InclusiveMark = searchResult.ResourceUri.Value;
+                        fileNode_ChildrenOffset = next_childrenOffset;
+                    }
+                    
                     // SearchResult: Write out pending
                     findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] =
                         new TreeViewNodeValue
@@ -360,36 +399,6 @@ public partial class TextEditorService
                             IsExpanded = false
                         };
                     ++resultHeap_Length;
-                    
-                    if (fileNode_InclusiveMark != searchResult.ResourceUri.Value ||
-                        i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
-                    {
-                        var parentIndex = projectNode_ExclusiveMark == -1
-                            ? 0
-                            : projectHeap_Offset + projectHeap_Length;
-                        var indexAmongSiblings = projectNode_ExclusiveMark == -1
-                            ? 0
-                            : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset;
-                    
-                        // FileGroup: Write out pending
-                        findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] =
-                            new TreeViewNodeValue
-                            {
-                                ParentIndex = parentIndex,
-                                IndexAmongSiblings = indexAmongSiblings,
-                                ChildListOffset = fileNode_ChildrenOffset,
-                                ChildListLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
-                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                                TraitsIndex = i_searchResult,
-                                IsExpandable = true,
-                                IsExpanded = false
-                            };
-                        ++fileHeap_Length;
-                        
-                        // FileGroup: Change pending target
-                        fileNode_InclusiveMark = searchResult.ResourceUri.Value;
-                        fileNode_ChildrenOffset = resultHeap_Offset + resultHeap_Length;
-                    }
                     
                     if (i_project < projectRespectedList.Count &&
                             (projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + i_searchResult) /*||
@@ -425,7 +434,7 @@ public partial class TextEditorService
                 // ========================================
                 // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P1 ] // 
                 //
-                //   0  1     2     3     4     5     6   7
+                //   0, 1,    2,    3,    4,    5,    6,  7
                 // [ R, S_f1, S_f1, S_f1, S_f1, S_f1, F1, P1 ]
                 // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
                 // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
@@ -434,11 +443,19 @@ public partial class TextEditorService
                 //
                 // k... 0 length for the project children everytime at the moment... moved code around got 0 everytime... I missed something.
                 //
+                // succeed:
                 // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 1	==============
                 //
                 // =========================================
                 //
+                //   0, 1,    2,    3,    4,    5,  6,  7
                 // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P1 ]
+                //
+                // fail:
+                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	3 2 1 3	3 3 4 1	4 0 5 2	==============
+                // 
+                // b1 t0 o7 l1	b2 t0 o0 l0	b2 t1 o0 l0	b2 t2 o0 l0	b2 t3 o0 l0	b3 t2 o1 l3	b3 t3 o4 l1	b4 t0 o5 l2	==============
+                //
                 // # am getting both file groups displaying with the same name.
                 // # as well a result from f2 is showing under f1.
                 // # (whether it was f2 showing under f1 or vice versa, I don't actually know).
@@ -460,7 +477,7 @@ public partial class TextEditorService
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
                     
-                    Console.Write($"\t{ccc.ByteKind} {ccc.TraitsIndex} {ccc.ChildListOffset} {ccc.ChildListLength}");
+                    Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength}");
                 }
                 
                 Console.WriteLine("\t==============\n");

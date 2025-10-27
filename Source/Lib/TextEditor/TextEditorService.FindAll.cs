@@ -433,6 +433,8 @@ public partial class TextEditorService
                 // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
                 //
                 // k... 0 length for the project children everytime at the moment... moved code around got 0 everytime... I missed something.
+                //
+                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 1	==============
                 
                 Console.WriteLine("\n\t==============");
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");

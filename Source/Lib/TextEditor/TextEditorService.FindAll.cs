@@ -245,21 +245,21 @@ public partial class TextEditorService
                 var ROOT_ListCapacity = 1;
                 var ROOT_ListLength = 0;
             
-                var resultListOffset = ROOT_ListOffset + ROOT_ListCapacity;
-                var resultListCapacity = searchResultList.Count;
-                var resultListLength = 0;
+                var resultHeap_Offset = ROOT_ListOffset + ROOT_ListCapacity;
+                var resultHeap_Capacity = searchResultList.Count;
+                var resultHeap_Length = 0;
                 
-                var fileListOffset = resultListOffset + resultListCapacity;
-                var fileListCapacity = fileCount;
-                var fileListLength = 0;
+                var fileHeap_Offset = resultHeap_Offset + resultHeap_Capacity;
+                var fileHeap_Capacity = fileCount;
+                var fileHeap_Length = 0;
                 
-                var projectListOffset = fileListOffset + fileListCapacity;
-                var projectListCapacity = projectRespectedList.Count;
-                var projectListLength = 0;
+                var projectHeap_Offset = fileHeap_Offset + fileHeap_Capacity;
+                var projectHeap_Capacity = projectRespectedList.Count;
+                var projectHeap_Length = 0;
                 
                 var i_project = 0;
                 
-                var nodeValueListInitialCapacity = projectListOffset + projectRespectedList.Count;
+                var nodeValueListInitialCapacity = projectHeap_Offset + projectRespectedList.Count;
                 findAllTreeViewContainer = new FindAllTreeViewContainer(
                     this,
                     searchResultList,
@@ -275,7 +275,7 @@ public partial class TextEditorService
                 {
                     ParentIndex = -1,
                     IndexAmongSiblings = 0,
-                    ChildListOffset = projectListOffset,
+                    ChildListOffset = projectHeap_Offset,
                     ChildListLength = projectRespectedList.Count,
                     ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
                     TraitsIndex = 0,
@@ -283,15 +283,15 @@ public partial class TextEditorService
                     IsExpanded = true
                 };
                 
-                // The Length is calculable 
+                // The Length is calculable
 
                 // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
-                var pending_fileGroupChildrenOffset = resultListOffset;
-                var pending_fileGroupInclusiveMark = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
+                var fileNode_ChildrenOffset = resultHeap_Offset;
+                var fileNode_InclusiveMark = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
                 
                 // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
-                var pending_projectChildrenOffset = fileListOffset;
-                var pending_projectExclusiveMark = 0;
+                var projectNode_ChildrenOffset = fileHeap_Offset;
+                var projectNode_ExclusiveMark = 0;
                 
                 // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.
                 // ... then as you go if there isn't a csproj that claims ownership of the search result then you copy the data
@@ -303,43 +303,43 @@ public partial class TextEditorService
                     var searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
                     
                     if (i_project < projectRespectedList.Count &&
-                            (pending_projectExclusiveMark == projectRespectedList[i_project].SeachResultsLength ||
+                            (projectNode_ExclusiveMark == projectRespectedList[i_project].SeachResultsLength ||
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 pending_projectExclusiveMark + 1 == projectRespectedList[i_project].SeachResultsLength)))
+                                 projectNode_ExclusiveMark + 1 == projectRespectedList[i_project].SeachResultsLength)))
                     {
                         // Write out pending
-                        findAllTreeViewContainer.NodeValueList[projectListOffset + projectListLength] =
+                        findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
                             new TreeViewNodeValue
                             {
                                 ParentIndex = 0,
                                 IndexAmongSiblings = 0/*projectLength*/,
-                                ChildListOffset = pending_projectChildrenOffset,
-                                ChildListLength = pending_projectChildListLength,
+                                ChildListOffset = projectNode_ChildrenOffset,
+                                ChildListLength = projectNode_ChildListLength,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
                                 TraitsIndex = i_project,
                                 IsExpandable = true,
                                 IsExpanded = false
                             };
-                        ++projectListLength;
+                        ++projectHeap_Length;
                         ++i_project;
                         
-                        pending_projectChildrenOffset = fileListOffset + fileListLength;
-                        pending_projectChildListLength = 0;
-                        pending_projectExclusiveMark = 0;
+                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                        projectNode_ChildListLength = 0;
+                        projectNode_ExclusiveMark = 0;
                     }
                     
                     if (i_searchResult == projectRespectedList[i_project].SeachResultsOffset)
                     {
-                        pending_projectChildrenOffset = fileListOffset + fileListLength;
-                        pending_projectChildListLength = 0;
-                        pending_projectExclusiveMark = 0;
+                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                        projectNode_ChildListLength = 0;
+                        projectNode_ExclusiveMark = 0;
                     }
                     
                     // SearchResult: Write out pending
-                    findAllTreeViewContainer.NodeValueList[resultListOffset + resultListLength] =
+                    findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] =
                         new TreeViewNodeValue
                         {
-                            ParentIndex = fileListOffset + fileListLength,
+                            ParentIndex = fileHeap_Offset + fileHeap_Length,
                             IndexAmongSiblings = 0/*resultLength*/,
                             ChildListOffset = 0,
                             ChildListLength = 0,
@@ -348,37 +348,37 @@ public partial class TextEditorService
                             IsExpandable = false,
                             IsExpanded = false
                         };
-                    ++resultListLength;
+                    ++resultHeap_Length;
                     
                     // SearchResult: Update dependencies
-                    ++pending_projectExclusiveMark;
+                    ++projectNode_ExclusiveMark;
                     
-                    if (pending_fileGroupInclusiveMark != searchResult.ResourceUri.Value ||
+                    if (fileNode_InclusiveMark != searchResult.ResourceUri.Value ||
                         i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
                     {
                         // FileGroup: Write out pending
-                        findAllTreeViewContainer.NodeValueList[fileListOffset + fileListLength] =
+                        findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] =
                             new TreeViewNodeValue
                             {
                                 ParentIndex = i_project < projectRespectedList.Count
-                                    ? projectListOffset + projectListLength
+                                    ? projectHeap_Offset + projectHeap_Length
                                     : 0,
                                 IndexAmongSiblings = 0/*fileListLength*/,
-                                ChildListOffset = pending_fileGroupChildrenOffset,
-                                ChildListLength = resultListLength - pending_fileGroupChildrenOffset,
+                                ChildListOffset = fileNode_ChildrenOffset,
+                                ChildListLength = resultHeap_Length - fileNode_ChildrenOffset,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
                                 TraitsIndex = i_searchResult,
                                 IsExpandable = true,
                                 IsExpanded = false
                             };
-                        ++fileListLength;
+                        ++fileHeap_Length;
                         
                         // FileGroup: Change pending target
-                        pending_fileGroupInclusiveMark = searchResult.ResourceUri.Value;
-                        pending_fileGroupChildrenOffset = resultListOffset + resultListLength;
+                        fileNode_InclusiveMark = searchResult.ResourceUri.Value;
+                        fileNode_ChildrenOffset = resultHeap_Offset + resultHeap_Length;
                         
                         // FileGroup: Update dependencies
-                        ++pending_projectChildListLength;
+                        ++projectNode_ChildListLength;
                     }
                 }
                 
@@ -392,14 +392,14 @@ public partial class TextEditorService
                 
                 Console.WriteLine("\n\t==============");
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
-                Console.WriteLine($"\tprojectListOffset + projectRespectedList.Count:{projectListOffset + projectRespectedList.Count}");
+                Console.WriteLine($"\tprojectHeap_Offset + projectRespectedList.Count:{projectHeap_Offset + projectRespectedList.Count}");
                 Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");
-                Console.WriteLine($"\tresultListOffset:{resultListOffset}");
-                Console.WriteLine($"\tresultListLength:{resultListLength}");
-                Console.WriteLine($"\tfileListOffset:{fileListOffset}");
-                Console.WriteLine($"\tfileListLength:{fileListLength}");
-                Console.WriteLine($"\tprojectListOffset:{projectListOffset}");
-                Console.WriteLine($"\tprojectListLength:{projectListLength}");
+                Console.WriteLine($"\tresultHeap_Offset:{resultHeap_Offset}");
+                Console.WriteLine($"\tresultHeap_Length:{resultHeap_Length}");
+                Console.WriteLine($"\tfileHeap_Offset:{fileHeap_Offset}");
+                Console.WriteLine($"\tfileHeap_Length:{fileHeap_Length}");
+                Console.WriteLine($"\tprojectHeap_Offset:{projectHeap_Offset}");
+                Console.WriteLine($"\tprojectHeap_Length:{projectHeap_Length}");
                 Console.WriteLine($"\ti_project:{i_project}");
                 
                 for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)

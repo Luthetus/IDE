@@ -334,12 +334,13 @@ public partial class TextEditorService
                 {
                     var searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
                     
-                    if (projectRespectedList.Count > 0 && projectNode_ExclusiveMark == -1)
+                    if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
                     {
                         // If there is a search result, there is guaranteed to be a file.
                         // But there is no guarantee of there being a project.
                         if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
                         {
+                            projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
                             projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset +
                                                         projectRespectedList[i_project].SearchResultsLength;
                         }
@@ -368,12 +369,6 @@ public partial class TextEditorService
                         
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
                         projectNode_ExclusiveMark = -1;
-                    }
-                    
-                    if (i_searchResult == projectRespectedList[i_project].SearchResultsOffset)
-                    {
-                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                        projectNode_ExclusiveMark = 0;
                     }
                     
                     // SearchResult: Write out pending

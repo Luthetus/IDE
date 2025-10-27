@@ -346,9 +346,9 @@ public partial class TextEditorService
                     }
                     
                     if (i_project < projectRespectedList.Count &&
-                            (projectNode_ExclusiveMark == projectRespectedList[i_project].SearchResultsLength ||
+                            (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength) ||
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 projectNode_ExclusiveMark + 1 == projectRespectedList[i_project].SearchResultsLength)))
+                                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength))))
                     {
                         // Write out pending
                         findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
@@ -394,14 +394,19 @@ public partial class TextEditorService
                     if (fileNode_InclusiveMark != searchResult.ResourceUri.Value ||
                         i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
                     {
+                        var parentIndex = projectNode_ExclusiveMark == -1
+                            ? 0
+                            : projectHeap_Offset + projectHeap_Length;
+                        var indexAmongSiblings = projectNode_ExclusiveMark == -1
+                            ? 0
+                            : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset;
+                    
                         // FileGroup: Write out pending
                         findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] =
                             new TreeViewNodeValue
                             {
-                                ParentIndex = i_project < projectRespectedList.Count
-                                    ? projectHeap_Offset + projectHeap_Length
-                                    : 0,
-                                IndexAmongSiblings = 0/*fileListLength*/,
+                                ParentIndex = parentIndex,
+                                IndexAmongSiblings = indexAmongSiblings,
                                 ChildListOffset = fileNode_ChildrenOffset,
                                 ChildListLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,

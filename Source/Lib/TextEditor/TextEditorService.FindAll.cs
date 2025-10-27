@@ -85,6 +85,11 @@ public partial class TextEditorService
         
         Every node's children are a contiguous span of any heap.
         The offsets are always relative to the NodeValueList itself.
+        
+        The NodeValueList is constructed after pre-calculating the total capacity of
+        ResultHeap, FileHeap, and ProjectHeap.
+        
+        This pre-calculation of capacities is extrapolated from the data itself.
         */
     
         /*

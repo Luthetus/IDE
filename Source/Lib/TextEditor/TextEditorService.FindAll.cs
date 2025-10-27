@@ -346,31 +346,6 @@ public partial class TextEditorService
                         }
                     }
                     
-                    if (i_project < projectRespectedList.Count &&
-                            (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength) ||
-                            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength))))
-                    {
-                        // Write out pending
-                        findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
-                            new TreeViewNodeValue
-                            {
-                                ParentIndex = 0,
-                                IndexAmongSiblings = projectHeap_Length,
-                                ChildListOffset = projectNode_ChildrenOffset,
-                                ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
-                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
-                                TraitsIndex = i_project,
-                                IsExpandable = true,
-                                IsExpanded = false
-                            };
-                        ++projectHeap_Length;
-                        ++i_project;
-                        
-                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                        projectNode_ExclusiveMark = -1;
-                    }
-                    
                     // SearchResult: Write out pending
                     findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] =
                         new TreeViewNodeValue
@@ -415,6 +390,31 @@ public partial class TextEditorService
                         fileNode_InclusiveMark = searchResult.ResourceUri.Value;
                         fileNode_ChildrenOffset = resultHeap_Offset + resultHeap_Length;
                     }
+                    
+                    if (i_project < projectRespectedList.Count &&
+                            (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength) ||
+                            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
+                                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength))))
+                    {
+                        // Write out pending
+                        findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
+                            new TreeViewNodeValue
+                            {
+                                ParentIndex = 0,
+                                IndexAmongSiblings = projectHeap_Length,
+                                ChildListOffset = projectNode_ChildrenOffset,
+                                ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
+                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
+                                TraitsIndex = i_project,
+                                IsExpandable = true,
+                                IsExpanded = false
+                            };
+                        ++projectHeap_Length;
+                        ++i_project;
+                        
+                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                        projectNode_ExclusiveMark = -1;
+                    }
                 }
                 
                 // Passing cases:
@@ -427,6 +427,12 @@ public partial class TextEditorService
                 //
                 //   0  1     2     3     4     5     6   7
                 // [ R, S_f1, S_f1, S_f1, S_f1, S_f1, F1, P1 ]
+                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
+                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
+                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
+                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
+                //
+                // k... 0 length for the project children everytime at the moment... moved code around got 0 everytime... I missed something.
                 
                 Console.WriteLine("\n\t==============");
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");

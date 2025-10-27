@@ -165,7 +165,7 @@ public partial class TextEditorService
         // Once the algorithm settles consideration to use ChildList everywhere might be of good use
         // lest you always wonder "well what wording did they use for this variable this time...".
         //
-        var projectRespectedList = new List<(string ProjectAbsolutePath, int SeachResultsOffset, int SeachResultsLength)>();
+        var projectRespectedList = new List<(string ProjectAbsolutePath, int SearchResultsOffset, int SearchResultsLength)>();
         
         int fileCount = 0;
         
@@ -305,7 +305,7 @@ public partial class TextEditorService
                 };
                 
                 // The Length is calculable
-                // ...Heap_Offset + ...Heap_Length - ...Node_ChildrenOffset.
+                // ...Heap_Offset + ...Heap_Length - ...Node_ChildrenOffset
 
                 // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
                 var fileNode_ChildrenOffset = resultHeap_Offset;
@@ -317,6 +317,13 @@ public partial class TextEditorService
                 // (NOTE: A file is the first distinct occurrence of a filename within the search results.
                 //        That relation is why the i_searchResult can indicate this).
                 var projectNode_ExclusiveMark = -1;
+                
+                // Somewhat of a "Downranking" pattern?
+                // ====================================
+                // When using a `projectNode_ChildrenOffset` you use the Heap that is one group "smaller" than the node itself.
+                // So `projectNode_ChildrenOffset` uses `fileHeap_...`.
+                //
+                // I think it makes sense now but when originally reading the code this pattern was hard to read.
                 
                 // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.
                 // ... then as you go if there isn't a csproj that claims ownership of the search result then you copy the data
@@ -333,15 +340,15 @@ public partial class TextEditorService
                         // But there is no guarantee of there being a project.
                         if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
                         {
-                            projectNode_ExclusiveMark = projectRespectedList[i_project].SeachResultsOffset +
-                                                        projectRespectedList[i_project].SeachResultsLength;
+                            projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset +
+                                                        projectRespectedList[i_project].SearchResultsLength;
                         }
                     }
                     
                     if (i_project < projectRespectedList.Count &&
-                            (projectNode_ExclusiveMark == projectRespectedList[i_project].SeachResultsLength ||
+                            (projectNode_ExclusiveMark == projectRespectedList[i_project].SearchResultsLength ||
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 projectNode_ExclusiveMark + 1 == projectRespectedList[i_project].SeachResultsLength)))
+                                 projectNode_ExclusiveMark + 1 == projectRespectedList[i_project].SearchResultsLength)))
                     {
                         // Write out pending
                         findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
@@ -350,7 +357,7 @@ public partial class TextEditorService
                                 ParentIndex = 0,
                                 IndexAmongSiblings = 0/*projectLength*/,
                                 ChildListOffset = projectNode_ChildrenOffset,
-                                ChildListLength = projectNode_ChildListLength,
+                                ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
                                 TraitsIndex = i_project,
                                 IsExpandable = true,
@@ -470,7 +477,7 @@ public partial class TextEditorService
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
         HashSet<string /*ProjectAbsolutePath*/> projectSeenHashSet,
-        List<(string ProjectAbsolutePath, int SeachResultsOffset, int SeachResultsLength)> projectRespectedList,
+        List<(string ProjectAbsolutePath, int SearchResultsOffset, int SearchResultsLength)> projectRespectedList,
         List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
         string search,
         string currentDirectory,

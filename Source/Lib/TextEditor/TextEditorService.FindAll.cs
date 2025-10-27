@@ -346,6 +346,11 @@ public partial class TextEditorService
                         }
                     }
                     
+                    // Slightly odd to read but this is defined up here to re-use the same if branch for
+                    // when index and resource match (wherein this needs to be increased furthermore by 2).
+                    var resultIndexAmongSiblingsFinalLoopAddition = 0;
+                    var resultParentIndexIndexAmongSiblingsFinalLoopSubtraction = 0;
+                    
                     if (fileNode_InclusiveMark != searchResult.ResourceUri.Value ||
                         i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
                     {
@@ -363,6 +368,9 @@ public partial class TextEditorService
                         {
                             ++childrenLength;
                             ++next_childrenOffset;
+                            
+                            resultIndexAmongSiblingsFinalLoopAddition = 2;
+                            resultParentIndexIndexAmongSiblingsFinalLoopSubtraction = 1;
                         }
                         
                         // FileGroup: Write out pending
@@ -389,8 +397,8 @@ public partial class TextEditorService
                     findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] =
                         new TreeViewNodeValue
                         {
-                            ParentIndex = fileHeap_Offset + fileHeap_Length,
-                            IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
+                            ParentIndex = fileHeap_Offset + fileHeap_Length - resultParentIndexIndexAmongSiblingsFinalLoopSubtraction,
+                            IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset + resultIndexAmongSiblingsFinalLoopAddition,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
@@ -459,6 +467,8 @@ public partial class TextEditorService
                 // 
                 // succeed:
                 // b1 t0 o7 l1	b2 t0 o0 l0	b2 t1 o0 l0	b2 t2 o0 l0	b2 t3 o0 l0	b3 t2 o1 l2	b3 t3 o3 l2	b4 t0 o5 l2	==============
+                // succeed:
+                // b1 t0 o7 l1 i0 p-1	b2 t0 o0 l0 i0 p5	b2 t1 o0 l0 i1 p5	b2 t2 o0 l0 i0 p6	b2 t3 o0 l0 i1 p6	b3 t2 o1 l2 i0 p7	b3 t3 o3 l2 i1 p7	b4 t0 o5 l2 i0 p0	==============
                 //
                 //
                 // # am getting both file groups displaying with the same name.
@@ -482,7 +492,7 @@ public partial class TextEditorService
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
                     
-                    Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings}");
+                    Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
                 }
                 
                 Console.WriteLine("\t==============\n");

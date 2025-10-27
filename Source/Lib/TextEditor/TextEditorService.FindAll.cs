@@ -282,13 +282,13 @@ public partial class TextEditorService
                 // to the end of the NodeValueList and the misc files points to those search results you copied to the end of the NodeValueList
                 // so then you have to say the misc node itself has children offset...length.
                 
-                for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
+                for (int i_searchResult = 0; i_searchResult < findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
                 {
-                    var searchResult = findAllTreeViewContainer.SearchResultList[i];
+                    var searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
                     
                     if (fluid_projectRespectedListIndex < projectRespectedList.Count &&
                             (pending_projectExclusiveMark == projectRespectedList[fluid_projectRespectedListIndex].SeachResult_ChildListLength ||
-                            (i == findAllTreeViewContainer.SearchResultList.Count - 1 &&
+                            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
                                  pending_projectExclusiveMark + 1 == projectRespectedList[fluid_projectRespectedListIndex].SeachResult_ChildListLength)))
                     {
                         findAllTreeViewContainer.NodeValueList[fixed_projectOffset + fluid_projectLength] =
@@ -311,7 +311,7 @@ public partial class TextEditorService
                         pending_projectExclusiveMark = 0;
                     }
                     
-                    if (i == projectRespectedList[fluid_projectRespectedListIndex].SeachResult_ChildListOffset)
+                    if (i_searchResult == projectRespectedList[fluid_projectRespectedListIndex].SeachResult_ChildListOffset)
                     {
                         pending_projectChildListOffset = fixed_fileGroupOffset + fluid_fileGroupLength;
                         pending_projectChildListLength = 0;
@@ -326,7 +326,7 @@ public partial class TextEditorService
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                            TraitsIndex = i,
+                            TraitsIndex = i_searchResult,
                             IsExpandable = false,
                             IsExpanded = false
                         };
@@ -334,7 +334,7 @@ public partial class TextEditorService
                     ++pending_projectExclusiveMark;
                     
                     if (pending_fileGroupInclusiveMark != searchResult.ResourceUri.Value ||
-                        i == findAllTreeViewContainer.SearchResultList.Count - 1)
+                        i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
                     {
                         // Write out pending
                         {
@@ -349,7 +349,7 @@ public partial class TextEditorService
                                     ChildListOffset = pending_fileGroupChildListOffset,
                                     ChildListLength = pending_fileGroupChildListLength,
                                     ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                                    TraitsIndex = i,
+                                    TraitsIndex = i_searchResult,
                                     IsExpandable = true,
                                     IsExpanded = false
                                 };

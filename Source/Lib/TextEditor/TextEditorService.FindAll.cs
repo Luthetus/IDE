@@ -392,9 +392,9 @@ public partial class TextEditorService
                     }
                     
                     if (i_project < projectRespectedList.Count &&
-                            (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength) ||
+                            (projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + i_searchResult) /*||
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength))))
+                                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength))*/))
                     {
                         // Write out pending
                         findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =

@@ -234,13 +234,20 @@ public partial class TextEditorService
             
             if (searchResultList.Count > 0)
             {
-                var fixed_searchResultOffset = 1;
+                var fixed_rootOffset = 0;
+                var fixed_rootCapacity = 1;
+                var fluid_rootCount = 0;
+            
+                var fixed_searchResultOffset = fixed_rootOffset + fixed_rootCapacity;
+                var fixed_searchResultCapacity = searchResultList.Count;
                 var fluid_searchResultLength = 0;
                 
-                var fixed_fileGroupOffset = 1 + searchResultList.Count;
+                var fixed_fileGroupOffset = fixed_searchResultOffset + fixed_searchResultCapacity;
+                var fixed_fileGroupCapacity = fileCount;
                 var fluid_fileGroupLength = 0;
                 
-                var fixed_projectOffset = fixed_fileGroupOffset + fileCount;
+                var fixed_projectOffset = fixed_fileGroupOffset + fixed_fileGroupCapacity;
+                var fixed_projectCapacity = projectRespectedList.Count;
                 var fluid_projectLength = 0;
                 
                 var fluid_projectRespectedListIndex = 0;
@@ -270,7 +277,7 @@ public partial class TextEditorService
                 };
 
                 var pending_fileGroupChildListOffset = fixed_searchResultOffset;
-                var pending_fileGroupChildListLength = 1;
+                //var pending_fileGroupChildListLength = 1;
                 var pending_fileGroupInclusiveMark = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
                 
                 var pending_projectChildListOffset = fixed_fileGroupOffset;
@@ -291,11 +298,12 @@ public partial class TextEditorService
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
                                  pending_projectExclusiveMark + 1 == projectRespectedList[fluid_projectRespectedListIndex].SeachResult_ChildListLength)))
                     {
+                        // Write out pending
                         findAllTreeViewContainer.NodeValueList[fixed_projectOffset + fluid_projectLength] =
                             new TreeViewNodeValue
                             {
                                 ParentIndex = 0,
-                                IndexAmongSiblings = fluid_projectLength,
+                                IndexAmongSiblings = 0/*fluid_projectCount*/,
                                 ChildListOffset = pending_projectChildListOffset,
                                 ChildListLength = pending_projectChildListLength,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
@@ -318,11 +326,12 @@ public partial class TextEditorService
                         pending_projectExclusiveMark = 0;
                     }
                     
+                    // SearchResult: Write out pending
                     findAllTreeViewContainer.NodeValueList[fixed_searchResultOffset + fluid_searchResultLength] =
                         new TreeViewNodeValue
                         {
                             ParentIndex = fixed_fileGroupOffset + fluid_fileGroupLength,
-                            IndexAmongSiblings = fluid_searchResultLength,
+                            IndexAmongSiblings = 0/*fluid_searchResultLength*/,
                             ChildListOffset = 0,
                             ChildListLength = 0,
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
@@ -331,40 +340,36 @@ public partial class TextEditorService
                             IsExpanded = false
                         };
                     ++fluid_searchResultLength;
+                    
+                    // SearchResult: Update dependencies
                     ++pending_projectExclusiveMark;
                     
                     if (pending_fileGroupInclusiveMark != searchResult.ResourceUri.Value ||
                         i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
                     {
-                        // Write out pending
-                        {
-                            // WARNING: this code is duplicated after the for loop to write the final entry.
-                            findAllTreeViewContainer.NodeValueList[fixed_fileGroupOffset + fluid_fileGroupLength] =
-                                new TreeViewNodeValue
-                                {
-                                    ParentIndex = fluid_projectRespectedListIndex < projectRespectedList.Count
-                                        ? fixed_projectOffset + fluid_projectLength
-                                        : 0,
-                                    IndexAmongSiblings = fluid_fileGroupLength,
-                                    ChildListOffset = pending_fileGroupChildListOffset,
-                                    ChildListLength = pending_fileGroupChildListLength,
-                                    ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                                    TraitsIndex = i_searchResult,
-                                    IsExpandable = true,
-                                    IsExpanded = false
-                                };
-                            ++fluid_fileGroupLength;
-                            ++pending_projectChildListLength;
-                        }
+                        // FileGroup: Write out pending
+                        findAllTreeViewContainer.NodeValueList[fixed_fileGroupOffset + fluid_fileGroupLength] =
+                            new TreeViewNodeValue
+                            {
+                                ParentIndex = fluid_projectRespectedListIndex < projectRespectedList.Count
+                                    ? fixed_projectOffset + fluid_projectLength
+                                    : 0,
+                                IndexAmongSiblings = 0/*fluid_fileGroupLength*/,
+                                ChildListOffset = pending_fileGroupChildListOffset,
+                                ChildListLength = fluid_searchResultLength - pending_fileGroupChildListOffset,
+                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
+                                TraitsIndex = i_searchResult,
+                                IsExpandable = true,
+                                IsExpanded = false
+                            };
+                        ++fluid_fileGroupLength;
                         
-                        // Change pending target
+                        // FileGroup: Change pending target
                         pending_fileGroupInclusiveMark = searchResult.ResourceUri.Value;
                         pending_fileGroupChildListOffset = fixed_searchResultOffset + fluid_searchResultLength;
-                        pending_fileGroupChildListLength = 1;
-                    }
-                    else
-                    {
-                        ++pending_fileGroupChildListLength;
+                        
+                        // FileGroup: Update dependencies
+                        ++pending_projectChildListLength;
                     }
                 }
                 

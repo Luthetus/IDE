@@ -357,7 +357,7 @@ public partial class TextEditorService
                             : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset;
                     
                         var childrenLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
-                        var next_childrenOffset = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
+                        var next_childrenOffset = resultHeap_Offset + resultHeap_Length;
                         if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
                             fileNode_InclusiveMark == searchResult.ResourceUri.Value)
                         {
@@ -455,6 +455,11 @@ public partial class TextEditorService
                 // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	3 2 1 3	3 3 4 1	4 0 5 2	==============
                 // 
                 // b1 t0 o7 l1	b2 t0 o0 l0	b2 t1 o0 l0	b2 t2 o0 l0	b2 t3 o0 l0	b3 t2 o1 l3	b3 t3 o4 l1	b4 t0 o5 l2	==============
+                // b1 t0 o7 l1	b2 t0 o0 l0	b2 t1 o0 l0	b2 t2 o0 l0	b2 t3 o0 l0	b3 t2 o1 l2	b3 t3 o2 l3	b4 t0 o5 l2	==============
+                // 
+                // succeed:
+                // b1 t0 o7 l1	b2 t0 o0 l0	b2 t1 o0 l0	b2 t2 o0 l0	b2 t3 o0 l0	b3 t2 o1 l2	b3 t3 o3 l2	b4 t0 o5 l2	==============
+                //
                 //
                 // # am getting both file groups displaying with the same name.
                 // # as well a result from f2 is showing under f1.

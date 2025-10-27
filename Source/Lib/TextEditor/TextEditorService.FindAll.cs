@@ -363,11 +363,13 @@ public partial class TextEditorService
                     
                         var childrenLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
                         var next_childrenOffset = resultHeap_Offset + resultHeap_Length;
+                        var traitsIndex = i_searchResult - 1;
                         if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
                             fileNode_InclusiveMark == searchResult.ResourceUri.Value)
                         {
                             ++childrenLength;
                             ++next_childrenOffset;
+                            traitsIndex = i_searchResult;
                             
                             resultIndexAmongSiblingsFinalLoopAddition = 2;
                             resultParentIndexIndexAmongSiblingsFinalLoopSubtraction = 1;
@@ -382,7 +384,7 @@ public partial class TextEditorService
                                 ChildListOffset = fileNode_ChildrenOffset,
                                 ChildListLength = childrenLength,
                                 ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                                TraitsIndex = i_searchResult,
+                                TraitsIndex = traitsIndex,
                                 IsExpandable = true,
                                 IsExpanded = false
                             };
@@ -476,7 +478,7 @@ public partial class TextEditorService
                 // # (whether it was f2 showing under f1 or vice versa, I don't actually know).
                 // 
                 
-                Console.WriteLine("\n\t==============");
+                /*Console.WriteLine("\n\t==============");
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"\tprojectHeap_Offset + projectRespectedList.Count:{projectHeap_Offset + projectRespectedList.Count}");
                 Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");
@@ -486,16 +488,16 @@ public partial class TextEditorService
                 Console.WriteLine($"\tfileHeap_Length:{fileHeap_Length}");
                 Console.WriteLine($"\tprojectHeap_Offset:{projectHeap_Offset}");
                 Console.WriteLine($"\tprojectHeap_Length:{projectHeap_Length}");
-                Console.WriteLine($"\ti_project:{i_project}");
+                Console.WriteLine($"\ti_project:{i_project}");*/
                 
-                for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
+                /*for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
                     
                     Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
                 }
                 
-                Console.WriteLine("\t==============\n");
+                Console.WriteLine("\t==============\n");*/
             }
             
             lock (_stateModificationLock)

@@ -388,24 +388,30 @@ public partial class TextEditorService
                     }
                     else
                     {
-                        // WARNING: this code is duplicated after the for loop to write the final entry.
-                        previousProjectChildListLength++;
+                        // Write out pending
+                        {
+                            // WARNING: this code is duplicated after the for loop to write the final entry.
+                            
+                            findAllTreeViewContainer.NodeValueList[fileGroupOffset + fileGroupLength] =
+                                new TreeViewNodeValue
+                                {
+                                    ParentIndex = projectRespectedListIndex < projectRespectedList.Count
+                                        ? csprojOffset + csprojLength
+                                        : 0,
+                                    IndexAmongSiblings = fileGroupLength,
+                                    ChildListOffset = previousFileGroupChildListOffset,
+                                    ChildListLength = previousFileGroupChildListLength,
+                                    ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
+                                    TraitsIndex = i,
+                                    IsExpandable = true,
+                                    IsExpanded = false
+                                };
+                            ++fileGroupLength;
+                            ++previousProjectChildListLength;
+                        }
+                        
+                        // Change pending target
                         previousResourceUri = searchResult.ResourceUri.Value;
-                        findAllTreeViewContainer.NodeValueList[fileGroupOffset + fileGroupLength] =
-                            new TreeViewNodeValue
-                            {
-                                ParentIndex = projectRespectedListIndex < projectRespectedList.Count
-                                    ? csprojOffset + csprojLength
-                                    : 0,
-                                IndexAmongSiblings = fileGroupLength,
-                                ChildListOffset = previousFileGroupChildListOffset,
-                                ChildListLength = previousFileGroupChildListLength,
-                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                                TraitsIndex = i,
-                                IsExpandable = true,
-                                IsExpanded = false
-                            };
-                        ++fileGroupLength;
                         previousFileGroupChildListOffset = searchResultOffset + searchResultLength;
                         previousFileGroupChildListLength = 1;
                     }
@@ -505,11 +511,11 @@ public partial class TextEditorService
                 
                 // Passing cases:
                 // ============================
-                // [ R, S_f1, S_f2, F1, F2, P ]
+                // [ R, S_f1, S_f2, F1, F2, P ] // 
                 
                 // Failing cases:
-                // ======================================
-                // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P ]
+                // ========================================
+                // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P ] // 
             }
             
             lock (_stateModificationLock)

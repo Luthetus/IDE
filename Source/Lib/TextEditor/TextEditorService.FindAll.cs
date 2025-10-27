@@ -293,9 +293,12 @@ public partial class TextEditorService
                 //    0,   1,   2,   3,   4,   5,   6,   7
                 // [  R,   S,   S,   S,   S,   S,   F,   P  ]
                 
-                for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
+                (ResourceUri ResourceUri, TextEditorTextSpan TextSpan) searchResult = findAllTreeViewContainer.SearchResultList[0];
+                int i = 0;
+                
+                for (; i < findAllTreeViewContainer.SearchResultList.Count; i++)
                 {
-                    var searchResult = findAllTreeViewContainer.SearchResultList[i];
+                    searchResult = findAllTreeViewContainer.SearchResultList[i];
                     
                     Console.WriteLine($"if ({previousProjectFilesLength} == {projectRespectedList[projectRespectedListIndex].ChildListLength})");
                     if (projectRespectedListIndex < projectRespectedList.Count &&
@@ -351,6 +354,7 @@ public partial class TextEditorService
                     }
                     else
                     {
+                        // WARNING: this code is duplicated after the for loop to write the final entry.
                         previousProjectChildListLength++;
                         previousResourceUri = searchResult.ResourceUri.Value;
                         findAllTreeViewContainer.NodeValueList[fileGroupOffset + fileGroupLength] =
@@ -372,6 +376,30 @@ public partial class TextEditorService
                         previousFileGroupChildListLength = 1;
                     }
                 }
+                
+                // WARNING-SIMILAR_BUT_NOT_EQUAL: this code is SIMILAR_BUT_NOT_EQUAL inside the for loop (this duplicate will write the final entry).
+                previousProjectChildListLength++;
+                previousResourceUri = searchResult.ResourceUri.Value;
+                findAllTreeViewContainer.NodeValueList[fileGroupOffset + fileGroupLength] =
+                    new TreeViewNodeValue
+                    {
+                        ParentIndex = projectRespectedListIndex < projectRespectedList.Count
+                            ? csprojOffset + csprojLength
+                            : 0,
+                        IndexAmongSiblings = fileGroupLength,
+                        ChildListOffset = previousFileGroupChildListOffset,
+                        ChildListLength = previousFileGroupChildListLength,
+                        ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
+                        // !!!!
+                        // SIMILAR_BUT_NOT_EQUAL
+                        // !!!!
+                        TraitsIndex = i - 1,
+                        IsExpandable = true,
+                        IsExpanded = false
+                    };
+                ++fileGroupLength;
+                previousFileGroupChildListOffset = searchResultOffset + searchResultLength;
+                previousFileGroupChildListLength = 1;
                 
                 if (projectRespectedListIndex < projectRespectedList.Count &&
                     previousProjectFilesLength == projectRespectedList[projectRespectedListIndex].ChildListLength)

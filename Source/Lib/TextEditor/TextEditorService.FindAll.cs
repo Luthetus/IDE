@@ -507,11 +507,7 @@ public partial class TextEditorService
                 //
                 //
                 // ================================================
-                //   0, 1,    2,    3,    4,    5,    6,  7,  8
-                // [ R, S_f1, S_f1, S_f1, S_f1, S_f1, F1, P1, P2 ]
-                //
-                //
-                // # FileSystem (unrelated files not shown)
+                // # The FileSystem (unrelated files not shown)
                 //              (search results are bulleted with a space character (' ') instead of a minus ('-'))
                 //              (search results showcase the character index where the occurrence match inclusively begins at)
                 // - BlazorCrudApp.sln
@@ -527,9 +523,10 @@ public partial class TextEditorService
                 //         - Program.cs
                 //               290
                 //
-                // # Correct UI (absolute file paths are shortened to filename with extension)
-                //              (search results are bulleted with a space character (' ') instead of a minus ('-'))
-                //              (search results showcase the character index where the occurrence match inclusively begins at)
+                // # The CORRECT UI (if it were to be correct)
+                //                  (absolute file paths are shortened to filename with extension)
+                //                  (search results are bulleted with a space character (' ') instead of a minus ('-'))
+                //                  (search results showcase the character index where the occurrence match inclusively begins at)
                 // - ByteKind_Aaa
                 //     - BlazorCrudApp.Wasm.csproj
                 //         - Program.cs
@@ -541,6 +538,37 @@ public partial class TextEditorService
                 //         - Error.cshtml.cs
                 //               149
                 //               305
+                //
+                // # INCORRECT Dump variables of interest
+                // searchResultList.Count:5
+            	// projectHeap_Offset + projectRespectedList.Count:11
+            	// projectRespectedList.Count:2
+            	// resultHeap_Offset:1
+            	// resultHeap_Length:5
+            	// fileHeap_Offset:6
+            	// fileHeap_Length:3
+            	// projectHeap_Offset:9
+            	// projectHeap_Length:2
+            	// i_project:2
+            	//
+            	// # INCORRECT Dump each nodeValue (various properties of interest)
+            	// b1 t0 o9 l2 i0 p-1
+            	// b2 t0 o0 l0 i0 p6
+            	// b2 t1 o0 l0 i0 p7
+            	// b2 t2 o0 l0 i1 p7
+            	// b2 t3 o0 l0 i0 p8
+            	// b2 t4 o0 l0 i1 p8
+            	// b3 t0 o1 l1 i0 p10
+            	// b3 t2 o2 l2 i1 p10
+            	// b3 t4 o4 l2 i0 p0
+            	// b4 t0 o6 l0 i0 p0
+            	// b4 t1 o6 l2 i1 p0
+                //
+                // # INCORRECT Diagram
+                //   0, 1,    2,    3,    4,    5,    6,  7,  8
+                // [ R, S_f1, S_f1, S_f1, S_f1, S_f1, F1, P1, P2 ]
+                //
+                //
                 // ================================================
                 
                 Console.WriteLine("\n\t==============");

@@ -691,13 +691,13 @@ public partial class TextEditorService
             	// i_project:2
                 //
                 // # INCORRECT Dump each nodeValue (various properties of interest)
-                // 0..  ROOT t0 o9 l2 i0 p-1
-                // 1..  R0   t0 o0 l0 i0 p6
-                // 2..  R1   t1 o0 l0 i0 p7
-                // 6..  F0   t0 o1 l1 i0 p10
-                // 7..  F1   t2 o2 l2 i1 p10
-                // 9..  P0   t0 o6 l0 i0 p0
-                // 10.. P1   t1 o6 l2 i1 p0
+                // 0.. ROOT t0 o5 l2 i0 p-1
+                // 1.. R0   t0 o0 l0 i0 p3
+                // 2.. R1   t1 o0 l0 i0 p4
+                // 3.. F0   t0 o1 l1 i0 p5
+                // 4.. F1   t0 o0 l0 i0 p0
+                // 5.. P0   t0 o3 l1 i0 p0
+                // 6.. P1   t1 o4 l0 i1 p0
                 //
                 // # INCORRECT Diagram
                 // NodeValueList, index over entry:
@@ -715,41 +715,30 @@ public partial class TextEditorService
                 //
                 //
                 // SearchResultList (ResourceUri ResourceUri, TextEditorTextSpan TextSpan):
-                // (Program.cs, 290),     // BlazorCrudApp.Wasm
-                // (Program.cs, 122),     // BlazorCrudApp.ServerSide
-                // (Program.cs, 129),     // BlazorCrudApp.ServerSide
-                // (Error.cshtml.cs, 149) // BlazorCrudApp.ServerSide
-                // (Error.cshtml.cs, 305) // BlazorCrudApp.ServerSide
+                // (\Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs, 297)
+                // (\Users\hunte\Repos\Demos\BlazorCrudApp\Lalala\appsettings.Development.json, 63)
                 // 
                 // 
                 // ProjectRespectedList (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength):
-                // (BlazorCrudApp.Wasm.csproj,       0, 1)
-                // (BlazorCrudApp.ServerSide.csproj, 1, 4)
+                // (\Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj, 0, 1)
+                // (\Users\hunte\Repos\Demos\BlazorCrudApp\Lalala\Lalala.csproj, 1, 1)
                 //
-                //  0: ByteKind_Aaa
-                //  1: 290
-                //  2: 122
-                //  3: 129
-                //  4: 149
-                //  5: 305
-                //  6: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs
-                //  7: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Program.cs
-                //  8: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Pages\Error.cshtml.cs
-                //  9: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj
-                // 10: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\BlazorCrudApp.ServerSide.csproj
+                // 0: ByteKind_Aaa
+                // 1: 297
+                // 2: 63
+                // 3: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs
+                // 4: ByteKind0
+                // 5: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj
+                // 6: \Users\hunte\Repos\Demos\BlazorCrudApp\Lalala\Lalala.csproj
                 // 
                 // ...
                 // ... Legend for the Diagram
-                // R0 => 290
-                // R1 => 122
-                // R2 => 129
-                // R3 => 149
-                // R4 => 305
-                // F0 => Program.cs (BlazorCrudApp.Wasm)
-                // F1 => Program.cs (BlazorCrudApp.ServerSide)
-                // F2 => Error.cshtml.cs
+                // R0 => 297
+                // R1 => 63
+                // F0 => Program.cs
+                // F1 => Lalala.csproj
                 // P0 => BlazorCrudApp.Wasm.csproj
-                // P1 => BlazorCrudApp.ServerSide.csproj
+                // P1 => Lalala.csproj
                 // ...
                 // ... Abbreviations in the diagram
                 // R => result  (search result)
@@ -759,7 +748,7 @@ public partial class TextEditorService
                 //
                 // ================================================
 
-                //Console.WriteLine("\n\t==============");
+                Console.WriteLine("\n\t==============");
 
                 /*foreach (var asd in searchResultList)
                 {
@@ -768,11 +757,11 @@ public partial class TextEditorService
 
                 //Console.WriteLine();
 
-                /*foreach (var asd in projectRespectedList)
+                foreach (var asd in projectRespectedList)
                 {
                     //                  (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength)
                     Console.WriteLine($"({asd.ProjectAbsolutePath}, {asd.SearchResultsOffset}, {asd.SearchResultsLength})");
-                }*/
+                }
 
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"\tprojectHeap_Offset + projectRespectedList.Count:{projectHeap_Offset + projectRespectedList.Count}");
@@ -787,13 +776,13 @@ public partial class TextEditorService
                 
                 Console.WriteLine();
 
-                /*for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
+                for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
                     
-                    Console.WriteLine($"{bbb}: {findAllTreeViewContainer.GetDisplayText(bbb)}");
-                    // Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
-                }*/
+                    // Console.WriteLine($"{bbb}: {findAllTreeViewContainer.GetDisplayText(bbb)}");
+                    Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
+                }
 
                 //Console.WriteLine("\t==============\n");
             }

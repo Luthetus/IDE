@@ -567,7 +567,7 @@ public partial class TextEditorService
                 // # INCORRECT Diagram
                 // NodeValueList, index over entry:
                 //      0,       1,        2,        3,        4,        5,        6,        7,        8,        9,          10
-                // [    ROOT,    R1_f1,    R2_f2,    R3_f2,    R4_f3,    R5_f3,    F1_p1,    F2_p1,    F3_p2,    P1_root,    P2_root    ]
+                // [    ROOT,    R1_f1,    R2_f2,    R3_f2,    R4_f3,    R5_f3,    F1_p1,    F2_p2,    F3_p2,    P1_root,    P2_root    ]
                 //
                 //                \RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR/      \FFFFFFFFFFFFFFFFFFFFFF/      \PPPPPPPPPPPPPPPP/
                 // ...

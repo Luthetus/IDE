@@ -565,13 +565,25 @@ public partial class TextEditorService
             	// b4 t1 o6 l2 i1 p0
                 //
                 // # INCORRECT Diagram
-                //      0,    1,       2,       3,       4,       5,       6,        7,        8,        9,     10
-                // [    R,    S_f1,    S_f2,    S_f2,    S_f3,    S_f3,    F1_p1,    F2_p1,    F3_p2,    P1,    P2    ]
-                //
+                //      0,       1,        2,        3,        4,        5,        6,        7,        8,        9,     10
+                // [    ROOT,    R1_f1,    R2_f2,    R3_f2,    R4_f3,    R5_f3,    F1_p1,    F2_p1,    F3_p2,    P1,    P2    ]
                 // ...
-                //
+                // ... Legend for the Diagram
+                // R1 => 290
+                // R2 => 122
+                // R3 => 129
+                // R4 => 149
+                // R5 => 305
+                // F1 => Program.cs
+                // F2 => Program.cs
+                // F3 => Error.cshtml.cs
                 // P1 => BlazorCrudApp.Wasm.csproj
                 // P2 => BlazorCrudApp.ServerSide.csproj
+                // ...
+                // ... Abbreviations in the diagram
+                // R => result  (search result)
+                // F => file    (file grouping)
+                // P => project (project grouping)
                 //
                 // ================================================
                 

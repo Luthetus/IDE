@@ -336,6 +336,8 @@ public partial class TextEditorService
                     
                     if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
                     {
+                        // WARNING: this code is duplicated towards the end of the loop
+                        
                         // If there is a search result, there is guaranteed to be a file.
                         // But there is no guarantee of there being a project.
                         if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
@@ -410,11 +412,16 @@ public partial class TextEditorService
                         };
                     ++resultHeap_Length;
                     
+                    Console.WriteLine($"{i_project} < {projectRespectedList.Count}");
+                    Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
+                    Console.WriteLine($"{i_searchResult} == {findAllTreeViewContainer.SearchResultList.Count} - 1");
+                    Console.WriteLine($"{projectNode_ExclusiveMark} == (1 + {projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
                     if (i_project < projectRespectedList.Count &&
-                            (projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + i_searchResult) /*||
+                            (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + i_searchResult) ||
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength))*/))
+                                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + i_searchResult))))
                     {
+                        Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
                         // Write out pending
                         findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
                             new TreeViewNodeValue
@@ -433,6 +440,20 @@ public partial class TextEditorService
                         
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
                         projectNode_ExclusiveMark = -1;
+                        
+                        if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
+                        {
+                            // WARNING: this code is duplicated towards the start of the loop
+                            
+                            // If there is a search result, there is guaranteed to be a file.
+                            // But there is no guarantee of there being a project.
+                            if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
+                            {
+                                projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                                projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset +
+                                                            projectRespectedList[i_project].SearchResultsLength;
+                            }
+                        }
                     }
                 }
                 

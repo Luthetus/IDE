@@ -552,17 +552,17 @@ public partial class TextEditorService
             	// i_project:2
             	//
             	// # INCORRECT Dump each nodeValue (various properties of interest)
-            	// b1 t0 o9 l2 i0 p-1
-            	// b2 t0 o0 l0 i0 p6
-            	// b2 t1 o0 l0 i0 p7
-            	// b2 t2 o0 l0 i1 p7
-            	// b2 t3 o0 l0 i0 p8
-            	// b2 t4 o0 l0 i1 p8
-            	// b3 t0 o1 l1 i0 p10
-            	// b3 t2 o2 l2 i1 p10
-            	// b3 t4 o4 l2 i0 p0
-            	// b4 t0 o6 l0 i0 p0
-            	// b4 t1 o6 l2 i1 p0
+            	// ROOT t0 o9 l2 i0 p-1
+            	// R0   t0 o0 l0 i0 p6
+            	// R1   t1 o0 l0 i0 p7
+            	// R2   t2 o0 l0 i1 p7
+            	// R3   t3 o0 l0 i0 p8
+            	// R4   t4 o0 l0 i1 p8
+            	// F0   t0 o1 l1 i0 p10
+            	// F1   t2 o2 l2 i1 p10
+            	// F2   t4 o4 l2 i0 p0
+            	// P0   t0 o6 l0 i0 p0
+            	// P1   t1 o6 l2 i1 p0
                 //
                 // # INCORRECT Diagram
                 // NodeValueList, index over entry:

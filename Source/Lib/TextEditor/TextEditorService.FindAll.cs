@@ -566,8 +566,8 @@ public partial class TextEditorService
                 //
                 // # INCORRECT Diagram
                 // NodeValueList, index over entry:
-                //      0,       1,           2,           3,           4,           5,           6,        7,        8,        9,     10
-                // [    ROOT,    R1_f1_p1,    R2_f2_p2,    R3_f2_p2,    R4_f3_p2,    R5_f3_p2,    F1_p1,    F2_p1,    F3_p2,    P1,    P2    ]
+                //      0,       1,        2,        3,        4,        5,        6,        7,        8,        9,          10
+                // [    ROOT,    R1_f1,    R2_f2,    R3_f2,    R4_f3,    R5_f3,    F1_p1,    F2_p1,    F3_p2,    P1_root,    P2_root    ]
                 // ...
                 // ... Legend for the Diagram
                 // R1 => 290
@@ -586,7 +586,7 @@ public partial class TextEditorService
                 // F => file    (file grouping)
                 // P => project (project grouping)
                 // ...
-                // lowercased abbreviations represent a reference to rather than the item itself.
+                // lowercased abbreviations represent the parent
                 //
                 // ================================================
                 

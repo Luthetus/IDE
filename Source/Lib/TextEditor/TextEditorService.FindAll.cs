@@ -589,6 +589,19 @@ public partial class TextEditorService
                 // ProjectRespectedList (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength):
                 // (BlazorCrudApp.Wasm.csproj,       0, 1)
                 // (BlazorCrudApp.ServerSide.csproj, 1, 4)
+                //
+                //  0: ByteKind_Aaa
+                //  1: 290
+                //  2: 122
+                //  3: 129
+                //  4: 149
+                //  5: 305
+                //  6: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs
+                //  7: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Program.cs
+                //  8: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Pages\Error.cshtml.cs
+                //  9: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj
+                // 10: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\BlazorCrudApp.ServerSide.csproj
+                // 
                 // ...
                 // ... Legend for the Diagram
                 // R0 => 290
@@ -596,8 +609,8 @@ public partial class TextEditorService
                 // R2 => 129
                 // R3 => 149
                 // R4 => 305
-                // F0 => Program.cs
-                // F1 => Program.cs
+                // F0 => Program.cs (BlazorCrudApp.Wasm)
+                // F1 => Program.cs (BlazorCrudApp.ServerSide)
                 // F2 => Error.cshtml.cs
                 // P0 => BlazorCrudApp.Wasm.csproj
                 // P1 => BlazorCrudApp.ServerSide.csproj
@@ -636,11 +649,14 @@ public partial class TextEditorService
                 Console.WriteLine($"\tprojectHeap_Length:{projectHeap_Length}");
                 Console.WriteLine($"\ti_project:{i_project}");
                 
+                Console.WriteLine();
+                
                 for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
                     
-                    Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
+                    Console.WriteLine($"{bbb}: {findAllTreeViewContainer.GetDisplayText(bbb)}");
+                    // Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
                 }
                 
                 Console.WriteLine("\t==============\n");

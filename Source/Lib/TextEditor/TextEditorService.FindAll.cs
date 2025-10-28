@@ -566,7 +566,7 @@ public partial class TextEditorService
                 //
                 // # INCORRECT Diagram
                 // NodeValueList, index over entry:
-                
+                //
                 // Parent:      -1       6         7         7         8         8         9         10        10        0           0
                 //              |        |         |         |         |         |         |         |         |         |           |
                 //              |        |         |         |         |         |         |         |         |         |           |
@@ -576,6 +576,15 @@ public partial class TextEditorService
                 // Index:       0,       1,        2,        3,        4,        5,        6,        7,        8,        9,          10
                 // Span:                 \RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR/        \FFFFFFFFFFFFFFFFFFFF/        \PPPPPPPPPPPP/
                 // Span:                  offset_1 length_5                                 offset_6 length_3             offset_9 length_2
+                //
+                //
+                // SearchResultList:
+                // (Program.cs, 290),     // BlazorCrudApp.Wasm
+                // (Program.cs, 122),     // BlazorCrudApp.ServerSide
+                // (Program.cs, 129),     // BlazorCrudApp.ServerSide
+                // (Error.cshtml.cs, 149) // BlazorCrudApp.ServerSide
+                // (Error.cshtml.cs, 305) // BlazorCrudApp.ServerSide
+                // 
                 // ...
                 // ... Legend for the Diagram
                 // R0 => 290
@@ -598,6 +607,12 @@ public partial class TextEditorService
                 // ================================================
                 
                 Console.WriteLine("\n\t==============");
+                
+                foreach (var asd in searchResultList)
+                {
+                    Console.WriteLine($"({asd.ResourceUri.Value}, {asd.TextSpan.StartInclusiveIndex})");
+                }
+                
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"\tprojectHeap_Offset + projectRespectedList.Count:{projectHeap_Offset + projectRespectedList.Count}");
                 Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");

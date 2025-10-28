@@ -593,8 +593,7 @@ public partial class TextEditorService
                 // R => result  (search result)
                 // F => file    (file grouping)
                 // P => project (project grouping)
-                // ...
-                // lowercased abbreviations represent the parent
+                // 
                 //
                 // ================================================
                 

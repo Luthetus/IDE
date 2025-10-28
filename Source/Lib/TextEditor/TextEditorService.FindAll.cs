@@ -412,16 +412,16 @@ public partial class TextEditorService
                         };
                     ++resultHeap_Length;
                     
-                    Console.WriteLine($"{i_project} < {projectRespectedList.Count}");
+                    /*Console.WriteLine($"{i_project} < {projectRespectedList.Count}");
                     Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
                     Console.WriteLine($"{i_searchResult} == {findAllTreeViewContainer.SearchResultList.Count} - 1");
-                    Console.WriteLine($"{projectNode_ExclusiveMark} == (1 + {projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
+                    Console.WriteLine($"{projectNode_ExclusiveMark} == (1 + {projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");*/
                     if (i_project < projectRespectedList.Count &&
                             (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + i_searchResult) ||
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
                                  projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + i_searchResult))))
                     {
-                        Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
+                        //Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
                         // Write out pending
                         findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
                             new TreeViewNodeValue
@@ -644,22 +644,22 @@ public partial class TextEditorService
                 //
                 // ================================================
                 
-                Console.WriteLine("\n\t==============");
+                //Console.WriteLine("\n\t==============");
                 
-                foreach (var asd in searchResultList)
+                /*foreach (var asd in searchResultList)
                 {
                     Console.WriteLine($"({asd.ResourceUri.Value}, {asd.TextSpan.StartInclusiveIndex})");
-                }
+                }*/
                 
-                Console.WriteLine();
+                //Console.WriteLine();
                 
-                foreach (var asd in projectRespectedList)
+                /*foreach (var asd in projectRespectedList)
                 {
                     //                  (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength)
                     Console.WriteLine($"({asd.ProjectAbsolutePath}, {asd.SearchResultsOffset}, {asd.SearchResultsLength})");
-                }
+                }*/
                 
-                Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
+                /*Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"\tprojectHeap_Offset + projectRespectedList.Count:{projectHeap_Offset + projectRespectedList.Count}");
                 Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");
                 Console.WriteLine($"\tresultHeap_Offset:{resultHeap_Offset}");
@@ -670,17 +670,17 @@ public partial class TextEditorService
                 Console.WriteLine($"\tprojectHeap_Length:{projectHeap_Length}");
                 Console.WriteLine($"\ti_project:{i_project}");
                 
-                Console.WriteLine();
+                Console.WriteLine();*/
                 
-                for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
+                /*for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
                     
                     Console.WriteLine($"{bbb}: {findAllTreeViewContainer.GetDisplayText(bbb)}");
                     // Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
-                }
+                }*/
                 
-                Console.WriteLine("\t==============\n");
+                //Console.WriteLine("\t==============\n");
             }
             
             lock (_stateModificationLock)

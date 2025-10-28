@@ -476,9 +476,74 @@ public partial class TextEditorService
                 // # am getting both file groups displaying with the same name.
                 // # as well a result from f2 is showing under f1.
                 // # (whether it was f2 showing under f1 or vice versa, I don't actually know).
-                // 
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                // ================================================
+                //   0, 1,    2,    3,    4,    5,    6,  7,  8
+                // [ R, S_f1, S_f1, S_f1, S_f1, S_f1, F1, P1, P2 ]
+                //
+                //
+                // # FileSystem (unrelated files not shown)
+                //              (search results are bulleted with a space character (' ') instead of a minus ('-'))
+                //              (search results showcase the character index where the occurrence match inclusively begins at)
+                // - BlazorCrudApp.sln
+                //     - BlazorCrudApp.ServerSide.csproj
+                //         - Pages/
+                //             - Error.cshtml.cs
+                //                   149
+                //                   305
+                //         - Program.cs
+                //               122
+                //               129
+                //     - BlazorCrudApp.Wasm.csproj
+                //         - Program.cs
+                //               290
+                //
+                // # Correct UI (absolute file paths are shortened to filename with extension)
+                //              (search results are bulleted with a space character (' ') instead of a minus ('-'))
+                //              (search results showcase the character index where the occurrence match inclusively begins at)
+                // - ByteKind_Aaa
+                //     - BlazorCrudApp.Wasm.csproj
+                //         - Program.cs
+                //               290
+                //     - BlazorCrudApp.ServerSide.csproj
+                //         - Program.cs
+                //               122
+                //               129
+                //         - Error.cshtml.cs
+                //               149
+                //               305
+                // ================================================
                 
-                /*Console.WriteLine("\n\t==============");
+                Console.WriteLine("\n\t==============");
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"\tprojectHeap_Offset + projectRespectedList.Count:{projectHeap_Offset + projectRespectedList.Count}");
                 Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");
@@ -488,16 +553,16 @@ public partial class TextEditorService
                 Console.WriteLine($"\tfileHeap_Length:{fileHeap_Length}");
                 Console.WriteLine($"\tprojectHeap_Offset:{projectHeap_Offset}");
                 Console.WriteLine($"\tprojectHeap_Length:{projectHeap_Length}");
-                Console.WriteLine($"\ti_project:{i_project}");*/
+                Console.WriteLine($"\ti_project:{i_project}");
                 
-                /*for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
+                for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
                     
                     Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
                 }
                 
-                Console.WriteLine("\t==============\n");*/
+                Console.WriteLine("\t==============\n");
             }
             
             lock (_stateModificationLock)

@@ -568,8 +568,9 @@ public partial class TextEditorService
                 // NodeValueList, index over entry:
                 //      0,       1,        2,        3,        4,        5,        6,        7,        8,        9,          10
                 // [    ROOT,    R0,       R1,       R2,       R3,       R4,       F0,       F1,       F2,       P0,         P1    ]
-                //
+                // 
                 //               \RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR/        \FFFFFFFFFFFFFFFFFFFF/        \PPPPPPPPPPPP/
+                //               offset_1                          length_5        offset_6      length_3        offset_9 length_2
                 // ...
                 // ... Legend for the Diagram
                 // R0 => 290

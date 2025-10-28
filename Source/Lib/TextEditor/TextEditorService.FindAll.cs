@@ -578,13 +578,17 @@ public partial class TextEditorService
                 // Span:                  offset_1 length_5                                 offset_6 length_3             offset_9 length_2
                 //
                 //
-                // SearchResultList:
+                // SearchResultList (ResourceUri ResourceUri, TextEditorTextSpan TextSpan):
                 // (Program.cs, 290),     // BlazorCrudApp.Wasm
                 // (Program.cs, 122),     // BlazorCrudApp.ServerSide
                 // (Program.cs, 129),     // BlazorCrudApp.ServerSide
                 // (Error.cshtml.cs, 149) // BlazorCrudApp.ServerSide
                 // (Error.cshtml.cs, 305) // BlazorCrudApp.ServerSide
                 // 
+                // 
+                // ProjectRespectedList (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength):
+                // (BlazorCrudApp.Wasm.csproj,       0, 1)
+                // (BlazorCrudApp.ServerSide.csproj, 1, 4)
                 // ...
                 // ... Legend for the Diagram
                 // R0 => 290
@@ -611,6 +615,14 @@ public partial class TextEditorService
                 foreach (var asd in searchResultList)
                 {
                     Console.WriteLine($"({asd.ResourceUri.Value}, {asd.TextSpan.StartInclusiveIndex})");
+                }
+                
+                Console.WriteLine();
+                
+                foreach (var asd in projectRespectedList)
+                {
+                    //                  (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength)
+                    Console.WriteLine($"({asd.ProjectAbsolutePath}, {asd.SearchResultsOffset}, {asd.SearchResultsLength})");
                 }
                 
                 Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");

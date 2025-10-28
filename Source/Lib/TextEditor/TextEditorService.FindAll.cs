@@ -411,11 +411,13 @@ public partial class TextEditorService
                             IsExpanded = false
                         };
                     ++resultHeap_Length;
-                    
+
                     /*Console.WriteLine($"{i_project} < {projectRespectedList.Count}");
                     Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
                     Console.WriteLine($"{i_searchResult} == {findAllTreeViewContainer.SearchResultList.Count} - 1");
                     Console.WriteLine($"{projectNode_ExclusiveMark} == (1 + {projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");*/
+                    
+                    inner_project_occurred:
                     if (i_project < projectRespectedList.Count &&
                             (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + i_searchResult) ||
                             (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
@@ -452,15 +454,17 @@ public partial class TextEditorService
                                 projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
                                 projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset +
                                                             projectRespectedList[i_project].SearchResultsLength;
+                                if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
+                                    goto inner_project_occurred;
                             }
                         }
                     }
                 }
-                
+
                 // Passing cases:
                 // ============================
                 // [ R, S_f1, S_f2, F1, F2, P1 ] // 
-                
+
                 // Failing cases:
                 // ========================================
                 // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P1 ] // 
@@ -527,7 +531,7 @@ public partial class TextEditorService
                 //
                 //
                 //
-                // ================================================
+                // AAA================================================
                 // # The FileSystem (unrelated files not shown)
                 //              (search results are bulleted with a space character (' ') instead of a minus ('-'))
                 //              (search results showcase the character index where the occurrence match inclusively begins at)
@@ -562,28 +566,28 @@ public partial class TextEditorService
                 //
                 // # INCORRECT Dump variables of interest
                 // searchResultList.Count:5
-            	// projectHeap_Offset + projectRespectedList.Count:11
-            	// projectRespectedList.Count:2
-            	// resultHeap_Offset:1
-            	// resultHeap_Length:5
-            	// fileHeap_Offset:6
-            	// fileHeap_Length:3
-            	// projectHeap_Offset:9
-            	// projectHeap_Length:2
-            	// i_project:2
-            	//
-            	// # INCORRECT Dump each nodeValue (various properties of interest)
-            	// 0..  ROOT t0 o9 l2 i0 p-1
-            	// 1..  R0   t0 o0 l0 i0 p6
-            	// 2..  R1   t1 o0 l0 i0 p7
-            	// 3..  R2   t2 o0 l0 i1 p7
-            	// 4..  R3   t3 o0 l0 i0 p8
-            	// 5..  R4   t4 o0 l0 i1 p8
-            	// 6..  F0   t0 o1 l1 i0 p10
-            	// 7..  F1   t2 o2 l2 i1 p10
-            	// 8..  F2   t4 o4 l2 i0 p0
-            	// 9..  P0   t0 o6 l0 i0 p0
-            	// 10.. P1   t1 o6 l2 i1 p0
+                // projectHeap_Offset + projectRespectedList.Count:11
+                // projectRespectedList.Count:2
+                // resultHeap_Offset:1
+                // resultHeap_Length:5
+                // fileHeap_Offset:6
+                // fileHeap_Length:3
+                // projectHeap_Offset:9
+                // projectHeap_Length:2
+                // i_project:2
+                //
+                // # INCORRECT Dump each nodeValue (various properties of interest)
+                // 0..  ROOT t0 o9 l2 i0 p-1
+                // 1..  R0   t0 o0 l0 i0 p6
+                // 2..  R1   t1 o0 l0 i0 p7
+                // 3..  R2   t2 o0 l0 i1 p7
+                // 4..  R3   t3 o0 l0 i0 p8
+                // 5..  R4   t4 o0 l0 i1 p8
+                // 6..  F0   t0 o1 l1 i0 p10
+                // 7..  F1   t2 o2 l2 i1 p10
+                // 8..  F2   t4 o4 l2 i0 p0
+                // 9..  P0   t0 o6 l0 i0 p0
+                // 10.. P1   t1 o6 l2 i1 p0
                 //
                 // # INCORRECT Diagram
                 // NodeValueList, index over entry:
@@ -643,23 +647,134 @@ public partial class TextEditorService
                 // 
                 //
                 // ================================================
-                
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                // BBB================================================
+                // # The FileSystem (unrelated files not shown)
+                //              (search results are bulleted with a space character (' ') instead of a minus ('-'))
+                //              (search results showcase the character index where the occurrence match inclusively begins at)
+                // - BlazorCrudApp.sln
+                //     - BlazorCrudApp.Wasm.csproj
+                //         - Program.cs
+                //               297
+                //     - Lalala.csproj
+                //         - appsettings.Development.json
+                //               63
+                //
+                // # The CORRECT UI (if it were to be correct)
+                //                  (absolute file paths are shortened to filename with extension)
+                //                  (search results are bulleted with a space character (' ') instead of a minus ('-'))
+                //                  (search results showcase the character index where the occurrence match inclusively begins at)
+                // - ByteKind_Aaa
+                //     - BlazorCrudApp.Wasm.csproj
+                //         - Program.cs
+                //               297
+                //     - Lalala.csproj
+                //         - appsettings.Development.json
+                //               63
+                //
+                // # INCORRECT Dump variables of interest
+                // searchResultList.Count:2
+            	// projectHeap_Offset + projectRespectedList.Count:7
+            	// projectRespectedList.Count:2
+            	// resultHeap_Offset:1
+            	// resultHeap_Length:2
+            	// fileHeap_Offset:3
+            	// fileHeap_Length:1
+            	// projectHeap_Offset:5
+            	// projectHeap_Length:2
+            	// i_project:2
+                //
+                // # INCORRECT Dump each nodeValue (various properties of interest)
+                // 0..  ROOT t0 o9 l2 i0 p-1
+                // 1..  R0   t0 o0 l0 i0 p6
+                // 2..  R1   t1 o0 l0 i0 p7
+                // 6..  F0   t0 o1 l1 i0 p10
+                // 7..  F1   t2 o2 l2 i1 p10
+                // 9..  P0   t0 o6 l0 i0 p0
+                // 10.. P1   t1 o6 l2 i1 p0
+                //
+                // # INCORRECT Diagram
+                // NodeValueList, index over entry:
+                //
+                // Parent:      -1       3         4      5         6      0           0
+                //              |        |         |      |         |      |           |
+                //              |        |         |      |         |      |           |
+                // Value:  [    ROOT,    R0,       R1,    F0,       F1,    P0,         P1    ]
+                //              .        .         .      .         .      .           .
+                //              .        .         .      .         .      .           .
+                // Index:       0,       1,        2,     3,        4,     5,          6,
+                // Span:                 \RRRRRRRRRRR/    \FFFFFFFFFFF/    \PPPPPPPPPPPPP/
+                // Span:                  offset_1         offset_3         offset_5
+                // Span:                  length_2         length_2         length_2
+                //
+                //
+                // SearchResultList (ResourceUri ResourceUri, TextEditorTextSpan TextSpan):
+                // (Program.cs, 290),     // BlazorCrudApp.Wasm
+                // (Program.cs, 122),     // BlazorCrudApp.ServerSide
+                // (Program.cs, 129),     // BlazorCrudApp.ServerSide
+                // (Error.cshtml.cs, 149) // BlazorCrudApp.ServerSide
+                // (Error.cshtml.cs, 305) // BlazorCrudApp.ServerSide
+                // 
+                // 
+                // ProjectRespectedList (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength):
+                // (BlazorCrudApp.Wasm.csproj,       0, 1)
+                // (BlazorCrudApp.ServerSide.csproj, 1, 4)
+                //
+                //  0: ByteKind_Aaa
+                //  1: 290
+                //  2: 122
+                //  3: 129
+                //  4: 149
+                //  5: 305
+                //  6: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs
+                //  7: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Program.cs
+                //  8: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Pages\Error.cshtml.cs
+                //  9: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj
+                // 10: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\BlazorCrudApp.ServerSide.csproj
+                // 
+                // ...
+                // ... Legend for the Diagram
+                // R0 => 290
+                // R1 => 122
+                // R2 => 129
+                // R3 => 149
+                // R4 => 305
+                // F0 => Program.cs (BlazorCrudApp.Wasm)
+                // F1 => Program.cs (BlazorCrudApp.ServerSide)
+                // F2 => Error.cshtml.cs
+                // P0 => BlazorCrudApp.Wasm.csproj
+                // P1 => BlazorCrudApp.ServerSide.csproj
+                // ...
+                // ... Abbreviations in the diagram
+                // R => result  (search result)
+                // F => file    (file grouping)
+                // P => project (project grouping)
+                // 
+                //
+                // ================================================
+
                 //Console.WriteLine("\n\t==============");
-                
+
                 /*foreach (var asd in searchResultList)
                 {
                     Console.WriteLine($"({asd.ResourceUri.Value}, {asd.TextSpan.StartInclusiveIndex})");
                 }*/
-                
+
                 //Console.WriteLine();
-                
+
                 /*foreach (var asd in projectRespectedList)
                 {
                     //                  (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength)
                     Console.WriteLine($"({asd.ProjectAbsolutePath}, {asd.SearchResultsOffset}, {asd.SearchResultsLength})");
                 }*/
-                
-                /*Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
+
+                Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
                 Console.WriteLine($"\tprojectHeap_Offset + projectRespectedList.Count:{projectHeap_Offset + projectRespectedList.Count}");
                 Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");
                 Console.WriteLine($"\tresultHeap_Offset:{resultHeap_Offset}");
@@ -670,8 +785,8 @@ public partial class TextEditorService
                 Console.WriteLine($"\tprojectHeap_Length:{projectHeap_Length}");
                 Console.WriteLine($"\ti_project:{i_project}");
                 
-                Console.WriteLine();*/
-                
+                Console.WriteLine();
+
                 /*for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
                 {
                     var ccc = findAllTreeViewContainer.NodeValueList[bbb];
@@ -679,10 +794,10 @@ public partial class TextEditorService
                     Console.WriteLine($"{bbb}: {findAllTreeViewContainer.GetDisplayText(bbb)}");
                     // Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
                 }*/
-                
+
                 //Console.WriteLine("\t==============\n");
             }
-            
+
             lock (_stateModificationLock)
             {
                 if (findAllTreeViewContainer is not null)

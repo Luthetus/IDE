@@ -70,7 +70,12 @@ public partial class CommonService
 
             var outTabList = new List<IPanelTab>(inPanelGroup.TabList);
             outTabList.Insert(insertAtIndexZero ? 0 : outTabList.Count, panelTab);
-            var outPanelGroup = inPanelGroup with { TabList = outTabList };
+            
+            var outPanelGroup = inPanelGroup with
+            {
+                TabList = outTabList,
+                ActiveTab = null
+            };
             
             foreach (var x in outPanelGroup.TabList)
             {
@@ -154,7 +159,8 @@ public partial class CommonService
     
                 var outPanelGroup = inPanelGroup with
                 {
-                    TabList = outTabList
+                    TabList = outTabList,
+                    outPanelGroup.ActiveTab = null
                 };
                 
                 foreach (var x in outPanelGroup.TabList)
@@ -215,8 +221,12 @@ public partial class CommonService
             else
                 return;
 
-            var outPanelGroup = inPanelGroup with { ActiveTabKey = panelTabKey };
-            
+            var outPanelGroup = inPanelGroup with
+            {
+                ActiveTabKey = panelTabKey,
+                ActiveTab = null
+            };
+
             foreach (var x in outPanelGroup.TabList)
             {
                 if (x.Key == outPanelGroup.ActiveTabKey)
@@ -288,7 +298,6 @@ public partial class CommonService
             var dialogState = GetDialogState();
             
             IDialog? existingDialog = null;
-            
             foreach (var x in dialogState.DialogList)
             {
                 if (x.DynamicViewModelKey == panel.DynamicViewModelKey)

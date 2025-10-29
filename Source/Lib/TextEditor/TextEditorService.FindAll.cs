@@ -488,70 +488,53 @@ public partial class TextEditorService
                     
                     if (fileNode_InclusiveMark != searchResult.ResourceUri.Value)
                     {
-                        var parentIndex = projectNode_ExclusiveMark == -1
-                            ? 0
-                            : projectHeap_Offset + projectHeap_Length;
-                        var indexAmongSiblings = projectNode_ExclusiveMark == -1
-                            ? 0
-                            : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset;
-                    
+                        var parentIndex = projectNode_ExclusiveMark == -1 ? 0 : projectHeap_Offset + projectHeap_Length;
+                        var indexAmongSiblings = projectNode_ExclusiveMark == -1 ? 0 : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset;
                         var childrenLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
                         var next_childrenOffset = resultHeap_Offset + resultHeap_Length;
                         var traitsIndex = i_searchResult - 1;
-                        
-                        findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] =
-                            new TreeViewNodeValue
-                            {
-                                ParentIndex = parentIndex,
-                                IndexAmongSiblings = indexAmongSiblings,
-                                ChildListOffset = fileNode_ChildrenOffset,
-                                ChildListLength = childrenLength,
-                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                                TraitsIndex = traitsIndex,
-                                IsExpandable = true,
-                                IsExpanded = false
-                            };
+                        findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] = new TreeViewNodeValue
+                        {
+                            ParentIndex = parentIndex,
+                            IndexAmongSiblings = indexAmongSiblings,
+                            ChildListOffset = fileNode_ChildrenOffset,
+                            ChildListLength = childrenLength,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
+                            TraitsIndex = traitsIndex,
+                            IsExpandable = true,
+                        };
                         ++fileHeap_Length;
-                        
                         fileNode_InclusiveMark = searchResult.ResourceUri.Value;
                         fileNode_ChildrenOffset = next_childrenOffset;
                     }
 
                     if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
                     {
-                        findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] =
-                            new TreeViewNodeValue
-                            {
-                                ParentIndex = fileHeap_Offset + fileHeap_Length/* - resultParentIndexIndexAmongSiblingsFinalLoopSubtraction*/,
-                                IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset/* + resultIndexAmongSiblingsFinalLoopAddition*/,
-                                ChildListOffset = 0,
-                                ChildListLength = 0,
-                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                                TraitsIndex = i_searchResult,
-                                IsExpandable = false,
-                                IsExpanded = false
-                            };
+                        findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] = new TreeViewNodeValue
+                        {
+                            ParentIndex = fileHeap_Offset + fileHeap_Length,
+                            IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                            TraitsIndex = i_searchResult,
+                        };
                         ++resultHeap_Length;
                     }
                     
                     if (i_project < projectRespectedList.Count &&
                             (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + i_searchResult)))
                     {
-                        findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
-                            new TreeViewNodeValue
-                            {
-                                ParentIndex = 0,
-                                IndexAmongSiblings = projectHeap_Length,
-                                ChildListOffset = projectNode_ChildrenOffset,
-                                ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
-                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
-                                TraitsIndex = i_project,
-                                IsExpandable = true,
-                                IsExpanded = false
-                            };
+                        findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] = new TreeViewNodeValue
+                        {
+                            ParentIndex = 0,
+                            IndexAmongSiblings = projectHeap_Length,
+                            ChildListOffset = projectNode_ChildrenOffset,
+                            ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
+                            TraitsIndex = i_project,
+                            IsExpandable = true,
+                        };
                         ++projectHeap_Length;
                         ++i_project;
-                        
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
                         projectNode_ExclusiveMark = -1;
                     }

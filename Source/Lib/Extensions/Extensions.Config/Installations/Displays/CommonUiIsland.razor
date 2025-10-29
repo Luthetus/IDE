@@ -81,10 +81,18 @@
 
 
 @{ var dropdownState = DotNetService.CommonService.GetDropdownState(); }
-@if (dropdownState.DropdownList.Count > 0 && dropdownState.DropdownList.Any(x => x.ShouldShowOutOfBoundsClickDisplay))
+@if (dropdownState.DropdownList.Count > 0)
 {
-	<OutOfBoundsClickDisplay ZIndex="15"
-	                         OnMouseDownCallback="DROPDOWN_ClearActiveKeyList" />
+    var shouldShowOutOfBoundsClickDisplay = false;
+    foreach (var dropdown in dropdownState.DropdownList)
+    {
+        dropdownState.DropdownList.Any(x => x.ShouldShowOutOfBoundsClickDisplay)
+    }
+    if (shouldShowOutOfBoundsClickDisplay)
+    {
+        <OutOfBoundsClickDisplay ZIndex="15"
+                                 OnMouseDownCallback="DROPDOWN_ClearActiveKeyList" />
+    }
 }
 @foreach (var dropdown in dropdownState.DropdownList)
 {

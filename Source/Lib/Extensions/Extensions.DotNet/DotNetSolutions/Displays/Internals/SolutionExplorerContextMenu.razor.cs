@@ -151,7 +151,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 treeViewCSharpProjectNugetPackageReference));
         }*/
 
-        if (!menuOptionList.Any())
+        if (menuOptionList.Count == 0)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (data, menuRecord);
@@ -224,7 +224,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 }*//*));
         }
 
-        if (!menuOptionList.Any())
+        if (menuOptionList.Count == 0)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, menuRecord);

@@ -22,9 +22,8 @@ public partial class FileTemplatesDisplay : ComponentBase
 
     protected override void OnInitialized()
     {
-        _fileTemplatesFormWrappersList =
-            // The order of the entries in <see cref="_fileTemplatesList"/> is important
-            // as the .FirstOrDefault(x => ...true...) is used.
+        _fileTemplatesFormWrappersList =            // The order of the entries in <see cref="_fileTemplatesList"/> is important
+            // as the .F/irstOrDefault(x => ...true...) is used.
             new List<FileTemplate>()
             {
                 CommonFacts.RazorCodebehind,

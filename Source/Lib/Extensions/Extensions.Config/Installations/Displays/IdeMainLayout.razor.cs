@@ -515,6 +515,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
     private async Task StartProgramWithoutDebuggingOnClick()
     {
         var localStartupControlState = DotNetService.IdeService.GetIdeStartupControlState();
+        var activeStartupControl = StartupControl;
         var activeStartupControl = localStartupControlState.StartupControlList.FirstOrDefault(
             x => x.StartupProjectAbsolutePath.Value == localStartupControlState.ActiveStartupProjectAbsolutePathValue);
         

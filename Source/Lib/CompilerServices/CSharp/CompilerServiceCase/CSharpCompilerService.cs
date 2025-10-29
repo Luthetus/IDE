@@ -2538,14 +2538,21 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
 
             var viewModelList = _textEditorService.Model_GetViewModelsOrEmpty(resourceUri);
             
-            var viewModel = viewModelList.FirstOrDefault(x => x.PersistentState.Category.Value == "main")
-                ?? viewModelList.FirstOrDefault();
-            
+            TextEditorViewModel? viewModel = null;
+            foreach (var x in viewModelList)
+            {
+                if (x.PersistentState.Category.Value == "main")
+                {
+                    viewModel = x;
+                    break;
+                }
+            }
+            if (viewModel is null && viewModelList.Count > 0)
+                viewModel = viewModelList[0];
             if (viewModel is null)
                 return ValueTask.CompletedTask;
                 
             var viewModelModifier = editContext.GetViewModelModifier(viewModel.PersistentState.ViewModelKey);
-            
             if (viewModelModifier is null)
                 return ValueTask.CompletedTask;
 

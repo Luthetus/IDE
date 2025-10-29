@@ -38,6 +38,7 @@ public sealed partial class NugetPackageDisplay : ComponentBase, IDisposable
                 .OrderByDescending(x => x.Version)
                 .ToList();
 
+            // Also, non-hot paths don't matter much either. Like I said I wanna see where things go regardless.
             _nugetPackageVersionString = _nugetPackageVersionsOrdered.FirstOrDefault()
                 ?.Version ?? string.Empty;
         }

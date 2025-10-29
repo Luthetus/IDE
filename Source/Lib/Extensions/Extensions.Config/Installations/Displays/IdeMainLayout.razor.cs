@@ -515,10 +515,15 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
     private async Task StartProgramWithoutDebuggingOnClick()
     {
         var localStartupControlState = DotNetService.IdeService.GetIdeStartupControlState();
-        var activeStartupControl = StartupControl;
-        var activeStartupControl = localStartupControlState.StartupControlList.FirstOrDefault(
-            x => x.StartupProjectAbsolutePath.Value == localStartupControlState.ActiveStartupProjectAbsolutePathValue);
-        
+        var activeStartupControl = default(StartupControlModel);
+        foreach (var x in localStartupControlState.StartupControlList)
+        {
+            if (x.StartupProjectAbsolutePath.Value == localStartupControlState.ActiveStartupProjectAbsolutePathValue)
+            {
+                activeStartupControl = x;
+                break;
+            }
+        }
         if (activeStartupControl.StartupProjectAbsolutePath.Value is null)
             return;
     
@@ -532,8 +537,19 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                 onClickFunc: _ => 
                 {
                     var panelState = DotNetService.CommonService.GetPanelState();
-                    var outputPanel = panelState.PanelList.FirstOrDefault(x => x.Title == "Output");
-                    DotNetService.CommonService.ShowOrAddPanelTab(outputPanel);
+                    
+                    var outputPanel = (Panel?)null;
+                    foreach (var x in panelState.PanelList)
+                    {
+                        if (x.Title == "Output")
+                        {
+                            outputPanel = x;
+                            break;
+                        }
+                    }
+                    if (outputPanel is not null)
+                        DotNetService.CommonService.ShowOrAddPanelTab(outputPanel);
+                    
                     return Task.CompletedTask;
                 }));
                 
@@ -544,8 +560,18 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                 {
                     DotNetService.IdeService.TerminalGroup_SetActiveTerminal(IdeFacts.EXECUTION_KEY);
                     var panelState = DotNetService.CommonService.GetPanelState();
-                    var outputPanel = panelState.PanelList.FirstOrDefault(x => x.Title == "Terminal");
-                    DotNetService.CommonService.ShowOrAddPanelTab(outputPanel);
+                    var outputPanel = (Panel?)null;
+                    foreach (var x in panelState.PanelList)
+                    {
+                        if (x.Title == "Terminal")
+                        {
+                            outputPanel = x;
+                            break;
+                        }
+                    }
+                    if (outputPanel is not null)
+                        DotNetService.CommonService.ShowOrAddPanelTab(outputPanel);
+                    
                     return Task.CompletedTask;
                 }));
                 
@@ -555,9 +581,15 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                 onClickFunc: _ =>
                 {
                     var localStartupControlState = DotNetService.IdeService.GetIdeStartupControlState();
-                    var activeStartupControl = localStartupControlState.StartupControlList.FirstOrDefault(
-                        x => x.StartupProjectAbsolutePath.Value == localStartupControlState.ActiveStartupProjectAbsolutePathValue);
-                    
+                    var activeStartupControl = default(StartupControlModel);
+                    foreach (var x in localStartupControlState.StartupControlList)
+                    {
+                        if (x.StartupProjectAbsolutePath.Value == localStartupControlState.ActiveStartupProjectAbsolutePathValue)
+                        {
+                            activeStartupControl = x;
+                            break;
+                        }
+                    }
                     if (activeStartupControl.StartupProjectAbsolutePath.Value is null)
                         return Task.CompletedTask;
                         
@@ -616,9 +648,15 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
             _ =>
             {
                 var startupControlState = DotNetService.IdeService.GetIdeStartupControlState();
-                var activeStartupControl = startupControlState.StartupControlList.FirstOrDefault(
-                    x => x.StartupProjectAbsolutePath.Value == startupControlState.ActiveStartupProjectAbsolutePathValue);
-
+                var activeStartupControl = default(StartupControlModel);
+                foreach (var x in startupControlState.StartupControlList)
+                {
+                    if (x.StartupProjectAbsolutePath.Value == startupControlState.ActiveStartupProjectAbsolutePathValue)
+                    {
+                        activeStartupControl = x;
+                        break;
+                    }
+                }
                 if (activeStartupControl.StartupProjectAbsolutePath.Value is not null)
                     InitializationHelper.BuildProjectOnClick(DotNetService, activeStartupControl.StartupProjectAbsolutePath.Value);
                 else
@@ -633,9 +671,15 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
             _ =>
             {
                 var startupControlState = DotNetService.IdeService.GetIdeStartupControlState();
-                var activeStartupControl = startupControlState.StartupControlList.FirstOrDefault(
-                    x => x.StartupProjectAbsolutePath.Value == startupControlState.ActiveStartupProjectAbsolutePathValue);
-
+                var activeStartupControl = default(StartupControlModel);
+                foreach (var x in startupControlState.StartupControlList)
+                {
+                    if (x.StartupProjectAbsolutePath.Value == startupControlState.ActiveStartupProjectAbsolutePathValue)
+                    {
+                        activeStartupControl = x;
+                        break;
+                    }
+                }
                 if (activeStartupControl.StartupProjectAbsolutePath.Value is not null)
                     InitializationHelper.CleanProjectOnClick(DotNetService, activeStartupControl.StartupProjectAbsolutePath.Value);
                 else

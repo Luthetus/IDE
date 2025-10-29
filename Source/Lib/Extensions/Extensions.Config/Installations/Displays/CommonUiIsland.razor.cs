@@ -5,6 +5,7 @@ using Clair.Common.RazorLib.Installations.Models;
 using Clair.Common.RazorLib.Tooltips.Models;
 using Clair.Common.RazorLib.Dimensions.Models;
 using Clair.Common.RazorLib.Dialogs.Models;
+using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.Dynamics.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.TextEditor.RazorLib;

@@ -294,7 +294,7 @@ public partial class TextEditorService
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
         var projectSeenHashSet = new HashSet<string /*ProjectAbsolutePath*/>();
         
-        var projectRespectedList = new List<(string ProjectAbsolutePath, int SearchResultsOffset, int SearchResultsLength)>();
+        var projectRespectedList = new List<(string ProjectAbsolutePath, int StartInclusiveSearchResultIndex, int EndExclusiveSearchResultIndex)>();
         
         int fileCount = 0;
         
@@ -412,11 +412,38 @@ public partial class TextEditorService
                         searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
                     else
                         searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
-                    if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count && projectRespectedList[i_project].SearchResultsOffset == i_searchResult ||
-                            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count && projectRespectedList[i_project].SearchResultsOffset == i_searchResult - 1))
+                    if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
                     {
-                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                        projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength;
+                        while (projectRespectedList[i_project].StartInclusiveSearchResultIndex == projectRespectedList[i_project].EndExclusiveSearchResultIndex)
+                        {
+                            if (++i_project >= projectRespectedList.Count)
+                                break;
+                        }
+                        if (i_project < projectRespectedList.Count)
+                        {
+                            if (projectRespectedList[i_project].StartInclusiveSearchResultIndex == i_searchResult)
+                            {
+                                projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                                projectNode_ExclusiveMark = projectRespectedList[i_project].EndExclusiveSearchResultIndex;
+                            }
+                            else
+                            {
+                                projectNode_ExclusiveMark = -1;
+                            }
+                        }
+                    }
+
+                    // Write SearchResult
+                    if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
+                    {
+                        findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] = new TreeViewNodeValue
+                        {
+                            ParentIndex = fileHeap_Offset + fileHeap_Length,
+                            IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                            TraitsIndex = i_searchResult,
+                        };
+                        ++resultHeap_Length;
                     }
 
                     // Write FileGroup
@@ -437,22 +464,8 @@ public partial class TextEditorService
                         fileNode_InclusiveMark = searchResult.ResourceUri.Value;
                     }
 
-                    // Write SearchResult
-                    if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
-                    {
-                        findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] = new TreeViewNodeValue
-                        {
-                            ParentIndex = fileHeap_Offset + fileHeap_Length,
-                            IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
-                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                            TraitsIndex = i_searchResult,
-                        };
-                        ++resultHeap_Length;
-                    }
-
                     // Write ProjectGroup
-                    if (i_project < projectRespectedList.Count && (projectNode_ExclusiveMark == projectRespectedList[i_project].SearchResultsOffset + i_searchResult) ||
-                            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count && projectRespectedList[i_project].SearchResultsOffset == i_searchResult - 1))
+                    if (projectNode_ExclusiveMark != -1 && projectNode_ExclusiveMark == projectRespectedList[i_project].EndExclusiveSearchResultIndex)
                     {
                         findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] = new TreeViewNodeValue
                         {
@@ -465,7 +478,8 @@ public partial class TextEditorService
                             IsExpandable = true,
                         };
                         ++projectHeap_Length;
-                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;projectNode_ExclusiveMark = -1;
+                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                        projectNode_ExclusiveMark = -1;
                     }
                 }
 
@@ -505,7 +519,7 @@ public partial class TextEditorService
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
         HashSet<string /*ProjectAbsolutePath*/> projectSeenHashSet,
-        List<(string ProjectAbsolutePath, int SearchResultsOffset, int SearchResultsLength)> projectRespectedList,
+        List<(string ProjectAbsolutePath, int StartInclusiveSearchResultIndex, int EndExclusiveSearchResultIndex)> projectRespectedList,
         List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
         string search,
         string currentDirectory,
@@ -513,7 +527,7 @@ public partial class TextEditorService
         StreamReaderPooledBuffer streamReaderPooledBuffer,
         ref int fileCount)
     {
-        var seachResult_csprojChildListOffset = searchResultList.Count;
+        var searchResultInclusiveIndex = searchResultList.Count;
         
         int projectRespectedListIndex = -1;
         
@@ -560,7 +574,7 @@ public partial class TextEditorService
                     projectRespectedList.Add(
                         (
                             formattedAbsolutePath,
-                            seachResult_csprojChildListOffset,
+                            searchResultInclusiveIndex,
                             -1
                         ));
                 }
@@ -678,8 +692,8 @@ public partial class TextEditorService
             projectRespectedList[projectRespectedListIndex] =
             (
                 projectRespectedList[projectRespectedListIndex].ProjectAbsolutePath,
-                seachResult_csprojChildListOffset,
-                searchResultList.Count - seachResult_csprojChildListOffset
+                searchResultInclusiveIndex,
+                searchResultList.Count
             );
         }
     }

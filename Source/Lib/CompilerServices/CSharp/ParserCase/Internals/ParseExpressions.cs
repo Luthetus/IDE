@@ -71,7 +71,7 @@ public static partial class Parser
                 break;
             }
             
-            // parserModel.ExpressionPrimary = ParseExpressions.AnyMergeToken(parserModel.ExpressionPrimary, ref parserModel);
+            // parserModel.ExpressionPrimary = ParseExpressions.A/nyMergeToken(parserModel.ExpressionPrimary, ref parserModel);
             if (parserModel.ParserContextKind != CSharpParserContextKind.ForceParseGenericParameters &&
                 UtilityApi.IsBinaryOperatorSyntaxKind(parserModel.TokenWalker.Current.SyntaxKind))
             {

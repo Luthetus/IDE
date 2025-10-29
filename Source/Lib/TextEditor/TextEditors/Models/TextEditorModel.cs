@@ -952,7 +952,17 @@ public sealed class TextEditorModel
     public void PerformRegisterPresentationModelAction(
         TextEditorPresentationModel presentationModel)
     {
-        if (!PresentationModelList.Any(x => x.TextEditorPresentationKey == presentationModel.TextEditorPresentationKey))
+        var exists = false;
+        foreach (var x in PresentationModelList)
+        {
+            if (x.TextEditorPresentationKey == presentationModel.TextEditorPresentationKey)
+            {
+                exists = true;
+                break;
+            }
+        }
+        
+        if (!exists)
         {
             if (!_presentationModelListIsShallowCopy)
             {
@@ -1834,7 +1844,7 @@ public sealed class TextEditorModel
     /// </summary>
     public int GetLineLength(int lineIndex, bool includeLineEndingCharacters = false)
     {
-        if (!LineEndList.Any())
+        if (LineEndList.Count == 0)
             return 0;
 
         if (lineIndex > LineEndList.Count - 1)

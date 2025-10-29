@@ -686,11 +686,11 @@ public partial class DotNetService
                         var referenceAbsolutePath = dotNetSolutionModel.ProjectReferencesList[indexReference];
                         
                         var referenceIndex = -1;
-                        for (int i = 0; i < dotNetSolutionModel.DotNetProjectList.Count; i++)
+                        for (int j = 0; j < dotNetSolutionModel.DotNetProjectList.Count; j++)
                         {
-                            if (dotNetSolutionModel.DotNetProjectList[i].AbsolutePath.Value == referenceAbsolutePath)
+                            if (dotNetSolutionModel.DotNetProjectList[j].AbsolutePath.Value == referenceAbsolutePath)
                             {
-                                referenceIndex = i;
+                                referenceIndex = j;
                                 break;
                             }
                         }

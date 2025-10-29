@@ -371,18 +371,12 @@ public partial class TextEditorService
                 var projectHeap_Length = 0;
                 
                 var i_project = 0;
-                
-                var nodeValueListInitialCapacity = projectHeap_Offset + projectRespectedList.Count;
+
                 findAllTreeViewContainer = new FindAllTreeViewContainer(
                     this,
                     searchResultList,
-                    nodeValueListInitialCapacity,
+                    projectHeap_Offset + projectRespectedList.Count,
                     projectRespectedList);
-                    
-                for (int capacityCounter = 0; capacityCounter < nodeValueListInitialCapacity; capacityCounter++)
-                {
-                    findAllTreeViewContainer.NodeValueList.Add(default);
-                }
                 
                 findAllTreeViewContainer.NodeValueList[0] = new TreeViewNodeValue
                 {

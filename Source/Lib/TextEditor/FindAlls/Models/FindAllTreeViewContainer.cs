@@ -9,6 +9,9 @@ namespace Clair.TextEditor.RazorLib.FindAlls.Models;
 
 public class FindAllTreeViewContainer : TreeViewContainer
 {
+    /// <summary>
+    /// A `nodeValueListInitialCapacity` amount of `default` nodes will be added within this constructor.
+    /// </summary>
     public FindAllTreeViewContainer(
             TextEditorService textEditorService,
             List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
@@ -21,6 +24,11 @@ public class FindAllTreeViewContainer : TreeViewContainer
         SearchResultList = searchResultList;
         TextEditorService = textEditorService;
         ProjectRespectedList = projectRespectedList;
+
+        for (int capacityCounter = 0; capacityCounter < nodeValueListInitialCapacity; capacityCounter++)
+        {
+            NodeValueList.Add(default);
+        }
     }
     
     public override Key<TreeViewContainer> Key { get; init; }

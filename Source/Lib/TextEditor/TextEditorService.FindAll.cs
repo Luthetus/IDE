@@ -471,14 +471,19 @@ public partial class TextEditorService
 
                 for (int i_searchResult = 0; i_searchResult <= /*the '<=' extra loop is needed*/ findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
                 {
+                    // Maintenance
                     (ResourceUri ResourceUri, TextEditorTextSpan TextSpan) searchResult;
-                    if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count) searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
-                    else searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
+                    if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count)
+                        searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
+                    else
+                        searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
                     if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count && projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
                     {
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
                         projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength;
                     }
+
+                    // Write FileGroup
                     if (fileNode_InclusiveMark != searchResult.ResourceUri.Value)
                     {
                         findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] = new TreeViewNodeValue
@@ -487,7 +492,7 @@ public partial class TextEditorService
                             IndexAmongSiblings = projectNode_ExclusiveMark == -1 ? 0 : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
                             ChildListOffset = fileNode_ChildrenOffset,
                             ChildListLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
-                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_FileGroup,
                             TraitsIndex = i_searchResult - 1,
                             IsExpandable = true,
                         };
@@ -495,6 +500,8 @@ public partial class TextEditorService
                         fileNode_ChildrenOffset = resultHeap_Offset + resultHeap_Length;
                         fileNode_InclusiveMark = searchResult.ResourceUri.Value;
                     }
+
+                    // Write SearchResult
                     if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
                     {
                         findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] = new TreeViewNodeValue
@@ -506,6 +513,8 @@ public partial class TextEditorService
                         };
                         ++resultHeap_Length;
                     }
+
+                    // Write ProjectGroup
                     if (i_project < projectRespectedList.Count && (projectNode_ExclusiveMark == projectRespectedList[i_project].SearchResultsOffset + i_searchResult))
                     {
                         findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] = new TreeViewNodeValue
@@ -514,12 +523,11 @@ public partial class TextEditorService
                             IndexAmongSiblings = projectHeap_Length,
                             ChildListOffset = projectNode_ChildrenOffset,
                             ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
-                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
-                            TraitsIndex = i_project,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_ProjectGroup,
+                            TraitsIndex = i_project++,
                             IsExpandable = true,
                         };
                         ++projectHeap_Length;
-                        ++i_project;
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;projectNode_ExclusiveMark = -1;
                     }
                 }

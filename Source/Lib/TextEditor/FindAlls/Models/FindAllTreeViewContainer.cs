@@ -51,9 +51,9 @@ public class FindAllTreeViewContainer : TreeViewContainer
         {
             case FindAllTreeViewContainer.ByteKind_Aaa:
                 return nameof(ByteKind_Aaa);
-            case FindAllTreeViewContainer.ByteKind_SearchResultProject:
+            case FindAllTreeViewContainer.ByteKind_ProjectGroup:
                 return ProjectRespectedList[nodeValue.TraitsIndex].ProjectAbsolutePath;
-            case FindAllTreeViewContainer.ByteKind_SearchResultGroup:
+            case FindAllTreeViewContainer.ByteKind_FileGroup:
                 return SearchResultList[nodeValue.TraitsIndex].ResourceUri.Value;
             case FindAllTreeViewContainer.ByteKind_SearchResult:
                 return SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex.ToString();
@@ -174,6 +174,6 @@ public class FindAllTreeViewContainer : TreeViewContainer
     
     public const byte ByteKind_Aaa = 1;
     public const byte ByteKind_SearchResult = 2;
-    public const byte ByteKind_SearchResultGroup = 3;
-    public const byte ByteKind_SearchResultProject = 4;
+    public const byte ByteKind_FileGroup = 3;
+    public const byte ByteKind_ProjectGroup = 4;
 }

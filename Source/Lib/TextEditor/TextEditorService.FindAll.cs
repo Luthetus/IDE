@@ -330,16 +330,154 @@ public partial class TextEditorService
                 // to the end of the NodeValueList and the misc files points to those search results you copied to the end of the NodeValueList
                 // so then you have to say the misc node itself has children offset...length.
                 
-                for (int i_searchResult = 0; i_searchResult < findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
+                //for (int i_searchResult = 0; i_searchResult <= /*extra loop is needed*/ findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
+                //{
+                //    (ResourceUri ResourceUri, TextEditorTextSpan TextSpan) searchResult;
+                //    if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count)
+                //        searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
+                //    else
+                //        searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
+                    
+                //    if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
+                //    {
+                //        // WARNING: this code is duplicated towards the end of the loop
+                        
+                //        // If there is a search result, there is guaranteed to be a file.
+                //        // But there is no guarantee of there being a project.
+                //        if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
+                //        {
+                //            projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                //            projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset +
+                //                                        projectRespectedList[i_project].SearchResultsLength;
+                //        }
+                //    }
+                    
+                //    // Slightly odd to read but this is defined up here to re-use the same if branch for
+                //    // when index and resource match (wherein this needs to be increased furthermore by 2).
+                //    //var resultIndexAmongSiblingsFinalLoopAddition = 0;
+                //    //var resultParentIndexIndexAmongSiblingsFinalLoopSubtraction = 0;
+                    
+                //    if (fileNode_InclusiveMark != searchResult.ResourceUri.Value/* ||
+                //        i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1*/)
+                //    {
+                //        var parentIndex = projectNode_ExclusiveMark == -1
+                //            ? 0
+                //            : projectHeap_Offset + projectHeap_Length;
+                //        var indexAmongSiblings = projectNode_ExclusiveMark == -1
+                //            ? 0
+                //            : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset;
+                    
+                //        var childrenLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
+                //        var next_childrenOffset = resultHeap_Offset + resultHeap_Length;
+                //        var traitsIndex = i_searchResult - 1;
+                //        /*if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
+                //            fileNode_InclusiveMark == searchResult.ResourceUri.Value)
+                //        {
+                //            ++childrenLength;
+                //            ++next_childrenOffset;
+                //            traitsIndex = i_searchResult;
+                            
+                //            resultIndexAmongSiblingsFinalLoopAddition = 2;
+                //            resultParentIndexIndexAmongSiblingsFinalLoopSubtraction = 1;
+                //        }*/
+                        
+                //        // FileGroup: Write out pending
+                //        findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] =
+                //            new TreeViewNodeValue
+                //            {
+                //                ParentIndex = parentIndex,
+                //                IndexAmongSiblings = indexAmongSiblings,
+                //                ChildListOffset = fileNode_ChildrenOffset,
+                //                ChildListLength = childrenLength,
+                //                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
+                //                TraitsIndex = traitsIndex,
+                //                IsExpandable = true,
+                //                IsExpanded = false
+                //            };
+                //        ++fileHeap_Length;
+                        
+                //        // FileGroup: Change pending target
+                //        fileNode_InclusiveMark = searchResult.ResourceUri.Value;
+                //        fileNode_ChildrenOffset = next_childrenOffset;
+                //    }
+
+                //    // SearchResult: Write out pending
+                //    if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
+                //    {
+                //        findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] =
+                //            new TreeViewNodeValue
+                //            {
+                //                ParentIndex = fileHeap_Offset + fileHeap_Length/* - resultParentIndexIndexAmongSiblingsFinalLoopSubtraction*/,
+                //                IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset/* + resultIndexAmongSiblingsFinalLoopAddition*/,
+                //                ChildListOffset = 0,
+                //                ChildListLength = 0,
+                //                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                //                TraitsIndex = i_searchResult,
+                //                IsExpandable = false,
+                //                IsExpanded = false
+                //            };
+                //        ++resultHeap_Length;
+                //    }
+                //    /*Console.WriteLine($"{i_project} < {projectRespectedList.Count}");
+                //    Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
+                //    Console.WriteLine($"{i_searchResult} == {findAllTreeViewContainer.SearchResultList.Count} - 1");
+                //    Console.WriteLine($"{projectNode_ExclusiveMark} == (1 + {projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");*/
+                    
+                //    //inner_project_occurred:
+                //    if (i_project < projectRespectedList.Count &&
+                //            (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + i_searchResult)/* ||
+                //            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
+                //                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + i_searchResult))*/))
+                //    {
+                //        //Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
+                //        // Write out pending
+                //        findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
+                //            new TreeViewNodeValue
+                //            {
+                //                ParentIndex = 0,
+                //                IndexAmongSiblings = projectHeap_Length,
+                //                ChildListOffset = projectNode_ChildrenOffset,
+                //                ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
+                //                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
+                //                TraitsIndex = i_project,
+                //                IsExpandable = true,
+                //                IsExpanded = false
+                //            };
+                //        ++projectHeap_Length;
+                //        ++i_project;
+                        
+                //        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                //        projectNode_ExclusiveMark = -1;
+                        
+                //        if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
+                //        {
+                //            // WARNING: this code is duplicated towards the start of the loop
+                            
+                //            // If there is a search result, there is guaranteed to be a file.
+                //            // But there is no guarantee of there being a project.
+                //            if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
+                //            {
+                //                projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                //                projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset +
+                //                                            projectRespectedList[i_project].SearchResultsLength;
+                //                /*if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
+                //                    goto inner_project_occurred;*/
+                //            }
+                //        }
+                //    }
+                //}
+                
+                for (int i_searchResult = 0; i_searchResult <= /*extra loop is needed*/ findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
                 {
-                    var searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
+                    (ResourceUri ResourceUri, TextEditorTextSpan TextSpan) searchResult;
+                    if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count)
+                        searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
+                    else
+                        searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
                     
                     if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
                     {
-                        // WARNING: this code is duplicated towards the end of the loop
-                        
-                        // If there is a search result, there is guaranteed to be a file.
-                        // But there is no guarantee of there being a project.
+                        // If there is a search result, there is guaranteed to be a file. But there is no guarantee of there being a project.
                         if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
                         {
                             projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
@@ -348,13 +486,7 @@ public partial class TextEditorService
                         }
                     }
                     
-                    // Slightly odd to read but this is defined up here to re-use the same if branch for
-                    // when index and resource match (wherein this needs to be increased furthermore by 2).
-                    var resultIndexAmongSiblingsFinalLoopAddition = 0;
-                    var resultParentIndexIndexAmongSiblingsFinalLoopSubtraction = 0;
-                    
-                    if (fileNode_InclusiveMark != searchResult.ResourceUri.Value ||
-                        i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
+                    if (fileNode_InclusiveMark != searchResult.ResourceUri.Value)
                     {
                         var parentIndex = projectNode_ExclusiveMark == -1
                             ? 0
@@ -366,18 +498,7 @@ public partial class TextEditorService
                         var childrenLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
                         var next_childrenOffset = resultHeap_Offset + resultHeap_Length;
                         var traitsIndex = i_searchResult - 1;
-                        if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                            fileNode_InclusiveMark == searchResult.ResourceUri.Value)
-                        {
-                            ++childrenLength;
-                            ++next_childrenOffset;
-                            traitsIndex = i_searchResult;
-                            
-                            resultIndexAmongSiblingsFinalLoopAddition = 2;
-                            resultParentIndexIndexAmongSiblingsFinalLoopSubtraction = 1;
-                        }
                         
-                        // FileGroup: Write out pending
                         findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] =
                             new TreeViewNodeValue
                             {
@@ -392,39 +513,30 @@ public partial class TextEditorService
                             };
                         ++fileHeap_Length;
                         
-                        // FileGroup: Change pending target
                         fileNode_InclusiveMark = searchResult.ResourceUri.Value;
                         fileNode_ChildrenOffset = next_childrenOffset;
                     }
-                    
-                    // SearchResult: Write out pending
-                    findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] =
-                        new TreeViewNodeValue
-                        {
-                            ParentIndex = fileHeap_Offset + fileHeap_Length - resultParentIndexIndexAmongSiblingsFinalLoopSubtraction,
-                            IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset + resultIndexAmongSiblingsFinalLoopAddition,
-                            ChildListOffset = 0,
-                            ChildListLength = 0,
-                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                            TraitsIndex = i_searchResult,
-                            IsExpandable = false,
-                            IsExpanded = false
-                        };
-                    ++resultHeap_Length;
 
-                    /*Console.WriteLine($"{i_project} < {projectRespectedList.Count}");
-                    Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
-                    Console.WriteLine($"{i_searchResult} == {findAllTreeViewContainer.SearchResultList.Count} - 1");
-                    Console.WriteLine($"{projectNode_ExclusiveMark} == (1 + {projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");*/
-                    
-                    inner_project_occurred:
-                    if (i_project < projectRespectedList.Count &&
-                            (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + i_searchResult) ||
-                            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + i_searchResult))))
+                    if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
                     {
-                        //Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
-                        // Write out pending
+                        findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] =
+                            new TreeViewNodeValue
+                            {
+                                ParentIndex = fileHeap_Offset + fileHeap_Length/* - resultParentIndexIndexAmongSiblingsFinalLoopSubtraction*/,
+                                IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset/* + resultIndexAmongSiblingsFinalLoopAddition*/,
+                                ChildListOffset = 0,
+                                ChildListLength = 0,
+                                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                                TraitsIndex = i_searchResult,
+                                IsExpandable = false,
+                                IsExpanded = false
+                            };
+                        ++resultHeap_Length;
+                    }
+                    
+                    if (i_project < projectRespectedList.Count &&
+                            (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + i_searchResult)))
+                    {
                         findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
                             new TreeViewNodeValue
                             {
@@ -442,22 +554,6 @@ public partial class TextEditorService
                         
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
                         projectNode_ExclusiveMark = -1;
-                        
-                        if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
-                        {
-                            // WARNING: this code is duplicated towards the start of the loop
-                            
-                            // If there is a search result, there is guaranteed to be a file.
-                            // But there is no guarantee of there being a project.
-                            if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
-                            {
-                                projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                                projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset +
-                                                            projectRespectedList[i_project].SearchResultsLength;
-                                if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
-                                    goto inner_project_occurred;
-                            }
-                        }
                     }
                 }
 

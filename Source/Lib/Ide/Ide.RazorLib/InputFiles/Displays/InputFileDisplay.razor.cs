@@ -77,14 +77,8 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
             IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);
 
             _ = Task.Run(async () =>
-            {
-                // TODO: Why is the first render not showing the directories????
-                await Task.Delay(100);
-                IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);
-            });
-            
-
-            /*
+            {                // TODO: Why is the first render not showing the directories????                await Task.Delay(100);                IdeService.CommonService.TreeView_RegisterContainerAction(treeViewContainer);            });
+                        /*
             // 2025-10-22 (rewrite TreeViews)
             
 
@@ -106,8 +100,7 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
                     addSelectedNodes: true,
                     selectNodesBetweenCurrentAndNextActiveNode: false);
             }
-            */
-        }
+            */        }
 
         //return Task.CompletedTask;
     }
@@ -147,8 +140,16 @@ public sealed partial class InputFileDisplay : ComponentBase, IDisposable
     {
         var patternName = (string)(changeEventArgs.Value ?? string.Empty);
 
-        var pattern = IdeService.GetInputFileState().InputFilePatternsList
-            .FirstOrDefault(x => x.PatternName == patternName);
+        var pattern = default(InputFilePattern);
+        var inputFilePatternsList = IdeService.GetInputFileState().InputFilePatternsList;
+        foreach (var x in inputFilePatternsList)
+        {
+            if (x.PatternName == patternName)
+            {
+                pattern = x;
+                break;
+            }
+        }
 
         if (pattern.ConstructorWasInvoked)
             IdeService.InputFile_SetSelectedInputFilePattern(pattern);

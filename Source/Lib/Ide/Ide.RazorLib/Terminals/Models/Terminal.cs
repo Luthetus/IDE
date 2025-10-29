@@ -395,8 +395,12 @@ public sealed class Terminal : ITerminal, IBackgroundTaskGroup
     {
         lock (_listLock)
         {
-            return _parsedCommandList.FirstOrDefault(x =>
-                x.SourceTerminalCommandRequest.Key == terminalCommandRequestKey);
+            foreach (var x in _parsedCommandList)
+            {
+                if (x.SourceTerminalCommandRequest.Key == terminalCommandRequestKey)
+                    return x;
+            }
+            return null;
         }
     }
     

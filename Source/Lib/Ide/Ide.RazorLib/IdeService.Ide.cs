@@ -102,8 +102,15 @@ public partial class IdeService
     {
         lock (_stateModificationLock)
         {
-            var startupControl = _startupControlState.StartupControlList.FirstOrDefault(
-                x => x.StartupProjectAbsolutePath.Value == startupProjectAbsolutePathValue);
+            var startupControl = default(StartupControlModel);
+            foreach (var x in _startupControlState.StartupControlList)
+            {
+                if (x.StartupProjectAbsolutePath.Value == startupProjectAbsolutePathValue)
+                {
+                    startupControl = x;
+                    break;
+                }
+            }
 
             if (startupProjectAbsolutePathValue == string.Empty ||
                 startupControl.StartupProjectAbsolutePath.Value is null)

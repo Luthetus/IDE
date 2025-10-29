@@ -202,8 +202,7 @@ public sealed class TerminalWebsite : ITerminal, IBackgroundTaskGroup
     {
         var argumentList = parsedCommand.Arguments.Trim().Split(' ');
     
-        var firstArgument = argumentList.FirstOrDefault();
-        
+        var firstArgument = argumentList.Count > 0 ? argumentList[0] : null;
         if (string.IsNullOrWhiteSpace(firstArgument))
         {
             WriteOutput(parsedCommand, new StandardErrorCommandEvent($"firstArgument was null or whitespace."));
@@ -437,8 +436,12 @@ public sealed class TerminalWebsite : ITerminal, IBackgroundTaskGroup
     {
         lock (_listLock)
         {
-            return _parsedCommandList.FirstOrDefault(x =>
-                x.SourceTerminalCommandRequest.Key == terminalCommandRequestKey);
+            foreach (var x in _parsedCommandList)
+            {
+                if (x.SourceTerminalCommandRequest.Key == terminalCommandRequestKey)
+                    return x;
+            }
+            return null;
         }
     }
     

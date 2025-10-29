@@ -269,7 +269,13 @@ public partial class TextEditorService
         //
         // Once the algorithm settles consideration to use ChildList everywhere might be of good use
         // lest you always wonder "well what wording did they use for this variable this time...".
-        //
+
+        // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.
+        // ... then as you go if there isn't a csproj that claims ownership of the search result then you copy the data
+        // to the end of the NodeValueList and the misc files points to those search results you copied to the end of the NodeValueList
+        // so then you have to say the misc node itself has children offset...length.
+
+        // If there is a search result, there is guaranteed to be a file. But there is no guarantee of there being a project.
         #endregion
 
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
@@ -395,16 +401,8 @@ public partial class TextEditorService
                 
                 var projectNode_ChildrenOffset = fileHeap_Offset;
                 // The exclusive `i_searchResult` that marks the end of the project's files.
-                // (NOTE: A file is the first distinct occurrence of a filename within the search results.
-                //        That relation is why the i_searchResult can indicate this).
+                // (NOTE: A file group relates to a distinct occurrence of a filename within the search results, thus i_searchResult can be used as a unit to measure which file group).
                 var projectNode_ExclusiveMark = -1;
-
-                // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.
-                // ... then as you go if there isn't a csproj that claims ownership of the search result then you copy the data
-                // to the end of the NodeValueList and the misc files points to those search results you copied to the end of the NodeValueList
-                // so then you have to say the misc node itself has children offset...length.
-
-                // If there is a search result, there is guaranteed to be a file. But there is no guarantee of there being a project.
 
                 for (int i_searchResult = 0; i_searchResult <= /*the '<=' extra loop is needed*/ findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
                 {

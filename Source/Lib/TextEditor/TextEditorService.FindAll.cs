@@ -412,7 +412,8 @@ public partial class TextEditorService
                         searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
                     else
                         searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
-                    if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count && projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
+                    if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count && projectRespectedList[i_project].SearchResultsOffset == i_searchResult ||
+                            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count && projectRespectedList[i_project].SearchResultsOffset == i_searchResult - 1))
                     {
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
                         projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset + projectRespectedList[i_project].SearchResultsLength;
@@ -450,7 +451,8 @@ public partial class TextEditorService
                     }
 
                     // Write ProjectGroup
-                    if (i_project < projectRespectedList.Count && (projectNode_ExclusiveMark == projectRespectedList[i_project].SearchResultsOffset + i_searchResult))
+                    if (i_project < projectRespectedList.Count && (projectNode_ExclusiveMark == projectRespectedList[i_project].SearchResultsOffset + i_searchResult) ||
+                            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count && projectRespectedList[i_project].SearchResultsOffset == i_searchResult - 1))
                     {
                         findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] = new TreeViewNodeValue
                         {

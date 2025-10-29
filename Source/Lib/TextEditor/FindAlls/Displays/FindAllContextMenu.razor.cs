@@ -40,7 +40,7 @@ public partial class FindAllContextMenu : ComponentBase
 
         var menuRecordsList = new List<MenuOptionRecord>();
 
-        if (!menuRecordsList.Any())
+        if (menuRecordsList.Count == 0)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
@@ -59,7 +59,7 @@ public partial class FindAllContextMenu : ComponentBase
     {
         var menuOptionRecordList = new List<MenuOptionRecord>();
 
-        if (!menuOptionRecordList.Any())
+        if (menuOptionRecordList.Count == 0)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (commandArgs, menuRecord);

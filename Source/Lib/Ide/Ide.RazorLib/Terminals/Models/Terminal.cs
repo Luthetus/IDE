@@ -395,8 +395,12 @@ public sealed class Terminal : ITerminal, IBackgroundTaskGroup
     {
         lock (_listLock)
         {
-            return _parsedCommandList.FirstOrDefault(x =>
-                x.SourceTerminalCommandRequest.Key == terminalCommandRequestKey);
+            foreach (var x in _parsedCommandList)
+            {
+                if (x.SourceTerminalCommandRequest.Key == terminalCommandRequestKey)
+                    return x;
+            }
+            return null;
         }
     }
     
@@ -427,10 +431,16 @@ public sealed class Terminal : ITerminal, IBackgroundTaskGroup
                 // Delete any output of the previous invocation.
                 lock (_listLock)
                 {
-                    var indexPreviousOutput = _parsedCommandList.FindIndex(x =>
-                        x.SourceTerminalCommandRequest.Key ==
-                            terminalCommandParsed.SourceTerminalCommandRequest.Key);
-                            
+                    var indexPreviousOutput = -1;
+                    for (int i = 0; i < _parsedCommandList.Count; i++)
+                    {
+                        if (_parsedCommandList[i].SourceTerminalCommandRequest.Key ==
+                            terminalCommandParsed.SourceTerminalCommandRequest.Key)
+                        {
+                            indexPreviousOutput = i;
+                            break;
+                        }
+                    }
                     if (indexPreviousOutput != -1)
                         _parsedCommandList.RemoveAt(indexPreviousOutput);
                         

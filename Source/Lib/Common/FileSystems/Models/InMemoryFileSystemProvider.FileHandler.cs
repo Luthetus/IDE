@@ -160,9 +160,13 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
         {
             // System.InvalidOperationException: Collection was modified; enumeration operation may not execute.
             // Fix: added '.ToArray()' (2024-04-25)
-            return _inMemoryFileSystemProvider._files.ToArray().Any(imf =>
-                imf.AbsolutePath.Value == absolutePathString &&
-                !imf.IsDirectory);
+            var array = _inMemoryFileSystemProvider._files.ToArray();
+            foreach (var imf in array)
+            {
+                if (!imf.IsDirectory && imf.AbsolutePath.Value == absolutePathString)
+                    return true;
+            }
+            return false;
         }
         
         public Task<bool> UnsafeExistsAsync(
@@ -171,9 +175,13 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
         {
             // System.InvalidOperationException: Collection was modified; enumeration operation may not execute.
             // Fix: added '.ToArray()' (2024-04-25)
-            return Task.FromResult(_inMemoryFileSystemProvider._files.ToArray().Any(imf =>
-                imf.AbsolutePath.Value == absolutePathString &&
-                !imf.IsDirectory));
+            var array = _inMemoryFileSystemProvider._files.ToArray();
+            foreach (var imf in array)
+            {
+                if (!imf.IsDirectory && imf.AbsolutePath.Value == absolutePathString)
+                    return Task.FromResult(true);
+            }
+            return Task.FromResult(false);
         }
 
         public Task UnsafeDeleteAsync(
@@ -182,15 +190,20 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
         {
             _commonService.FileSystemProvider.AssertDeletionPermitted(absolutePathString, IS_DIRECTORY_RESPONSE);
 
-            var indexOfExistingFile = _inMemoryFileSystemProvider._files.FindIndex(f =>
-                f.AbsolutePath.Value == absolutePathString &&
-                !f.IsDirectory);
-
+            var indexOfExistingFile = -1;
+            for (int i = 0; i < _inMemoryFileSystemProvider._files.Count; i++)
+            {
+                var f = _inMemoryFileSystemProvider._files[i];
+                if (!f.IsDirectory && f.AbsolutePath.Value == absolutePathString)
+                {
+                    indexOfExistingFile = i;
+                    break;
+                }
+            }
             if (indexOfExistingFile == -1)
                 return Task.CompletedTask;
 
             _inMemoryFileSystemProvider._files.RemoveAt(indexOfExistingFile);
-
             return Task.CompletedTask;
         }
 
@@ -199,25 +212,31 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             string destinationAbsolutePathString,
             CancellationToken cancellationToken = default)
         {
-            // Source
+            var indexOfSource = -1;
+            for (int i = 0; i < _inMemoryFileSystemProvider._files.Count; i++)
             {
-                var indexOfSource = _inMemoryFileSystemProvider._files.FindIndex(f =>
-                    f.AbsolutePath.Value == sourceAbsolutePathString &&
-                    !f.IsDirectory);
-
-                if (indexOfSource == -1)
-                    throw new ClairCommonException($"Source file: {sourceAbsolutePathString} was not found.");
+                var f = _inMemoryFileSystemProvider._files[i];
+                if (!f.IsDirectory && f.AbsolutePath.Value == sourceAbsolutePathString)
+                {
+                    indexOfSource = i;
+                    break;
+                }
             }
+            if (indexOfSource == -1)
+                throw new ClairCommonException($"Source file: {sourceAbsolutePathString} was not found.");
 
-            // Destination
-            { 
-                var indexOfDestination = _inMemoryFileSystemProvider._files.FindIndex(f =>
-                    f.AbsolutePath.Value == destinationAbsolutePathString &&
-                    !f.IsDirectory);
-
-                if (indexOfDestination != -1)
-                    _commonService.FileSystemProvider.AssertDeletionPermitted(destinationAbsolutePathString, IS_DIRECTORY_RESPONSE);
+            var indexOfDestination = -1;
+            for (int i = 0; i < _inMemoryFileSystemProvider._files.Count; i++)
+            {
+                var f = _inMemoryFileSystemProvider._files[i];
+                if (!f.IsDirectory && f.AbsolutePath.Value == destinationAbsolutePathString)
+                {
+                    indexOfDestination = i;
+                    break;
+                }
             }
+            if (indexOfDestination != -1)
+                _commonService.FileSystemProvider.AssertDeletionPermitted(destinationAbsolutePathString, IS_DIRECTORY_RESPONSE);
 
             var contents = await UnsafeReadAllTextAsync(
                     sourceAbsolutePathString,
@@ -257,8 +276,7 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             InMemoryFile existingFile = default;
             foreach (var f in _inMemoryFileSystemProvider._files)
             {
-                if (f.AbsolutePath.Value == absolutePathString &&
-                    !f.IsDirectory)
+                if (!f.IsDirectory && f.AbsolutePath.Value == absolutePathString)
                 {
                     existingFile = f;
                     break;
@@ -277,8 +295,7 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             InMemoryFile existingFile = default;
             foreach (var f in _inMemoryFileSystemProvider._files)
             {
-                if (f.AbsolutePath.Value == absolutePathString &&
-                    !f.IsDirectory)
+                if (!f.IsDirectory && f.AbsolutePath.Value == absolutePathString)
                 {
                     existingFile = f;
                     break;
@@ -295,8 +312,7 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             InMemoryFile existingFile = default;
             foreach (var f in _inMemoryFileSystemProvider._files)
             {
-                if (f.AbsolutePath.Value == absolutePathString &&
-                    !f.IsDirectory)
+                if (!f.IsDirectory && f.AbsolutePath.Value == absolutePathString)
                 {
                     existingFile = f;
                     break;
@@ -321,9 +337,16 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             string absolutePathString,
             string contents)
         {
-            var indexOfExistingFile = _inMemoryFileSystemProvider._files.FindIndex(f =>
-                f.AbsolutePath.Value == absolutePathString &&
-                !f.IsDirectory);
+            var indexOfExistingFile = -1;
+            for (int i = 0; i < _inMemoryFileSystemProvider._files.Count; i++)
+            {
+                var f = _inMemoryFileSystemProvider._files[i];
+                if (!f.IsDirectory && f.AbsolutePath.Value == absolutePathString)
+                {
+                    indexOfExistingFile = i;
+                    break;
+                }
+            }
 
             if (indexOfExistingFile != -1)
             {

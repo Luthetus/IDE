@@ -27,7 +27,15 @@ public sealed partial class InputAppTheme : IDisposable
             var themesInScopeList = themeState.ThemeList.Where(x => x.IncludeScopeApp)
                 .ToArray();
 
-            var existingThemeRecord = themesInScopeList.FirstOrDefault(btr => btr.Key == intValue);
+            var existingThemeRecord = default(ThemeRecord);
+            foreach (var btr in themesInScopeList)
+            {
+                if (btr.Key == intValue)
+                {
+                    existingThemeRecord = btr;
+                    break;
+                }
+            }
 
             if (!existingThemeRecord.IsDefault())
                 CommonService.Options_SetActiveThemeRecordKey(existingThemeRecord.Key);
@@ -36,7 +44,12 @@ public sealed partial class InputAppTheme : IDisposable
 
     private bool CheckIsActiveValid(ThemeRecord[] themeRecordList, int activeThemeKey)
     {
-        return themeRecordList.Any(btr => btr.Key == activeThemeKey);
+        foreach (var btr in themeRecordList)
+        {
+            if (btr.Key == activeThemeKey)
+                return true;
+        }
+        return false;
     }
 
     private bool CheckIsActiveSelection(int themeKey, int activeThemeKey)

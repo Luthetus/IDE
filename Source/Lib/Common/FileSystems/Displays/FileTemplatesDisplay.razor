@@ -1,6 +1,13 @@
 @{
-    _exactMatchWrapper = _fileTemplatesFormWrappersList.FirstOrDefault(
-        x => FileName.EndsWith('.' + x.FileTemplate.FileExtensionNoPeriod));
+    _exactMatchWrapper = null;
+    foreach (var x in _fileTemplatesFormWrappersList)
+    {
+        if (FileName.EndsWith('.' + x.FileTemplate.FileExtensionNoPeriod))
+        {
+            _exactMatchWrapper = x;
+            break;
+        }
+    }
 
     GetRelatedFileTemplates();
     

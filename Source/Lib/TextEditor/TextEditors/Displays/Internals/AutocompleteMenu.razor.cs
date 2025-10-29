@@ -158,7 +158,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
                     .ToList();
                 }
 
-                if (!menuOptionRecordsList.Any())
+                if (menuOptionRecordsList.Count == 0)
                     menuOptionRecordsList.Add(new MenuOptionRecord("No results", MenuOptionKind.Other));
 
                 return new MenuRecord(menuOptionRecordsList);

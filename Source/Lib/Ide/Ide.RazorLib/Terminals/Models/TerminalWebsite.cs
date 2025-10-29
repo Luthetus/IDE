@@ -202,8 +202,7 @@ public sealed class TerminalWebsite : ITerminal, IBackgroundTaskGroup
     {
         var argumentList = parsedCommand.Arguments.Trim().Split(' ');
     
-        var firstArgument = argumentList.FirstOrDefault();
-        
+        var firstArgument = argumentList.Length > 0 ? argumentList[0] : null;
         if (string.IsNullOrWhiteSpace(firstArgument))
         {
             WriteOutput(parsedCommand, new StandardErrorCommandEvent($"firstArgument was null or whitespace."));
@@ -437,8 +436,12 @@ public sealed class TerminalWebsite : ITerminal, IBackgroundTaskGroup
     {
         lock (_listLock)
         {
-            return _parsedCommandList.FirstOrDefault(x =>
-                x.SourceTerminalCommandRequest.Key == terminalCommandRequestKey);
+            foreach (var x in _parsedCommandList)
+            {
+                if (x.SourceTerminalCommandRequest.Key == terminalCommandRequestKey)
+                    return x;
+            }
+            return null;
         }
     }
     
@@ -469,10 +472,16 @@ public sealed class TerminalWebsite : ITerminal, IBackgroundTaskGroup
                 // Delete any output of the previous invocation.
                 lock (_listLock)
                 {
-                    var indexPreviousOutput = _parsedCommandList.FindIndex(x =>
-                        x.SourceTerminalCommandRequest.Key ==
-                            terminalCommandParsed.SourceTerminalCommandRequest.Key);
-                            
+                    var indexPreviousOutput = -1;
+                    for (int i = 0; i < _parsedCommandList.Count; i++)
+                    {
+                        if (_parsedCommandList[i].SourceTerminalCommandRequest.Key ==
+                            terminalCommandParsed.SourceTerminalCommandRequest.Key)
+                        {
+                            indexPreviousOutput = i;
+                            break;
+                        }
+                    }       
                     if (indexPreviousOutput != -1)
                         _parsedCommandList.RemoveAt(indexPreviousOutput);
                         

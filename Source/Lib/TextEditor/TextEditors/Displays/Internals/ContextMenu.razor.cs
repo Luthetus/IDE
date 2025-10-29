@@ -150,7 +150,7 @@ public sealed partial class ContextMenu : ComponentBase, ITextEditorDependentCom
         var quickActionsSlashRefactors = new MenuOptionRecord("QuickActions/Refactors (Ctrl .)", MenuOptionKind.Other, _ => SelectMenuOption(QuickActionsSlashRefactors));
         menuOptionRecordsList.Add(quickActionsSlashRefactors);
 
-        if (!menuOptionRecordsList.Any())
+        if (menuOptionRecordsList.Count == 0)
             menuOptionRecordsList.Add(new MenuOptionRecord("No Context Menu Options for this item", MenuOptionKind.Other));
 
         return new MenuRecord(menuOptionRecordsList);

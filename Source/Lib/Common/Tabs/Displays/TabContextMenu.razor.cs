@@ -32,7 +32,7 @@ public partial class TabContextMenu : ComponentBase
             MenuOptionKind.Delete,
             _ => tabContextMenuEventArgs.Tab.TabGroup.CloseOthersAsync(tabContextMenuEventArgs.Tab)));
 
-        if (!menuOptionList.Any())
+        if (menuOptionList.Count == 0)
         {
             var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (tabContextMenuEventArgs, menuRecord);

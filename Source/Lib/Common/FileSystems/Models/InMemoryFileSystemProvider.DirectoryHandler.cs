@@ -162,9 +162,12 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             string absolutePathString,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_inMemoryFileSystemProvider._files.Any(f =>
-                f.AbsolutePath.Value == absolutePathString &&
-                f.IsDirectory));
+            foreach (var f in _inMemoryFileSystemProvider._files)
+            {
+                if (f.IsDirectory && f.AbsolutePath.Value == absolutePathString)
+                    return Task.FromResult(true);
+            }
+            return Task.FromResult(false);
         }
 
         public Task UnsafeCreateDirectoryAsync(
@@ -174,8 +177,7 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             InMemoryFile existingFile = default;
             foreach (var f in _inMemoryFileSystemProvider._files)
             {
-                if (f.AbsolutePath.Value == absolutePathString &&
-                    f.IsDirectory)
+                if (f.IsDirectory && f.AbsolutePath.Value == absolutePathString)
                 {
                     existingFile = f;
                     break;
@@ -217,10 +219,16 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
         {
             _commonService.FileSystemProvider.AssertDeletionPermitted(absolutePathString, IS_DIRECTORY_RESPONSE);
 
-            var indexOfExistingFile = _inMemoryFileSystemProvider._files.FindIndex(f =>
-                f.AbsolutePath.Value == absolutePathString &&
-                f.IsDirectory);
-
+            var indexOfExistingFile = -1;
+            for (int i = 0; i < _inMemoryFileSystemProvider._files.Count; i++)
+            {
+                var f = _inMemoryFileSystemProvider._files[i];
+                if (f.IsDirectory && f.AbsolutePath.Value == absolutePathString)
+                {
+                    indexOfExistingFile = i;
+                    break;
+                }
+            }
             if (indexOfExistingFile == -1)
                 return;
 
@@ -256,10 +264,16 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             string destinationAbsolutePathString,
             CancellationToken cancellationToken = default)
         {
-            var indexOfExistingFile = _inMemoryFileSystemProvider._files.FindIndex(f =>
-                f.AbsolutePath.Value == sourceAbsolutePathString &&
-                f.IsDirectory);
-
+            var indexOfExistingFile = -1;
+            for (int i = 0; i < _inMemoryFileSystemProvider._files.Count; i++)
+            {
+                var f = _inMemoryFileSystemProvider._files[i];
+                if (f.IsDirectory && f.AbsolutePath.Value == sourceAbsolutePathString)
+                {
+                    indexOfExistingFile = i;
+                    break;
+                }
+            }
             if (indexOfExistingFile == -1)
                 return;
 
@@ -345,10 +359,16 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
         {
             _commonService.FileSystemProvider.AssertDeletionPermitted(sourceAbsolutePathString, IS_DIRECTORY_RESPONSE);
 
-            var indexOfExistingFile = _inMemoryFileSystemProvider._files.FindIndex(f =>
-                f.AbsolutePath.Value == sourceAbsolutePathString &&
-                f.IsDirectory);
-
+            var indexOfExistingFile = -1;
+            for (int i = 0; i < _inMemoryFileSystemProvider._files.Count; i++)
+            {
+                var f = _inMemoryFileSystemProvider._files[i];
+                if (f.IsDirectory && f.AbsolutePath.Value == sourceAbsolutePathString)
+                {
+                    indexOfExistingFile = i;
+                    break;
+                }
+            }
             if (indexOfExistingFile == -1)
                 return;
 
@@ -408,8 +428,7 @@ public partial class InMemoryFileSystemProvider : IFileSystemProvider
             InMemoryFile existingFile = default;
             foreach (var f in _inMemoryFileSystemProvider._files)
             {
-                if (f.AbsolutePath.Value == absolutePathString &&
-                    f.IsDirectory)
+                if (f.IsDirectory && f.AbsolutePath.Value == absolutePathString)
                 {
                     existingFile = f;
                     break;

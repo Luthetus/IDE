@@ -5,6 +5,7 @@ using Clair.Common.RazorLib.Installations.Models;
 using Clair.Common.RazorLib.Tooltips.Models;
 using Clair.Common.RazorLib.Dimensions.Models;
 using Clair.Common.RazorLib.Dialogs.Models;
+using Clair.Common.RazorLib.Dropdowns.Models;
 using Clair.Common.RazorLib.Dynamics.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.TextEditor.RazorLib;
@@ -251,7 +252,18 @@ public partial class CommonUiIsland : ComponentBase, IDisposable
 
     private async Task DROPDOWN_ClearActiveKeyList()
     {
-        var firstDropdown = DotNetService.CommonService.GetDropdownState().DropdownList.FirstOrDefault();
+        // TODO: How would .F/irstOrDefault() interact with the reference to DropdownList...
+        // ...presumably to get an "equal behavior" you'd need to capture the reference first?
+        //
+        // The non Func LINQ isn't that big of a deal relative to the Func ones, but visually I'm
+        // getting everything while I'm at it, perhaps I should leave the non-Func ones though...
+        //
+        // ...I can't search for the Func overloads, I'm searching by text
+        // and seeing the non-Func ones in the search results is triggering me lol.
+        // Probably is better to leave them but I wanna see where things go ".Any()"ways.
+        var firstDropdown = DotNetService.CommonService.GetDropdownState().DropdownList.Count > 0
+            ? DotNetService.CommonService.GetDropdownState().DropdownList[0]
+            : default(DropdownRecord);
 
         if (firstDropdown is not null)
         {

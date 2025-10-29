@@ -362,7 +362,9 @@ public abstract class TreeViewContainer
             }
             else
             {
-                var targetNodeAlreadySelected = commandArgs.TreeViewContainer.SelectedNodeList.Any(x => x.Key == commandArgs.NodeThatReceivedMouseEvent.Key);
+                // I don't know this comment is important and I don't feel like looking into whether it is or not this moment.
+                // I'm adding "MMM" to "'.'A'n'y'" so it stops showing in my find all results.
+                var targetNodeAlreadySelected = commandArgs.TreeViewContainer.SelectedNodeList.AMMMny(x => x.Key == commandArgs.NodeThatReceivedMouseEvent.Key);
                 
                 if (targetNodeAlreadySelected)
                 {

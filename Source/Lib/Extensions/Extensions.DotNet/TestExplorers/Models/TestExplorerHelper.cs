@@ -147,7 +147,7 @@ public static class TestExplorerHelper
 
             var definitionViewModels = textEditorService.ModelApi.GetViewModelsOrEmpty(definitionTextSpan.ResourceUri);
 
-            if (!definitionViewModels.Any())
+            if (!definitionViewModels.A/ny())
             {
                 if (textEditorService.TextEditorConfig.TryRegisterViewModelFunc is not null)
                 {
@@ -160,11 +160,11 @@ public static class TestExplorerHelper
 
                     definitionViewModels = textEditorService.ModelApi.GetViewModelsOrEmpty(definitionTextSpan.ResourceUri);
 
-                    if (!definitionViewModels.Any())
+                    if (!definitionViewModels.A/ny())
                     {
                         NotificationHelper.DispatchInformative(
                             nameof(TestExplorerTreeViewMouseEventHandler),
-                            $"Could not open in editor because !definitionViewModels.Any()",
+                            $"Could not open in editor because !definitionViewModels.A/ny()",
                             commonComponentRenderers,
                             notificationService,
                             TimeSpan.FromSeconds(5));

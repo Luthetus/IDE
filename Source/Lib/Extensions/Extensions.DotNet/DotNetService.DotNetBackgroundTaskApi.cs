@@ -684,9 +684,16 @@ public partial class DotNetService
                     if (indexReference < dotNetSolutionModel.ProjectReferencesList.Count)
                     {
                         var referenceAbsolutePath = dotNetSolutionModel.ProjectReferencesList[indexReference];
-                        var referenceIndex = dotNetSolutionModel.DotNetProjectList
-                            .FindIndex(x => x.AbsolutePath.Value == referenceAbsolutePath);
-    
+                        
+                        var referenceIndex = -1;
+                        for (int j = 0; j < dotNetSolutionModel.DotNetProjectList.Count; j++)
+                        {
+                            if (dotNetSolutionModel.DotNetProjectList[j].AbsolutePath.Value == referenceAbsolutePath)
+                            {
+                                referenceIndex = j;
+                                break;
+                            }
+                        }
                         if (referenceIndex > i)
                         {
                             var indexDestination = i - 1;

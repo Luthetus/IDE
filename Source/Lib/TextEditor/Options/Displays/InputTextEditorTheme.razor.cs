@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Clair.Common.RazorLib;
+using Clair.Common.RazorLib.Themes.Models;
 
 namespace Clair.TextEditor.RazorLib.Options.Displays;
 
@@ -21,8 +22,15 @@ public sealed partial class InputTextEditorTheme : ComponentBase, IDisposable
 
         if (int.TryParse(chosenThemeKeyIntString, out var chosenThemeKeyInt))
         {
-            var foundTheme = themeList.FirstOrDefault(x => x.Key == chosenThemeKeyInt);
-
+            var foundTheme = default(ThemeRecord);
+            foreach (var x in themeList)
+            {
+                if (x.Key == chosenThemeKeyInt)
+                {
+                    foundTheme = x;
+                    break;
+                }
+            }
             if (!foundTheme.IsDefault())
                 TextEditorService.Options_SetTheme(foundTheme);
         }

@@ -35,8 +35,16 @@
 				    if (indexReference < dotNetSolutionModel.ProjectReferencesList.Count)
 				    {
     				    var referencedAbsolutePath = dotNetSolutionModel.ProjectReferencesList[indexReference];
-    					var findIndex = dotNetSolutionModel.DotNetProjectList.FindIndex(x => x.AbsolutePath.Value == referencedAbsolutePath);
-    				
+    				    
+    				    var findIndex = -1;
+    				    for (int j = 0; j < dotNetSolutionModel.DotNetProjectList.Count; j++)
+    				    {
+    				        if (dotNetSolutionModel.DotNetProjectList[j].AbsolutePath.Value == referencedAbsolutePath)
+    				        {
+    				            findIndex = j;
+    				            break;
+    				        }
+    				    }
     					if (findIndex == -1 || findIndex > i)
     					{
     						projectValid = false;

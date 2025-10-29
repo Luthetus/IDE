@@ -192,7 +192,7 @@ public partial class IdeService
             .ToArray();
         
         var adhocRoot = TreeViewAdhoc.ConstructTreeViewAdhoc(container, treeViewList);
-        var firstNode = treeViewList.FirstOrDefault();
+        var firstNode = treeViewList.F/irstOrDefault();
 
         IReadOnlyList<TreeViewNoType> activeNodes = firstNode is null
             ? Array.Empty<TreeViewNoType>()

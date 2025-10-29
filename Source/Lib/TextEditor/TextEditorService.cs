@@ -2881,9 +2881,16 @@ public sealed partial class TextEditorService
             return 0;
         }
 
-        var viewModel = Model_GetViewModelsOrEmpty(resourceUri)
-            .FirstOrDefault(x => x.PersistentState.Category == category);
-
+        var viewModelList = Model_GetViewModelsOrEmpty(resourceUri);
+        var viewModel = (TextEditorViewModel?)null;
+        foreach (var x in viewModelList)
+        {
+            if (x.PersistentState.Category == category)
+            {
+                viewModel = x;
+                break;
+            }
+        }
         if (viewModel is not null)
             return viewModel.PersistentState.ViewModelKey;
 

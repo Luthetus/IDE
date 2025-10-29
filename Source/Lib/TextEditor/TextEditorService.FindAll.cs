@@ -74,6 +74,123 @@ public partial class TextEditorService
 
     public Task HandleStartSearchAction()
     {
+        #region details
+        // AAA================================================
+        // # The FileSystem (unrelated files not shown)
+        //                  (search results are bulleted with a space character (' ') instead of a minus ('-'))
+        //                  (search results showcase the character index where the occurrence match inclusively begins at)
+        // - BlazorCrudApp.sln
+        //     - BlazorCrudApp.ServerSide.csproj
+        //         - Pages/
+        //             - Error.cshtml.cs
+        //                   149
+        //                   305
+        //         - Program.cs
+        //               122
+        //               129
+        //     - BlazorCrudApp.Wasm.csproj
+        //         - Program.cs
+        //               290
+        //
+        // # The CORRECT UI is: (absolute file paths are shortened to filename with extension)
+        //                      (search results are bulleted with a space character (' ') instead of a minus ('-'))
+        //                      (search results showcase the character index where the occurrence match inclusively begins at)
+        // - ByteKind_Aaa
+        //     - BlazorCrudApp.Wasm.csproj
+        //         - Program.cs
+        //               290
+        //     - BlazorCrudApp.ServerSide.csproj
+        //         - Program.cs
+        //               122
+        //               129
+        //         - Error.cshtml.cs
+        //               149
+        //               305
+        //
+        // # INCORRECT Dump variables of interest
+        // searchResultList.Count:5
+        // projectHeap_Offset + projectRespectedList.Count:11
+        // projectRespectedList.Count:2
+        // resultHeap_Offset:1
+        // resultHeap_Length:5
+        // fileHeap_Offset:6
+        // fileHeap_Length:3
+        // projectHeap_Offset:9
+        // projectHeap_Length:2
+        // i_project:2
+        //
+        // # INCORRECT Dump each nodeValue (various properties of interest)
+        // 0..  ROOT t0 o9 l2 i0 p-1
+        // 1..  R0   t0 o0 l0 i0 p6
+        // 2..  R1   t1 o0 l0 i0 p7
+        // 3..  R2   t2 o0 l0 i1 p7
+        // 4..  R3   t3 o0 l0 i0 p8
+        // 5..  R4   t4 o0 l0 i1 p8
+        // 6..  F0   t0 o1 l1 i0 p10
+        // 7..  F1   t2 o2 l2 i1 p10
+        // 8..  F2   t4 o4 l2 i0 p0
+        // 9..  P0   t0 o6 l0 i0 p0
+        // 10.. P1   t1 o6 l2 i1 p0
+        //
+        // # INCORRECT Diagram
+        // NodeValueList, index over entry:
+        //
+        // Parent:      -1       6         7         7         8         8         9         10        10        0           0
+        //              |        |         |         |         |         |         |         |         |         |           |
+        //              |        |         |         |         |         |         |         |         |         |           |
+        // Value:  [    ROOT,    R0,       R1,       R2,       R3,       R4,       F0,       F1,       F2,       P0,         P1    ]
+        //              .        .         .         .         .         .         .         .         .         .           .
+        //              .        .         .         .         .         .         .         .         .         .           .
+        // Index:       0,       1,        2,        3,        4,        5,        6,        7,        8,        9,          10
+        // Span:                 \RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR/        \FFFFFFFFFFFFFFFFFFFF/        \PPPPPPPPPPPP/
+        // Span:                  offset_1 length_5                                 offset_6 length_3             offset_9 length_2
+        //
+        //
+        // SearchResultList (ResourceUri ResourceUri, TextEditorTextSpan TextSpan):
+        // (Program.cs, 290),     // BlazorCrudApp.Wasm
+        // (Program.cs, 122),     // BlazorCrudApp.ServerSide
+        // (Program.cs, 129),     // BlazorCrudApp.ServerSide
+        // (Error.cshtml.cs, 149) // BlazorCrudApp.ServerSide
+        // (Error.cshtml.cs, 305) // BlazorCrudApp.ServerSide
+        // 
+        // 
+        // ProjectRespectedList (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength):
+        // (BlazorCrudApp.Wasm.csproj,       0, 1)
+        // (BlazorCrudApp.ServerSide.csproj, 1, 4)
+        //
+        //  0: ByteKind_Aaa
+        //  1: 290
+        //  2: 122
+        //  3: 129
+        //  4: 149
+        //  5: 305
+        //  6: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs
+        //  7: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Program.cs
+        //  8: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Pages\Error.cshtml.cs
+        //  9: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj
+        // 10: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\BlazorCrudApp.ServerSide.csproj
+        // 
+        // ...
+        // ... Legend for the Diagram
+        // R0 => 290
+        // R1 => 122
+        // R2 => 129
+        // R3 => 149
+        // R4 => 305
+        // F0 => Program.cs (BlazorCrudApp.Wasm)
+        // F1 => Program.cs (BlazorCrudApp.ServerSide)
+        // F2 => Error.cshtml.cs
+        // P0 => BlazorCrudApp.Wasm.csproj
+        // P1 => BlazorCrudApp.ServerSide.csproj
+        // ...
+        // ... Abbreviations in the diagram
+        // R => result  (search result)
+        // F => file    (file grouping)
+        // P => project (project grouping)
+        // 
+        //
+        // ================================================
+
         /*
         TreeViewContainer:
         NodeValueList = [ROOT, ResultHeap..., FileHeap..., ProjectHeap...]
@@ -94,7 +211,7 @@ public partial class TextEditorService
         Initially every entry in the NodeValueList is `default`.
         Then you overwrite the respective indices by tracking the offset of each heap.
         */
-    
+
         /*
         project grouping is a "late" brace matching algorithm, you are enumerating so you'll see files that are non .csproj
         prior to the .csproj but once you do see the .csproj you mark that directory and any recursive to be owned
@@ -138,15 +255,26 @@ public partial class TextEditorService
             to contain the offset and length of the groups instead of the files. (you have to do this AFTER you
             initially have the value tuple signify the search result offset and length that corresponds to the csproj).
         */
-    
-        // I gotta wake up at 5:30 tomorrow and I Gotta take a shower / etc so I'm done for now.
-        // It is extremely close it circular points somehow but it all lazily expands.
-        // but I Think 0th entry uses the name of the 1st entry idk.
+
+        // Track the .csproj you've seen when recursing from the parent dir of the .NET solution.
+        // 
+        // Then iterate over every .csproj that the .NET solution specifies in the .sln file.
         //
+        // Each iteration will recurse from the parent dir of that .csproj 
+        // BUT at the start of each .csproj check whether the .sln recurse step had seen the .csproj file already.
+        // IF SO, then skip that iteration.
+
+        // Plural of "SearchResult" is used rather than "ChildList" or "Children" to ensure variable names
+        // are more distinct from eachother.
+        //
+        // Once the algorithm settles consideration to use ChildList everywhere might be of good use
+        // lest you always wonder "well what wording did they use for this variable this time...".
+        //
+        #endregion
+
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
         var textEditorFindAllState = GetFindAllState();
-        // var solutionModel = dotNetSolutionState.DotNetSolutionModel;
         
         if (string.IsNullOrWhiteSpace(textEditorFindAllState.SearchQuery) ||
             string.IsNullOrWhiteSpace(textEditorFindAllState.StartingDirectoryPath))
@@ -159,30 +287,10 @@ public partial class TextEditorService
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
         var projectSeenHashSet = new HashSet<string /*ProjectAbsolutePath*/>();
-        // Plural of "SearchResult" is used rather than "ChildList" or "Children" to ensure variable names
-        // are more distinct from eachother.
-        //
-        // Once the algorithm settles consideration to use ChildList everywhere might be of good use
-        // lest you always wonder "well what wording did they use for this variable this time...".
-        //
+        
         var projectRespectedList = new List<(string ProjectAbsolutePath, int SearchResultsOffset, int SearchResultsLength)>();
         
         int fileCount = 0;
-        
-        /*
-        var findAllTreeViewContainer = new FindAllTreeViewContainer(this, searchResultList);
-        findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
-        {
-            ParentIndex = -1,
-            IndexAmongSiblings = 0,
-            ChildListOffset = 1,
-            ChildListLength = 0,
-            ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
-            TraitsIndex = 0,
-            IsExpandable = true,
-            IsExpanded = true
-        });
-        */
         
         Exception? exception = null;
         
@@ -205,7 +313,6 @@ public partial class TextEditorService
             var formattedBuilder = new StringBuilder();
             
             ParseFilesRecursive(
-                /*findAllTreeViewContainer, */
                 depth: 0,
                 csprojDepthMark: -1,
                 tokenBuilder,
@@ -224,7 +331,6 @@ public partial class TextEditorService
                 if (!projectSeenHashSet.Contains(projectAbsolutePath.Value))
                 {
                     ParseFilesRecursive(
-                        /*findAllTreeViewContainer, */
                         depth: -1,
                         csprojDepthMark: -1,
                         tokenBuilder,
@@ -239,14 +345,6 @@ public partial class TextEditorService
                         ref fileCount);
                 }
             }
-            
-            // Track the .csproj you've seen when recursing from the parent dir of the .NET solution.
-            // 
-            // Then iterate over every .csproj that the .NET solution specifies in the .sln file.
-            //
-            // Each iteration will recurse from the parent dir of that .csproj 
-            // BUT at the start of each .csproj check whether the .sln recurse step had seen the .csproj file already.
-            // IF SO, then skip that iteration.
         }
         catch (Exception e)
         {
@@ -264,7 +362,6 @@ public partial class TextEditorService
                 // "UPPERCASE_" Avoid confusion with the 'result' named variables.
                 var ROOT_ListOffset = 0;
                 var ROOT_ListCapacity = 1;
-                var ROOT_ListLength = 0;
             
                 var resultHeap_Offset = ROOT_ListOffset + ROOT_ListCapacity;
                 var resultHeap_Capacity = searchResultList.Count;
@@ -304,168 +401,19 @@ public partial class TextEditorService
                     IsExpanded = true
                 };
                 
-                // The Length is calculable
-                // ...Heap_Offset + ...Heap_Length - ...Node_ChildrenOffset
-
-                // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
                 var fileNode_ChildrenOffset = resultHeap_Offset;
                 var fileNode_InclusiveMark = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
                 
-                // "ChildrenOffset" to avoid naming confusions with "...ListOffset"
                 var projectNode_ChildrenOffset = fileHeap_Offset;
                 // The exclusive `i_searchResult` that marks the end of the project's files.
                 // (NOTE: A file is the first distinct occurrence of a filename within the search results.
                 //        That relation is why the i_searchResult can indicate this).
                 var projectNode_ExclusiveMark = -1;
 
-                // Somewhat of a "ranking" pattern?
-                // ====================================
-                // When using a `projectNode_ChildrenOffset` you use the Heap that is one group "smaller" than the node itself.
-                // So `projectNode_ChildrenOffset` uses `fileHeap_...`.
-                //
-                // I think it makes sense now but when originally reading the code this pattern was hard to read.
-
                 // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.
                 // ... then as you go if there isn't a csproj that claims ownership of the search result then you copy the data
                 // to the end of the NodeValueList and the misc files points to those search results you copied to the end of the NodeValueList
                 // so then you have to say the misc node itself has children offset...length.
-
-                //for (int i_searchResult = 0; i_searchResult <= /*extra loop is needed*/ findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
-                //{
-                //    (ResourceUri ResourceUri, TextEditorTextSpan TextSpan) searchResult;
-                //    if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count)
-                //        searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
-                //    else
-                //        searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
-
-                //    if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
-                //    {
-                //        // WARNING: this code is duplicated towards the end of the loop
-
-                //        // If there is a search result, there is guaranteed to be a file.
-                //        // But there is no guarantee of there being a project.
-                //        if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
-                //        {
-                //            projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                //            projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset +
-                //                                        projectRespectedList[i_project].SearchResultsLength;
-                //        }
-                //    }
-
-                //    // Slightly odd to read but this is defined up here to re-use the same if branch for
-                //    // when index and resource match (wherein this needs to be increased furthermore by 2).
-                //    //var resultIndexAmongSiblingsFinalLoopAddition = 0;
-                //    //var resultParentIndexIndexAmongSiblingsFinalLoopSubtraction = 0;
-
-                //    if (fileNode_InclusiveMark != searchResult.ResourceUri.Value/* ||
-                //        i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1*/)
-                //    {
-                //        var parentIndex = projectNode_ExclusiveMark == -1
-                //            ? 0
-                //            : projectHeap_Offset + projectHeap_Length;
-                //        var indexAmongSiblings = projectNode_ExclusiveMark == -1
-                //            ? 0
-                //            : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset;
-
-                //        var childrenLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
-                //        var next_childrenOffset = resultHeap_Offset + resultHeap_Length;
-                //        var traitsIndex = i_searchResult - 1;
-                //        /*if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                //            fileNode_InclusiveMark == searchResult.ResourceUri.Value)
-                //        {
-                //            ++childrenLength;
-                //            ++next_childrenOffset;
-                //            traitsIndex = i_searchResult;
-
-                //            resultIndexAmongSiblingsFinalLoopAddition = 2;
-                //            resultParentIndexIndexAmongSiblingsFinalLoopSubtraction = 1;
-                //        }*/
-
-                //        // FileGroup: Write out pending
-                //        findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] =
-                //            new TreeViewNodeValue
-                //            {
-                //                ParentIndex = parentIndex,
-                //                IndexAmongSiblings = indexAmongSiblings,
-                //                ChildListOffset = fileNode_ChildrenOffset,
-                //                ChildListLength = childrenLength,
-                //                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                //                TraitsIndex = traitsIndex,
-                //                IsExpandable = true,
-                //                IsExpanded = false
-                //            };
-                //        ++fileHeap_Length;
-
-                //        // FileGroup: Change pending target
-                //        fileNode_InclusiveMark = searchResult.ResourceUri.Value;
-                //        fileNode_ChildrenOffset = next_childrenOffset;
-                //    }
-
-                //    // SearchResult: Write out pending
-                //    if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
-                //    {
-                //        findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] =
-                //            new TreeViewNodeValue
-                //            {
-                //                ParentIndex = fileHeap_Offset + fileHeap_Length/* - resultParentIndexIndexAmongSiblingsFinalLoopSubtraction*/,
-                //                IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset/* + resultIndexAmongSiblingsFinalLoopAddition*/,
-                //                ChildListOffset = 0,
-                //                ChildListLength = 0,
-                //                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                //                TraitsIndex = i_searchResult,
-                //                IsExpandable = false,
-                //                IsExpanded = false
-                //            };
-                //        ++resultHeap_Length;
-                //    }
-                //    /*Console.WriteLine($"{i_project} < {projectRespectedList.Count}");
-                //    Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
-                //    Console.WriteLine($"{i_searchResult} == {findAllTreeViewContainer.SearchResultList.Count} - 1");
-                //    Console.WriteLine($"{projectNode_ExclusiveMark} == (1 + {projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");*/
-
-                //    //inner_project_occurred:
-                //    if (i_project < projectRespectedList.Count &&
-                //            (projectNode_ExclusiveMark == (projectRespectedList[i_project].SearchResultsOffset + i_searchResult)/* ||
-                //            (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1 &&
-                //                 projectNode_ExclusiveMark == (1 + projectRespectedList[i_project].SearchResultsOffset + i_searchResult))*/))
-                //    {
-                //        //Console.WriteLine($"{projectNode_ExclusiveMark} == ({projectRespectedList[i_project].SearchResultsOffset} + {i_searchResult})");
-                //        // Write out pending
-                //        findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] =
-                //            new TreeViewNodeValue
-                //            {
-                //                ParentIndex = 0,
-                //                IndexAmongSiblings = projectHeap_Length,
-                //                ChildListOffset = projectNode_ChildrenOffset,
-                //                ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
-                //                ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
-                //                TraitsIndex = i_project,
-                //                IsExpandable = true,
-                //                IsExpanded = false
-                //            };
-                //        ++projectHeap_Length;
-                //        ++i_project;
-
-                //        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                //        projectNode_ExclusiveMark = -1;
-
-                //        if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
-                //        {
-                //            // WARNING: this code is duplicated towards the start of the loop
-
-                //            // If there is a search result, there is guaranteed to be a file.
-                //            // But there is no guarantee of there being a project.
-                //            if (projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
-                //            {
-                //                projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                //                projectNode_ExclusiveMark = projectRespectedList[i_project].SearchResultsOffset +
-                //                                            projectRespectedList[i_project].SearchResultsLength;
-                //                /*if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count - 1)
-                //                    goto inner_project_occurred;*/
-                //            }
-                //        }
-                //    }
-                //}
 
                 // If there is a search result, there is guaranteed to be a file. But there is no guarantee of there being a project.
 
@@ -531,331 +479,6 @@ public partial class TextEditorService
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;projectNode_ExclusiveMark = -1;
                     }
                 }
-
-                // Passing cases:
-                // ============================
-                // [ R, S_f1, S_f2, F1, F2, P1 ] // 
-
-                // Failing cases:
-                // ========================================
-                // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P1 ] // 
-                //
-                //   0, 1,    2,    3,    4,    5,    6,  7
-                // [ R, S_f1, S_f1, S_f1, S_f1, S_f1, F1, P1 ]
-                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
-                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
-                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
-                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 0	==============
-                //
-                // k... 0 length for the project children everytime at the moment... moved code around got 0 everytime... I missed something.
-                //
-                // succeed:
-                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	2 4 0 0	3 4 1 5	4 0 6 1	==============
-                //
-                // =========================================
-                //
-                //   0, 1,    2,    3,    4,    5,  6,  7
-                // [ R, S_f1, S_f1, S_f2, S_f2, F1, F2, P1 ]
-                //
-                // fail:
-                // 1 0 7 1	2 0 0 0	2 1 0 0	2 2 0 0	2 3 0 0	3 2 1 3	3 3 4 1	4 0 5 2	==============
-                // 
-                // b1 t0 o7 l1	b2 t0 o0 l0	b2 t1 o0 l0	b2 t2 o0 l0	b2 t3 o0 l0	b3 t2 o1 l3	b3 t3 o4 l1	b4 t0 o5 l2	==============
-                // b1 t0 o7 l1	b2 t0 o0 l0	b2 t1 o0 l0	b2 t2 o0 l0	b2 t3 o0 l0	b3 t2 o1 l2	b3 t3 o2 l3	b4 t0 o5 l2	==============
-                // 
-                // succeed:
-                // b1 t0 o7 l1	b2 t0 o0 l0	b2 t1 o0 l0	b2 t2 o0 l0	b2 t3 o0 l0	b3 t2 o1 l2	b3 t3 o3 l2	b4 t0 o5 l2	==============
-                // succeed:
-                // b1 t0 o7 l1 i0 p-1	b2 t0 o0 l0 i0 p5	b2 t1 o0 l0 i1 p5	b2 t2 o0 l0 i0 p6	b2 t3 o0 l0 i1 p6	b3 t2 o1 l2 i0 p7	b3 t3 o3 l2 i1 p7	b4 t0 o5 l2 i0 p0	==============
-                //
-                //
-                // # am getting both file groups displaying with the same name.
-                // # as well a result from f2 is showing under f1.
-                // # (whether it was f2 showing under f1 or vice versa, I don't actually know).
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                // AAA================================================
-                // # The FileSystem (unrelated files not shown)
-                //              (search results are bulleted with a space character (' ') instead of a minus ('-'))
-                //              (search results showcase the character index where the occurrence match inclusively begins at)
-                // - BlazorCrudApp.sln
-                //     - BlazorCrudApp.ServerSide.csproj
-                //         - Pages/
-                //             - Error.cshtml.cs
-                //                   149
-                //                   305
-                //         - Program.cs
-                //               122
-                //               129
-                //     - BlazorCrudApp.Wasm.csproj
-                //         - Program.cs
-                //               290
-                //
-                // # The CORRECT UI (if it were to be correct)
-                //                  (absolute file paths are shortened to filename with extension)
-                //                  (search results are bulleted with a space character (' ') instead of a minus ('-'))
-                //                  (search results showcase the character index where the occurrence match inclusively begins at)
-                // - ByteKind_Aaa
-                //     - BlazorCrudApp.Wasm.csproj
-                //         - Program.cs
-                //               290
-                //     - BlazorCrudApp.ServerSide.csproj
-                //         - Program.cs
-                //               122
-                //               129
-                //         - Error.cshtml.cs
-                //               149
-                //               305
-                //
-                // # INCORRECT Dump variables of interest
-                // searchResultList.Count:5
-                // projectHeap_Offset + projectRespectedList.Count:11
-                // projectRespectedList.Count:2
-                // resultHeap_Offset:1
-                // resultHeap_Length:5
-                // fileHeap_Offset:6
-                // fileHeap_Length:3
-                // projectHeap_Offset:9
-                // projectHeap_Length:2
-                // i_project:2
-                //
-                // # INCORRECT Dump each nodeValue (various properties of interest)
-                // 0..  ROOT t0 o9 l2 i0 p-1
-                // 1..  R0   t0 o0 l0 i0 p6
-                // 2..  R1   t1 o0 l0 i0 p7
-                // 3..  R2   t2 o0 l0 i1 p7
-                // 4..  R3   t3 o0 l0 i0 p8
-                // 5..  R4   t4 o0 l0 i1 p8
-                // 6..  F0   t0 o1 l1 i0 p10
-                // 7..  F1   t2 o2 l2 i1 p10
-                // 8..  F2   t4 o4 l2 i0 p0
-                // 9..  P0   t0 o6 l0 i0 p0
-                // 10.. P1   t1 o6 l2 i1 p0
-                //
-                // # INCORRECT Diagram
-                // NodeValueList, index over entry:
-                //
-                // Parent:      -1       6         7         7         8         8         9         10        10        0           0
-                //              |        |         |         |         |         |         |         |         |         |           |
-                //              |        |         |         |         |         |         |         |         |         |           |
-                // Value:  [    ROOT,    R0,       R1,       R2,       R3,       R4,       F0,       F1,       F2,       P0,         P1    ]
-                //              .        .         .         .         .         .         .         .         .         .           .
-                //              .        .         .         .         .         .         .         .         .         .           .
-                // Index:       0,       1,        2,        3,        4,        5,        6,        7,        8,        9,          10
-                // Span:                 \RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR/        \FFFFFFFFFFFFFFFFFFFF/        \PPPPPPPPPPPP/
-                // Span:                  offset_1 length_5                                 offset_6 length_3             offset_9 length_2
-                //
-                //
-                // SearchResultList (ResourceUri ResourceUri, TextEditorTextSpan TextSpan):
-                // (Program.cs, 290),     // BlazorCrudApp.Wasm
-                // (Program.cs, 122),     // BlazorCrudApp.ServerSide
-                // (Program.cs, 129),     // BlazorCrudApp.ServerSide
-                // (Error.cshtml.cs, 149) // BlazorCrudApp.ServerSide
-                // (Error.cshtml.cs, 305) // BlazorCrudApp.ServerSide
-                // 
-                // 
-                // ProjectRespectedList (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength):
-                // (BlazorCrudApp.Wasm.csproj,       0, 1)
-                // (BlazorCrudApp.ServerSide.csproj, 1, 4)
-                //
-                //  0: ByteKind_Aaa
-                //  1: 290
-                //  2: 122
-                //  3: 129
-                //  4: 149
-                //  5: 305
-                //  6: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs
-                //  7: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Program.cs
-                //  8: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Pages\Error.cshtml.cs
-                //  9: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj
-                // 10: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\BlazorCrudApp.ServerSide.csproj
-                // 
-                // ...
-                // ... Legend for the Diagram
-                // R0 => 290
-                // R1 => 122
-                // R2 => 129
-                // R3 => 149
-                // R4 => 305
-                // F0 => Program.cs (BlazorCrudApp.Wasm)
-                // F1 => Program.cs (BlazorCrudApp.ServerSide)
-                // F2 => Error.cshtml.cs
-                // P0 => BlazorCrudApp.Wasm.csproj
-                // P1 => BlazorCrudApp.ServerSide.csproj
-                // ...
-                // ... Abbreviations in the diagram
-                // R => result  (search result)
-                // F => file    (file grouping)
-                // P => project (project grouping)
-                // 
-                //
-                // ================================================
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                // BBB================================================
-                // # The FileSystem (unrelated files not shown)
-                //              (search results are bulleted with a space character (' ') instead of a minus ('-'))
-                //              (search results showcase the character index where the occurrence match inclusively begins at)
-                // - BlazorCrudApp.sln
-                //     - BlazorCrudApp.Wasm.csproj
-                //         - Program.cs
-                //               297
-                //     - Lalala.csproj
-                //         - appsettings.Development.json
-                //               63
-                //
-                // # The CORRECT UI (if it were to be correct)
-                //                  (absolute file paths are shortened to filename with extension)
-                //                  (search results are bulleted with a space character (' ') instead of a minus ('-'))
-                //                  (search results showcase the character index where the occurrence match inclusively begins at)
-                // - ByteKind_Aaa
-                //     - BlazorCrudApp.Wasm.csproj
-                //         - Program.cs
-                //               297
-                //     - Lalala.csproj
-                //         - appsettings.Development.json
-                //               63
-                //
-                // # INCORRECT Dump variables of interest
-                // searchResultList.Count:2
-            	// projectHeap_Offset + projectRespectedList.Count:7
-            	// projectRespectedList.Count:2
-            	// resultHeap_Offset:1
-            	// resultHeap_Length:2
-            	// fileHeap_Offset:3
-            	// fileHeap_Length:1
-            	// projectHeap_Offset:5
-            	// projectHeap_Length:2
-            	// i_project:2
-                //
-                // # INCORRECT Dump each nodeValue (various properties of interest)
-                // 0.. ROOT t0 o5 l2 i0 p-1
-                // 1.. R0   t0 o0 l0 i0 p3
-                // 2.. R1   t1 o0 l0 i0 p4
-                // 3.. F0   t0 o1 l1 i0 p5
-                // 4.. F1   t0 o0 l0 i0 p0
-                // 5.. P0   t0 o3 l1 i0 p0
-                // 6.. P1   t1 o4 l0 i1 p0
-                //
-                // # INCORRECT Diagram
-                // NodeValueList, index over entry:
-                //
-                // Parent:      -1       3         4      5         6      0           0
-                //              |        |         |      |         |      |           |
-                //              |        |         |      |         |      |           |
-                // Value:  [    ROOT,    R0,       R1,    F0,       F1,    P0,         P1    ]
-                //              .        .         .      .         .      .           .
-                //              .        .         .      .         .      .           .
-                // Index:       0,       1,        2,     3,        4,     5,          6,
-                // Span:                 \RRRRRRRRRRR/    \FFFFFFFFFFF/    \PPPPPPPPPPPPP/
-                // Span:                  offset_1         offset_3         offset_5
-                // Span:                  length_2         length_2         length_2
-                //
-                //
-                // SearchResultList (ResourceUri ResourceUri, TextEditorTextSpan TextSpan):
-                // (\Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs, 297)
-                // (\Users\hunte\Repos\Demos\BlazorCrudApp\Lalala\appsettings.Development.json, 63)
-                // 
-                // 
-                // ProjectRespectedList (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength):
-                // (\Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj, 0, 1)
-                // (\Users\hunte\Repos\Demos\BlazorCrudApp\Lalala\Lalala.csproj, 1, 1)
-                //
-                // 0: ByteKind_Aaa
-                // 1: 297
-                // 2: 63
-                // 3: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs
-                // 4: ByteKind0
-                // 5: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj
-                // 6: \Users\hunte\Repos\Demos\BlazorCrudApp\Lalala\Lalala.csproj
-                // 
-                // ...
-                // ... Legend for the Diagram
-                // R0 => 297
-                // R1 => 63
-                // F0 => Program.cs
-                // F1 => Lalala.csproj
-                // P0 => BlazorCrudApp.Wasm.csproj
-                // P1 => Lalala.csproj
-                // ...
-                // ... Abbreviations in the diagram
-                // R => result  (search result)
-                // F => file    (file grouping)
-                // P => project (project grouping)
-                // 
-                //
-                // ================================================
-
-                Console.WriteLine("\n\t==============");
-
-                /*foreach (var asd in searchResultList)
-                {
-                    Console.WriteLine($"({asd.ResourceUri.Value}, {asd.TextSpan.StartInclusiveIndex})");
-                }*/
-
-                //Console.WriteLine();
-
-                foreach (var asd in projectRespectedList)
-                {
-                    //                  (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength)
-                    Console.WriteLine($"({asd.ProjectAbsolutePath}, {asd.SearchResultsOffset}, {asd.SearchResultsLength})");
-                }
-
-                Console.WriteLine($"\tsearchResultList.Count:{searchResultList.Count}");
-                Console.WriteLine($"\tprojectHeap_Offset + projectRespectedList.Count:{projectHeap_Offset + projectRespectedList.Count}");
-                Console.WriteLine($"\tprojectRespectedList.Count:{projectRespectedList.Count}");
-                Console.WriteLine($"\tresultHeap_Offset:{resultHeap_Offset}");
-                Console.WriteLine($"\tresultHeap_Length:{resultHeap_Length}");
-                Console.WriteLine($"\tfileHeap_Offset:{fileHeap_Offset}");
-                Console.WriteLine($"\tfileHeap_Length:{fileHeap_Length}");
-                Console.WriteLine($"\tprojectHeap_Offset:{projectHeap_Offset}");
-                Console.WriteLine($"\tprojectHeap_Length:{projectHeap_Length}");
-                Console.WriteLine($"\ti_project:{i_project}");
-                
-                Console.WriteLine();
-
-                for (int bbb = 0; bbb < findAllTreeViewContainer.NodeValueList.Count; bbb++)
-                {
-                    var ccc = findAllTreeViewContainer.NodeValueList[bbb];
-                    
-                    // Console.WriteLine($"{bbb}: {findAllTreeViewContainer.GetDisplayText(bbb)}");
-                    Console.Write($"\tb{ccc.ByteKind} t{ccc.TraitsIndex} o{ccc.ChildListOffset} l{ccc.ChildListLength} i{ccc.IndexAmongSiblings} p{ccc.ParentIndex}");
-                }
-
-                //Console.WriteLine("\t==============\n");
             }
 
             lock (_stateModificationLock)

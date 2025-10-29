@@ -17,15 +17,18 @@ public partial class CommonService
     {
         var inState = GetDialogState();
         
-        if (inState.DialogList.Any(x => x.DynamicViewModelKey == dialog.DynamicViewModelKey))
+        foreach (var x in inState.DialogList)
         {
-            _ = Task.Run(async () =>
-                await JsRuntimeCommonApi
-                    .FocusHtmlElementById(dialog.DialogFocusPointHtmlElementId)
-                    .ConfigureAwait(false));
-            
-            CommonUiStateChanged?.Invoke(CommonUiEventKind.DialogStateChanged);
-            return;
+            if (x.DynamicViewModelKey == dialog.DynamicViewModelKey)
+            {
+                _ = Task.Run(async () =>
+                    await JsRuntimeCommonApi
+                        .FocusHtmlElementById(dialog.DialogFocusPointHtmlElementId)
+                        .ConfigureAwait(false));
+                
+                CommonUiStateChanged?.Invoke(CommonUiEventKind.DialogStateChanged);
+                return;
+            }
         }
 
         var outDialogList = new List<IDialog>(inState.DialogList);

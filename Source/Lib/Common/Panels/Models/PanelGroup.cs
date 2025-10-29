@@ -31,6 +31,8 @@ public record PanelGroup(
     ///
     /// Otherwise I have to iterate over the tab list and find the active one
     /// for all 3 panel groups in IdeMainLayout.razor.cs.
+    ///
+    /// TODO: Why is this not the index within the list?
     /// </summary>
     public IPanelTab? ActiveTab { get; set; }
 

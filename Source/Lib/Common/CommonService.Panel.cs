@@ -52,82 +52,57 @@ public partial class CommonService
             var inState = GetPanelState();
             
             PanelGroup inPanelGroup;
+            if (panelGroupKey == inState.TopLeftPanelGroup.Key)
+                inPanelGroup = inState.TopLeftPanelGroup;
+            else if (panelGroupKey == inState.TopRightPanelGroup.Key)
+                inPanelGroup = inState.TopRightPanelGroup;
+            else if (panelGroupKey == inState.BottomPanelGroup.Key)
+                inPanelGroup = inState.BottomPanelGroup;
+            else
+                return;
+            
+            foreach (var x in inPanelGroup.TabList)
+            {
+                if (x.Key == panelTab.Key)
+                    return;
+            }
+
+            var outTabList = new List<IPanelTab>(inPanelGroup.TabList);
+            outTabList.Insert(insertAtIndexZero ? 0 : outTabList.Count, panelTab);
+            var outPanelGroup = inPanelGroup with { TabList = outTabList };
+            
+            foreach (var x in outPanelGroup.TabList)
+            {
+                if (x.Key == outPanelGroup.ActiveTabKey)
+                {
+                    outPanelGroup.ActiveTab = x;
+                    break;
+                }
+            }
+            
+            var showingTabStateChanged = inPanelGroup.ActiveTab is null != outPanelGroup.ActiveTab is null;
             
             if (panelGroupKey == inState.TopLeftPanelGroup.Key)
             {
-                inPanelGroup = inState.TopLeftPanelGroup;
+                _panelState = inState with { TopLeftPanelGroup = outPanelGroup };
+                if (showingTabStateChanged)
+                    LeftPanelGroupShowingTabStateChanged();
             }
             else if (panelGroupKey == inState.TopRightPanelGroup.Key)
             {
-                inPanelGroup = inState.TopRightPanelGroup;
+                _panelState = inState with { TopRightPanelGroup = outPanelGroup };
+                if (showingTabStateChanged)
+                    RightPanelGroupShowingTabStateChanged();
             }
             else if (panelGroupKey == inState.BottomPanelGroup.Key)
             {
-                inPanelGroup = inState.BottomPanelGroup;
+                _panelState = inState with { BottomPanelGroup = outPanelGroup };
+                if (showingTabStateChanged)
+                    BottomPanelGroupShowingTabStateChanged();
             }
             else
             {
                 return;
-            }
-
-            if (!inPanelGroup.TabList.Any(x => x.Key == panelTab.Key))
-            {
-                var outTabList = new List<IPanelTab>(inPanelGroup.TabList);
-    
-                var insertionPoint = insertAtIndexZero
-                    ? 0
-                    : outTabList.Count;
-    
-                outTabList.Insert(insertionPoint, panelTab);
-    
-                var outPanelGroup = inPanelGroup with
-                {
-                    TabList = outTabList
-                };
-                
-                outPanelGroup.ActiveTab = outPanelGroup.TabList.FirstOrDefault(x => x.Key == outPanelGroup.ActiveTabKey);
-                var showingTabStateChanged = inPanelGroup.ActiveTab is null != outPanelGroup.ActiveTab is null;
-                
-                if (panelGroupKey == inState.TopLeftPanelGroup.Key)
-                {
-                    _panelState = inState with
-                    {
-                        TopLeftPanelGroup = outPanelGroup
-                    };
-                    
-                    if (showingTabStateChanged)
-                    {
-                        LeftPanelGroupShowingTabStateChanged();
-                    }
-                }
-                else if (panelGroupKey == inState.TopRightPanelGroup.Key)
-                {
-                    _panelState = inState with
-                    {
-                        TopRightPanelGroup = outPanelGroup
-                    };
-                    
-                    if (showingTabStateChanged)
-                    {
-                        RightPanelGroupShowingTabStateChanged();
-                    }
-                }
-                else if (panelGroupKey == inState.BottomPanelGroup.Key)
-                {
-                    _panelState = inState with
-                    {
-                        BottomPanelGroup = outPanelGroup
-                    };
-                    
-                    if (showingTabStateChanged)
-                    {
-                        BottomPanelGroupShowingTabStateChanged();
-                    }
-                }
-                else
-                {
-                    return;
-                }
             }
         }
 
@@ -181,44 +156,34 @@ public partial class CommonService
                     TabList = outTabList
                 };
                 
-                outPanelGroup.ActiveTab = outPanelGroup.TabList.FirstOrDefault(x => x.Key == outPanelGroup.ActiveTabKey);
+                foreach (var x in outPanelGroup.TabList)
+                {
+                    if (x.Key == outPanelGroup.ActiveTabKey)
+                    {
+                        outPanelGroup.ActiveTab = x;
+                        break;
+                    }
+                }
+                
                 var showingTabStateChanged = inPanelGroup.ActiveTab is null != outPanelGroup.ActiveTab is null;
 
                 if (panelGroupKey == inState.TopLeftPanelGroup.Key)
                 {
-                    _panelState = inState with
-                    {
-                        TopLeftPanelGroup = outPanelGroup
-                    };
-                    
+                    _panelState = inState with { TopLeftPanelGroup = outPanelGroup };
                     if (showingTabStateChanged)
-                    {
                         LeftPanelGroupShowingTabStateChanged();
-                    }
                 }
                 else if (panelGroupKey == inState.TopRightPanelGroup.Key)
                 {
-                    _panelState = inState with
-                    {
-                        TopRightPanelGroup = outPanelGroup
-                    };
-                    
+                    _panelState = inState with { TopRightPanelGroup = outPanelGroup };
                     if (showingTabStateChanged)
-                    {
                         RightPanelGroupShowingTabStateChanged();
-                    }
                 }
                 else if (panelGroupKey == inState.BottomPanelGroup.Key)
                 {
-                    _panelState = inState with
-                    {
-                        BottomPanelGroup = outPanelGroup
-                    };
-                    
+                    _panelState = inState with { BottomPanelGroup = outPanelGroup };
                     if (showingTabStateChanged)
-                    {
                         BottomPanelGroupShowingTabStateChanged();
-                    }
                 }
                 else
                 {
@@ -241,65 +206,44 @@ public partial class CommonService
             PanelGroup inPanelGroup;
             
             if (panelGroupKey == inState.TopLeftPanelGroup.Key)
-            {
                 inPanelGroup = inState.TopLeftPanelGroup;
-            }
             else if (panelGroupKey == inState.TopRightPanelGroup.Key)
-            {
                 inPanelGroup = inState.TopRightPanelGroup;
-            }
             else if (panelGroupKey == inState.BottomPanelGroup.Key)
-            {
                 inPanelGroup = inState.BottomPanelGroup;
-            }
             else
-            {
                 return;
-            }
 
-            var outPanelGroup = inPanelGroup with
+            var outPanelGroup = inPanelGroup with { ActiveTabKey = panelTabKey };
+            
+            foreach (var x in outPanelGroup.TabList)
             {
-                ActiveTabKey = panelTabKey
-            };
-                
-            outPanelGroup.ActiveTab = outPanelGroup.TabList.FirstOrDefault(x => x.Key == outPanelGroup.ActiveTabKey);
+                if (x.Key == outPanelGroup.ActiveTabKey)
+                {
+                    outPanelGroup.ActiveTab = x;
+                    break;
+                }
+            }
+            
             var showingTabStateChanged = inPanelGroup.ActiveTab is null != outPanelGroup.ActiveTab is null;
 
             if (panelGroupKey == inState.TopLeftPanelGroup.Key)
             {
-                _panelState = inState with
-                {
-                    TopLeftPanelGroup = outPanelGroup
-                };
-                    
+                _panelState = inState with { TopLeftPanelGroup = outPanelGroup };
                 if (showingTabStateChanged)
-                {
                     LeftPanelGroupShowingTabStateChanged();
-                }
             }
             else if (panelGroupKey == inState.TopRightPanelGroup.Key)
             {
-                _panelState = inState with
-                {
-                    TopRightPanelGroup = outPanelGroup
-                };
-                    
+                _panelState = inState with { TopRightPanelGroup = outPanelGroup };
                 if (showingTabStateChanged)
-                {
                     RightPanelGroupShowingTabStateChanged();
-                }
             }
             else if (panelGroupKey == inState.BottomPanelGroup.Key)
             {
-                _panelState = inState with
-                {
-                    BottomPanelGroup = outPanelGroup
-                };
-                    
+                _panelState = inState with { BottomPanelGroup = outPanelGroup };
                 if (showingTabStateChanged)
-                {
                     BottomPanelGroupShowingTabStateChanged();
-                }
             }
             else
             {
@@ -320,11 +264,7 @@ public partial class CommonService
         lock (_stateModificationLock)
         {
             var inState = GetPanelState();
-    
-            _panelState = inState with
-            {
-                DragEventArgs = dragEventArgs
-            };
+            _panelState = inState with { DragEventArgs = dragEventArgs };
         }
 
         CommonUiStateChanged?.Invoke(CommonUiEventKind.PanelStateChanged);
@@ -345,9 +285,18 @@ public partial class CommonService
         else
         {
             var dialogState = GetDialogState();
-            var existingDialog = dialogState.DialogList.FirstOrDefault(
-                x => x.DynamicViewModelKey == panel.DynamicViewModelKey);
-
+            
+            IDialog? existingDialog = null;
+            
+            foreach (var x in dialogState.DialogList)
+            {
+                if (x.DynamicViewModelKey == panel.DynamicViewModelKey)
+                {
+                    existingDialog = x;
+                    break;
+                }
+            }
+            
             if (existingDialog is not null)
             {
                 Dialog_ReduceSetActiveDialogKeyAction(existingDialog.DynamicViewModelKey);
@@ -367,11 +316,8 @@ public partial class CommonService
     public void Panel_OnUserAgent_AppDimensionStateChanged()
     {
         var appDimensionState = _appDimensionState;
-        
         if (appDimensionState.Width < 500 || appDimensionState.Height < 500)
-        {
             return;
-        }
     
         // DON'T FORGET THE LINEHEIGHT!!!
         // TABS ALWAYS EXIST

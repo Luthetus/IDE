@@ -114,9 +114,15 @@ public partial class TextEditorService
         {
             var inState = Group_GetTextEditorGroupState();
 
-            var inGroupIndex = inState.GroupList.FindIndex(
-                x => x.GroupKey == groupKey);
-
+            var inGroupIndex = -1;
+            for (int i = 0; i < inState.GroupList.Count; i++)
+            {
+                if (inState.GroupList[i].GroupKey == groupKey)
+                {
+                    inGroupIndex = i;
+                    break;
+                }
+            }
             if (inGroupIndex == -1)
                 goto finalize;
 
@@ -179,9 +185,15 @@ public partial class TextEditorService
         {
             var inState = Group_GetTextEditorGroupState();
 
-            var inGroupIndex = inState.GroupList.FindIndex(
-                x => x.GroupKey == groupKey);
-
+            var inGroupIndex = -1;
+            for (int i = 0; i < inState.GroupList.Count; i++)
+            {
+                if (inState.GroupList[i].GroupKey == groupKey)
+                {
+                    inGroupIndex = i;
+                    break;
+                }
+            }
             if (inGroupIndex == -1)
                 goto finalize;
 
@@ -190,9 +202,15 @@ public partial class TextEditorService
             if (inGroup is null)
                 goto finalize;
 
-            var indexOfViewModelKeyToRemove = inGroup.ViewModelKeyList.FindIndex(
-                x => x == viewModelKey);
-
+            var indexOfViewModelKeyToRemove = -1;
+            for (int i = 0; i < inGroup.ViewModelKeyList.Count; i++)
+            {
+                if (inGroup.ViewModelKeyList[i] == viewModelKey)
+                {
+                    indexOfViewModelKeyToRemove = i;
+                    break;
+                }
+            }
             if (indexOfViewModelKeyToRemove == -1)
                 goto finalize;
 

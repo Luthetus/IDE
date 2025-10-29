@@ -216,7 +216,15 @@ public partial class FindOverlayDisplay : ComponentBase, IDisposable
                     return ValueTask.CompletedTask;
 
                 viewModelModifier.PersistentState.ShowFindOverlay = false;
-                var indexOfKey = viewModelModifier.PersistentState.FirstPresentationLayerKeysList.FindIndex(x => x == TextEditorFacts.FindOverlayPresentation_PresentationKey);
+                var indexOfKey = -1;
+                for (int i = 0; i < viewModelModifier.PersistentState.FirstPresentationLayerKeysList.Count; i++)
+                {
+                    if (viewModelModifier.PersistentState.FirstPresentationLayerKeysList[i] == TextEditorFacts.FindOverlayPresentation_PresentationKey)
+                    {
+                        indexOfKey = i;
+                        break;
+                    }
+                }
                 if (indexOfKey != -1)
                 {
                     var nextFirstPresentationLayerKeysList = new List<Key<Clair.TextEditor.RazorLib.Decorations.Models.TextEditorPresentationModel>>(viewModelModifier.PersistentState.FirstPresentationLayerKeysList);

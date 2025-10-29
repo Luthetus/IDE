@@ -981,8 +981,15 @@ public sealed class TextEditorModel
         // If the presentation model has not yet been registered, then this will register it.
         PerformRegisterPresentationModelAction(emptyPresentationModel);
 
-        var indexOfPresentationModel = PresentationModelList.FindIndex(
-            x => x.TextEditorPresentationKey == presentationKey);
+        var indexOfPresentationModel = -1;
+        for (int i = 0; i < PresentationModelList.Count; i++)
+        {
+            if (PresentationModelList[i].TextEditorPresentationKey == presentationKey)
+            {
+                indexOfPresentationModel = i;
+                break;
+            }
+        }
 
         // The presentation model is expected to always be registered at this point.
 
@@ -1007,8 +1014,15 @@ public sealed class TextEditorModel
         // If the presentation model has not yet been registered, then this will register it.
         PerformRegisterPresentationModelAction(emptyPresentationModel);
 
-        var indexOfPresentationModel = PresentationModelList.FindIndex(
-            x => x.TextEditorPresentationKey == presentationKey);
+        var indexOfPresentationModel = -1;
+        for (int i = 0; i < PresentationModelList.Count; i++)
+        {
+            if (PresentationModelList[i].TextEditorPresentationKey == presentationKey)
+            {
+                indexOfPresentationModel = i;
+                break;
+            }
+        }
 
         // The presentation model is expected to always be registered at this point.
 
@@ -1236,7 +1250,15 @@ public sealed class TextEditorModel
                 {
                     if (tabPositionLazyInsertRange.index == int.MinValue)
                     {
-                        tabPositionLazyInsertRange.index = TabCharPositionIndexList.FindIndex(x => x >= initialCursorPositionIndex);
+                        tabPositionLazyInsertRange.index = -1;
+                        for (int i = 0; i < TabCharPositionIndexList.Count; i++)
+                        {
+                            if (TabCharPositionIndexList[i] >= initialCursorPositionIndex)
+                            {
+                                tabPositionLazyInsertRange.index = i;
+                                break;
+                            }
+                        }
 
                         if (tabPositionLazyInsertRange.index == -1)
                             tabPositionLazyInsertRange.index = TabCharPositionIndexList.Count;
@@ -1267,7 +1289,15 @@ public sealed class TextEditorModel
 
         // Reposition the Tabs
         {
-            var firstTabKeyPositionIndexToModify = TabCharPositionIndexList.FindIndex(x => x >= initialCursorPositionIndex);
+            var firstTabKeyPositionIndexToModify = -1;
+            for (int i = 0; i < TabCharPositionIndexList.Count; i++)
+            {
+                if (TabCharPositionIndexList[i] >= initialCursorPositionIndex)
+                {
+                    firstTabKeyPositionIndexToModify = i;
+                    break;
+                }
+            }
 
             if (firstTabKeyPositionIndexToModify != -1)
             {
@@ -1596,8 +1626,16 @@ public sealed class TextEditorModel
                 {
                     // A delete is a contiguous operation. Therefore, all that is needed to update the LineEndList
                     // is a starting index, and a count.
-                    var indexLineEnd = LineEndList.FindIndex(
-                        x => x.Position_StartInclusiveIndex == toDeletePositionIndex);
+                    
+                    var indexLineEnd = -1;
+                    for (int j = 0; j < LineEndList.Count; j++)
+                    {
+                        if (LineEndList[j].Position_StartInclusiveIndex == toDeletePositionIndex)
+                        {
+                            indexLineEnd = j;
+                            break;
+                        }
+                    }
 
                     var lineEnd = LineEndList[indexLineEnd];
 
@@ -1629,7 +1667,15 @@ public sealed class TextEditorModel
 
                     if (richCharacterToDelete.Value == CommonFacts.TAB)
                     {
-                        var indexTabKey = TabCharPositionIndexList.FindIndex(x => x == toDeletePositionIndex);
+                        var indexTabKey = -1;
+                        for (int j = 0; j < TabCharPositionIndexList.Count; j++)
+                        {
+                            if (TabCharPositionIndexList[j] == toDeletePositionIndex)
+                            {
+                                indexTabKey = j;
+                                break;
+                            }
+                        }
 
                         // Delete starts at the lowest index, therefore use '??=' to only assign once.
                         tabPositionLazyRemoveRange.index ??= indexTabKey;
@@ -1671,11 +1717,17 @@ public sealed class TextEditorModel
                 {
                     // A delete is a contiguous operation. Therefore, all that is needed to update the LineEndList
                     // is a starting index, and a count.
-                    var indexLineEnd = LineEndList.FindIndex(
-                        // Check for '\n' or '\r'
-                        x => x.Position_EndExclusiveIndex == toDeletePositionIndex + 1 ||
-                        // Check for "\r\n"
-                        x.Position_EndExclusiveIndex == toDeletePositionIndex + 2);
+                    
+                    var indexLineEnd = -1;
+                    for (int j = 0; j < LineEndList.Count; j++)
+                    {
+                        if (LineEndList[j].Position_EndExclusiveIndex == toDeletePositionIndex + 1 || // Check for '\n' or '\r'
+                            LineEndList[j].Position_EndExclusiveIndex == toDeletePositionIndex + 2)   // Check for "\r\n"
+                        {
+                            indexLineEnd = j;
+                            break;
+                        }
+                    }
 
                     var lineEnd = LineEndList[indexLineEnd];
 
@@ -1700,7 +1752,15 @@ public sealed class TextEditorModel
 
                     if (richCharacterToDelete.Value == CommonFacts.TAB)
                     {
-                        var indexTabKey = TabCharPositionIndexList.FindIndex(x => x == toDeletePositionIndex);
+                        var indexTabKey = -1;
+                        for (int j = 0; j < TabCharPositionIndexList.Count; j++)
+                        {
+                            if (TabCharPositionIndexList[j] == toDeletePositionIndex)
+                            {
+                                indexTabKey = j;
+                                break;
+                            }
+                        }
 
                         // Backspace starts at the highest index, therefore use '=' to only assign everytime.
                         tabPositionLazyRemoveRange.index = indexTabKey;
@@ -1730,7 +1790,15 @@ public sealed class TextEditorModel
 
         // Reposition the Tab(s)
         {
-            var firstTabKeyPositionIndexToModify = TabCharPositionIndexList.FindIndex(x => x >= positionIndex);
+            var firstTabKeyPositionIndexToModify = -1;
+            for (int i = 0; i < TabCharPositionIndexList.Count; i++)
+            {
+                if (TabCharPositionIndexList[i] >= positionIndex)
+                {
+                    firstTabKeyPositionIndexToModify = i;
+                    break;
+                }
+            }
 
             if (firstTabKeyPositionIndexToModify != -1)
             {

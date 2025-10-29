@@ -109,7 +109,7 @@ public partial class CommonService
         // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
-        var indexContainer = inState.ContainerList.FindIndex(
+        var indexContainer = inState.ContainerList.F/indIndex(
             x => x.Key == containerKey);
 
         if (indexContainer == -1)
@@ -170,7 +170,7 @@ public partial class CommonService
         // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
-        var indexContainer = inState.ContainerList.FindIndex(
+        var indexContainer = inState.ContainerList.F/indIndex(
             x => x.Key == containerKey);
         
         if (indexContainer == -1)
@@ -626,7 +626,7 @@ public partial class CommonService
         // 2025-10-22 (rewrite TreeViews)
         var inState = GetTreeViewState();
     
-        var indexContainer = inState.ContainerList.FindIndex(
+        var indexContainer = inState.ContainerList.F/indIndex(
             x => x.Key == containerKey);
         
         if (indexContainer == -1)
@@ -798,7 +798,7 @@ public partial class CommonService
             }
             else
             {
-                var alreadyExistingIndex = inContainer.SelectedNodeList.FindIndex(
+                var alreadyExistingIndex = inContainer.SelectedNodeList.F/indIndex(
                     x => nextActiveNode.Equals(x));
                 
                 if (alreadyExistingIndex != -1)
@@ -837,7 +837,7 @@ public partial class CommonService
     {
         /*
         // 2025-10-22 (rewrite TreeViews)
-        var indexOfNodeToRemove = inContainer.SelectedNodeList.FindIndex(
+        var indexOfNodeToRemove = inContainer.SelectedNodeList.F/indIndex(
             x => x.Key == keyOfNodeToRemove);
 
         var outSelectedNodeList = new List<TreeViewNoType>(inContainer.SelectedNodeList);

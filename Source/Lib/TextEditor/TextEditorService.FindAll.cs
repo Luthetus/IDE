@@ -467,7 +467,7 @@ public partial class TextEditorService
                 //    }
                 //}
                 
-                for (int i_searchResult = 0; i_searchResult <= /*extra loop is needed*/ findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
+                for (int i_searchResult = 0; i_searchResult <= /*the '<=' extra loop is needed*/ findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
                 {
                     (ResourceUri ResourceUri, TextEditorTextSpan TextSpan) searchResult;
                     if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count)

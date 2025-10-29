@@ -61,8 +61,12 @@ public sealed partial class NuGetPackageManager : ComponentBase, IDisposable
         if (dotNetSolutionState.DotNetSolutionModel is null || nuGetPackageManagerState.SelectedProjectToModify is null)
             return false;
 
-        return dotNetSolutionState.DotNetSolutionModel.DotNetProjectList.Any(
-            x => x.ProjectIdGuid == nuGetPackageManagerState.SelectedProjectToModify.ProjectIdGuid);
+        foreach (var x in dotNetSolutionState.DotNetSolutionModel.DotNetProjectList)
+        {
+            if (x.ProjectIdGuid == nuGetPackageManagerState.SelectedProjectToModify.ProjectIdGuid)
+                return true;
+        }
+        return false;
     }
 
     private async Task SubmitNuGetQueryOnClick()

@@ -84,9 +84,10 @@
 @if (dropdownState.DropdownList.Count > 0)
 {
     var shouldShowOutOfBoundsClickDisplay = false;
-    foreach (var dropdown in dropdownState.DropdownList)
+    foreach (var x in dropdownState.DropdownList)
     {
-        dropdownState.DropdownList.Any(x => x.ShouldShowOutOfBoundsClickDisplay)
+        if (x.ShouldShowOutOfBoundsClickDisplay)
+            shouldShowOutOfBoundsClickDisplay = true;
     }
     if (shouldShowOutOfBoundsClickDisplay)
     {

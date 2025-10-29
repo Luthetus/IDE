@@ -153,7 +153,7 @@
 
                 @{ var nugetResult = DotNetService.GetNuGetPackageManagerState().QueryResultList; }
 
-                @if (nugetResult.Any())
+                @if (nugetResult.Count > 0)
                 {
                     foreach (var entry in nugetResult)
                     {

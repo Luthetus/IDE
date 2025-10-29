@@ -160,7 +160,7 @@ public partial class CommonService
                 var outPanelGroup = inPanelGroup with
                 {
                     TabList = outTabList,
-                    outPanelGroup.ActiveTab = null
+                    ActiveTab = null
                 };
                 
                 foreach (var x in outPanelGroup.TabList)

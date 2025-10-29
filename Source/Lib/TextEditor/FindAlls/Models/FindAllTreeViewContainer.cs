@@ -9,13 +9,26 @@ namespace Clair.TextEditor.RazorLib.FindAlls.Models;
 
 public class FindAllTreeViewContainer : TreeViewContainer
 {
-    public FindAllTreeViewContainer(TextEditorService textEditorService, List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList)
+    /// <summary>
+    /// A `nodeValueListInitialCapacity` amount of `default` nodes will be added within this constructor.
+    /// </summary>
+    public FindAllTreeViewContainer(
+            TextEditorService textEditorService,
+            List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
+            int nodeValueListInitialCapacity,
+            List<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)> projectRespectedList)
         : base(textEditorService.CommonService)
     {
         Key = TextEditorService.TextEditorFindAllState.TreeViewFindAllContainerKey;
-        NodeValueList = new();
+        NodeValueList = new(capacity: nodeValueListInitialCapacity);
         SearchResultList = searchResultList;
         TextEditorService = textEditorService;
+        ProjectRespectedList = projectRespectedList;
+
+        for (int capacityCounter = 0; capacityCounter < nodeValueListInitialCapacity; capacityCounter++)
+        {
+            NodeValueList.Add(default);
+        }
     }
     
     public override Key<TreeViewContainer> Key { get; init; }
@@ -23,6 +36,7 @@ public class FindAllTreeViewContainer : TreeViewContainer
     
     public TextEditorService TextEditorService { get; set; }
     public List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> SearchResultList { get; set; }
+    public List<(string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)> ProjectRespectedList { get; set; }
 
     public override Task LoadChildListAsync(int indexNodeValue)
     {
@@ -45,12 +59,14 @@ public class FindAllTreeViewContainer : TreeViewContainer
         {
             case FindAllTreeViewContainer.ByteKind_Aaa:
                 return nameof(ByteKind_Aaa);
-            case FindAllTreeViewContainer.ByteKind_SearchResultGroup:
+            case FindAllTreeViewContainer.ByteKind_ProjectGroup:
+                return ProjectRespectedList[nodeValue.TraitsIndex].ProjectAbsolutePath;
+            case FindAllTreeViewContainer.ByteKind_FileGroup:
                 return SearchResultList[nodeValue.TraitsIndex].ResourceUri.Value;
             case FindAllTreeViewContainer.ByteKind_SearchResult:
                 return SearchResultList[nodeValue.TraitsIndex].TextSpan.StartInclusiveIndex.ToString();
             default:
-                return "asdfg";
+                return nameof(nodeValue.ByteKind) + nodeValue.ByteKind.ToString();
         }
     }
     
@@ -166,5 +182,6 @@ public class FindAllTreeViewContainer : TreeViewContainer
     
     public const byte ByteKind_Aaa = 1;
     public const byte ByteKind_SearchResult = 2;
-    public const byte ByteKind_SearchResultGroup = 3;
+    public const byte ByteKind_FileGroup = 3;
+    public const byte ByteKind_ProjectGroup = 4;
 }

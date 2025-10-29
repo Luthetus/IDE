@@ -74,10 +74,213 @@ public partial class TextEditorService
 
     public Task HandleStartSearchAction()
     {
+        #region details
+        // AAA================================================
+        // # The FileSystem (unrelated files not shown)
+        //                  (search results are bulleted with a space character (' ') instead of a minus ('-'))
+        //                  (search results showcase the character index where the occurrence match inclusively begins at)
+        // - BlazorCrudApp.sln
+        //     - BlazorCrudApp.ServerSide.csproj
+        //         - Pages/
+        //             - Error.cshtml.cs
+        //                   149
+        //                   305
+        //         - Program.cs
+        //               122
+        //               129
+        //     - BlazorCrudApp.Wasm.csproj
+        //         - Program.cs
+        //               290
+        //
+        // # The CORRECT UI is: (absolute file paths are shortened to filename with extension)
+        //                      (search results are bulleted with a space character (' ') instead of a minus ('-'))
+        //                      (search results showcase the character index where the occurrence match inclusively begins at)
+        // - ByteKind_Aaa
+        //     - BlazorCrudApp.Wasm.csproj
+        //         - Program.cs
+        //               290
+        //     - BlazorCrudApp.ServerSide.csproj
+        //         - Program.cs
+        //               122
+        //               129
+        //         - Error.cshtml.cs
+        //               149
+        //               305
+        //
+        // # INCORRECT Dump variables of interest
+        // searchResultList.Count:5
+        // projectHeap_Offset + projectRespectedList.Count:11
+        // projectRespectedList.Count:2
+        // resultHeap_Offset:1
+        // resultHeap_Length:5
+        // fileHeap_Offset:6
+        // fileHeap_Length:3
+        // projectHeap_Offset:9
+        // projectHeap_Length:2
+        // i_project:2
+        //
+        // # INCORRECT Dump each nodeValue (various properties of interest)
+        // 0..  ROOT t0 o9 l2 i0 p-1
+        // 1..  R0   t0 o0 l0 i0 p6
+        // 2..  R1   t1 o0 l0 i0 p7
+        // 3..  R2   t2 o0 l0 i1 p7
+        // 4..  R3   t3 o0 l0 i0 p8
+        // 5..  R4   t4 o0 l0 i1 p8
+        // 6..  F0   t0 o1 l1 i0 p10
+        // 7..  F1   t2 o2 l2 i1 p10
+        // 8..  F2   t4 o4 l2 i0 p0
+        // 9..  P0   t0 o6 l0 i0 p0
+        // 10.. P1   t1 o6 l2 i1 p0
+        //
+        // # INCORRECT Diagram
+        // NodeValueList, index over entry:
+        //
+        // Parent:      -1       6         7         7         8         8         9         10        10        0           0
+        //              |        |         |         |         |         |         |         |         |         |           |
+        //              |        |         |         |         |         |         |         |         |         |           |
+        // Value:  [    ROOT,    R0,       R1,       R2,       R3,       R4,       F0,       F1,       F2,       P0,         P1    ]
+        //              .        .         .         .         .         .         .         .         .         .           .
+        //              .        .         .         .         .         .         .         .         .         .           .
+        // Index:       0,       1,        2,        3,        4,        5,        6,        7,        8,        9,          10
+        // Span:                 \RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR/        \FFFFFFFFFFFFFFFFFFFF/        \PPPPPPPPPPPP/
+        // Span:                  offset_1 length_5                                 offset_6 length_3             offset_9 length_2
+        //
+        //
+        // SearchResultList (ResourceUri ResourceUri, TextEditorTextSpan TextSpan):
+        // (Program.cs, 290),     // BlazorCrudApp.Wasm
+        // (Program.cs, 122),     // BlazorCrudApp.ServerSide
+        // (Program.cs, 129),     // BlazorCrudApp.ServerSide
+        // (Error.cshtml.cs, 149) // BlazorCrudApp.ServerSide
+        // (Error.cshtml.cs, 305) // BlazorCrudApp.ServerSide
+        // 
+        // 
+        // ProjectRespectedList (string ProjectAbsolutePath, int SearchResultsOffset,  int SearchResultsLength):
+        // (BlazorCrudApp.Wasm.csproj,       0, 1)
+        // (BlazorCrudApp.ServerSide.csproj, 1, 4)
+        //
+        //  0: ByteKind_Aaa
+        //  1: 290
+        //  2: 122
+        //  3: 129
+        //  4: 149
+        //  5: 305
+        //  6: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\Program.cs
+        //  7: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Program.cs
+        //  8: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\Pages\Error.cshtml.cs
+        //  9: \Users\hunte\Repos\Demos\BlazorCrudApp\BlazorCrudApp.Wasm\BlazorCrudApp.Wasm.csproj
+        // 10: \Users\hunte\Repos\Demos\BlazorCrudApp.ServerSide\BlazorCrudApp.ServerSide.csproj
+        // 
+        // ...
+        // ... Legend for the Diagram
+        // R0 => 290
+        // R1 => 122
+        // R2 => 129
+        // R3 => 149
+        // R4 => 305
+        // F0 => Program.cs (BlazorCrudApp.Wasm)
+        // F1 => Program.cs (BlazorCrudApp.ServerSide)
+        // F2 => Error.cshtml.cs
+        // P0 => BlazorCrudApp.Wasm.csproj
+        // P1 => BlazorCrudApp.ServerSide.csproj
+        // ...
+        // ... Abbreviations in the diagram
+        // R => result  (search result)
+        // F => file    (file grouping)
+        // P => project (project grouping)
+        // 
+        //
+        // ================================================
+
+        /*
+        TreeViewContainer:
+        NodeValueList = [ROOT, ResultHeap..., FileHeap..., ProjectHeap...]
+        
+        ResultHeap traits exist in the `SearchResultList`
+        FileHeap traits exist in the `SearchResultList`
+            - In particular FileHeap traits are the first occurrence of a distinct filename for a SearchResult.
+        ProjectHeap traits exist in the `ProjectRespectedList`
+        
+        Every node's children are a contiguous span of any heap.
+        The offsets are always relative to the NodeValueList itself.
+        
+        The NodeValueList is constructed after pre-calculating the total capacity of
+        ResultHeap, FileHeap, and ProjectHeap.
+        
+        This pre-calculation of capacities is extrapolated from the data itself.
+        
+        Initially every entry in the NodeValueList is `default`.
+        Then you overwrite the respective indices by tracking the offset of each heap.
+        */
+
+        /*
+        project grouping is a "late" brace matching algorithm, you are enumerating so you'll see files that are non .csproj
+        prior to the .csproj but once you do see the .csproj you mark that directory and any recursive to be owned
+        by that respective .csproj.
+        
+        Then you "brace match" by tracking directory depth until you've returned to the parent dir, then unset the owning csproj.
+        Anything that isn't owned by a csproj is marked under the "misc files" but the issue here is that I think they'll
+        be fragmented under these conditions so I gotta figure that out.
+        
+        Anything that is owned by a csproj isn't fragmented,
+        but the misc you can either duplicate or move data around in the NodeValueList
+        OR you can store a separate List that contains all the misc entries then move them to the NodeValueList at the end.
+        
+        The csharp projects as well need to be added last since they would otherwise fragment the children of the root.
+        
+        When you've seen a .csproj file you add to projectSeenMap so you can change this to a List,
+        entry can be a value tuple of (string ProjectAbsolutePath, int ChildListOffset, int ChildListLength)
+        
+        Then you'd have to write the search through the List but this may or may not be an issue
+        I don't think people would have thousands of projects in their .sln.
+        
+        Groups need not be fragmented too though...
+        
+        You know the amount of SearchResults and the amount of C# projects
+        
+        You can determine the amount of filename grouped keys by tracking this during the enumeration of files step.
+        
+        So you predetermine which contiguous indices will correspond to the SearchResult nodes.
+        
+        Then predetermine the filename group nodes...
+        and the C# project nodes...
+        
+        And you write out the data with gaps between each section.
+        
+        ----
+        
+        prellocate space in the shared list for the groups by counting distinct filenames during enumeration,
+        iterate the search-results to write out the group nodes,
+        
+        then write the csproj nodes to point to the group nodes by changing the Dictionary's value tuple
+            to contain the offset and length of the groups instead of the files. (you have to do this AFTER you
+            initially have the value tuple signify the search result offset and length that corresponds to the csproj).
+        */
+
+        // Track the .csproj you've seen when recursing from the parent dir of the .NET solution.
+        // 
+        // Then iterate over every .csproj that the .NET solution specifies in the .sln file.
+        //
+        // Each iteration will recurse from the parent dir of that .csproj 
+        // BUT at the start of each .csproj check whether the .sln recurse step had seen the .csproj file already.
+        // IF SO, then skip that iteration.
+
+        // Plural of "SearchResult" is used rather than "ChildList" or "Children" to ensure variable names
+        // are more distinct from eachother.
+        //
+        // Once the algorithm settles consideration to use ChildList everywhere might be of good use
+        // lest you always wonder "well what wording did they use for this variable this time...".
+
+        // TODO: You can pre-determine that 1 extra node for the misc files exists at the end of the current way the NodeValueList is setup.
+        // ... then as you go if there isn't a csproj that claims ownership of the search result then you copy the data
+        // to the end of the NodeValueList and the misc files points to those search results you copied to the end of the NodeValueList
+        // so then you have to say the misc node itself has children offset...length.
+
+        // If there is a search result, there is guaranteed to be a file. But there is no guarantee of there being a project.
+        #endregion
+
         CommonService.TreeView_DisposeContainerAction(TextEditorFindAllState.TreeViewFindAllContainerKey, shouldFireStateChangedEvent: false);
         
         var textEditorFindAllState = GetFindAllState();
-        // var solutionModel = dotNetSolutionState.DotNetSolutionModel;
         
         if (string.IsNullOrWhiteSpace(textEditorFindAllState.SearchQuery) ||
             string.IsNullOrWhiteSpace(textEditorFindAllState.StartingDirectoryPath))
@@ -89,7 +292,11 @@ public partial class TextEditorService
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap = new();
         
         var searchResultList = new List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)>();
-        var projectSeenHashSet = new HashSet<string>();
+        var projectSeenHashSet = new HashSet<string /*ProjectAbsolutePath*/>();
+        
+        var projectRespectedList = new List<(string ProjectAbsolutePath, int StartInclusiveSearchResultIndex, int EndExclusiveSearchResultIndex)>();
+        
+        int fileCount = 0;
         
         Exception? exception = null;
         
@@ -111,21 +318,39 @@ public partial class TextEditorService
             var tokenBuilder = new StringBuilder();
             var formattedBuilder = new StringBuilder();
             
-            ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, textEditorFindAllState.SearchQuery, parentDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+            ParseFilesRecursive(
+                depth: 0,
+                csprojDepthMark: -1,
+                tokenBuilder,
+                formattedBuilder,
+                projectSeenHashSet,
+                projectRespectedList,
+                searchResultList,
+                textEditorFindAllState.SearchQuery,
+                parentDirectory,
+                streamReaderPooledBufferWrap,
+                streamReaderPooledBuffer,
+                ref fileCount);
             
             foreach (var projectAbsolutePath in textEditorFindAllState.ProjectList)
             {
-                if (projectSeenHashSet.Add(projectAbsolutePath.Value))
-                    ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, textEditorFindAllState.SearchQuery, projectAbsolutePath.CreateSubstringParentDirectory(), streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+                if (!projectSeenHashSet.Contains(projectAbsolutePath.Value))
+                {
+                    ParseFilesRecursive(
+                        depth: -1,
+                        csprojDepthMark: -1,
+                        tokenBuilder,
+                        formattedBuilder,
+                        projectSeenHashSet,
+                        projectRespectedList,
+                        searchResultList,
+                        textEditorFindAllState.SearchQuery,
+                        projectAbsolutePath.CreateSubstringParentDirectory(),
+                        streamReaderPooledBufferWrap,
+                        streamReaderPooledBuffer,
+                        ref fileCount);
+                }
             }
-            
-            // Track the .csproj you've seen when recursing from the parent dir of the .NET solution.
-            // 
-            // Then iterate over every .csproj that the .NET solution specifies in the .sln file.
-            //
-            // Each iteration will recurse from the parent dir of that .csproj 
-            // BUT at the start of each .csproj check whether the .sln recurse step had seen the .csproj file already.
-            // IF SO, then skip that iteration.
         }
         catch (Exception e)
         {
@@ -136,95 +361,139 @@ public partial class TextEditorService
         {
             streamReaderPooledBuffer?.Dispose();
             
-            var findAllTreeViewContainer = new FindAllTreeViewContainer(this, searchResultList);
+            FindAllTreeViewContainer? findAllTreeViewContainer = null;
             
-            var rootNode = new TreeViewNodeValue
+            if (searchResultList.Count > 0)
             {
-                ParentIndex = -1,
-                IndexAmongSiblings = 0,
-                ChildListOffset = 1,
-                ChildListLength = 0,
-                ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
-                TraitsIndex = 0,
-                IsExpandable = true,
-                IsExpanded = true
-            };
-            findAllTreeViewContainer.NodeValueList.Add(rootNode);
-
-            var groupIndexAmongSiblings = 0;
-            
-            // you have to iterate once to get the groups,
-            // then iterate the groups to get the children of groups
-            // because children MUST be contiguous in the NodeValueList.
-            
-            var previousResourceUri = ResourceUri.Empty;
-            
-            for (int i = 0; i < findAllTreeViewContainer.SearchResultList.Count; i++)
-            {
-                var groupByFileSearchResult = findAllTreeViewContainer.SearchResultList[i];
+                var resultHeap_Offset = 1 /*comes after the root node*/;
+                var resultHeap_Capacity = searchResultList.Count;
+                var resultHeap_Length = 0;
                 
-                if (previousResourceUri != groupByFileSearchResult.ResourceUri)
-                {
-                    previousResourceUri = groupByFileSearchResult.ResourceUri;
-                    findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
-                    {
-                        ParentIndex = 0,
-                        IndexAmongSiblings = groupIndexAmongSiblings++,
-                        ChildListOffset = 0,
-                        ChildListLength = 0,
-                        ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                        TraitsIndex = i,
-                        IsExpandable = true,
-                        IsExpanded = false
-                    });
-                }
-            }
-            findAllTreeViewContainer.NodeValueList[0] = findAllTreeViewContainer.NodeValueList[0] with
-            {
-                ChildListLength = findAllTreeViewContainer.NodeValueList.Count - 1
-            };
-
-            for (int outerIndex = findAllTreeViewContainer.NodeValueList[0].ChildListOffset; outerIndex < findAllTreeViewContainer.NodeValueList[0].ChildListOffset + findAllTreeViewContainer.NodeValueList[0].ChildListLength; outerIndex++)
-            {
-                var groupNodeValue = findAllTreeViewContainer.NodeValueList[outerIndex];
-                var groupSearchResult = findAllTreeViewContainer.SearchResultList[groupNodeValue.TraitsIndex];
-                var childListOffset = findAllTreeViewContainer.NodeValueList.Count;
-                var childListLength = 0;
+                var fileHeap_Offset = resultHeap_Offset + resultHeap_Capacity;
+                var fileHeap_Capacity = fileCount;
+                var fileHeap_Length = 0;
                 
-                var indexSearchResult = groupNodeValue.TraitsIndex;
-                while (indexSearchResult < findAllTreeViewContainer.SearchResultList.Count)
+                var projectHeap_Offset = fileHeap_Offset + fileHeap_Capacity;
+                var projectHeap_Length = 0;
+                
+                var i_project = 0;
+
+                findAllTreeViewContainer = new FindAllTreeViewContainer(
+                    this,
+                    searchResultList,
+                    projectHeap_Offset + projectRespectedList.Count,
+                    projectRespectedList);
+                
+                findAllTreeViewContainer.NodeValueList[0] = new TreeViewNodeValue
                 {
-                    var childSearchResult = findAllTreeViewContainer.SearchResultList[indexSearchResult];
-                    if (childSearchResult.ResourceUri == groupSearchResult.ResourceUri)
-                    {
-                        findAllTreeViewContainer.NodeValueList.Add(new TreeViewNodeValue
-                        {
-                            ParentIndex = outerIndex,
-                            IndexAmongSiblings = childListLength++,
-                            ChildListOffset = 0,
-                            ChildListLength = 0,
-                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
-                            TraitsIndex = indexSearchResult,
-                            IsExpandable = false,
-                            IsExpanded = false
-                        });
-                    }
+                    ParentIndex = -1,
+                    IndexAmongSiblings = 0,
+                    ChildListOffset = projectHeap_Offset,
+                    ChildListLength = projectRespectedList.Count,
+                    ByteKind = FindAllTreeViewContainer.ByteKind_Aaa,
+                    TraitsIndex = 0,
+                    IsExpandable = true,
+                    IsExpanded = true
+                };
+                
+                var fileNode_ChildrenOffset = resultHeap_Offset;
+                var fileNode_InclusiveMark = findAllTreeViewContainer.SearchResultList[0].ResourceUri.Value;
+                
+                var projectNode_ChildrenOffset = fileHeap_Offset;
+                // The exclusive `i_searchResult` that marks the end of the project's files.
+                // (NOTE: A file group relates to a distinct occurrence of a filename within the search results, thus i_searchResult can be used as a unit to measure which file group).
+                var projectNode_ExclusiveMark = -1;
+
+                for (int i_searchResult = 0; i_searchResult <= /*the '<=' extra loop is needed*/ findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
+                {
+                    // Maintenance
+                    (ResourceUri ResourceUri, TextEditorTextSpan TextSpan) searchResult;
+                    if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count)
+                        searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
                     else
+                        searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
+                    if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count)
                     {
-                        break;
+                        while (projectRespectedList[i_project].StartInclusiveSearchResultIndex == projectRespectedList[i_project].EndExclusiveSearchResultIndex)
+                        {
+                            if (++i_project >= projectRespectedList.Count)
+                                break;
+                        }
+                        if (i_project < projectRespectedList.Count)
+                        {
+                            if (projectRespectedList[i_project].StartInclusiveSearchResultIndex == i_searchResult ||
+                                projectRespectedList[i_project].StartInclusiveSearchResultIndex == i_searchResult - 1)
+                            {
+                                projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                                projectNode_ExclusiveMark = projectRespectedList[i_project].EndExclusiveSearchResultIndex;
+                            }
+                            else
+                            {
+                                projectNode_ExclusiveMark = -1;
+                            }
+                        }
                     }
-                    ++indexSearchResult;
+
+                    // Write FileGroup
+                    if (fileNode_InclusiveMark != searchResult.ResourceUri.Value)
+                    {
+                        findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] = new TreeViewNodeValue
+                        {
+                            ParentIndex = projectNode_ExclusiveMark == -1 ? 0 : projectHeap_Offset + projectHeap_Length,
+                            IndexAmongSiblings = projectNode_ExclusiveMark == -1 ? 0 : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
+                            ChildListOffset = fileNode_ChildrenOffset,
+                            ChildListLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_FileGroup,
+                            TraitsIndex = i_searchResult - 1,
+                            IsExpandable = true,
+                        };
+                        ++fileHeap_Length;
+                        fileNode_ChildrenOffset = resultHeap_Offset + resultHeap_Length;
+                        fileNode_InclusiveMark = searchResult.ResourceUri.Value;
+                    }
+
+                    // Write SearchResult
+                    if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
+                    {
+                        findAllTreeViewContainer.NodeValueList[resultHeap_Offset + resultHeap_Length] = new TreeViewNodeValue
+                        {
+                            ParentIndex = fileHeap_Offset + fileHeap_Length,
+                            IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
+                            TraitsIndex = i_searchResult,
+                        };
+                        ++resultHeap_Length;
+                    }
+
+                    // Write ProjectGroup
+                    if (projectNode_ExclusiveMark != -1 && projectNode_ExclusiveMark == i_searchResult)
+                    {
+                        findAllTreeViewContainer.NodeValueList[projectHeap_Offset + projectHeap_Length] = new TreeViewNodeValue
+                        {
+                            ParentIndex = 0,
+                            IndexAmongSiblings = projectHeap_Length,
+                            ChildListOffset = projectNode_ChildrenOffset,
+                            ChildListLength = fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
+                            ByteKind = FindAllTreeViewContainer.ByteKind_ProjectGroup,
+                            TraitsIndex = i_project++,
+                            IsExpandable = true,
+                        };
+                        ++projectHeap_Length;
+                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
+                        projectNode_ExclusiveMark = -1;
+                    }
                 }
-                findAllTreeViewContainer.NodeValueList[outerIndex] = findAllTreeViewContainer.NodeValueList[outerIndex] with
+
+                findAllTreeViewContainer.NodeValueList[0] = findAllTreeViewContainer.NodeValueList[0] with
                 {
-                    ChildListOffset = childListOffset,
-                    ChildListLength = childListLength
+                    ChildListLength = projectHeap_Length,
                 };
             }
-            
+
             lock (_stateModificationLock)
             {
-                CommonService.TreeView_RegisterContainerAction(findAllTreeViewContainer);
+                if (findAllTreeViewContainer is not null)
+                    CommonService.TreeView_RegisterContainerAction(findAllTreeViewContainer);
                 _findAllState = _findAllState with
                 {
                     SearchResultList = searchResultList,
@@ -245,15 +514,26 @@ public partial class TextEditorService
     /// When I use DirectoryInfo I get the drive prepended to the path and windows directory separators and it breaks everything.
     /// </summary>
     private void ParseFilesRecursive(
+        //FindAllTreeViewContainer container,
+        int depth,
+        int csprojDepthMark, // used for the recursion to ignore "recursive" csproj files
         StringBuilder tokenBuilder,
         StringBuilder formattedBuilder,
-        HashSet<string> projectSeenHashSet,
+        HashSet<string /*ProjectAbsolutePath*/> projectSeenHashSet,
+        List<(string ProjectAbsolutePath, int StartInclusiveSearchResultIndex, int EndExclusiveSearchResultIndex)> projectRespectedList,
         List<(ResourceUri ResourceUri, TextEditorTextSpan TextSpan)> searchResultList,
         string search,
         string currentDirectory,
         StreamReaderPooledBufferWrap streamReaderPooledBufferWrap,
-        StreamReaderPooledBuffer streamReaderPooledBuffer)
+        StreamReaderPooledBuffer streamReaderPooledBuffer,
+        ref int fileCount)
     {
+        var searchResultInclusiveIndex = searchResultList.Count;
+        
+        int projectRespectedListIndex = -1;
+        
+        var previousFile = string.Empty;
+        
         // Enumerate files in the current directory
         foreach (string file in Directory.EnumerateFiles(currentDirectory))
         {
@@ -272,14 +552,33 @@ public partial class TextEditorService
             {
                 continue;
             }
+            
             if (file.EndsWith(".csproj"))
             {
-                projectSeenHashSet.Add(AbsolutePath.GetFormattedStringOnly(
+                var formattedAbsolutePath = AbsolutePath.GetFormattedStringOnly(
                     file,
                     isDirectory: false,
                     fileSystemProvider: CommonService.FileSystemProvider,
                     tokenBuilder,
-                    formattedBuilder));
+                    formattedBuilder);
+            
+                // TODO: Support value tuple named parameters.
+                projectSeenHashSet.Add(formattedAbsolutePath);
+                
+                if (csprojDepthMark == -1)
+                {
+                    // If anyone has "recursive" csproj files then this code only respects
+                    // the first one that was found.
+                    csprojDepthMark = depth;
+                    
+                    projectRespectedListIndex = projectRespectedList.Count;
+                    projectRespectedList.Add(
+                        (
+                            formattedAbsolutePath,
+                            searchResultInclusiveIndex,
+                            -1
+                        ));
+                }
             }
             
             var resourceUri = new ResourceUri(file);
@@ -325,6 +624,11 @@ public partial class TextEditorService
                     {
                         if (positionInSearch == search.Length)
                         {
+                            if (previousFile != file)
+                            {
+                                previousFile = file;
+                                ++fileCount;
+                            }
                             searchResultList.Add(
                             (
                                 resourceUri,
@@ -367,8 +671,31 @@ public partial class TextEditorService
             if (!IFileSystemProvider.IsDirectoryIgnored(subDirectory))
             {
                 // Recursively call for non-excluded subdirectories
-                ParseFilesRecursive(tokenBuilder, formattedBuilder, projectSeenHashSet, searchResultList, search, subDirectory, streamReaderPooledBufferWrap, streamReaderPooledBuffer);
+                ParseFilesRecursive(
+                    /*container, */
+                    depth + 1,
+                    csprojDepthMark,
+                    tokenBuilder,
+                    formattedBuilder,
+                    projectSeenHashSet,
+                    projectRespectedList,
+                    searchResultList,
+                    search,
+                    subDirectory,
+                    streamReaderPooledBufferWrap,
+                    streamReaderPooledBuffer,
+                    ref fileCount);
             }
+        }
+        
+        if (projectRespectedListIndex != -1)
+        {
+            projectRespectedList[projectRespectedListIndex] =
+            (
+                projectRespectedList[projectRespectedListIndex].ProjectAbsolutePath,
+                searchResultInclusiveIndex,
+                searchResultList.Count
+            );
         }
     }
 

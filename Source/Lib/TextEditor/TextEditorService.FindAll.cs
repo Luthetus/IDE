@@ -359,11 +359,7 @@ public partial class TextEditorService
             
             if (searchResultList.Count > 0)
             {
-                // "UPPERCASE_" Avoid confusion with the 'result' named variables.
-                var ROOT_ListOffset = 0;
-                var ROOT_ListCapacity = 1;
-            
-                var resultHeap_Offset = ROOT_ListOffset + ROOT_ListCapacity;
+                var resultHeap_Offset = 1 /*comes after the root node*/;
                 var resultHeap_Capacity = searchResultList.Count;
                 var resultHeap_Length = 0;
                 
@@ -372,7 +368,6 @@ public partial class TextEditorService
                 var fileHeap_Length = 0;
                 
                 var projectHeap_Offset = fileHeap_Offset + fileHeap_Capacity;
-                var projectHeap_Capacity = projectRespectedList.Count;
                 var projectHeap_Length = 0;
                 
                 var i_project = 0;

@@ -481,22 +481,19 @@ public partial class TextEditorService
                     }
                     if (fileNode_InclusiveMark != searchResult.ResourceUri.Value)
                     {
-                        var parentIndex = projectNode_ExclusiveMark == -1 ? 0 : projectHeap_Offset + projectHeap_Length;
-                        var indexAmongSiblings = projectNode_ExclusiveMark == -1 ? 0 : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset;
-                        var childrenLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset;
-                        var next_childrenOffset = resultHeap_Offset + resultHeap_Length;
-                        var traitsIndex = i_searchResult - 1;
                         findAllTreeViewContainer.NodeValueList[fileHeap_Offset + fileHeap_Length] = new TreeViewNodeValue
                         {
-                            ParentIndex = parentIndex,
-                            IndexAmongSiblings = indexAmongSiblings,
+                            ParentIndex = projectNode_ExclusiveMark == -1 ? 0 : projectHeap_Offset + projectHeap_Length,
+                            IndexAmongSiblings = projectNode_ExclusiveMark == -1 ? 0 : fileHeap_Offset + fileHeap_Length - projectNode_ChildrenOffset,
                             ChildListOffset = fileNode_ChildrenOffset,
-                            ChildListLength = childrenLength,
+                            ChildListLength = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
-                            TraitsIndex = traitsIndex,
+                            TraitsIndex = i_searchResult - 1,
                             IsExpandable = true,
-                        };++fileHeap_Length;
-                        fileNode_ChildrenOffset = next_childrenOffset;fileNode_InclusiveMark = searchResult.ResourceUri.Value;
+                        };
+                        ++fileHeap_Length;
+                        fileNode_ChildrenOffset = resultHeap_Offset + resultHeap_Length;
+                        fileNode_InclusiveMark = searchResult.ResourceUri.Value;
                     }
                     if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
                     {
@@ -506,7 +503,8 @@ public partial class TextEditorService
                             IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
                             TraitsIndex = i_searchResult,
-                        };++resultHeap_Length;
+                        };
+                        ++resultHeap_Length;
                     }
                     if (i_project < projectRespectedList.Count && (projectNode_ExclusiveMark == projectRespectedList[i_project].SearchResultsOffset + i_searchResult))
                     {
@@ -519,7 +517,9 @@ public partial class TextEditorService
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
                             TraitsIndex = i_project,
                             IsExpandable = true,
-                        };++projectHeap_Length;++i_project;
+                        };
+                        ++projectHeap_Length;
+                        ++i_project;
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;projectNode_ExclusiveMark = -1;
                     }
                 }

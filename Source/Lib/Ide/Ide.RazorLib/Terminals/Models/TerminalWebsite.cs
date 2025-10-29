@@ -202,7 +202,7 @@ public sealed class TerminalWebsite : ITerminal, IBackgroundTaskGroup
     {
         var argumentList = parsedCommand.Arguments.Trim().Split(' ');
     
-        var firstArgument = argumentList.Count > 0 ? argumentList[0] : null;
+        var firstArgument = argumentList.Length > 0 ? argumentList[0] : null;
         if (string.IsNullOrWhiteSpace(firstArgument))
         {
             WriteOutput(parsedCommand, new StandardErrorCommandEvent($"firstArgument was null or whitespace."));

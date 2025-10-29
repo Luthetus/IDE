@@ -51,8 +51,13 @@ public partial class TextEditorService
 
     public TextEditorGroup? Group_GetOrDefault(Key<TextEditorGroup> textEditorGroupKey)
     {
-        return Group_GetTextEditorGroupState().GroupList.FirstOrDefault(
-            x => x.GroupKey == textEditorGroupKey);
+        var groupList = Group_GetTextEditorGroupState().GroupList;
+        foreach (var x in groupList)
+        {
+            if (x.GroupKey == textEditorGroupKey)
+                return x;
+        }
+        return null;
     }
 
     public void Group_AddViewModel(Key<TextEditorGroup> textEditorGroupKey, int textEditorViewModelKey)
@@ -73,9 +78,16 @@ public partial class TextEditorService
         {
             var inState = Group_GetTextEditorGroupState();
 
-            var inGroup = inState.GroupList.FirstOrDefault(
-                x => x.GroupKey == group.GroupKey);
-
+            var groupList = inState.GroupList;
+            var inGroup = (TextEditorGroup?)null;
+            foreach (var x in groupList)
+            {
+                if (x.GroupKey == group.GroupKey)
+                {
+                    inGroup = x;
+                    break;
+                }
+            }
             if (inGroup is not null)
                 goto finalize;
 
@@ -266,9 +278,15 @@ public partial class TextEditorService
         {
             var inState = Group_GetTextEditorGroupState();
 
-            var inGroupIndex = inState.GroupList.FindIndex(
-                x => x.GroupKey == groupKey);
-
+            var inGroupIndex = -1;
+            for (int i = 0; i < inState.GroupList.Count; i++)
+            {
+                if (inState.GroupList[i].GroupKey == groupKey)
+                {
+                    inGroupIndex = i;
+                    break;
+                }
+            }
             if (inGroupIndex == -1)
                 goto finalize;
 
@@ -316,9 +334,15 @@ public partial class TextEditorService
         {
             var inState = Group_GetTextEditorGroupState();
 
-            var inGroup = inState.GroupList.FirstOrDefault(
-                x => x.GroupKey == groupKey);
-
+            var inGroup = (TextEditorGroup?)null;
+            foreach (var x in inState.GroupList)
+            {
+                if (x.GroupKey == groupKey)
+                {
+                    inGroup = x;
+                    break;
+                }
+            }
             if (inGroup is null || inGroup.GroupKey == TextEditorService.EditorTextEditorGroupKey)
                 goto finalize;
 

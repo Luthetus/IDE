@@ -242,9 +242,7 @@ public sealed partial class TextEditorViewModelSlimDisplay : ComponentBase, IDis
         if (string.IsNullOrWhiteSpace(textEditorOptions.CommonOptions.FontFamily))
             fontFamily = TextEditorVirtualizationResult.DEFAULT_FONT_FAMILY; 
         else
-            fontFamily = textEditorOptions.CommonOptions.FontFamily;
-
-        int fontSizeInPixels = textEditorOptions.CommonOptions.FontSizeInPixels;
+            fontFamily = textEditorOptions.CommonOptions.FontFamily;        int fontSizeInPixels = textEditorOptions.CommonOptions.FontSizeInPixels;
         
         _componentData.RenderBatchPersistentState = new TextEditorRenderBatchPersistentState(
             textEditorOptions,
@@ -582,8 +580,28 @@ public sealed partial class TextEditorViewModelSlimDisplay : ComponentBase, IDis
         if (!_thinksTouchIsOccurring)
              return;
 
-        var previousTouchPoint = _previousTouchEventArgs?.ChangedTouches.FirstOrDefault(x => x.Identifier == 0);
-        var currentTouchPoint = touchEventArgs.ChangedTouches.FirstOrDefault(x => x.Identifier == 0);
+        var previousTouchPoint = default(Microsoft.AspNetCore.Components.Web.TouchPoint);
+        if (_previousTouchEventArgs is not null)
+        {
+            foreach (var x in _previousTouchEventArgs.ChangedTouches)
+            {
+                if (x.Identifier == 0)
+                {
+                    previousTouchPoint = x;
+                    break;
+                }
+            }
+        }
+        
+        var currentTouchPoint = default(Microsoft.AspNetCore.Components.Web.TouchPoint);
+        foreach (var x in touchEventArgs.ChangedTouches)
+        {
+            if (x.Identifier == 0)
+            {
+                currentTouchPoint = x;
+                break;
+            }
+        }
 
         if (previousTouchPoint is null || currentTouchPoint is null)
              return;
@@ -631,8 +649,18 @@ public sealed partial class TextEditorViewModelSlimDisplay : ComponentBase, IDis
 
         if (touchTimespan.Value.TotalMilliseconds < 200)
         {
-            var startTouchPoint = rememberStartTouchEventArgs?.ChangedTouches.FirstOrDefault(x => x.Identifier == 0);
-
+            var startTouchPoint = default(Microsoft.AspNetCore.Components.Web.TouchPoint);
+            if (rememberStartTouchEventArgs is not null)
+            {
+                foreach (var x in rememberStartTouchEventArgs.ChangedTouches)
+                {
+                    if (x.Identifier == 0)
+                    {
+                        startTouchPoint = x;
+                        break;
+                    }
+                }
+            }
             if (startTouchPoint is null)
                 return;
 

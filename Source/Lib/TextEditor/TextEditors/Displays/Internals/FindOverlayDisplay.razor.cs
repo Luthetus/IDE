@@ -8,6 +8,7 @@ using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.Exceptions;
 using Clair.TextEditor.RazorLib.Edits.Models;
+using Clair.TextEditor.RazorLib.Decorations.Models;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
 
@@ -254,14 +255,19 @@ public partial class FindOverlayDisplay : ComponentBase, IDisposable
         if (!virtualizationResult.IsValid)
             return;
         
-        var findOverlayPresentationModel = virtualizationResult.Model.PresentationModelList.FirstOrDefault(
-            x => x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey);
-
+        var findOverlayPresentationModel = (TextEditorPresentationModel?)null;
+        foreach (var x in virtualizationResult.Model.PresentationModelList)
+        {
+            if (x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey)
+            {
+                findOverlayPresentationModel = x;
+                break;
+            }
+        }
         if (findOverlayPresentationModel is null)
             return;
 
         var completedCalculation = findOverlayPresentationModel.CompletedCalculation;
-
         if (completedCalculation is null)
             return;
 
@@ -292,9 +298,15 @@ public partial class FindOverlayDisplay : ComponentBase, IDisposable
         if (!virtualizationResult.IsValid)
             return;
         
-        var findOverlayPresentationModel = virtualizationResult.Model.PresentationModelList.FirstOrDefault(
-            x => x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey);
-
+        var findOverlayPresentationModel = (TextEditorPresentationModel?)null;
+        foreach (var x in virtualizationResult.Model.PresentationModelList)
+        {
+            if (x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey)
+            {
+                findOverlayPresentationModel = x;
+                break;
+            }
+        }
         if (findOverlayPresentationModel is null)
             return;
 
@@ -349,9 +361,15 @@ public partial class FindOverlayDisplay : ComponentBase, IDisposable
             if (modelModifier is null)
                 return ValueTask.CompletedTask;
 
-            var presentationModel = modelModifier.PresentationModelList.FirstOrDefault(x =>
-                x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey);
-
+            var presentationModel = default(TextEditorPresentationModel?);
+            foreach (var x in modelModifier.PresentationModelList)
+            {
+                if (x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey)
+                {
+                    presentationModel = x;
+                    break;
+                }
+            }
             if (presentationModel?.CompletedCalculation is not null)
             {
                 var outTextSpanList = new List<TextEditorTextSpan>(presentationModel.CompletedCalculation.TextSpanList);
@@ -446,9 +464,15 @@ public partial class FindOverlayDisplay : ComponentBase, IDisposable
             if (modelModifier is null || viewModelModifier is null || localActiveIndexMatchedTextSpan is null)
                 return ValueTask.CompletedTask;
 
-            var presentationModel = modelModifier.PresentationModelList.FirstOrDefault(x =>
-                x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey);
-
+            var presentationModel = (TextEditorPresentationModel?)null;
+            foreach (var x in modelModifier.PresentationModelList)
+            {
+                if (x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey)
+                {
+                    presentationModel = x;
+                    break;
+                }
+            }
             if (presentationModel?.CompletedCalculation is null)
                 return ValueTask.CompletedTask;
 
@@ -490,9 +514,15 @@ public partial class FindOverlayDisplay : ComponentBase, IDisposable
             if (modelModifier is null || viewModelModifier is null || localActiveIndexMatchedTextSpan is null)
                 return ValueTask.CompletedTask;
 
-            var presentationModel = modelModifier.PresentationModelList.FirstOrDefault(x =>
-                x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey);
-
+            var presentationModel = (TextEditorPresentationModel?)null;
+            foreach (var x in modelModifier.PresentationModelList)
+            {
+                if (x.TextEditorPresentationKey == TextEditorFacts.FindOverlayPresentation_PresentationKey)
+                {
+                    presentationModel = x;
+                    break;
+                }
+            }
             if (presentationModel?.CompletedCalculation is null)
                 return ValueTask.CompletedTask;
             

@@ -472,10 +472,8 @@ public partial class TextEditorService
                 for (int i_searchResult = 0; i_searchResult <= /*the '<=' extra loop is needed*/ findAllTreeViewContainer.SearchResultList.Count; i_searchResult++)
                 {
                     (ResourceUri ResourceUri, TextEditorTextSpan TextSpan) searchResult;
-                    if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count)
-                        searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
-                    else
-                        searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
+                    if (i_searchResult == findAllTreeViewContainer.SearchResultList.Count) searchResult = (ResourceUri.Empty, default(TextEditorTextSpan));
+                    else searchResult = findAllTreeViewContainer.SearchResultList[i_searchResult];
                     if (projectNode_ExclusiveMark == -1 && projectRespectedList.Count > 0 && i_project < projectRespectedList.Count && projectRespectedList[i_project].SearchResultsOffset == i_searchResult)
                     {
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
@@ -497,10 +495,8 @@ public partial class TextEditorService
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultGroup,
                             TraitsIndex = traitsIndex,
                             IsExpandable = true,
-                        };
-                        ++fileHeap_Length;
-                        fileNode_InclusiveMark = searchResult.ResourceUri.Value;
-                        fileNode_ChildrenOffset = next_childrenOffset;
+                        };++fileHeap_Length;
+                        fileNode_ChildrenOffset = next_childrenOffset;fileNode_InclusiveMark = searchResult.ResourceUri.Value;
                     }
                     if (i_searchResult != findAllTreeViewContainer.SearchResultList.Count)
                     {
@@ -510,8 +506,7 @@ public partial class TextEditorService
                             IndexAmongSiblings = resultHeap_Offset + resultHeap_Length - fileNode_ChildrenOffset,
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResult,
                             TraitsIndex = i_searchResult,
-                        };
-                        ++resultHeap_Length;
+                        };++resultHeap_Length;
                     }
                     if (i_project < projectRespectedList.Count && (projectNode_ExclusiveMark == projectRespectedList[i_project].SearchResultsOffset + i_searchResult))
                     {
@@ -524,11 +519,8 @@ public partial class TextEditorService
                             ByteKind = FindAllTreeViewContainer.ByteKind_SearchResultProject,
                             TraitsIndex = i_project,
                             IsExpandable = true,
-                        };
-                        ++projectHeap_Length;
-                        ++i_project;
-                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;
-                        projectNode_ExclusiveMark = -1;
+                        };++projectHeap_Length;++i_project;
+                        projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;projectNode_ExclusiveMark = -1;
                     }
                 }
 

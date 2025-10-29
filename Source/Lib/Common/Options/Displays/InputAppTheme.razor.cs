@@ -36,7 +36,12 @@ public sealed partial class InputAppTheme : IDisposable
 
     private bool CheckIsActiveValid(ThemeRecord[] themeRecordList, int activeThemeKey)
     {
-        return themeRecordList.Any(btr => btr.Key == activeThemeKey);
+        foreach (var btr in themeRecordList)
+        {
+            if (btr.Key == activeThemeKey)
+                return true;
+        }
+        return false;
     }
 
     private bool CheckIsActiveSelection(int themeKey, int activeThemeKey)

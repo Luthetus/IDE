@@ -48,9 +48,11 @@ public partial class FindAllContextMenu : ComponentBase
         }
 
         // Default case
-        var menuRecord = new MenuRecord(menuRecordsList);
-        _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
-        return menuRecord;
+        {
+            var menuRecord = new MenuRecord(menuRecordsList);
+            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            return menuRecord;
+        }
     }
 
     private MenuRecord GetMultiSelectionMenuRecord(TreeViewCommandArgs commandArgs)
@@ -65,8 +67,10 @@ public partial class FindAllContextMenu : ComponentBase
         }
 
         // Default case
-        var menuRecord = new MenuRecord(menuOptionRecordList);
-        _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
-        return menuRecord;
+        {
+            var menuRecord = new MenuRecord(menuOptionRecordList);
+            _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
+            return menuRecord;
+        }
     }
 }

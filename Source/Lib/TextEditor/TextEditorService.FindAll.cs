@@ -468,6 +468,11 @@ public partial class TextEditorService
                         projectNode_ChildrenOffset = fileHeap_Offset + fileHeap_Length;projectNode_ExclusiveMark = -1;
                     }
                 }
+
+                findAllTreeViewContainer.NodeValueList[0] = findAllTreeViewContainer.NodeValueList[0] with
+                {
+                    ChildListLength = projectHeap_Length,
+                };
             }
 
             lock (_stateModificationLock)

@@ -275,7 +275,7 @@ public sealed class TextEditorModel
     /// then add 1 to the first split if there is a multibyte scenario.
     /// Therefore partition size of 3 would infinitely try to split itself.
     /// </summary>
-    public const int MINIMUM_PARTITION_SIZE = 4;
+    public const int MINIMUM_PARTITION_SIZE = 4_096;
 
     public enum DeleteKind
     {
@@ -471,14 +471,20 @@ public sealed class TextEditorModel
         
         var rowIndex = 0;
         var charactersOnLine = 0;
-
-        List<RichCharacter> richCharacterList = new(capacity: content.Length);
         var richCharacterIndex = 0;
+        
+        var partition = PartitionList[0];
         
         PersistentState.IsMixedLineEndings = false;
 
         for (var contentIndex = 0; contentIndex < content.Length; contentIndex++)
         {
+            if (partition.Count >= (PersistentState.PartitionSize - 32))
+            {
+                partition = new TextEditorPartition(new List<RichCharacter>());
+                PartitionList.Add(partition);
+            }
+        
             var character = content[contentIndex];
             charactersOnLine++;
 
@@ -522,20 +528,20 @@ public sealed class TextEditorModel
                 if (LineEndKindPreference == LineEndKind.CarriageReturnLineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 2, lineEndKind: LineEndKind.CarriageReturnLineFeed, lineEndKindOriginal: currentLineEndKind));
-                    richCharacterList.Add(new(character, default));
-                    richCharacterList.Add(new('\n', default));
+                    partition.RichCharacterList.Add(new (character, default));
+                    partition.RichCharacterList.Add(new ('\n', default));
                     richCharacterIndex += 2;
                 }
                 else if (LineEndKindPreference == LineEndKind.CarriageReturn)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.CarriageReturn, lineEndKindOriginal: currentLineEndKind));
-                    richCharacterList.Add(new(character, default));
+                    partition.RichCharacterList.Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else if (LineEndKindPreference == LineEndKind.LineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.LineFeed, lineEndKindOriginal: currentLineEndKind));
-                    richCharacterList.Add(new(character, default));
+                    partition.RichCharacterList.Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else
@@ -549,12 +555,12 @@ public sealed class TextEditorModel
             else if (character == CommonFacts.TAB)
             {
                 TabCharPositionIndexList.Add(richCharacterIndex);
-                richCharacterList.Add(new(character, default));
+                partition.RichCharacterList.Add(new (character, default));
                 richCharacterIndex++;
             }
             else
             {
-                richCharacterList.Add(new(character, default));
+                partition.RichCharacterList.Add(new (character, default));
                 richCharacterIndex++;
             }
         }
@@ -585,16 +591,14 @@ public sealed class TextEditorModel
             }
         }
 
-        __InsertRange(0, richCharacterList);
-
         // Update the EndOfFile line end.
         var endOfFile = LineEndList[^1];
         if (endOfFile.LineEndKind != LineEndKind.EndOfFile)
             throw new ClairTextEditorException($"The text editor model is malformed; the final entry of {nameof(LineEndList)} must be the {nameof(LineEndKind)}.{nameof(LineEndKind.EndOfFile)}");
         LineEndList[^1] = endOfFile with
         {
-            Position_StartInclusiveIndex = richCharacterList.Count,
-            Position_EndExclusiveIndex = richCharacterList.Count,
+            Position_StartInclusiveIndex = richCharacterIndex,
+            Position_EndExclusiveIndex = richCharacterIndex,
         };
 
         SetIsDirtyTrue();

@@ -2787,11 +2787,6 @@ public sealed class TextEditorModel
                 break;
         }
     }
-
-    public void __Add(RichCharacter richCharacter)
-    {
-        __Insert(CharCount, richCharacter);
-    }
     
     public void PartitionListSetItem(int index, TextEditorPartition partition)
     {

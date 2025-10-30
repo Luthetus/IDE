@@ -196,8 +196,16 @@ public sealed class TextEditorModel
         {
             if (_partitionListChanged || _allText is null)
             {
-                // TODO: Difference between 'new string(char[])' and a StringBuilder? Also can this be IEnumerable instead of array?
-                _allText = new string(RichCharacterList.Select(x => x.Value).ToArray());
+                var charArr = new char[CharCount];
+                var index = 0;
+                foreach (var partition in PartitionList)
+                {
+                    foreach (var rc in partition.RichCharacterList)
+                    {
+                        charArr[index++] = rc.Value;
+                    }
+                }
+                _allText = new string(charArr);
             }
             
             return _allText;
@@ -211,7 +219,15 @@ public sealed class TextEditorModel
         get
         {
             if (_partitionListChanged || _charCount == -1)
-                _charCount = PartitionList.Sum(x => x.Count);
+            {
+                var sumCount = 0;
+                var index = 0;
+                foreach (var partition in PartitionList)
+                {
+                    sumCount += partition.Count;
+                }
+                _charCount = sumCount;
+            }
             
             return _charCount;
         }

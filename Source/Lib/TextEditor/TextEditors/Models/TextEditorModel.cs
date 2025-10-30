@@ -141,7 +141,17 @@ public sealed class TextEditorModel
                 _partitionListChanged = false;
                 _allText = null;
                 _charCount = -1;
-                _richCharacterList = PartitionList.SelectMany(x => x.RichCharacterList).ToArray();
+                
+                var rcArr = new RichCharacter[CharCount];
+                var index = 0;
+                foreach (var partition in PartitionList)
+                {
+                    foreach (var rc in partition.RichCharacterList)
+                    {
+                        rcArr[index++] = rc;
+                    }
+                }
+                _richCharacterList = rcArr;
             }
             
             return _richCharacterList;

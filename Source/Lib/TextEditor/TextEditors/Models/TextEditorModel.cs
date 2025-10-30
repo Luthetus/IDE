@@ -2435,51 +2435,6 @@ public sealed class TextEditorModel
     #endregion
     
     #region TextEditorModelPartitions
-    public void __Insert(int globalPositionIndex, RichCharacter richCharacter)
-    {
-        int indexOfPartitionWithAvailableSpace = -1;
-        int relativePositionIndex = -1;
-        var runningCount = 0;
-
-        for (int i = 0; i < PartitionList.Count; i++)
-        {
-            TextEditorPartition partition = PartitionList[i];
-
-            if (runningCount + partition.Count >= globalPositionIndex)
-            {
-                // This is the partition we want to modify.
-                // But, we must first check if it has available space.
-                if (partition.Count >= PersistentState.PartitionSize)
-                {
-                    __SplitIntoTwoPartitions(i);
-                    i--;
-                    continue;
-                }
-
-                relativePositionIndex = globalPositionIndex - runningCount;
-                indexOfPartitionWithAvailableSpace = i;
-                break;
-            }
-            else
-            {
-                runningCount += partition.Count;
-            }
-        }
-
-        if (indexOfPartitionWithAvailableSpace == -1)
-            throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
-
-        if (relativePositionIndex == -1)
-            throw new ClairTextEditorException("if (relativePositionIndex == -1)");
-
-        var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
-        var outPartition = inPartition.Insert(relativePositionIndex, richCharacter);
-
-        PartitionListSetItem(
-            indexOfPartitionWithAvailableSpace,
-            outPartition);
-    }
-
     /// <summary>
     /// If either character or decoration byte are 'null', then the respective
     /// collection will be left unchanged.

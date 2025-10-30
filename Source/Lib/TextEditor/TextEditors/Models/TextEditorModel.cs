@@ -50,15 +50,11 @@ public sealed class TextEditorModel
             editBlockIndex: 0);
     
         // Initialize
-        _partitionList = new List<TextEditorPartition> { new TextEditorPartition(new List<RichCharacter>()) };
         _richCharacterList = Array.Empty<RichCharacter>();
-        LineEndList = new();
         PresentationModelList = new();
-        TabCharPositionIndexList = new();
         OnlyLineEndKind = LineEndKind.Unset;
         LineEndKindPreference = LineEndKind.Unset;
         ResourceLastWriteTime = resourceLastWriteTime;
-        MostCharactersOnASingleLineTuple = (0, 0);
         PreviousMostCharactersOnASingleLineTuple = (0, 0);
 
         PreviousLineCount = 0;
@@ -67,6 +63,13 @@ public sealed class TextEditorModel
         // LineCount => LineEndList.Count;
         
         SetContent(content);
+        /*
+         * SetContent internally will initialize these:
+         *     PartitionList = ...;
+         *     MostCharactersOnASingleLineTuple = ...;
+         *     LineEndList = ...;
+         *     TabCharPositionIndexList = ...;
+         */
         IsDirty = false;
     }
     
@@ -104,23 +107,6 @@ public sealed class TextEditorModel
         }*/
     }
     
-    /*private void WriteEditBlockListToConsole()
-    {
-        Console.WriteLine($"Index:{EditBlockIndex}, Count:{EditBlockList.Count}, TagDoNotRemove:{(TagDoNotRemove is null ? "null" : TagDoNotRemove)} MAXIMUM_EDIT_BLOCKS:{MAXIMUM_EDIT_BLOCKS} ResourceUri:{ResourceUri.Value}");
-        
-        for (int i = 0; i < EditBlockList.Count; i++)
-        {
-            var entry = EditBlockList[i];
-        
-            Console.WriteLine($"\tIndex: {i}:");
-            Console.WriteLine($"\t\tEditKind:       {entry.EditKind}");
-            Console.WriteLine($"\t\tTag:            {entry.Tag}");
-            Console.WriteLine($"\t\tCursor:         {entry.BeforeCursor}");
-            Console.WriteLine($"\t\tBeforePositionIndex:  {entry.BeforePositionIndex}");
-            Console.WriteLine($"\t\tEditedTextBuilder: {entry.EditedTextBuilder}");
-        }
-    }*/
-    
     /// <summary>
     /// You have to check if the '_partitionListChanged'
     /// when finalizing an edit to a text editor
@@ -130,7 +116,8 @@ public sealed class TextEditorModel
     /// </summary>
     private bool _partitionListChanged;
     private bool _partitionListIsShallowCopy;
-    public List<TextEditorPartition> _partitionList;
+    /// <summary>The initial constructor invocation sets this by invoking 'SetContent(...)'</summary>
+    public List<TextEditorPartition> _partitionList = null!;
     public List<TextEditorPartition> PartitionList
     {
         get
@@ -219,13 +206,15 @@ public sealed class TextEditorModel
             return _charCount;
         }
     }
-    
-    public List<LineEnd> LineEndList { get; set; }
+
+    /// <summary>The initial constructor invocation sets this by invoking 'SetContent(...)'</summary>
+    public List<LineEnd> LineEndList { get; set; } = null!;
     
     private bool _presentationModelListIsShallowCopy;
     public List<TextEditorPresentationModel> PresentationModelList { get; set; }
-    
-    public List<int> TabCharPositionIndexList { get; set; }
+
+    /// <summary>The initial constructor invocation sets this by invoking 'SetContent(...)'</summary>
+    public List<int> TabCharPositionIndexList { get; set; } = null!;
     
     public TextEditorModelPersistentState PersistentState { get; set; }
     
@@ -241,6 +230,7 @@ public sealed class TextEditorModel
     /// a count of edits which is greater than the MAXIMUM_EDIT_BLOCKS.
     /// </summary>
     public string TagDoNotRemove { get; set; }
+    /// <summary>The initial constructor invocation sets this by invoking 'SetContent(...)'</summary>
     public (int lineIndex, int lineLength) MostCharactersOnASingleLineTuple { get; set; }
     public (int lineIndex, int lineLength) PreviousMostCharactersOnASingleLineTuple { get; set; }
 

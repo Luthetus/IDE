@@ -252,6 +252,8 @@ public partial class CommonUiIsland : ComponentBase, IDisposable
 
     private async Task DROPDOWN_ClearActiveKeyList()
     {
+        var dropdownList = DotNetService.CommonService.GetDropdownState().DropdownList;
+    
         // TODO: How would .F/irstOrDefault() interact with the reference to DropdownList...
         // ...presumably to get an "equal behavior" you'd need to capture the reference first?
         //
@@ -261,8 +263,8 @@ public partial class CommonUiIsland : ComponentBase, IDisposable
         // ...I can't search for the Func overloads, I'm searching by text
         // and seeing the non-Func ones in the search results is triggering me lol.
         // Probably is better to leave them but I wanna see where things go ".Any()"ways.
-        var firstDropdown = DotNetService.CommonService.GetDropdownState().DropdownList.Count > 0
-            ? DotNetService.CommonService.GetDropdownState().DropdownList[0]
+        var firstDropdown = dropdownList.Count > 0
+            ? dropdownList[0]
             : default(DropdownRecord);
 
         if (firstDropdown is not null)

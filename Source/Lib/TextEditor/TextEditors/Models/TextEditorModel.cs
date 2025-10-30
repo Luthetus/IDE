@@ -50,15 +50,11 @@ public sealed class TextEditorModel
             editBlockIndex: 0);
     
         // Initialize
-        _partitionList = new List<TextEditorPartition> { new TextEditorPartition(new List<RichCharacter>()) };
         _richCharacterList = Array.Empty<RichCharacter>();
-        LineEndList = new();
         PresentationModelList = new();
-        TabCharPositionIndexList = new();
         OnlyLineEndKind = LineEndKind.Unset;
         LineEndKindPreference = LineEndKind.Unset;
         ResourceLastWriteTime = resourceLastWriteTime;
-        MostCharactersOnASingleLineTuple = (0, 0);
         PreviousMostCharactersOnASingleLineTuple = (0, 0);
 
         PreviousLineCount = 0;
@@ -67,6 +63,13 @@ public sealed class TextEditorModel
         // LineCount => LineEndList.Count;
         
         SetContent(content);
+        /*
+         * SetContent internally will initialize these:
+         *     PartitionList = ...;
+         *     MostCharactersOnASingleLineTuple = ...;
+         *     LineEndList = ...;
+         *     TabCharPositionIndexList = ...;
+         */
         IsDirty = false;
     }
     
@@ -104,23 +107,6 @@ public sealed class TextEditorModel
         }*/
     }
     
-    /*private void WriteEditBlockListToConsole()
-    {
-        Console.WriteLine($"Index:{EditBlockIndex}, Count:{EditBlockList.Count}, TagDoNotRemove:{(TagDoNotRemove is null ? "null" : TagDoNotRemove)} MAXIMUM_EDIT_BLOCKS:{MAXIMUM_EDIT_BLOCKS} ResourceUri:{ResourceUri.Value}");
-        
-        for (int i = 0; i < EditBlockList.Count; i++)
-        {
-            var entry = EditBlockList[i];
-        
-            Console.WriteLine($"\tIndex: {i}:");
-            Console.WriteLine($"\t\tEditKind:       {entry.EditKind}");
-            Console.WriteLine($"\t\tTag:            {entry.Tag}");
-            Console.WriteLine($"\t\tCursor:         {entry.BeforeCursor}");
-            Console.WriteLine($"\t\tBeforePositionIndex:  {entry.BeforePositionIndex}");
-            Console.WriteLine($"\t\tEditedTextBuilder: {entry.EditedTextBuilder}");
-        }
-    }*/
-    
     /// <summary>
     /// You have to check if the '_partitionListChanged'
     /// when finalizing an edit to a text editor
@@ -130,7 +116,8 @@ public sealed class TextEditorModel
     /// </summary>
     private bool _partitionListChanged;
     private bool _partitionListIsShallowCopy;
-    public List<TextEditorPartition> _partitionList;
+    /// <summary>The initial constructor invocation sets this by invoking 'SetContent(...)'</summary>
+    public List<TextEditorPartition> _partitionList = null!;
     public List<TextEditorPartition> PartitionList
     {
         get
@@ -219,13 +206,15 @@ public sealed class TextEditorModel
             return _charCount;
         }
     }
-    
-    public List<LineEnd> LineEndList { get; set; }
+
+    /// <summary>The initial constructor invocation sets this by invoking 'SetContent(...)'</summary>
+    public List<LineEnd> LineEndList { get; set; } = null!;
     
     private bool _presentationModelListIsShallowCopy;
     public List<TextEditorPresentationModel> PresentationModelList { get; set; }
-    
-    public List<int> TabCharPositionIndexList { get; set; }
+
+    /// <summary>The initial constructor invocation sets this by invoking 'SetContent(...)'</summary>
+    public List<int> TabCharPositionIndexList { get; set; } = null!;
     
     public TextEditorModelPersistentState PersistentState { get; set; }
     
@@ -241,6 +230,7 @@ public sealed class TextEditorModel
     /// a count of edits which is greater than the MAXIMUM_EDIT_BLOCKS.
     /// </summary>
     public string TagDoNotRemove { get; set; }
+    /// <summary>The initial constructor invocation sets this by invoking 'SetContent(...)'</summary>
     public (int lineIndex, int lineLength) MostCharactersOnASingleLineTuple { get; set; }
     public (int lineIndex, int lineLength) PreviousMostCharactersOnASingleLineTuple { get; set; }
 
@@ -285,7 +275,7 @@ public sealed class TextEditorModel
     /// then add 1 to the first split if there is a multibyte scenario.
     /// Therefore partition size of 3 would infinitely try to split itself.
     /// </summary>
-    public const int MINIMUM_PARTITION_SIZE = 4;
+    public const int MINIMUM_PARTITION_SIZE = 4_096;
 
     public enum DeleteKind
     {
@@ -481,14 +471,20 @@ public sealed class TextEditorModel
         
         var rowIndex = 0;
         var charactersOnLine = 0;
-
-        List<RichCharacter> richCharacterList = new(capacity: content.Length);
         var richCharacterIndex = 0;
+        
+        var partition = PartitionList[0];
         
         PersistentState.IsMixedLineEndings = false;
 
         for (var contentIndex = 0; contentIndex < content.Length; contentIndex++)
         {
+            if (partition.Count >= (PersistentState.PartitionSize - 32))
+            {
+                partition = new TextEditorPartition(new List<RichCharacter>());
+                PartitionList.Add(partition);
+            }
+        
             var character = content[contentIndex];
             charactersOnLine++;
 
@@ -532,20 +528,20 @@ public sealed class TextEditorModel
                 if (LineEndKindPreference == LineEndKind.CarriageReturnLineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 2, lineEndKind: LineEndKind.CarriageReturnLineFeed, lineEndKindOriginal: currentLineEndKind));
-                    richCharacterList.Add(new(character, default));
-                    richCharacterList.Add(new('\n', default));
+                    partition.RichCharacterList.Add(new (character, default));
+                    partition.RichCharacterList.Add(new ('\n', default));
                     richCharacterIndex += 2;
                 }
                 else if (LineEndKindPreference == LineEndKind.CarriageReturn)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.CarriageReturn, lineEndKindOriginal: currentLineEndKind));
-                    richCharacterList.Add(new(character, default));
+                    partition.RichCharacterList.Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else if (LineEndKindPreference == LineEndKind.LineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.LineFeed, lineEndKindOriginal: currentLineEndKind));
-                    richCharacterList.Add(new(character, default));
+                    partition.RichCharacterList.Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else
@@ -559,12 +555,12 @@ public sealed class TextEditorModel
             else if (character == CommonFacts.TAB)
             {
                 TabCharPositionIndexList.Add(richCharacterIndex);
-                richCharacterList.Add(new(character, default));
+                partition.RichCharacterList.Add(new (character, default));
                 richCharacterIndex++;
             }
             else
             {
-                richCharacterList.Add(new(character, default));
+                partition.RichCharacterList.Add(new (character, default));
                 richCharacterIndex++;
             }
         }
@@ -595,16 +591,14 @@ public sealed class TextEditorModel
             }
         }
 
-        __InsertRange(0, richCharacterList);
-
         // Update the EndOfFile line end.
         var endOfFile = LineEndList[^1];
         if (endOfFile.LineEndKind != LineEndKind.EndOfFile)
             throw new ClairTextEditorException($"The text editor model is malformed; the final entry of {nameof(LineEndList)} must be the {nameof(LineEndKind)}.{nameof(LineEndKind.EndOfFile)}");
         LineEndList[^1] = endOfFile with
         {
-            Position_StartInclusiveIndex = richCharacterList.Count,
-            Position_EndExclusiveIndex = richCharacterList.Count,
+            Position_StartInclusiveIndex = richCharacterIndex,
+            Position_EndExclusiveIndex = richCharacterIndex,
         };
 
         SetIsDirtyTrue();
@@ -2435,51 +2429,6 @@ public sealed class TextEditorModel
     #endregion
     
     #region TextEditorModelPartitions
-    public void __Insert(int globalPositionIndex, RichCharacter richCharacter)
-    {
-        int indexOfPartitionWithAvailableSpace = -1;
-        int relativePositionIndex = -1;
-        var runningCount = 0;
-
-        for (int i = 0; i < PartitionList.Count; i++)
-        {
-            TextEditorPartition partition = PartitionList[i];
-
-            if (runningCount + partition.Count >= globalPositionIndex)
-            {
-                // This is the partition we want to modify.
-                // But, we must first check if it has available space.
-                if (partition.Count >= PersistentState.PartitionSize)
-                {
-                    __SplitIntoTwoPartitions(i);
-                    i--;
-                    continue;
-                }
-
-                relativePositionIndex = globalPositionIndex - runningCount;
-                indexOfPartitionWithAvailableSpace = i;
-                break;
-            }
-            else
-            {
-                runningCount += partition.Count;
-            }
-        }
-
-        if (indexOfPartitionWithAvailableSpace == -1)
-            throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
-
-        if (relativePositionIndex == -1)
-            throw new ClairTextEditorException("if (relativePositionIndex == -1)");
-
-        var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
-        var outPartition = inPartition.Insert(relativePositionIndex, richCharacter);
-
-        PartitionListSetItem(
-            indexOfPartitionWithAvailableSpace,
-            outPartition);
-    }
-
     /// <summary>
     /// If either character or decoration byte are 'null', then the respective
     /// collection will be left unchanged.
@@ -2786,11 +2735,6 @@ public sealed class TextEditorModel
             if (runningDeleteCount >= targetDeleteCount)
                 break;
         }
-    }
-
-    public void __Add(RichCharacter richCharacter)
-    {
-        __Insert(CharCount, richCharacter);
     }
     
     public void PartitionListSetItem(int index, TextEditorPartition partition)

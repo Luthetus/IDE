@@ -25,6 +25,15 @@ namespace Clair.TextEditor.RazorLib.TextEditors.Models;
 /// </summary>
 public sealed class TextEditorViewModel : IDisposable
 {
+    private static int _estimateViewModelConstructorInvocationCount;
+    private static void DoEstimateViewModelConstructorInvocationCount()
+    {
+        if (++_estimateViewModelConstructorInvocationCount % 25 == 0)
+        {
+            Console.WriteLine(_estimateViewModelConstructorInvocationCount);
+        }
+    }
+
     public TextEditorViewModel(
         int viewModelKey,
         ResourceUri resourceUri,
@@ -38,6 +47,8 @@ public sealed class TextEditorViewModel : IDisposable
         int marginScrollHeight,
         Category category)
     {
+        DoEstimateViewModelConstructorInvocationCount();
+    
         PersistentState = new TextEditorViewModelPersistentState(
             viewModelKey,
             resourceUri,
@@ -74,6 +85,8 @@ public sealed class TextEditorViewModel : IDisposable
     
     public TextEditorViewModel(TextEditorViewModel other)
     {
+        DoEstimateViewModelConstructorInvocationCount();
+        
         PersistentState = other.PersistentState;
         
         _lineIndex = other._lineIndex;

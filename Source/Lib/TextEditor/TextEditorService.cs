@@ -55,6 +55,10 @@ public sealed partial class TextEditorService
         _partitionListPool.Enqueue(list);
     }
     */
+    
+    // private readonly Queue<TextEditorViewModel> _viewModelPool = new();
+    
+    
 
     public TextEditorService(
         IJSRuntime jsRuntime,

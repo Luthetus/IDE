@@ -2,6 +2,9 @@ using Clair.TextEditor.RazorLib.Characters.Models;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
 
+/// <summary>
+/// It is undefined behavior to interact with a partition from outside a "TextEditorEditContext".
+/// </summary>
 public struct TextEditorPartition
 {
     public TextEditorPartition(List<RichCharacter> richCharacterList)

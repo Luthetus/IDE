@@ -6,6 +6,7 @@ using Clair.Common.RazorLib.JsRuntimes.Models;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Notifications.Models;
 using Clair.Common.RazorLib.Reactives.Models;
+using Clair.TextEditor.RazorLib.Characters.Models;
 using Clair.TextEditor.RazorLib.BackgroundTasks.Models;
 using Clair.TextEditor.RazorLib.Groups.Models;
 using Clair.TextEditor.RazorLib.JsRuntimes.Models;
@@ -20,6 +21,40 @@ namespace Clair.TextEditor.RazorLib;
 public sealed partial class TextEditorService
 {
     private readonly IJSRuntime _jsRuntime;
+    
+    /*
+    // TODO: There are a few other UI related objects that could use pooling.
+    private readonly Queue<List<RichCharacter>> _partitionListPool = new();
+    
+    /// <summary>
+    /// 'initialCapacityIfNoneAvailable': the initial capacity for the newly created List that gets returned, if none were available in the pool.
+    ///
+    /// The content that was previously in the list is STILL in the list.
+    /// This is done because most of the data can just be written over.
+    /// The tracking of how much of the previous data remains after you've written over it
+    /// is the responsibility of the invoker of this method.
+    /// </summary>
+    public List<RichCharacter> Rent_PartitionList_NonZeroed(int initialCapacityIfPoolIsEmpty)
+    {
+        if (_partitionListPool.TryDequeue(out var list))
+        {
+            return list;
+        }
+        
+        return new List<RichCharacter>(initialCapacityIfPoolIsEmpty);
+    }
+    
+    /// <summary>
+    /// The content that was previously in the list is STILL in the list.
+    /// This is done because most of the data can just be written over.
+    /// The tracking of how much of the previous data remains after you've written over it
+    /// is the responsibility of the invoker of this method.
+    /// </summary>
+    public void Return_PartitionList(List<RichCharacter> list)
+    {
+        _partitionListPool.Enqueue(list);
+    }
+    */
 
     public TextEditorService(
         IJSRuntime jsRuntime,
@@ -82,6 +117,7 @@ public sealed partial class TextEditorService
 
     public object IdeBackgroundTaskApi { get; set; }
 
+    /// See: 'IsReservedViewModelKey()'
     private int _incrementingViewModelKey = 1;
 
     /// <summary>
@@ -2134,6 +2170,8 @@ public sealed partial class TextEditorService
 
     /// <summary>
     /// 0 indicates 'Empty'
+    ///
+    /// See: 'IsReservedViewModelKey()'
     /// </summary>
     public int NewViewModelKey()
     {
@@ -2157,6 +2195,20 @@ public sealed partial class TextEditorService
         }
 
         return _incrementingViewModelKey++;
+    }
+    
+    public bool IsReservedViewModelKey(int viewModelKey)
+    {
+        switch (viewModelKey)
+        {
+            case 0: // 'Empty'
+            case 1: // Terminal Execution
+            case 2: // Terminal General
+            case 3: // TestExplorerDetailsDisplay
+                return true;
+            default:
+                return false;
+        }
     }
 
     /// <summary>

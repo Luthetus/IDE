@@ -71,7 +71,7 @@ public struct TextEditorEditContext
             if (isReadOnly || viewModel is null)
                 return viewModel;
             
-            viewModelModifier = TextEditorService.RentAndReturn_ViewModel(viewModel);
+            viewModelModifier = TextEditorService.Exchange_ViewModel(viewModel);
             TextEditorService.__ViewModelList.Add(viewModelModifier);
         }
 

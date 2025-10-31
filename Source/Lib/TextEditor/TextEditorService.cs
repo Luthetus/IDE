@@ -13,6 +13,7 @@ using Clair.TextEditor.RazorLib.JsRuntimes.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
+using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Microsoft.JSInterop;
 using System.Text;
 
@@ -56,16 +57,20 @@ public sealed partial class TextEditorService
     }
     */
     
-    private readonly Queue<TextEditorViewModel> _viewModelPool = new();
+    private TextEditorViewModel _viewModel_Exchange;
     
     /// <summary>
     /// Concurrency?
     /// </summary>
-    public TextEditorViewModel RentAndReturn_ViewModel(TextEditorViewModel original)
+    public TextEditorViewModel Exchange_ViewModel(TextEditorViewModel original)
     {
-        if (!_viewModelPool.TryDequeue(out var viewModel) ||
-            // This shouldn't happen but I have the thought in my head "what if".
-            viewModel.PersistentState.ComponentData is not null)
+        TextEditorViewModel viewModel;
+        
+        if (_viewModel_Exchange.PersistentState.ViewModelKey == original.PersistentState.ViewModelKey)
+        {
+            viewModel = _viewModel_Exchange;
+        }
+        else
         {
             viewModel = new TextEditorViewModel();
         }
@@ -87,7 +92,7 @@ public sealed partial class TextEditorService
         ScrollWasModified { get; set; }
         */
 
-        _viewModelPool.Enqueue(original);
+        _viewModel_Exchange = original;
         return viewModel;
     }
 
@@ -128,6 +133,34 @@ public sealed partial class TextEditorService
         JsRuntimeTextEditorApi = _jsRuntime.GetClairTextEditorApi();
 
         TextEditorState = new();
+        
+        _viewModel_Exchange = new()
+        {
+            PersistentState = new TextEditorViewModelPersistentState(
+                viewModelKey: 0,
+                resourceUri: ResourceUri.Empty,
+                textEditorService: this,
+                category: new Category("main"),
+                onSaveRequested: null,
+                getTabDisplayNameFunc: null,
+                firstPresentationLayerKeysList: new(),
+                lastPresentationLayerKeysList: new(),
+                showFindOverlay: false,
+                replaceValueInFindOverlay: string.Empty,
+                showReplaceButtonInFindOverlay: false,
+                findOverlayValue: string.Empty,
+                findOverlayValueExternallyChangedMarker: false,
+                menuKind: MenuKind.None,
+                tooltipModel: null,
+                shouldRevealCursor: false,
+                textEditorDimensions: default,
+                scrollLeft: 0,
+                scrollTop: 0,
+                scrollWidth: 0,
+                scrollHeight: 0,
+                marginScrollHeight: 0,
+                charAndLineMeasurements: default)
+        };
     }
 
     public Key<DropdownRecord> DropdownKey { get; } = Key<DropdownRecord>.NewKey();

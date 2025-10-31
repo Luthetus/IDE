@@ -12,7 +12,7 @@ using Clair.Ide.RazorLib.BackgroundTasks.Models;
 
 namespace Clair.Ide.RazorLib;
 
-public partial class IdeService : IBackgroundTaskGroup
+public sealed partial class IdeService : IBackgroundTaskGroup
 {
     private readonly IServiceProvider _serviceProvider;
 

@@ -11,7 +11,7 @@ namespace Clair.TextEditor.RazorLib;
 /// Optimizations are very "agressively" being added at the moment.
 /// Once the optimizations "feel" good then these dictionaries need to have their accessability decided on.
 /// </summary>
-public record TextEditorState
+public sealed record TextEditorState
 {
     // Move TextEditorState.Main.cs here (2025-02-08)
     public readonly Dictionary<ResourceUri, TextEditorModel> _modelMap = new();

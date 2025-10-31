@@ -7,7 +7,7 @@ using System.Collections.Concurrent;
 
 namespace Clair.Common.RazorLib;
 
-public partial class CommonService : IBackgroundTaskGroup
+public sealed partial class CommonService : IBackgroundTaskGroup
 {
     private readonly object _stateModificationLock = new();
     

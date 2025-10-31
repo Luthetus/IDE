@@ -218,7 +218,32 @@ public partial class TextEditorService
 
             var nextViewModelKeyList = new List<int>(inGroup.ViewModelKeyList);
             nextViewModelKeyList.RemoveAt(indexOfViewModelKeyToRemove);
-
+            
+            /*
+            WorkerArbitrary.PostUnique(editContext =>
+            {
+                Console.WriteLine(TextEditorState._viewModelMap.Count);
+                foreach (var viewModel in TextEditorState._viewModelMap.Values)
+                {
+                    if (IsReservedViewModelKey(viewModelKey))
+                        continue;
+                    
+                    if (viewModel.PersistentState.ComponentData is null)
+                    {
+                        viewModel.PersistentState.ComponentData.LineIndexCache.IsInvalid = true;
+                        var model = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
+                        if (model is not null && model.PersistentState.ViewModelKeyList.Count == 1)
+                        {
+                            Console.WriteLine(nameof(DisposeModel));
+                            DisposeModel(editContext, viewModel.PersistentState.ResourceUri);
+                        }
+                    }
+                }
+                
+                return ValueTask.CompletedTask;
+            });
+            */
+            
             int nextActiveTextEditorModelKey;
 
             if (inGroup.ActiveViewModelKey != 0 &&

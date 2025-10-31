@@ -64,10 +64,6 @@ public sealed partial class TextEditorService
     /// </summary>
     public TextEditorViewModel Exchange_ViewModel(TextEditorViewModel original)
     {
-        #if DEBUG
-        original.IsInPool = true;
-        #endif
-    
         TextEditorViewModel viewModel;
         
         if (_viewModel_Exchange.PersistentState.ViewModelKey == original.PersistentState.ViewModelKey)
@@ -97,6 +93,7 @@ public sealed partial class TextEditorService
         */
 
         #if DEBUG
+        original.IsInPool = true;
         _viewModel_Exchange.IsInPool = false;
         #endif
         _viewModel_Exchange = original;

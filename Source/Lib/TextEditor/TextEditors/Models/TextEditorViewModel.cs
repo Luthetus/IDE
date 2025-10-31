@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 
@@ -78,6 +79,8 @@ public sealed class TextEditorViewModel : IDisposable
     }
     
     public TextEditorViewModelPersistentState PersistentState { get; set; }
+    
+    public bool IsInPool { get; set; }
 
     public int _lineIndex;
     public int LineIndex
@@ -85,6 +88,7 @@ public sealed class TextEditorViewModel : IDisposable
         get => _lineIndex;
         set
         {
+            Debug.Assert(!IsInPool);
             if (_lineIndex != value)
             {
                 PersistentState.Changed_LineIndex = true;
@@ -100,6 +104,7 @@ public sealed class TextEditorViewModel : IDisposable
         get => _columnIndex;
         set
         {
+            Debug.Assert(!IsInPool);
             if (_columnIndex != value)
             {
                 PersistentState.Changed_ColumnIndex = true;
@@ -115,6 +120,7 @@ public sealed class TextEditorViewModel : IDisposable
         get => _preferredColumnIndex;
         set
         {
+            Debug.Assert(!IsInPool);
             if (_preferredColumnIndex != value)
             {
                 PersistentState.Changed_PreferredColumnIndex = true;
@@ -130,6 +136,7 @@ public sealed class TextEditorViewModel : IDisposable
         get => _selectionAnchorPositionIndex;
         set
         {
+            Debug.Assert(!IsInPool);
             if (_selectionAnchorPositionIndex != value)
             {
                 PersistentState.Changed_SelectionAnchorPositionIndex = true;
@@ -145,6 +152,7 @@ public sealed class TextEditorViewModel : IDisposable
         get => _selectionEndingPositionIndex;
         set
         {
+            Debug.Assert(!IsInPool);
             if (_selectionEndingPositionIndex != value)
             {
                 PersistentState.Changed_SelectionEndingPositionIndex = true;

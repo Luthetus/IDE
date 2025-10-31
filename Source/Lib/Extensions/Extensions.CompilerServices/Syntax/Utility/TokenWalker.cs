@@ -1,6 +1,6 @@
 namespace Clair.Extensions.CompilerServices.Syntax.Utility;
 
-public class TokenWalker
+public sealed class TokenWalker
 {
     private int _index;
 
@@ -27,9 +27,7 @@ public class TokenWalker
         }
 #endif
 
-        TokenList = tokenList;
-
-        if (useDeferredParsing)
+        TokenList = tokenList;        if (useDeferredParsing)
             _deferredParsingTupleStack = new();
     }
 
@@ -82,9 +80,7 @@ public class TokenWalker
 
                 return closeChildScopeToken;
             }
-        }
-
-        ConsumeCounter++;
+        }        ConsumeCounter++;
         return TokenList[_index++];
     }
 
@@ -97,9 +93,7 @@ public class TokenWalker
         }
 
         return Peek(_index);
-    }
-
-    public void BacktrackNoReturnValue()
+    }    public void BacktrackNoReturnValue()
     {
         if (_index > 0)
         {
@@ -143,9 +137,7 @@ public class TokenWalker
     public void ConsumeCounterReset()
     {
         ConsumeCounter = 0;
-    }
-
-    public void Reinitialize(List<SyntaxToken> tokenList)
+    }    public void Reinitialize(List<SyntaxToken> tokenList)
     {
         // TODO: Don't duplicate the constructor here...
 #if DEBUG
@@ -155,9 +147,7 @@ public class TokenWalker
             throw new Clair.TextEditor.RazorLib.Exceptions.ClairTextEditorException($"The last token must be 'SyntaxKind.EndOfFileToken'.");
         }
 #endif
-        TokenList = tokenList;
-
-        _index = 0;
+        TokenList = tokenList;        _index = 0;
         ConsumeCounter = 0;
         _deferredParsingTuple = (-1, -1, -1);
         _deferredParsingTupleStack.Clear();

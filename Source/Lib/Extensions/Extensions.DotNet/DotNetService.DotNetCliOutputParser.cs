@@ -39,13 +39,24 @@ public partial class DotNetService
 
         var diagnosticLineList = new List<DiagnosticLine>();
 
-        var diagnosticLine = new DiagnosticLine
-        {
-            StartInclusiveIndex = stringWalker.PositionIndex
-        };
+        string _textShort;
 
-        int? startInclusiveIndex = null;
-        int? endExclusiveIndex = null;
+        int diagnosticStartInclusiveIndex = stringWalker.PositionIndex;
+        int diagnosticEndExclusiveIndex = -1;
+        int filePathStartInclusiveIndex = -1;
+        int filePathEndExclusiveIndex = -1;
+        string text;
+        DiagnosticLineKind diagnosticLineKind = DiagnosticLineKind.Error;
+        
+        DiagnosticTextSpan? filePathTextSpan = null;
+        DiagnosticTextSpan? lineAndColumnIndicesTextSpan = null;
+        DiagnosticTextSpan? diagnosticKindTextSpan = null;
+        DiagnosticTextSpan? diagnosticCodeTextSpan = null;
+        DiagnosticTextSpan? messageTextSpan = null;
+        DiagnosticTextSpan? projectTextSpan = null;
+        /*string textShort => _textShort ??= Text
+            .Replace(filePathTextSpan.Text, string.Empty)
+            .Replace(projectTextSpan.Text, string.Empty);*/
 
         var badState = false;
 
@@ -64,89 +75,112 @@ public partial class DotNetService
                 }
 
                 // Make a decision
-                if (diagnosticLine.IsValid)
+                if (filePathTextSpan is not null &&
+                    lineAndColumnIndicesTextSpan is not null &&
+                    diagnosticKindTextSpan is not null &&
+                    diagnosticCodeTextSpan is not null &&
+                    messageTextSpan is not null &&
+                    projectTextSpan is not null)
                 {
-                    diagnosticLine.EndExclusiveIndex = stringWalker.PositionIndex;
+                    diagnosticEndExclusiveIndex = stringWalker.PositionIndex;
 
-                    diagnosticLine.Text = stringWalker.SourceText.Substring(
-                        diagnosticLine.StartInclusiveIndex,
-                        diagnosticLine.EndExclusiveIndex - diagnosticLine.StartInclusiveIndex);
+                    text = stringWalker.SourceText.Substring(
+                        diagnosticStartInclusiveIndex,
+                        diagnosticEndExclusiveIndex - diagnosticStartInclusiveIndex);
 
                     var diagnosticLineKindText = stringWalker.SourceText.Substring(
-                        diagnosticLine.DiagnosticKindTextSpan.StartInclusiveIndex,
-                        diagnosticLine.DiagnosticKindTextSpan.EndExclusiveIndex -
-                            diagnosticLine.DiagnosticKindTextSpan.StartInclusiveIndex);
+                        diagnosticKindTextSpan.StartInclusiveIndex,
+                        diagnosticKindTextSpan.EndExclusiveIndex -
+                            diagnosticKindTextSpan.StartInclusiveIndex);
 
                     if (string.Equals(diagnosticLineKindText, nameof(DiagnosticLineKind.Warning), StringComparison.OrdinalIgnoreCase))
-                        diagnosticLine.DiagnosticLineKind = DiagnosticLineKind.Warning;
+                        diagnosticLineKind = DiagnosticLineKind.Warning;
                     else if (string.Equals(diagnosticLineKindText, nameof(DiagnosticLineKind.Error), StringComparison.OrdinalIgnoreCase))
-                        diagnosticLine.DiagnosticLineKind = DiagnosticLineKind.Error;
+                        diagnosticLineKind = DiagnosticLineKind.Error;
                     else
-                        diagnosticLine.DiagnosticLineKind = DiagnosticLineKind.Other;
+                        diagnosticLineKind = DiagnosticLineKind.Other;
 
-                    diagnosticLineList.Add(diagnosticLine);
+                    diagnosticLineList.Add(new DiagnosticLine
+                    {
+                        StartInclusiveIndex = diagnosticStartInclusiveIndex,
+                        EndExclusiveIndex = diagnosticEndExclusiveIndex,
+                        Text = text,
+                        DiagnosticLineKind = diagnosticLineKind,
+                        FilePathTextSpan = filePathTextSpan,
+                        LineAndColumnIndicesTextSpan = lineAndColumnIndicesTextSpan,
+                        DiagnosticKindTextSpan = diagnosticKindTextSpan,
+                        DiagnosticCodeTextSpan = diagnosticCodeTextSpan,
+                        MessageTextSpan = messageTextSpan,
+                        ProjectTextSpan = projectTextSpan,
+                    });
                 }
 
-                diagnosticLine = new DiagnosticLine
-                {
-                    StartInclusiveIndex = stringWalker.PositionIndex
-                };
+                diagnosticStartInclusiveIndex = stringWalker.PositionIndex;
+                diagnosticEndExclusiveIndex = -1;
+                filePathStartInclusiveIndex = -1;
+                filePathEndExclusiveIndex = -1;
+                text = default;
+                diagnosticLineKind = default;
+                filePathTextSpan = default;
+                lineAndColumnIndicesTextSpan = default;
+                diagnosticKindTextSpan = default;
+                diagnosticCodeTextSpan = default;
+                messageTextSpan = default;
+                projectTextSpan = default;
 
-                startInclusiveIndex = null;
-                endExclusiveIndex = null;
                 badState = false;
             }
             else
             {
-                if (diagnosticLine.FilePathTextSpan is null)
+                if (filePathTextSpan is null)
                 {
-                    if (startInclusiveIndex is null) // Start: Char at index 0
+                    if (filePathStartInclusiveIndex == -1) // Start: Char at index 0
                     {
-                        startInclusiveIndex = stringWalker.PositionIndex;
+                        filePathStartInclusiveIndex = stringWalker.PositionIndex;
                     }
-                    else if (endExclusiveIndex is null) // Algorithm: start at position 0 inclusive until '(' exclusive
+                    else if (filePathEndExclusiveIndex == -1) // Algorithm: start at position 0 inclusive until '(' exclusive
                     {
                         if (stringWalker.CurrentCharacter == '(')
                         {
-                            endExclusiveIndex = stringWalker.PositionIndex;
+                            filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
-                            diagnosticLine.FilePathTextSpan = new(
-                                startInclusiveIndex.Value,
-                                endExclusiveIndex.Value,
+                            filePathTextSpan = new(
+                                filePathStartInclusiveIndex,
+                                filePathEndExclusiveIndex,
                                 stringWalker.SourceText);
 
-                            startInclusiveIndex = null;
-                            endExclusiveIndex = null;
+                            filePathStartInclusiveIndex = -1;
+                            filePathEndExclusiveIndex = -1;
 
                             _ = stringWalker.BacktrackCharacter();
                         }
                     }
                 }
-                else if (diagnosticLine.LineAndColumnIndicesTextSpan is null)
+                else if (lineAndColumnIndicesTextSpan is null)
                 {
-                    if (startInclusiveIndex is null)
+                    if (filePathStartInclusiveIndex == -1)
                     {
-                        startInclusiveIndex = stringWalker.PositionIndex;
+                        filePathStartInclusiveIndex = stringWalker.PositionIndex;
                     }
-                    else if (endExclusiveIndex is null)
+                    else if (filePathEndExclusiveIndex == -1)
                     {
                         if (stringWalker.CurrentCharacter == ')')
                         {
-                            endExclusiveIndex = stringWalker.PositionIndex + 1;
+                            filePathEndExclusiveIndex = stringWalker.PositionIndex + 1;
 
-                            diagnosticLine.LineAndColumnIndicesTextSpan = new(
-                                startInclusiveIndex.Value,
-                                endExclusiveIndex.Value,
+                            lineAndColumnIndicesTextSpan = new(
+                                filePathStartInclusiveIndex,
+                                filePathEndExclusiveIndex,
                                 stringWalker.SourceText);
 
-                            startInclusiveIndex = null;
-                            endExclusiveIndex = null;
+                            filePathStartInclusiveIndex = -1;
+                            filePathEndExclusiveIndex = -1;
                         }
                     }
                 }
-                else if (diagnosticLine.DiagnosticKindTextSpan is null)
+                else if (diagnosticKindTextSpan is null)
                 {
-                    if (startInclusiveIndex is null)
+                    if (filePathStartInclusiveIndex == -1)
                     {
                         if (stringWalker.CurrentCharacter == ':')
                         {
@@ -155,57 +189,57 @@ public partial class DotNetService
                             // Skip the ' '
                             _ = stringWalker.ReadCharacter();
 
-                            startInclusiveIndex = stringWalker.PositionIndex;
+                            filePathStartInclusiveIndex = stringWalker.PositionIndex;
                         }
                     }
-                    else if (endExclusiveIndex is null)
+                    else if (filePathEndExclusiveIndex == -1)
                     {
                         if (stringWalker.CurrentCharacter == ' ')
                         {
-                            endExclusiveIndex = stringWalker.PositionIndex;
+                            filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
-                            diagnosticLine.DiagnosticKindTextSpan = new(
-                                startInclusiveIndex.Value,
-                                endExclusiveIndex.Value,
+                            diagnosticKindTextSpan = new(
+                                filePathStartInclusiveIndex,
+                                filePathEndExclusiveIndex,
                                 stringWalker.SourceText);
 
-                            startInclusiveIndex = null;
-                            endExclusiveIndex = null;
+                            filePathStartInclusiveIndex = -1;
+                            filePathEndExclusiveIndex = -1;
                         }
                     }
                 }
-                else if (diagnosticLine.DiagnosticCodeTextSpan is null)
+                else if (diagnosticCodeTextSpan is null)
                 {
-                    if (startInclusiveIndex is null)
+                    if (filePathStartInclusiveIndex == -1)
                     {
-                        startInclusiveIndex = stringWalker.PositionIndex;
+                        filePathStartInclusiveIndex = stringWalker.PositionIndex;
                     }
-                    else if (endExclusiveIndex is null)
+                    else if (filePathEndExclusiveIndex == -1)
                     {
                         if (stringWalker.CurrentCharacter == ':')
                         {
-                            endExclusiveIndex = stringWalker.PositionIndex;
+                            filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
-                            diagnosticLine.DiagnosticCodeTextSpan = new(
-                                startInclusiveIndex.Value,
-                                endExclusiveIndex.Value,
+                            diagnosticCodeTextSpan = new(
+                                filePathStartInclusiveIndex,
+                                filePathEndExclusiveIndex,
                                 stringWalker.SourceText);
 
-                            startInclusiveIndex = null;
-                            endExclusiveIndex = null;
+                            filePathStartInclusiveIndex = -1;
+                            filePathEndExclusiveIndex = -1;
                         }
                     }
                 }
-                else if (diagnosticLine.MessageTextSpan is null)
+                else if (messageTextSpan is null)
                 {
-                    if (startInclusiveIndex is null)
+                    if (filePathStartInclusiveIndex == -1)
                     {
                         // Skip the ' '
                         _ = stringWalker.ReadCharacter();
 
-                        startInclusiveIndex = stringWalker.PositionIndex;
+                        filePathStartInclusiveIndex = stringWalker.PositionIndex;
                     }
-                    else if (endExclusiveIndex is null)
+                    else if (filePathEndExclusiveIndex == -1)
                     {
                         if (badState)
                         {
@@ -228,43 +262,43 @@ public partial class DotNetService
                             if (!badState)
                             {
                                 _ = stringWalker.BacktrackCharacter();
-                                endExclusiveIndex = stringWalker.PositionIndex;
+                                filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
-                                diagnosticLine.MessageTextSpan = new(
-                                    startInclusiveIndex.Value,
-                                    endExclusiveIndex.Value,
+                                messageTextSpan = new(
+                                    filePathStartInclusiveIndex,
+                                    filePathEndExclusiveIndex,
                                     stringWalker.SourceText);
 
-                                startInclusiveIndex = null;
-                                endExclusiveIndex = null;
+                                filePathStartInclusiveIndex = -1;
+                                filePathEndExclusiveIndex = -1;
                             }
                         }
                     }
                 }
-                else if (diagnosticLine.ProjectTextSpan is null)
+                else if (projectTextSpan is null)
                 {
-                    if (startInclusiveIndex is null)
+                    if (filePathStartInclusiveIndex == -1)
                     {
                         // Skip the ' '
                         _ = stringWalker.ReadCharacter();
                         // Skip the '['
                         _ = stringWalker.ReadCharacter();
 
-                        startInclusiveIndex = stringWalker.PositionIndex;
+                        filePathStartInclusiveIndex = stringWalker.PositionIndex;
                     }
-                    else if (endExclusiveIndex is null)
+                    else if (filePathEndExclusiveIndex == -1)
                     {
                         if (stringWalker.CurrentCharacter == ']')
                         {
-                            endExclusiveIndex = stringWalker.PositionIndex;
+                            filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
-                            diagnosticLine.ProjectTextSpan = new(
-                                startInclusiveIndex.Value,
-                                endExclusiveIndex.Value,
+                            projectTextSpan = new(
+                                filePathStartInclusiveIndex,
+                                filePathEndExclusiveIndex,
                                 stringWalker.SourceText);
 
-                            startInclusiveIndex = null;
-                            endExclusiveIndex = null;
+                            filePathStartInclusiveIndex = -1;
+                            filePathEndExclusiveIndex = -1;
                         }
                     }
                 }

@@ -10,7 +10,7 @@ using Clair.TextEditor.RazorLib.Lexers.Models;
 
 namespace Clair.CompilerServices.CSharp.BinderCase;
 
-public partial class CSharpBinder
+public sealed partial class CSharpBinder
 {
     /// <summary>
     /// This is not thread safe to access because 'BindNamespaceStatementNode(...)' will directly modify the NamespaceGroup's List.

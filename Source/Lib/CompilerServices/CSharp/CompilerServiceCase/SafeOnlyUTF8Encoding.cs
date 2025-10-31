@@ -1,8 +1,8 @@
-﻿namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
+namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
 
 using System.Text;
 
-public class SafeOnlyUTF8Encoding : UTF8Encoding
+public sealed class SafeOnlyUTF8Encoding : UTF8Encoding
 {
     private Decoder? _decoder;
 

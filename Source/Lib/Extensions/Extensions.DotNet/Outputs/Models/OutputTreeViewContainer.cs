@@ -3,7 +3,6 @@ using Clair.Common.RazorLib.Icons.Displays;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.Common.RazorLib.Commands.Models;
-using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.Extensions.DotNet.CommandLines.Models;
 
 namespace Clair.Extensions.DotNet.Outputs.Models;

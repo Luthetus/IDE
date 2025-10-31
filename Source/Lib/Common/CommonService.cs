@@ -3,12 +3,11 @@ using Clair.Common.RazorLib.BackgroundTasks.Models;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Installations.Models;
 using Clair.Common.RazorLib.JsRuntimes.Models;
-using Clair.Common.RazorLib.TreeViews.Models;
 using System.Collections.Concurrent;
 
 namespace Clair.Common.RazorLib;
 
-public partial class CommonService : IBackgroundTaskGroup
+public sealed partial class CommonService : IBackgroundTaskGroup
 {
     private readonly object _stateModificationLock = new();
     

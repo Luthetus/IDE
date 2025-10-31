@@ -14,7 +14,7 @@ namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
 /// ReInitialize must be invoked at the start of every "new usage" of the pooled instance.
 /// This invocation having occurred is NOT asserted, so neglecting to invoke it is undefined behavior.
 /// </summary>
-public class TokenWalkerBuffer
+public sealed class TokenWalkerBuffer
 {
     private TextEditorTextSpan _previousEscapeCharacterTextSpan;
     private int _interpolatedExpressionUnmatchedBraceCount;

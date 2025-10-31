@@ -4,7 +4,7 @@ using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
 
 namespace Clair.CompilerServices.CSharp.ParserCase;
 
-public class CSharpStatementBuilder
+public sealed class CSharpStatementBuilder
 {
     public CSharpStatementBuilder()
     {

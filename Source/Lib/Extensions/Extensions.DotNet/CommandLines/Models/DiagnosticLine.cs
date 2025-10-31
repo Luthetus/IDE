@@ -1,28 +1,28 @@
 namespace Clair.Extensions.DotNet.CommandLines.Models;
 
 /// <summary>Used in the method <see cref="ParseOutputEntireDotNetRun"/></summary>
-public class DiagnosticLine
+public struct DiagnosticLine()
 {
     private string _textShort;
 
     // <summary>The entire line of text itself</summary>
-    public int StartInclusiveIndex { get; set; }
+    public int StartInclusiveIndex { get; init; }
     // <summary>The entire line of text itself</summary>
-    public int EndExclusiveIndex { get; set; }
+    public int EndExclusiveIndex { get; init; }
     // <summary>The entire line of text itself</summary>
-    public string Text { get; set; }
-    public DiagnosticLineKind DiagnosticLineKind { get; set; } = DiagnosticLineKind.Error;
+    public string Text { get; init; }
+    public DiagnosticLineKind DiagnosticLineKind { get; init; } = DiagnosticLineKind.Error;
+    
+    public DiagnosticTextSpan? FilePathTextSpan { get; init; }
+    public DiagnosticTextSpan? LineAndColumnIndicesTextSpan { get; init; }
+    public DiagnosticTextSpan? DiagnosticKindTextSpan { get; init; }
+    public DiagnosticTextSpan? DiagnosticCodeTextSpan { get; init; }
+    public DiagnosticTextSpan? MessageTextSpan { get; init; }
+    public DiagnosticTextSpan? ProjectTextSpan { get; init; }
     
     public string TextShort => _textShort ??= Text
         .Replace(FilePathTextSpan.Text, string.Empty)
         .Replace(ProjectTextSpan.Text, string.Empty);
-    
-    public DiagnosticTextSpan? FilePathTextSpan { get; set; }
-    public DiagnosticTextSpan? LineAndColumnIndicesTextSpan { get; set; }
-    public DiagnosticTextSpan? DiagnosticKindTextSpan { get; set; }
-    public DiagnosticTextSpan? DiagnosticCodeTextSpan { get; set; }
-    public DiagnosticTextSpan? MessageTextSpan { get; set; }
-    public DiagnosticTextSpan? ProjectTextSpan { get; set; }
     
     public bool IsValid => 
         FilePathTextSpan is not null &&

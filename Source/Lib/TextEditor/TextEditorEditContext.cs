@@ -16,7 +16,7 @@ public struct TextEditorEditContext
     /// 'isReadOnly == true' will not allocate a new TextEditorModel as well,
     /// nothing will be added to the '__ModelList'.
     /// </summary>
-    public TextEditorModel? GetModelModifier(
+    public readonly TextEditorModel? GetModelModifier(
         ResourceUri modelResourceUri,
         bool isReadOnly = false)
     {
@@ -33,21 +33,21 @@ public struct TextEditorEditContext
         
         if (modelModifier is null)
         {
-            var exists = TextEditorService.TextEditorState._modelMap.TryGetValue(
+            _ = TextEditorService.TextEditorState._modelMap.TryGetValue(
                 modelResourceUri,
                 out var model);
             
             if (isReadOnly || model is null)
                 return model;
             
-            modelModifier = model is null ? null : new(model);
+            modelModifier = new(model);
             TextEditorService.__ModelList.Add(modelModifier);
         }
 
         return modelModifier;
     }
 
-    public TextEditorViewModel? GetViewModelModifier(
+    public readonly TextEditorViewModel? GetViewModelModifier(
         int viewModelKey,
         bool isReadOnly = false)
     {
@@ -64,14 +64,14 @@ public struct TextEditorEditContext
         
         if (viewModelModifier is null)
         {
-            var exists = TextEditorService.TextEditorState._viewModelMap.TryGetValue(
+            _ = TextEditorService.TextEditorState._viewModelMap.TryGetValue(
                 viewModelKey,
                 out var viewModel);
             
             if (isReadOnly || viewModel is null)
                 return viewModel;
             
-            viewModelModifier = viewModel is null ? null : new(viewModel);
+            viewModelModifier = TextEditorService.RentAndReturn_ViewModel(viewModel);
             TextEditorService.__ViewModelList.Add(viewModelModifier);
         }
 

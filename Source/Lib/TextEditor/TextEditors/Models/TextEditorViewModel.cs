@@ -83,31 +83,14 @@ public sealed class TextEditorViewModel : IDisposable
         SelectionEndingPositionIndex = 0;
     }
     
-    public TextEditorViewModel(TextEditorViewModel other)
+    /// <summary>Intended for internal use only, when pooling the viewmodels.</summary>
+    public TextEditorViewModel()
     {
-        DoEstimateViewModelConstructorInvocationCount();
-        
-        PersistentState = other.PersistentState;
-        
-        _lineIndex = other._lineIndex;
-        _columnIndex = other._columnIndex;
-        _preferredColumnIndex = other._preferredColumnIndex;
-        _selectionAnchorPositionIndex = other._selectionAnchorPositionIndex;
-        _selectionEndingPositionIndex = other._selectionEndingPositionIndex;
-        
-        // The new instance of `Virtualization` is only made when calculating a virtualization result.
-        // Otherwise, just keep re-using the previous.
-        Virtualization = other.Virtualization;
-        
-        /*
-        // Don't copy these properties
-        ScrollWasModified { get; set; }
-        */
     }
     
     public TextEditorViewModelPersistentState PersistentState { get; set; }
 
-    private int _lineIndex;
+    public int _lineIndex;
     public int LineIndex
     {
         get => _lineIndex;
@@ -122,7 +105,7 @@ public sealed class TextEditorViewModel : IDisposable
         }
     }
     
-    private int _columnIndex;
+    public int _columnIndex;
     public int ColumnIndex
     {
         get => _columnIndex;
@@ -137,7 +120,7 @@ public sealed class TextEditorViewModel : IDisposable
         }
     }
     
-    private int _preferredColumnIndex;
+    public int _preferredColumnIndex;
     public int PreferredColumnIndex
     {
         get => _preferredColumnIndex;
@@ -152,7 +135,7 @@ public sealed class TextEditorViewModel : IDisposable
         }
     }
     
-    private int _selectionAnchorPositionIndex;
+    public int _selectionAnchorPositionIndex;
     public int SelectionAnchorPositionIndex
     {
         get => _selectionAnchorPositionIndex;
@@ -167,7 +150,7 @@ public sealed class TextEditorViewModel : IDisposable
         }
     }
     
-    private int _selectionEndingPositionIndex;
+    public int _selectionEndingPositionIndex;
     public int SelectionEndingPositionIndex
     {
         get => _selectionEndingPositionIndex;

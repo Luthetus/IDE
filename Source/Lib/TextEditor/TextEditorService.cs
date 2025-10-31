@@ -56,9 +56,40 @@ public sealed partial class TextEditorService
     }
     */
     
-    // private readonly Queue<TextEditorViewModel> _viewModelPool = new();
+    private readonly Queue<TextEditorViewModel> _viewModelPool = new();
     
-    
+    /// <summary>
+    /// Concurrency?
+    /// </summary>
+    public TextEditorViewModel RentAndReturn_ViewModel(TextEditorViewModel original)
+    {
+        if (!_viewModelPool.TryDequeue(out var viewModel) ||
+            // This shouldn't happen but I have the thought in my head "what if".
+            viewModel.PersistentState.ComponentData is not null)
+        {
+            viewModel = new TextEditorViewModel();
+        }
+
+        viewModel.PersistentState = original.PersistentState;
+        
+        viewModel._lineIndex = original._lineIndex;
+        viewModel._columnIndex = original._columnIndex;
+        viewModel._preferredColumnIndex = original._preferredColumnIndex;
+        viewModel._selectionAnchorPositionIndex = original._selectionAnchorPositionIndex;
+        viewModel._selectionEndingPositionIndex = original._selectionEndingPositionIndex;
+        
+        // The new instance of `Virtualization` is only made when calculating a virtualization result.
+        // Otherwise, just keep re-using the previous.
+        viewModel.Virtualization = original.Virtualization;
+
+        /*
+        // Don't copy these properties
+        ScrollWasModified { get; set; }
+        */
+
+        _viewModelPool.Enqueue(original);
+        return viewModel;
+    }
 
     public TextEditorService(
         IJSRuntime jsRuntime,

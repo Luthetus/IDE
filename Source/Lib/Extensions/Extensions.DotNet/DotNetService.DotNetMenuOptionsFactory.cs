@@ -1,15 +1,3 @@
-using Clair.Common.RazorLib;
-using Clair.Common.RazorLib.FileSystems.Models;
-using Clair.Common.RazorLib.Menus.Models;
-using Clair.Common.RazorLib.Widgets.Models;
-using Clair.Extensions.DotNet.CommandLines.Models;
-using Clair.Extensions.DotNet.CSharpProjects.Models;
-using Clair.Extensions.DotNet.DotNetSolutions.Models;
-using Clair.Ide.RazorLib;
-using Clair.Ide.RazorLib.InputFiles.Models;
-using Clair.Ide.RazorLib.BackgroundTasks.Models;
-using Clair.Ide.RazorLib.Terminals.Models;
-
 namespace Clair.Extensions.DotNet;
 
 public partial class DotNetService

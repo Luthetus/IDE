@@ -270,12 +270,18 @@ public partial class CommonService
             AppDimension_NotifyIntraAppResize();
     }
 
-    public void Panel_SetDragEventArgs((IPanelTab PanelTab, PanelGroup PanelGroup)? dragEventArgs)
+    public void Panel_SetDragEventArgs(
+        IPanelTab? dragEventArgs_PanelTab,
+        PanelGroup? dragEventArgs_PanelGroup)
     {
         lock (_stateModificationLock)
         {
             var inState = GetPanelState();
-            _panelState = inState with { DragEventArgs = dragEventArgs };
+            _panelState = inState with
+            {
+                DragEventArgs_PanelTab = dragEventArgs_PanelTab,
+                DragEventArgs_PanelGroup = dragEventArgs_PanelGroup
+            };
         }
 
         CommonUiStateChanged?.Invoke(CommonUiEventKind.PanelStateChanged);

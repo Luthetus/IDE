@@ -183,7 +183,7 @@
                     </button>
                 }
         
-                @if (panelState.DragEventArgs is not null)
+                @if (panelState.DragEventArgs_PanelTab is not null && panelState.DragEventArgs_PanelGroup is not null)
                 {
                     <div class="ci_panel-tab-dropzone ci_panel-tab-dropzone-top"
                          @onmouseup:stopPropagation="true"
@@ -265,7 +265,7 @@
                     </button>
                 }
         
-                @if (panelState.DragEventArgs is not null)
+                @if (panelState.DragEventArgs_PanelTab is not null && panelState.DragEventArgs_PanelGroup is not null)
                 {
                     <div class="ci_panel-tab-dropzone ci_panel-tab-dropzone-top"
                          @onmouseup:stopPropagation="true"
@@ -342,7 +342,7 @@
     
             <MultiBadgeDisplay/>
             
-            @if (panelState.DragEventArgs is not null)
+            @if (panelState.DragEventArgs_PanelTab is not null && panelState.DragEventArgs_PanelGroup is not null)
             {
                 <div class="ci_panel-tab-dropzone ci_panel-tab-dropzone-top"
                      @onmouseup:stopPropagation="true"

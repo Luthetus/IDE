@@ -48,12 +48,12 @@ public partial class DotNetService
         string text;
         DiagnosticLineKind diagnosticLineKind = DiagnosticLineKind.Error;
         
-        DiagnosticTextSpan? filePathTextSpan = null;
-        DiagnosticTextSpan? lineAndColumnIndicesTextSpan = null;
-        DiagnosticTextSpan? diagnosticKindTextSpan = null;
-        DiagnosticTextSpan? diagnosticCodeTextSpan = null;
-        DiagnosticTextSpan? messageTextSpan = null;
-        DiagnosticTextSpan? projectTextSpan = null;
+        DiagnosticTextSpan filePathTextSpan = default;
+        DiagnosticTextSpan lineAndColumnIndicesTextSpan = default;
+        DiagnosticTextSpan diagnosticKindTextSpan = default;
+        DiagnosticTextSpan diagnosticCodeTextSpan = default;
+        DiagnosticTextSpan messageTextSpan = default;
+        DiagnosticTextSpan projectTextSpan = default;
         /*string textShort => _textShort ??= Text
             .Replace(filePathTextSpan.Text, string.Empty)
             .Replace(projectTextSpan.Text, string.Empty);*/
@@ -75,12 +75,12 @@ public partial class DotNetService
                 }
 
                 // Make a decision
-                if (filePathTextSpan is not null &&
-                    lineAndColumnIndicesTextSpan is not null &&
-                    diagnosticKindTextSpan is not null &&
-                    diagnosticCodeTextSpan is not null &&
-                    messageTextSpan is not null &&
-                    projectTextSpan is not null)
+                if (filePathTextSpan.Kind != DiagnosticTextSpanKind.None &&
+                    lineAndColumnIndicesTextSpan.Kind != DiagnosticTextSpanKind.None &&
+                    diagnosticKindTextSpan.Kind != DiagnosticTextSpanKind.None &&
+                    diagnosticCodeTextSpan.Kind != DiagnosticTextSpanKind.None &&
+                    messageTextSpan.Kind != DiagnosticTextSpanKind.None &&
+                    projectTextSpan.Kind != DiagnosticTextSpanKind.None)
                 {
                     diagnosticEndExclusiveIndex = stringWalker.PositionIndex;
 
@@ -132,7 +132,7 @@ public partial class DotNetService
             }
             else
             {
-                if (filePathTextSpan is null)
+                if (filePathTextSpan.Kind == DiagnosticTextSpanKind.None)
                 {
                     if (filePathStartInclusiveIndex == -1) // Start: Char at index 0
                     {
@@ -145,6 +145,7 @@ public partial class DotNetService
                             filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
                             filePathTextSpan = new(
+                                DiagnosticTextSpanKind.FilePath,
                                 filePathStartInclusiveIndex,
                                 filePathEndExclusiveIndex,
                                 stringWalker.SourceText);
@@ -156,7 +157,7 @@ public partial class DotNetService
                         }
                     }
                 }
-                else if (lineAndColumnIndicesTextSpan is null)
+                else if (lineAndColumnIndicesTextSpan.Kind == DiagnosticTextSpanKind.None)
                 {
                     if (filePathStartInclusiveIndex == -1)
                     {
@@ -169,6 +170,7 @@ public partial class DotNetService
                             filePathEndExclusiveIndex = stringWalker.PositionIndex + 1;
 
                             lineAndColumnIndicesTextSpan = new(
+                                DiagnosticTextSpanKind.LineAndColumnIndices,
                                 filePathStartInclusiveIndex,
                                 filePathEndExclusiveIndex,
                                 stringWalker.SourceText);
@@ -178,7 +180,7 @@ public partial class DotNetService
                         }
                     }
                 }
-                else if (diagnosticKindTextSpan is null)
+                else if (diagnosticKindTextSpan.Kind == DiagnosticTextSpanKind.None)
                 {
                     if (filePathStartInclusiveIndex == -1)
                     {
@@ -199,6 +201,7 @@ public partial class DotNetService
                             filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
                             diagnosticKindTextSpan = new(
+                                DiagnosticTextSpanKind.DiagnosticKind,
                                 filePathStartInclusiveIndex,
                                 filePathEndExclusiveIndex,
                                 stringWalker.SourceText);
@@ -208,7 +211,7 @@ public partial class DotNetService
                         }
                     }
                 }
-                else if (diagnosticCodeTextSpan is null)
+                else if (diagnosticCodeTextSpan.Kind == DiagnosticTextSpanKind.None)
                 {
                     if (filePathStartInclusiveIndex == -1)
                     {
@@ -221,6 +224,7 @@ public partial class DotNetService
                             filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
                             diagnosticCodeTextSpan = new(
+                                DiagnosticTextSpanKind.DiagnosticCode,
                                 filePathStartInclusiveIndex,
                                 filePathEndExclusiveIndex,
                                 stringWalker.SourceText);
@@ -230,7 +234,7 @@ public partial class DotNetService
                         }
                     }
                 }
-                else if (messageTextSpan is null)
+                else if (messageTextSpan.Kind == DiagnosticTextSpanKind.None)
                 {
                     if (filePathStartInclusiveIndex == -1)
                     {
@@ -265,6 +269,7 @@ public partial class DotNetService
                                 filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
                                 messageTextSpan = new(
+                                    DiagnosticTextSpanKind.Message,
                                     filePathStartInclusiveIndex,
                                     filePathEndExclusiveIndex,
                                     stringWalker.SourceText);
@@ -275,7 +280,7 @@ public partial class DotNetService
                         }
                     }
                 }
-                else if (projectTextSpan is null)
+                else if (projectTextSpan.Kind == DiagnosticTextSpanKind.None)
                 {
                     if (filePathStartInclusiveIndex == -1)
                     {
@@ -293,6 +298,7 @@ public partial class DotNetService
                             filePathEndExclusiveIndex = stringWalker.PositionIndex;
 
                             projectTextSpan = new(
+                                DiagnosticTextSpanKind.Project,
                                 filePathStartInclusiveIndex,
                                 filePathEndExclusiveIndex,
                                 stringWalker.SourceText);

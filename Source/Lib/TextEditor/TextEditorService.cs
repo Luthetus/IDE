@@ -7,6 +7,7 @@ using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Notifications.Models;
 using Clair.Common.RazorLib.Reactives.Models;
 using Clair.TextEditor.RazorLib.BackgroundTasks.Models;
+using Clair.TextEditor.RazorLib.Characters.Models;
 using Clair.TextEditor.RazorLib.Groups.Models;
 using Clair.TextEditor.RazorLib.JsRuntimes.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
@@ -55,6 +56,12 @@ public sealed partial class TextEditorService
         _partitionListPool.Enqueue(list);
     }
     */
+    
+    // public const int PARTITION_EXCHANGE_SIZE = 4_096;
+    
+    public TextEditorPartition _partition_Exchange = new TextEditorPartition(new List<RichCharacter>(capacity: 256));//= new TextEditorPartition(new List<RichCharacter>(capacity: PARTITION_EXCHANGE_SIZE));
+    
+    
     
     private TextEditorViewModel _viewModel_Exchange;
     

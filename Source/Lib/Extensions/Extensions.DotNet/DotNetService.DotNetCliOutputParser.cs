@@ -11,9 +11,9 @@ public partial class DotNetService
     private DotNetRunParseResult _dotNetRunParseResult = new(
         message: string.Empty,
         allDiagnosticLineList: new(),
-        errorList: new(),
-        warningList: new(),
-        otherList: new());
+        errorCount: 0,
+        warningCount: 0,
+        otherCount: 0);
 
     /// <summary>
     /// This immutable list is calculated everytime, so if necessary invoke once and then store the result.
@@ -38,6 +38,10 @@ public partial class DotNetService
             output);
 
         var diagnosticLineList = new List<DiagnosticLine>();
+
+        var errorCount = 0;
+        var warningCount = 0;
+        var otherCount = 0;
 
         string _textShort;
 
@@ -94,11 +98,20 @@ public partial class DotNetService
                             diagnosticKindTextSpan.StartInclusiveIndex);
 
                     if (string.Equals(diagnosticLineKindText, nameof(DiagnosticLineKind.Warning), StringComparison.OrdinalIgnoreCase))
+                    {
                         diagnosticLineKind = DiagnosticLineKind.Warning;
+                        ++warningCount;
+                    }
                     else if (string.Equals(diagnosticLineKindText, nameof(DiagnosticLineKind.Error), StringComparison.OrdinalIgnoreCase))
+                    {
                         diagnosticLineKind = DiagnosticLineKind.Error;
+                        ++errorCount;
+                    }
                     else
+                    {
                         diagnosticLineKind = DiagnosticLineKind.Other;
+                        ++otherCount;
+                    }
 
                     diagnosticLineList.Add(new DiagnosticLine
                     {
@@ -320,9 +333,9 @@ public partial class DotNetService
             _dotNetRunParseResult = new(
                 message: message,
                 allDiagnosticLineList: allDiagnosticLineList,
-                errorList: allDiagnosticLineList.Where(x => x.DiagnosticLineKind == DiagnosticLineKind.Error).ToList(),
-                warningList: allDiagnosticLineList.Where(x => x.DiagnosticLineKind == DiagnosticLineKind.Warning).ToList(),
-                otherList: allDiagnosticLineList.Where(x => x.DiagnosticLineKind == DiagnosticLineKind.Other).ToList());
+                errorCount,
+                warningCount,
+                otherCount);
         }
 
         DotNetStateChanged?.Invoke(DotNetStateChangedKind.CliOutputParserStateChanged);

@@ -301,7 +301,7 @@ public sealed class TokenWalkerBuffer
                 ref _interpolatedExpressionUnmatchedBraceCount);
             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
-                TextEditorModel?.ApplySyntaxHighlightingByTextSpan(_syntaxTokenBuffer[0].TextSpan);
+                TextEditorModel?.__SetDecorationByteRange(_syntaxTokenBuffer[0].TextSpan);
             
             
         }
@@ -392,7 +392,7 @@ public sealed class TokenWalkerBuffer
                                 ref _interpolatedExpressionUnmatchedBraceCount);
                             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
                             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
-                                TextEditorModel?.ApplySyntaxHighlightingByTextSpan(_syntaxTokenBuffer[0].TextSpan);
+                                TextEditorModel?.__SetDecorationByteRange(_syntaxTokenBuffer[0].TextSpan);
                             return _syntaxTokenBuffer[0];
                         }
                     }
@@ -421,7 +421,7 @@ public sealed class TokenWalkerBuffer
                 ref _interpolatedExpressionUnmatchedBraceCount);
             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
-                TextEditorModel?.ApplySyntaxHighlightingByTextSpan(_syntaxTokenBuffer[0].TextSpan);
+                TextEditorModel?.__SetDecorationByteRange(_syntaxTokenBuffer[0].TextSpan);
         }
 
         // TODO: Peek EOF

@@ -1116,7 +1116,7 @@ public static partial class Parser
             ++parserModel.Compilation.SymbolLength;
 
 
-            parserModel.TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(typeClauseNode.TypeIdentifierToken.TextSpan with
+            parserModel.TokenWalker.TextEditorModel?.__SetDecorationByteRange(typeClauseNode.TypeIdentifierToken.TextSpan with
             {
                 DecorationByte = (byte)GenericDecorationKind.Type
             });
@@ -1229,7 +1229,7 @@ public static partial class Parser
                             typeClauseNode.TypeIdentifierToken.TextSpan.ByteIndex));
                     ++parserModel.Compilation.SymbolLength;
 
-                    parserModel.TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(typeClauseNode.TypeIdentifierToken.TextSpan with
+                    parserModel.TokenWalker.TextEditorModel?.__SetDecorationByteRange(typeClauseNode.TypeIdentifierToken.TextSpan with
                     {
                         DecorationByte = (byte)GenericDecorationKind.Type
                     });
@@ -1297,7 +1297,7 @@ public static partial class Parser
                 ++parserModel.Compilation.SymbolLength;
 
 
-                parserModel.TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan with
+                parserModel.TokenWalker.TextEditorModel?.__SetDecorationByteRange(functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan with
                 {
                     DecorationByte = (byte)GenericDecorationKind.Function
                 });
@@ -3773,7 +3773,7 @@ public static partial class Parser
                 ++parserModel.Compilation.SymbolLength;
 
 
-                parserModel.TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan with
+                parserModel.TokenWalker.TextEditorModel?.__SetDecorationByteRange(functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan with
                 {
                     DecorationByte = (byte)GenericDecorationKind.Function
                 });

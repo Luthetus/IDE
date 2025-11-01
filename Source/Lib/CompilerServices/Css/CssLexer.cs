@@ -107,37 +107,33 @@ public static class CssLexer
                     
                     if (streamReaderWrap.CurrentCharacter == '(')
                     {
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             textStartPosition,
                             endPosition,
-                            (byte)GenericDecorationKind.Css_Function,
-                            textStartByte));
+                            (byte)GenericDecorationKind.Css_Function);
                     }
                     else if (braceMatching == 0)
                     {
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             textStartPosition,
                             endPosition,
-                            (byte)GenericDecorationKind.Css_Identifier,
-                            textStartByte));
+                            (byte)GenericDecorationKind.Css_Identifier);
                     }
                     else
                     {
                         if (context == CssLexerContextKind.Expect_PropertyName)
                         {
-                            output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                            output.ModelModifier.__SetDecorationByteRange(
                                 textStartPosition,
                                 endPosition,
-                                (byte)GenericDecorationKind.Css_PropertyName,
-                                textStartByte));
+                                (byte)GenericDecorationKind.Css_PropertyName);
                         }
                         else
                         {
-                            output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                            output.ModelModifier.__SetDecorationByteRange(
                                 textStartPosition,
                                 endPosition,
-                                (byte)GenericDecorationKind.Css_PropertyValue,
-                                textStartByte));
+                                (byte)GenericDecorationKind.Css_PropertyValue);
                         }
                     }
                     continue;
@@ -175,11 +171,10 @@ public static class CssLexer
                             _ = streamReaderWrap.ReadCharacter();
                         }
 
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             commentStartPosition,
                             streamReaderWrap.PositionIndex,
-                            (byte)GenericDecorationKind.Css_Comment,
-                            commentStartByte));
+                            (byte)GenericDecorationKind.Css_Comment);
                         continue;
                     }
                     else if (streamReaderWrap.PeekCharacter(1) == '/')
@@ -284,11 +279,10 @@ public static class CssLexer
                     {
                         if (streamReaderWrap.CurrentCharacter == ')')
                         {
-                            output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                            output.ModelModifier.__SetDecorationByteRange(
                                 positionIndex,
                                 streamReaderWrap.PositionIndex,
-                                (byte)GenericDecorationKind.None,
-                                byteIndex));
+                                (byte)GenericDecorationKind.None);
                             _ = streamReaderWrap.ReadCharacter();
                             break;
                         }
@@ -430,11 +424,10 @@ public static class CssLexer
                             _ = streamReaderWrap.ReadCharacter();
                         }
 
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             startPosition,
                             streamReaderWrap.PositionIndex,
-                            (byte)GenericDecorationKind.Css_PropertyValue,
-                            startByte));
+                            (byte)GenericDecorationKind.Css_PropertyValue);
                         continue;
                     }
                     goto default;

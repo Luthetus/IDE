@@ -203,7 +203,7 @@ public ref partial struct CSharpParserState
             functionDefinitionNode.FunctionIdentifierToken.TextSpan.ByteIndex));
         ++Compilation.SymbolLength;
 
-        TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(functionDefinitionNode.FunctionIdentifierToken.TextSpan with
+        TokenWalker.TextEditorModel?.__SetDecorationByteRange(functionDefinitionNode.FunctionIdentifierToken.TextSpan with
         {
             DecorationByte = (byte)GenericDecorationKind.Function
         });
@@ -366,7 +366,7 @@ public ref partial struct CSharpParserState
                 identifierToken.TextSpan.ByteIndex));
         ++Compilation.SymbolLength;
 
-        TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(identifierToken.TextSpan with
+        TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
         {
             DecorationByte = (byte)GenericDecorationKind.Type
         });
@@ -384,7 +384,7 @@ public ref partial struct CSharpParserState
                 functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan.ByteIndex));
         ++Compilation.SymbolLength;
 
-        TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan with
+        TokenWalker.TextEditorModel?.__SetDecorationByteRange(functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan with
         {
             DecorationByte = (byte)GenericDecorationKind.Function
         });
@@ -429,7 +429,7 @@ public ref partial struct CSharpParserState
                     typeClauseNode.TypeIdentifierToken.TextSpan.ByteIndex));
             ++Compilation.SymbolLength;
 
-            TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(typeClauseNode.TypeIdentifierToken.TextSpan with
+            TokenWalker.TextEditorModel?.__SetDecorationByteRange(typeClauseNode.TypeIdentifierToken.TextSpan with
             {
                 DecorationByte = (byte)GenericDecorationKind.Type
             });
@@ -450,7 +450,7 @@ public ref partial struct CSharpParserState
                     identifierToken.TextSpan.ByteIndex));
             ++Compilation.SymbolLength;
 
-            TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(identifierToken.TextSpan with
+            TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
             {
                 DecorationByte = (byte)GenericDecorationKind.Type
             });
@@ -672,7 +672,7 @@ public ref partial struct CSharpParserState
                         identifierToken.TextSpan.ByteIndex));
                 ++Compilation.SymbolLength;
 
-                TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(identifierToken.TextSpan with
+                TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
                 {
                     DecorationByte = (byte)GenericDecorationKind.Field
                 });
@@ -689,7 +689,7 @@ public ref partial struct CSharpParserState
                 ++Compilation.SymbolLength;
 
 
-                TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(identifierToken.TextSpan with
+                TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
                 {
                     DecorationByte = (byte)GenericDecorationKind.Property
                 });
@@ -705,7 +705,7 @@ public ref partial struct CSharpParserState
                         identifierToken.TextSpan.ByteIndex));
                 ++Compilation.SymbolLength;
 
-                TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(identifierToken.TextSpan with
+                TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
                 {
                     DecorationByte = (byte)GenericDecorationKind.Property
                 });
@@ -725,7 +725,7 @@ public ref partial struct CSharpParserState
                         identifierToken.TextSpan.ByteIndex));
                 ++Compilation.SymbolLength;
 
-                TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(identifierToken.TextSpan with
+                TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
                 {
                     DecorationByte = (byte)GenericDecorationKind.Variable
                 });

@@ -107,11 +107,10 @@ public static class JavaScriptLexer
                         _ = streamReaderWrap.ReadCharacter();
                     }
                     
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                    output.ModelModifier.__SetDecorationByteRange(
                         stringStartPosition,
                         streamReaderWrap.PositionIndex,
-                        (byte)GenericDecorationKind.StringLiteral,
-                        stringStartByte));
+                        (byte)GenericDecorationKind.StringLiteral);
                     continue;
                 }
                 case '"':
@@ -135,11 +134,10 @@ public static class JavaScriptLexer
                         _ = streamReaderWrap.ReadCharacter();
                     }
 
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
-                        stringStartPosition,
-                        streamReaderWrap.PositionIndex,
-                        (byte)GenericDecorationKind.StringLiteral,
-                        stringStartByte));
+                        output.ModelModifier.__SetDecorationByteRange(
+                            stringStartPosition,
+                            streamReaderWrap.PositionIndex,
+                            (byte)GenericDecorationKind.StringLiteral);
                     continue;
                 }
                 case '/':
@@ -161,11 +159,10 @@ public static class JavaScriptLexer
                             _ = streamReaderWrap.ReadCharacter();
                         }
 
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             commentStartPosition,
                             streamReaderWrap.PositionIndex,
-                            (byte)GenericDecorationKind.CommentSingleLine,
-                            commentStartByte));
+                            (byte)GenericDecorationKind.CommentSingleLine);
                         continue;
                     }
                 
@@ -185,11 +182,10 @@ public static class JavaScriptLexer
                             _ = streamReaderWrap.ReadCharacter();
                         }
 
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             commentStartPosition,
                             streamReaderWrap.PositionIndex,
-                            (byte)GenericDecorationKind.CommentMultiLine,
-                            commentStartByte));
+                            (byte)GenericDecorationKind.CommentMultiLine);
                         continue;
                     }
                     else
@@ -474,7 +470,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[4] == 't')
                 {
                     // await
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 else if (compilerService.KeywordCheckBuffer[0] == 'c' &&
@@ -484,7 +483,10 @@ public static class JavaScriptLexer
                          compilerService.KeywordCheckBuffer[4] == 's')
                 {
                     // class
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -497,7 +499,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[3] == 'a' &&
                     compilerService.KeywordCheckBuffer[4] == 'k')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -509,7 +514,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[2] == 's' &&
                     compilerService.KeywordCheckBuffer[3] == 'e')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -522,7 +530,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[3] == 'c' &&
                     compilerService.KeywordCheckBuffer[4] == 'h')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -535,7 +546,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[3] == 's' &&
                     compilerService.KeywordCheckBuffer[4] == 't')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -551,7 +565,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[6] == 'u' &&
                     compilerService.KeywordCheckBuffer[7] == 'e')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -567,7 +584,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[6] == 'e' &&
                     compilerService.KeywordCheckBuffer[7] == 'r')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -582,7 +602,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[5] == 'l' &&
                     compilerService.KeywordCheckBuffer[6] == 't')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -596,7 +619,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[4] == 't' &&
                     compilerService.KeywordCheckBuffer[5] == 'e')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -606,7 +632,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[0] == 'd' &&
                     compilerService.KeywordCheckBuffer[1] == 'o')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -618,7 +647,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[2] == 's' &&
                     compilerService.KeywordCheckBuffer[3] == 'e')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -630,7 +662,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[2] == 'u' &&
                     compilerService.KeywordCheckBuffer[3] == 'm')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -644,7 +679,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[4] == 'r' &&
                     compilerService.KeywordCheckBuffer[5] == 't')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -663,7 +701,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[6] == 's')
                 {
                     // extends
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 else if (compilerService.KeywordCheckBuffer[0] == 'p' &&
@@ -675,7 +716,10 @@ public static class JavaScriptLexer
                          compilerService.KeywordCheckBuffer[6] == 'e')
                 {
                     // private
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -688,7 +732,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[3] == 's' &&
                     compilerService.KeywordCheckBuffer[4] == 'e')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -703,7 +750,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[5] == 'l' &&
                     compilerService.KeywordCheckBuffer[6] == 'y')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -714,7 +764,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[1] == 'o' &&
                     compilerService.KeywordCheckBuffer[2] == 'r')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -730,7 +783,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[6] == 'o' &&
                     compilerService.KeywordCheckBuffer[7] == 'n')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -740,7 +796,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[0] == 'i' &&
                     compilerService.KeywordCheckBuffer[1] == 'f')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -758,7 +817,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[8] == 't' &&
                     compilerService.KeywordCheckBuffer[9] == 's')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -772,7 +834,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[4] == 'r' &&
                     compilerService.KeywordCheckBuffer[5] == 't')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -782,7 +847,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[0] == 'i' &&
                     compilerService.KeywordCheckBuffer[1] == 'n')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -800,7 +868,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[8] == 'o' &&
                     compilerService.KeywordCheckBuffer[9] == 'f')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -817,7 +888,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[7] == 'c' &&
                     compilerService.KeywordCheckBuffer[8] == 'e')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -828,7 +902,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[1] == 'e' &&
                     compilerService.KeywordCheckBuffer[2] == 't')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -839,7 +916,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[1] == 'e' &&
                     compilerService.KeywordCheckBuffer[2] == 'w')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -851,7 +931,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[2] == 'l' &&
                     compilerService.KeywordCheckBuffer[3] == 'l')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -866,7 +949,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[5] == 'g' &&
                     compilerService.KeywordCheckBuffer[6] == 'e')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -883,7 +969,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[7] == 'e' &&
                     compilerService.KeywordCheckBuffer[8] == 'd')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -897,7 +986,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[4] == 'i' &&
                     compilerService.KeywordCheckBuffer[5] == 'c')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -911,7 +1003,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[4] == 'r' &&
                     compilerService.KeywordCheckBuffer[5] == 'n')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -924,7 +1019,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[3] == 'e' &&
                     compilerService.KeywordCheckBuffer[4] == 'r')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -938,7 +1036,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[4] == 'c' &&
                     compilerService.KeywordCheckBuffer[5] == 'h')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -952,7 +1053,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[4] == 'i' &&
                     compilerService.KeywordCheckBuffer[5] == 'c')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -964,7 +1068,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[2] == 'i' &&
                     compilerService.KeywordCheckBuffer[3] == 's')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -977,7 +1084,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[3] == 'o' &&
                     compilerService.KeywordCheckBuffer[4] == 'w')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -988,7 +1098,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[1] == 'r' &&
                     compilerService.KeywordCheckBuffer[2] == 'y')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -1000,7 +1113,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[2] == 'u' &&
                     compilerService.KeywordCheckBuffer[3] == 'e')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -1014,7 +1130,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[4] == 'o' &&
                     compilerService.KeywordCheckBuffer[5] == 'f')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -1025,7 +1144,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[1] == 'a' &&
                     compilerService.KeywordCheckBuffer[2] == 'r')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -1037,7 +1159,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[2] == 'i' &&
                     compilerService.KeywordCheckBuffer[3] == 'd')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -1050,7 +1175,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[3] == 'l' &&
                     compilerService.KeywordCheckBuffer[4] == 'e')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -1062,7 +1190,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[2] == 't' &&
                     compilerService.KeywordCheckBuffer[3] == 'h')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -1075,7 +1206,10 @@ public static class JavaScriptLexer
                     compilerService.KeywordCheckBuffer[3] == 'l' &&
                     compilerService.KeywordCheckBuffer[4] == 'd')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Keyword });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Keyword);
                     return;
                 }
                 
@@ -1095,15 +1229,21 @@ public static class JavaScriptLexer
                 
                 if (streamReaderWrap.CurrentCharacter == '(')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Function });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Function);
                 }
                 else if (streamReaderWrap.CurrentCharacter == ':')
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan with { DecorationByte = (byte)GenericDecorationKind.Field });
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Field);
                 }
                 else
                 {
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(textSpan);
+                    output.ModelModifier.__SetDecorationByteRange(textSpan);
                 }
                 return;
         }

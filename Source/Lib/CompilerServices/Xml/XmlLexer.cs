@@ -286,7 +286,7 @@ public static class XmlLexer
                                         DecorationByte = (byte)GenericDecorationKind.Xml_TagNameSelf,
                                     };
                                 }
-                                output.ModelModifier?.ApplySyntaxHighlightingByTextSpan(textSpanOfMostRecentTagOpen with
+                                output.ModelModifier?.__SetDecorationByteRange(textSpanOfMostRecentTagOpen with
                                 {
                                     DecorationByte = (byte)GenericDecorationKind.Xml_TagNameSelf,
                                 });

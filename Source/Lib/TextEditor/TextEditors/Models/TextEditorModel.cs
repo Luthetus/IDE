@@ -1383,9 +1383,18 @@ public sealed class TextEditorModel
         if (cursorPositionIndex > CharCount)
             return;
 
-        __InsertRange(
-            cursorPositionIndex,
-            value.Select(character => new RichCharacter(character, 0)));
+        if (value.Length == 1)
+        {
+            __Insert(
+                cursorPositionIndex,
+                new RichCharacter(value[0], 0));
+        }
+        else
+        {
+            __InsertRange(
+                cursorPositionIndex,
+                value.Select(character => new RichCharacter(character, 0)));
+        }
     }
 
     /// <summary>
@@ -2707,6 +2716,55 @@ public sealed class TextEditorModel
 
             globalPositionIndex += richCharacterBatchInsertList.Count;
         }
+    }
+    
+    public void __Insert(int globalPositionIndex, RichCharacter richCharacter)
+    {
+        int indexOfPartitionWithAvailableSpace = -1;
+        int relativePositionIndex = -1;
+        var runningCount = 0;
+        TextEditorPartition partition;
+
+        for (int i = 0; i < PartitionList.Count; i++)
+        {
+            partition = PartitionList[i];
+
+            if (runningCount + partition.Count >= globalPositionIndex)
+            {
+                if (partition.Count >= PersistentState.PartitionSize)
+                {
+                    __SplitIntoTwoPartitions(i);
+                    i--;
+                    continue;
+                }
+
+                relativePositionIndex = globalPositionIndex - runningCount;
+                indexOfPartitionWithAvailableSpace = i;
+                break;
+            }
+            else
+            {
+                runningCount += partition.Count;
+            }
+        }
+
+        if (indexOfPartitionWithAvailableSpace == -1)
+            throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
+
+        if (relativePositionIndex == -1)
+            throw new ClairTextEditorException("if (relativePositionIndex == -1)");
+
+        partition = PartitionList[indexOfPartitionWithAvailableSpace];
+        var partitionAvailableSpace = PersistentState.PartitionSize - partition.Count;
+
+        var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
+        var outPartition = inPartition.Insert(relativePositionIndex, richCharacter);
+
+        PartitionListSetItem(
+            indexOfPartitionWithAvailableSpace,
+            outPartition);
+
+        globalPositionIndex += 1;
     }
 
     public void __RemoveRange(int targetGlobalPositionIndex, int targetDeleteCount)

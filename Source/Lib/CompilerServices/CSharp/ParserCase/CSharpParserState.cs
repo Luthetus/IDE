@@ -203,10 +203,10 @@ public ref partial struct CSharpParserState
             functionDefinitionNode.FunctionIdentifierToken.TextSpan.ByteIndex));
         ++Compilation.SymbolLength;
 
-        TokenWalker.TextEditorModel?.__SetDecorationByteRange(functionDefinitionNode.FunctionIdentifierToken.TextSpan with
-        {
-            DecorationByte = (byte)GenericDecorationKind.Function
-        });
+        TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+            functionDefinitionNode.FunctionIdentifierToken.TextSpan.StartInclusiveIndex,
+            functionDefinitionNode.FunctionIdentifierToken.TextSpan.EndExclusiveIndex,
+            (byte)GenericDecorationKind.Function);
     }
     
     public readonly void BindNamespaceStatementNode(NamespaceStatementNode namespaceStatementNode)
@@ -366,10 +366,10 @@ public ref partial struct CSharpParserState
                 identifierToken.TextSpan.ByteIndex));
         ++Compilation.SymbolLength;
 
-        TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
-        {
-            DecorationByte = (byte)GenericDecorationKind.Type
-        });
+        TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+            identifierToken.TextSpan.StartInclusiveIndex,
+            identifierToken.TextSpan.EndExclusiveIndex,
+            (byte)GenericDecorationKind.Type);
     }
 
     public void BindFunctionInvocationNode(FunctionInvocationNode functionInvocationNode)
@@ -384,10 +384,10 @@ public ref partial struct CSharpParserState
                 functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan.ByteIndex));
         ++Compilation.SymbolLength;
 
-        TokenWalker.TextEditorModel?.__SetDecorationByteRange(functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan with
-        {
-            DecorationByte = (byte)GenericDecorationKind.Function
-        });
+        TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+            functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan.StartInclusiveIndex,
+            functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan.EndExclusiveIndex,
+            (byte)GenericDecorationKind.Function);
 
         if (TryGetFunctionHierarchically(
                 AbsolutePathId,
@@ -429,10 +429,10 @@ public ref partial struct CSharpParserState
                     typeClauseNode.TypeIdentifierToken.TextSpan.ByteIndex));
             ++Compilation.SymbolLength;
 
-            TokenWalker.TextEditorModel?.__SetDecorationByteRange(typeClauseNode.TypeIdentifierToken.TextSpan with
-            {
-                DecorationByte = (byte)GenericDecorationKind.Type
-            });
+            TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                typeClauseNode.TypeIdentifierToken.TextSpan.StartInclusiveIndex,
+                typeClauseNode.TypeIdentifierToken.TextSpan.EndExclusiveIndex,
+                (byte)GenericDecorationKind.Type);
         }
     }
     
@@ -450,10 +450,10 @@ public ref partial struct CSharpParserState
                     identifierToken.TextSpan.ByteIndex));
             ++Compilation.SymbolLength;
 
-            TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
-            {
-                DecorationByte = (byte)GenericDecorationKind.Type
-            });
+            TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                identifierToken.TextSpan.StartInclusiveIndex,
+                identifierToken.TextSpan.EndExclusiveIndex,
+                (byte)GenericDecorationKind.Type);
         }
     }
 
@@ -672,10 +672,10 @@ public ref partial struct CSharpParserState
                         identifierToken.TextSpan.ByteIndex));
                 ++Compilation.SymbolLength;
 
-                TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
-                {
-                    DecorationByte = (byte)GenericDecorationKind.Field
-                });
+                TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                    identifierToken.TextSpan.StartInclusiveIndex,
+                    identifierToken.TextSpan.EndExclusiveIndex,
+                    (byte)GenericDecorationKind.Field);
                 break;
             case VariableKind.Property:
                 Binder.SymbolList.Insert(
@@ -689,10 +689,10 @@ public ref partial struct CSharpParserState
                 ++Compilation.SymbolLength;
 
 
-                TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
-                {
-                    DecorationByte = (byte)GenericDecorationKind.Property
-                });
+                TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                    identifierToken.TextSpan.StartInclusiveIndex,
+                    identifierToken.TextSpan.EndExclusiveIndex,
+                    (byte)GenericDecorationKind.Property);
                 break;
             case VariableKind.EnumMember:
                 Binder.SymbolList.Insert(
@@ -705,10 +705,10 @@ public ref partial struct CSharpParserState
                         identifierToken.TextSpan.ByteIndex));
                 ++Compilation.SymbolLength;
 
-                TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
-                {
-                    DecorationByte = (byte)GenericDecorationKind.Property
-                });
+                TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                    identifierToken.TextSpan.StartInclusiveIndex,
+                    identifierToken.TextSpan.EndExclusiveIndex,
+                    (byte)GenericDecorationKind.Property);
                 break;
             case VariableKind.Local:
                 goto default;
@@ -725,10 +725,10 @@ public ref partial struct CSharpParserState
                         identifierToken.TextSpan.ByteIndex));
                 ++Compilation.SymbolLength;
 
-                TokenWalker.TextEditorModel?.__SetDecorationByteRange(identifierToken.TextSpan with
-                {
-                    DecorationByte = (byte)GenericDecorationKind.Variable
-                });
+                TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                    identifierToken.TextSpan.StartInclusiveIndex,
+                    identifierToken.TextSpan.EndExclusiveIndex,
+                    (byte)GenericDecorationKind.Variable);
                 break;
         }
         

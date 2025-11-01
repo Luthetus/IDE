@@ -1243,7 +1243,10 @@ public static class JavaScriptLexer
                 }
                 else
                 {
-                    output.ModelModifier.__SetDecorationByteRange(textSpan);
+                    output.ModelModifier.__SetDecorationByteRange(
+                        textSpan.StartInclusiveIndex,
+                        textSpan.EndExclusiveIndex,
+                        textSpan.DecorationByte);
                 }
                 return;
         }

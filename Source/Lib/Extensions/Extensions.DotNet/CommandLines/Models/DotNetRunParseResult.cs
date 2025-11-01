@@ -5,15 +5,15 @@ public class DotNetRunParseResult
     public DotNetRunParseResult(
         string message,
         List<DiagnosticLine> allDiagnosticLineList,
-        List<DiagnosticLine> errorList,
-        List<DiagnosticLine> warningList,
-        List<DiagnosticLine> otherList)
+        int errorCount,
+        int warningCount,
+        int otherCount)
     {
         Message = message;
         AllDiagnosticLineList = allDiagnosticLineList;
-        ErrorList = errorList;
-        WarningList = warningList;
-        OtherList = otherList;
+        ErrorCount = errorCount;
+        WarningCount = warningCount;
+        OtherCount = otherCount;
     }
 
     /// <summary>Use this to determine if the UI is up to date.</summary>
@@ -21,7 +21,7 @@ public class DotNetRunParseResult
     
     public string Message { get; }
     public List<DiagnosticLine> AllDiagnosticLineList { get; }
-    public List<DiagnosticLine> ErrorList { get; }
-    public List<DiagnosticLine> WarningList { get; }
-    public List<DiagnosticLine> OtherList { get; }
+    public int ErrorCount { get; }
+    public int WarningCount { get; }
+    public int OtherCount { get; }
 }

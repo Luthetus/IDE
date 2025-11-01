@@ -2554,6 +2554,20 @@ public sealed class TextEditorModel
         //_partitionListChanged = false;
     }
     
+    public void __ZeroOutDecorationBytes()
+    {
+        foreach (var partition in PartitionList)
+        {
+            for (int i = 0; i < partition.RichCharacterList.Count; i++)
+            {
+                partition.RichCharacterList[i] = partition.RichCharacterList[i] with
+                {
+                    DecorationByte = 0
+                };
+            }
+        }
+    }
+    
     public void __SetPartitionListChanged(bool value)
     {
         _partitionListChanged = value;

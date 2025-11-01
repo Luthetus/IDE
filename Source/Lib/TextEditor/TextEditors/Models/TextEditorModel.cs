@@ -1393,9 +1393,11 @@ public sealed class TextEditorModel
         {
             __InsertRange(
                 cursorPositionIndex,
-                value.Select(character => new RichCharacter(character, 0))
-                // value
-                );
+                value.Select(character => new RichCharacter(character, 0)));
+            
+            /*__InsertString(
+                cursorPositionIndex,
+                value);*/
         }
     }
 
@@ -2716,6 +2718,68 @@ public sealed class TextEditorModel
             globalPositionIndex += richCharacterBatchInsertList.Count;
         }
     }
+    
+    /*
+    public void __InsertString(int globalPositionIndex, string value)
+    {
+        // var richCharacterEnumerator = richCharacterList.GetEnumerator();
+
+        for (int indexStr = 0; indexStr < value.Length; indexStr++)
+        {
+            int indexOfPartitionWithAvailableSpace = -1;
+            int relativePositionIndex = -1;
+            var runningCount = 0;
+            TextEditorPartition partition;
+
+            for (int i = 0; i < PartitionList.Count; i++)
+            {
+                partition = PartitionList[i];
+
+                if (runningCount + partition.Count >= globalPositionIndex)
+                {
+                    if (partition.Count >= PersistentState.PartitionSize)
+                    {
+                        __SplitIntoTwoPartitions(i);
+                        i--;
+                        continue;
+                    }
+
+                    relativePositionIndex = globalPositionIndex - runningCount;
+                    indexOfPartitionWithAvailableSpace = i;
+                    break;
+                }
+                else
+                {
+                    runningCount += partition.Count;
+                }
+            }
+
+            if (indexOfPartitionWithAvailableSpace == -1)
+                throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
+
+            if (relativePositionIndex == -1)
+                throw new ClairTextEditorException("if (relativePositionIndex == -1)");
+
+            partition = PartitionList[indexOfPartitionWithAvailableSpace];
+            var partitionAvailableSpace = PersistentState.PartitionSize - partition.Count;
+
+            partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(PartitionList[indexOfPartitionWithAvailableSpace]);
+            
+            var min = Math.Min(partitionAvailableSpace, value.Length - indexStr);
+            indexStr += min;
+            --indexStr;
+            
+            for (int takeCount = 0; takeCount < partitionAvailableSpace; takeCount++)
+            {
+                // TODO: Get a span and InsertRange
+                partition.RichCharacterList.Insert(relativePositionIndex, new RichCharacter(value[indexStr], default));
+            }
+            PartitionListSetItem(indexOfPartitionWithAvailableSpace, partition);
+
+            globalPositionIndex += min;
+        }
+    }
+    */
     
     public void __Insert(int globalPositionIndex, RichCharacter richCharacter)
     {

@@ -2711,6 +2711,70 @@ public sealed class TextEditorModel
                 richCharacterBatchInsertList.Add(richCharacterEnumerator.Current);
             }
 
+            var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
+            var outPartition = inPartition.InsertRange(relativePositionIndex, richCharacterBatchInsertList);
+
+            PartitionListSetItem(
+                indexOfPartitionWithAvailableSpace,
+                outPartition);
+
+            globalPositionIndex += richCharacterBatchInsertList.Count;
+        }
+    }
+
+    /*
+    // TODO: Attempted to write more optimized version of the method here but I'm tired and...
+    // ...changing this one is far sketchier than changing the character insertion method '__Insert(...)'.
+    public void __InsertRange(int globalPositionIndex, IEnumerable<RichCharacter> richCharacterList)
+    {
+        var richCharacterEnumerator = richCharacterList.GetEnumerator();
+
+        while (richCharacterEnumerator.MoveNext())
+        {
+            int indexOfPartitionWithAvailableSpace = -1;
+            int relativePositionIndex = -1;
+            var runningCount = 0;
+            TextEditorPartition partition;
+
+            for (int i = 0; i < PartitionList.Count; i++)
+            {
+                partition = PartitionList[i];
+
+                if (runningCount + partition.Count >= globalPositionIndex)
+                {
+                    if (partition.Count >= PersistentState.PartitionSize)
+                    {
+                        __SplitIntoTwoPartitions(i);
+                        i--;
+                        continue;
+                    }
+
+                    relativePositionIndex = globalPositionIndex - runningCount;
+                    indexOfPartitionWithAvailableSpace = i;
+                    break;
+                }
+                else
+                {
+                    runningCount += partition.Count;
+                }
+            }
+
+            if (indexOfPartitionWithAvailableSpace == -1)
+                throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
+
+            if (relativePositionIndex == -1)
+                throw new ClairTextEditorException("if (relativePositionIndex == -1)");
+
+            partition = PartitionList[indexOfPartitionWithAvailableSpace];
+            var partitionAvailableSpace = PersistentState.PartitionSize - partition.Count;
+
+            var richCharacterBatchInsertList = new List<RichCharacter> { richCharacterEnumerator.Current };
+
+            while (richCharacterBatchInsertList.Count < partitionAvailableSpace && richCharacterEnumerator.MoveNext())
+            {
+                richCharacterBatchInsertList.Add(richCharacterEnumerator.Current);
+            }
+
             partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(PartitionList[indexOfPartitionWithAvailableSpace]);
             partition.RichCharacterList.InsertRange(relativePositionIndex, richCharacterBatchInsertList);
             PartitionListSetItem(indexOfPartitionWithAvailableSpace, partition);
@@ -2718,8 +2782,11 @@ public sealed class TextEditorModel
             globalPositionIndex += richCharacterBatchInsertList.Count;
         }
     }
+    */
     
     /*
+    // TODO: Attempted to write more optimized version of the IEnumerable '__InsertRange(...)' method here but I'm tired and...
+    // ...this one is far sketchier than changing the character insertion method '__Insert(...)'.
     public void __InsertString(int globalPositionIndex, string value)
     {
         // var richCharacterEnumerator = richCharacterList.GetEnumerator();

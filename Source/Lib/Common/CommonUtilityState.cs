@@ -125,9 +125,10 @@ public record struct ThemeState(IReadOnlyList<ThemeRecord> ThemeList)
 /// </summary>
 public record struct PanelState(
     IReadOnlyList<Panel> PanelList,
-    (IPanelTab PanelTab, PanelGroup PanelGroup)? DragEventArgs)
+    IPanelTab?  DragEventArgs_PanelTab,
+    PanelGroup? DragEventArgs_PanelGroup)
 {
-    public PanelState() : this(new List<Panel>(), null)
+    public PanelState() : this(new List<Panel>(), DragEventArgs_PanelTab: null, DragEventArgs_PanelGroup: null)
     {
         TopLeftPanelGroup = ConstructTopLeftGroup();
         TopRightPanelGroup = ConstructTopRightGroup();

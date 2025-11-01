@@ -311,20 +311,23 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
         if (panelGroup is null)
             return Task.CompletedTask;
 
-        var panelDragEventArgs = panelState.DragEventArgs;
+        var dragEventArgs_PanelTab = panelState.DragEventArgs_PanelTab;
+        var dragEventArgs_PanelGroup = panelState.DragEventArgs_PanelGroup;
 
-        if (panelDragEventArgs is not null)
+        if (dragEventArgs_PanelTab is not null && dragEventArgs_PanelGroup is not null)
         {
             DotNetService.CommonService.DisposePanelTab(
-                panelDragEventArgs.Value.PanelGroup.Key,
-                panelDragEventArgs.Value.PanelTab.Key);
+                dragEventArgs_PanelGroup.Key,
+                dragEventArgs_PanelTab.Key);
 
             DotNetService.CommonService.RegisterPanelTab(
                 panelGroup.Key,
-                panelDragEventArgs.Value.PanelTab,
+                dragEventArgs_PanelTab,
                 true);
 
-            DotNetService.CommonService.Panel_SetDragEventArgs(null);
+            DotNetService.CommonService.Panel_SetDragEventArgs(
+                dragEventArgs_PanelTab: null,
+                dragEventArgs_PanelGroup: null);
 
             DotNetService.CommonService.Drag_ShouldDisplayAndMouseEventArgsSetAction(false, null);
         }
@@ -358,20 +361,23 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
         if (panelGroup is null)
             return Task.CompletedTask;
 
-        var panelDragEventArgs = panelState.DragEventArgs;
+        var dragEventArgs_PanelTab = panelState.DragEventArgs_PanelTab;
+        var dragEventArgs_PanelGroup = panelState.DragEventArgs_PanelGroup;
 
-        if (panelDragEventArgs is not null)
+        if (dragEventArgs_PanelTab is not null && dragEventArgs_PanelGroup is not null)
         {
             DotNetService.CommonService.DisposePanelTab(
-                panelDragEventArgs.Value.PanelGroup.Key,
-                panelDragEventArgs.Value.PanelTab.Key);
+                dragEventArgs_PanelGroup.Key,
+                dragEventArgs_PanelTab.Key);
 
             DotNetService.CommonService.RegisterPanelTab(
                 panelGroup.Key,
-                panelDragEventArgs.Value.PanelTab,
+                dragEventArgs_PanelTab,
                 false);
 
-            DotNetService.CommonService.Panel_SetDragEventArgs(null);
+            DotNetService.CommonService.Panel_SetDragEventArgs(
+                dragEventArgs_PanelTab: null,
+                dragEventArgs_PanelGroup: null);
 
             DotNetService.CommonService.Drag_ShouldDisplayAndMouseEventArgsSetAction(false, null);
         }

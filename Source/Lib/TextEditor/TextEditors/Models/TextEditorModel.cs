@@ -1393,7 +1393,9 @@ public sealed class TextEditorModel
         {
             __InsertRange(
                 cursorPositionIndex,
-                value.Select(character => new RichCharacter(character, 0)));
+                value.Select(character => new RichCharacter(character, 0))
+                // value
+                );
         }
     }
 
@@ -2707,12 +2709,9 @@ public sealed class TextEditorModel
                 richCharacterBatchInsertList.Add(richCharacterEnumerator.Current);
             }
 
-            var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
-            var outPartition = inPartition.InsertRange(relativePositionIndex, richCharacterBatchInsertList);
-
-            PartitionListSetItem(
-                indexOfPartitionWithAvailableSpace,
-                outPartition);
+            partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(PartitionList[indexOfPartitionWithAvailableSpace]);
+            partition.RichCharacterList.InsertRange(relativePositionIndex, richCharacterBatchInsertList);
+            PartitionListSetItem(indexOfPartitionWithAvailableSpace, partition);
 
             globalPositionIndex += richCharacterBatchInsertList.Count;
         }
@@ -2754,14 +2753,9 @@ public sealed class TextEditorModel
         if (relativePositionIndex == -1)
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
-        partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(
-            PartitionList[indexOfPartitionWithAvailableSpace]);
-
+        partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(PartitionList[indexOfPartitionWithAvailableSpace]);
         partition.RichCharacterList.Insert(relativePositionIndex, richCharacter);
-        
-        PartitionListSetItem(
-            indexOfPartitionWithAvailableSpace,
-            partition);
+        PartitionListSetItem(indexOfPartitionWithAvailableSpace, partition);
     }
 
     public void __RemoveRange(int targetGlobalPositionIndex, int targetDeleteCount)

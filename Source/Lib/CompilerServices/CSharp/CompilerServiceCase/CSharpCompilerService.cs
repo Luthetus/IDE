@@ -1192,7 +1192,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 filteringWordEndExclusiveIndex,
                 DecorationByte: 0);
                 
-            filteringWord = textSpan.GetText(virtualizationResult.Model.GetAllText(), _textEditorService);
+            filteringWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService);
         }
             
         if (foundMemberAccessToken && operatingWordEndExclusiveIndex != -1)
@@ -2162,7 +2162,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         
         var cSharpCompilationUnit = new CSharpCompilationUnit(CompilationUnitKind.IndividualFile_AllData);
 
-        var contentAtRequest = modelModifier.GetAllText();
+        var contentAtRequest = modelModifier.xGetAllText();
 
         _currentFileBeingParsedTuple = (absolutePathId, contentAtRequest);
 
@@ -2351,7 +2351,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
 
         var targetScope = boundScope;
         
-        if (textSpan.GetText(virtualizationResult.Model.GetAllText(), _textEditorService) == ".")
+        if (textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService) == ".")
         {
             var textEditorModel = virtualizationResult.Model;
             if (textEditorModel is null)
@@ -2412,17 +2412,17 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     if (node.SyntaxKind == SyntaxKind.VariableDeclarationNode)
                     {
                         var variableDeclarationNode = node;
-                        return variableDeclarationNode.IdentifierToken.TextSpan.GetText(virtualizationResult.Model.GetAllText(), _textEditorService);
+                        return variableDeclarationNode.IdentifierToken.TextSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService);
                     }
                     else if (node.SyntaxKind == SyntaxKind.TypeDefinitionNode)
                     {
                         var typeDefinitionNode = node;
-                        return typeDefinitionNode.IdentifierToken.TextSpan.GetText(virtualizationResult.Model.GetAllText(), _textEditorService);
+                        return typeDefinitionNode.IdentifierToken.TextSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService);
                     }
                     else if (node.SyntaxKind == SyntaxKind.FunctionDefinitionNode)
                     {
                         var functionDefinitionNode = node;
-                        return functionDefinitionNode.IdentifierToken.TextSpan.GetText(virtualizationResult.Model.GetAllText(), _textEditorService);
+                        return functionDefinitionNode.IdentifierToken.TextSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService);
                     }
                     else
                     {

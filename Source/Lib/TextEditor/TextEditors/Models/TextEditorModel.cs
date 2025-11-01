@@ -1022,7 +1022,7 @@ public sealed class TextEditorModel
         var presentationModel = PresentationModelList[indexOfPresentationModel];
         PresentationModelList[indexOfPresentationModel] = presentationModel with
         {
-            PendingCalculation = new(this.GetAllText())
+            PendingCalculation = new(this.xGetAllText())
         };
     }
 
@@ -2019,7 +2019,7 @@ public sealed class TextEditorModel
     /// <summary>
     /// Implementations of this method are expected to have caching.
     /// </summary>
-    public string GetAllText()
+    public string xGetAllText()
     {
         return AllText;
     }
@@ -2174,7 +2174,7 @@ public sealed class TextEditorModel
 
     public List<TextEditorTextSpan> FindMatches(string query)
     {
-        var text = GetAllText();
+        var text = xGetAllText();
         var matchedTextSpans = new List<TextEditorTextSpan>();
 
         for (int outerI = 0; outerI < text.Length; outerI++)

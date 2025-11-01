@@ -121,7 +121,7 @@ public partial class TextEditorService
 
         return textEditorModel is null
             ? null
-            : Model_GetAllText(textEditorModel.PersistentState.ResourceUri);
+            : xModel_GetAllText(textEditorModel.PersistentState.ResourceUri);
     }
 
     public async ValueTask<TextEditorDimensions> ViewModel_GetTextEditorMeasurementsAsync(string elementId)

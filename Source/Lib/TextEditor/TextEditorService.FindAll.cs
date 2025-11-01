@@ -584,7 +584,7 @@ public partial class TextEditorService
             MemoryStream memoryStream;
             StreamReaderPooledBuffer sr;
             
-            if (TextEditorState._modelMap.TryGetValue(resourceUri, out var textEditorModel))
+            /*if (TextEditorState._modelMap.TryGetValue(resourceUri, out var textEditorModel))
             {
                 // If the formatting of the absolute path is off in any way
                 // then the model won't be found.
@@ -595,7 +595,7 @@ public partial class TextEditorService
                 streamReaderPooledBuffer.DiscardBufferedData(
                     new MemoryStream(Encoding.UTF8.GetBytes(textEditorModel.GetAllText())));
             }
-            else
+            else*/
             {
                 streamReaderPooledBuffer.DiscardBufferedData(
                     new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, StreamReaderPooledBuffer.DefaultFileStreamBufferSize));

@@ -43,9 +43,9 @@ public partial class TextEditorService
         return TextEditorState.ModelGetViewModelsOrEmpty(resourceUri);
     }
 
-    public string? Model_GetAllText(ResourceUri resourceUri)
+    public string? xModel_GetAllText(ResourceUri resourceUri)
     {
-        return Model_GetOrDefault(resourceUri)?.GetAllText(); ;
+        return Model_GetOrDefault(resourceUri)?.xGetAllText(); ;
     }
 
     public TextEditorModel? Model_GetOrDefault(ResourceUri resourceUri)

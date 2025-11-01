@@ -144,4 +144,15 @@ public sealed class TextEditorViewModelLiason
                 componentData.LineIndexCache.IsInvalid = true;
         }
     }
+    
+    public TextEditorPartition Exchange_Partition(TextEditorPartition original)
+    {
+        var partitionExchange = _textEditorService._partition_Exchange;
+    
+        partitionExchange.RichCharacterList.Clear();
+        partitionExchange.RichCharacterList.AddRange(original.RichCharacterList);
+        
+        _textEditorService._partition_Exchange = original;
+        return partitionExchange;
+    }
 }

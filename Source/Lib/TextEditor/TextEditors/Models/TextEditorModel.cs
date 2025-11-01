@@ -2754,17 +2754,14 @@ public sealed class TextEditorModel
         if (relativePositionIndex == -1)
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
-        partition = PartitionList[indexOfPartitionWithAvailableSpace];
-        var partitionAvailableSpace = PersistentState.PartitionSize - partition.Count;
+        partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(
+            PartitionList[indexOfPartitionWithAvailableSpace]);
 
-        var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
-        var outPartition = inPartition.Insert(relativePositionIndex, richCharacter);
-
+        partition.RichCharacterList.Insert(relativePositionIndex, richCharacter);
+        
         PartitionListSetItem(
             indexOfPartitionWithAvailableSpace,
-            outPartition);
-
-        globalPositionIndex += 1;
+            partition);
     }
 
     public void __RemoveRange(int targetGlobalPositionIndex, int targetDeleteCount)

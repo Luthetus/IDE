@@ -1002,16 +1002,15 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         autocompleteContainer.ResourceUri = virtualizationResult.Model!.PersistentState.ResourceUri;
         autocompleteContainer.TextEditorViewModelKey = virtualizationResult.ViewModel!.PersistentState.ViewModelKey;
         
+        var codeSnippetCount = 1;
+        
         if (!virtualizationResult.IsValid)
         {
-            for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS; i++)
+            for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS - codeSnippetCount; i++)
             {
                 autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
                     displayName: "aaa",
-                    autocompleteEntryKind: AutocompleteEntryKind.Word,
-                    absolutePathId: 0,
-                    startInclusiveIndex: 0,
-                    endExclusiveIndex: 0);
+                    autocompleteEntryKind: AutocompleteEntryKind.Word);
             }
         }
         else
@@ -1045,7 +1044,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     {
                         var nodeValue = __CSharpBinder.NodeList[i];
                         // Wait isn't the set decoration byte range off by 1?
-                        if (writeCount < MAX_AUTOCOMPLETE_OPTIONS)
+                        if (writeCount < MAX_AUTOCOMPLETE_OPTIONS - codeSnippetCount)
                         {
                             sr.BaseStream.Seek(nodeValue.IdentifierToken.TextSpan.ByteIndex, SeekOrigin.Begin);
                             sr.DiscardBufferedData();
@@ -1080,16 +1079,17 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                             
                             autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
                                 displayName: stringValue,
-                                autocompleteEntryKind: AutocompleteEntryKind.Word,
-                                absolutePathId,
-                                startInclusiveIndex: 0,
-                                endExclusiveIndex: 0);
+                                autocompleteEntryKind: AutocompleteEntryKind.Word);
                         }
                         else
                         {
                             break;
                         }
                     }
+                    
+                    autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
+                        displayName: "prop",
+                        autocompleteEntryKind: AutocompleteEntryKind.Word);
                 }
             }
             else
@@ -1098,10 +1098,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 {
                     autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
                         displayName: "aaa",
-                        autocompleteEntryKind: AutocompleteEntryKind.Word,
-                        absolutePathId: 0,
-                        startInclusiveIndex: 0,
-                        endExclusiveIndex: 0);
+                        autocompleteEntryKind: AutocompleteEntryKind.Word);
                 }
             }
         }

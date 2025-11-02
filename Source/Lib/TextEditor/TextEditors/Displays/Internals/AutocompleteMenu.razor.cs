@@ -299,18 +299,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
 
         _activeIndex = indexClicked;
         var option = _autocompleteContainer.AutocompleteMenuList[indexClicked];
-        /*if (option.OnClickFunc is not null)
-        {
-            await option.OnClickFunc.Invoke(new MenuOptionOnClickArgs
-            {
-                MenuMeasurements = _menuMeasurements,
-                TopOffsetOptionFromMenu = GetTopByIndex(_activeIndex),
-                MenuHtmlId = _htmlId,
-            });
-
-            if (option.IconKind != AutocompleteEntryKind.Chevron && option.IconKind != AutocompleteEntryKind.Widget)
-                await Close();
-        }*/
+        _autocompleteContainer.OnClick(option);
     }
 
     [JSInvokable]

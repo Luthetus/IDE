@@ -54,11 +54,13 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
 
         _fileAbsolutePathToIntMap.Add(string.Empty, 1);
         _intToFileAbsolutePathMap.Add(1, string.Empty);
+        
+        _uiAutocompleteContainer = new CSharpAutocompleteContainer(_textEditorService, new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
     }
     
     private const int MAX_AUTOCOMPLETE_OPTIONS = 5;
     private SynchronizationContext? _previousSynchronizationContext;
-    private AutocompleteContainer _uiAutocompleteContainer = new AutocompleteContainer(new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
+    private CSharpAutocompleteContainer _uiAutocompleteContainer;
     
     public TextEditorService TextEditorService => _textEditorService;
 
@@ -981,7 +983,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// </summary>
     public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
-        AutocompleteContainer autocompleteContainer;
+        CSharpAutocompleteContainer autocompleteContainer;
         int writeCount = 0;
 
         // I guess I moreso wanna check whether the UI is invoking the method.
@@ -993,9 +995,12 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         else
         {
             _previousSynchronizationContext = SynchronizationContext.Current;
-            autocompleteContainer = new AutocompleteContainer(new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
+            autocompleteContainer = new CSharpAutocompleteContainer(_textEditorService, new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
             _uiAutocompleteContainer = autocompleteContainer;
         }
+        
+        autocompleteContainer.ResourceUri = virtualizationResult.Model!.PersistentState.ResourceUri;
+        autocompleteContainer.TextEditorViewModelKey = virtualizationResult.ViewModel!.PersistentState.ViewModelKey;
         
         if (!virtualizationResult.IsValid)
         {
@@ -1076,7 +1081,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                             autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
                                 displayName: stringValue,
                                 autocompleteEntryKind: AutocompleteEntryKind.Word,
-                                absolutePathId: i,
+                                absolutePathId,
                                 startInclusiveIndex: 0,
                                 endExclusiveIndex: 0);
                         }

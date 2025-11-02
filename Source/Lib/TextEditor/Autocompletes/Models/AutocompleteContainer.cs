@@ -8,6 +8,9 @@ namespace Clair.TextEditor.RazorLib.Autocompletes.Models;
 /// IReadOnlyList would presumably add an extra layer of code when indexing.
 /// A lot of autocompletes are shown on the screen at the same time and they are constantly changing.
 /// Thus, just don't modify the List.
+///
+/// I considered making this an array but then you have to preallocate vs Add'ing to the List.
+/// I'm not sure I think I'm gonna change it to an array and just do preallocation.
 /// </summary>
 public class AutocompleteContainer
 {

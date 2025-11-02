@@ -102,13 +102,12 @@ public sealed partial class ContextMenu : ComponentBase, ITextEditorDependentCom
         var virtualizationResult = GetVirtualizationResult();
         if (!virtualizationResult.IsValid)
         {
-            menu = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+            menu = new MenuContainer();
         }
         else
         {
-            menu = virtualizationResult.Model.PersistentState.CompilerService.GetContextMenu(virtualizationResult, this);
-            
-            var componentData = virtualizationResult.ViewModel.PersistentState.ComponentData;
+            menu = virtualizationResult.Model!.PersistentState.CompilerService.GetContextMenu(virtualizationResult, this);
+            var componentData = virtualizationResult.ViewModel!.PersistentState.ComponentData;
             if (componentData is not null)
                 menu.ElementIdToRestoreFocusToOnClose = componentData.PrimaryCursorContentId;
         }

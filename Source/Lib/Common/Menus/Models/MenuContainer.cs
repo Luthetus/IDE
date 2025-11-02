@@ -17,11 +17,11 @@ namespace Clair.Common.RazorLib.Menus.Models;
 /// </summary>
 public record MenuContainer(IReadOnlyList<MenuOptionValue> MenuOptionList)
 {
-    public static readonly IReadOnlyList<MenuOptionValue> NoMenuOptionsExistList = new List<MenuOptionValue>
+    public MenuContainer() : this(Array.Empty<MenuOptionValue>())
     {
-        new("No menu options exist for this item.", MenuOptionKind.Other)
-    };
-    
+        
+    }
+
     public int InitialActiveMenuOptionRecordIndex { get; set; } = -1;
     public bool ShouldImmediatelyTakeFocus { get; set; } = true;
     public bool UseIcons { get; set; }

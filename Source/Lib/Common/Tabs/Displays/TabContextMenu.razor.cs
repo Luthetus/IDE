@@ -34,7 +34,7 @@ public partial class TabContextMenu : ComponentBase
 
         if (menuOptionList.Count == 0)
         {
-            var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+            var menuRecord = new MenuContainer();
             _previousGetMenuRecordInvocation = (tabContextMenuEventArgs, menuRecord);
             return menuRecord;
         }

@@ -43,7 +43,7 @@ public class CompilerServiceDoNothing : ICompilerService
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
-        return ValueTask.FromResult(new MenuContainer(MenuContainer.NoMenuOptionsExistList));
+        return ValueTask.FromResult(new MenuContainer());
     }
     
     public ValueTask OnInspect(

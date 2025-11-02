@@ -1507,7 +1507,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             textSpan,
             virtualizationResult);
     
-        return autocompleteMenu.GetDefaultMenuRecord(compilerServiceAutocompleteEntryList);
+        return autocompleteMenu;
     }
     
     private Task MemberAutocomplete(string text, string filteringWord, ResourceUri resourceUri, int viewModelKey)

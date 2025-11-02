@@ -892,7 +892,7 @@ public class TextEditorCommandDefaultFunctions
         MenuContainer menu;
         
         if (menuOptionList.Count == 0)
-            menu = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+            menu = new MenuContainer();
         else
             menu = new MenuContainer(menuOptionList);
         

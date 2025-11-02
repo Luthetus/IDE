@@ -21,11 +21,11 @@ namespace Clair.Tests.csproj.csproj;
 /// That being said I wrote the partition code without having looked
 /// at what other people were doing with respect to the editing.
 ///
-/// And it currently isn't that big of a deal,
+/// And it currently isn't that big of a deal*,
 /// and I think you actually can use partitions the entireway through without issues.
-///     - The TextEditorModel when closed needs to be put in a state where
+///     - *The TextEditorModel when closed needs to be put in a state where
 ///         the GC is able to collect it, and the various partitions that compose the TextEditorModel's content.
-///     - This currently isn't being done. So the overhead of the partition logic is massive at the moment.
+///     - *This currently isn't being done. So the overhead of the partition logic is massive at the moment.
 ///         - But if I can reliably prove that the GC collects everything eventually after you close the tab,
 ///             it won't be that big of a deal.
 ///

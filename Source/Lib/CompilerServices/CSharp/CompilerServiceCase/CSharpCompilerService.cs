@@ -1014,6 +1014,17 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             var absolutePathId = TryGetFileAbsolutePathToInt(virtualizationResult.Model!.PersistentState.ResourceUri.Value);
             if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilationUnit))
             {
+                // Within file search
+                // vs
+                // Member access search
+                //
+                // Fear is optimization but I can probably get extremely far by taking advantage
+                // of both cases being the same file over and over?
+                //
+                // Maybe not for partial types and etc...
+                //
+                // But when it comes to streaming the text, you don't necessarily
+                // have to open tons of StreamReaders to do the autocompletion?
                 for (int i = compilationUnit.NodeOffset; i < compilationUnit.NodeOffset + compilationUnit.NodeLength; i++)
                 {
                     // __CSharpBinder.NodeList[i];

@@ -79,10 +79,7 @@ public sealed class CssCompilerService : ICompilerService
             return _resourceMap[resourceUri];
         }
     }
-    /*
-    MenuContainer empty is count 0 need to add check to UI
-Don't use IReadOnlyList just use List and null cause otherwise you overhead the interface dispatch
-    */
+    
     public MenuContainer GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu)
     {
         return contextMenu.GetDefaultMenuRecord();

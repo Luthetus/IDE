@@ -95,7 +95,7 @@ public class JavaScriptCompilerService : ICompilerService
         TextEditorModel modelModifier,
         TextEditorViewModel viewModelModifier)
     {
-        return ValueTask.FromResult(new MenuContainer(MenuContainer.NoMenuOptionsExistList));
+        return ValueTask.FromResult(new MenuContainer());
     }
     
     public ValueTask OnInspect(

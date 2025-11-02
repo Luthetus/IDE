@@ -21,7 +21,7 @@ public partial class InputFileContextMenu : ComponentBase
 
     private MenuContainer GetMenuRecord(TreeViewCommandArgs commandArgs)
     {
-        var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+        var menuRecord = new MenuContainer();
         _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
         return menuRecord;
         

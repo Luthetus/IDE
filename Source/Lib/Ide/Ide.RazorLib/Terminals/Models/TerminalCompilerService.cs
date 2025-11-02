@@ -2,6 +2,7 @@ using Clair.Common.RazorLib.Menus.Models;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.TextEditor.RazorLib;
 using Clair.TextEditor.RazorLib.CompilerServices;
+using Clair.TextEditor.RazorLib.Autocompletes.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
@@ -84,9 +85,9 @@ public sealed class TerminalCompilerService : ICompilerService
         return contextMenu.GetDefaultMenuRecord();
     }
 
-    public MenuContainer GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
+    public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
-        return autocompleteMenu.GetDefaultMenuRecord();
+        return null;
     }
     
     public ValueTask<MenuContainer> GetQuickActionsSlashRefactorMenu(
@@ -94,7 +95,7 @@ public sealed class TerminalCompilerService : ICompilerService
         TextEditorModel modelModifier,
         TextEditorViewModel viewModelModifier)
     {
-        return ValueTask.FromResult(new MenuContainer(MenuContainer.NoMenuOptionsExistList));
+        return ValueTask.FromResult(new MenuContainer());
     }
     
     public ValueTask OnInspect(

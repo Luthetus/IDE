@@ -2087,7 +2087,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 MenuContainer menu;
                 
                 if (menuOptionList.Count == 0)
-                    menu = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+                    menu = new MenuContainer();
                 else
                     menu = new MenuContainer(menuOptionList);
                 
@@ -2424,7 +2424,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 .Take(5)
                 .Select(x =>
                 {
-                    return new AutocompleteEntry(
+                    return new AutocompleteValue(
                         x,
                         AutocompleteEntryKind.Variable,
                         null);
@@ -2442,7 +2442,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     .Take(5)
                     .Select(x =>
                     {
-                        return new AutocompleteEntry(
+                        return new AutocompleteValue(
                             x,
                             AutocompleteEntryKind.Variable,
                             null);
@@ -2456,7 +2456,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     .Take(5)
                     .Select(x =>
                     {
-                        return new AutocompleteEntry(
+                        return new AutocompleteValue(
                             x,
                             AutocompleteEntryKind.Function,
                             null);
@@ -2501,7 +2501,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     {
         if ("prop".Contains(word))
         {
-            autocompleteEntryList.Add(new AutocompleteEntry(
+            autocompleteEntryList.Add(new AutocompleteValue(
                 "prop",
                 AutocompleteEntryKind.Snippet,
                 () => PropSnippet(word, textSpan, "public TYPE NAME { get; set; }", resourceUri)));
@@ -2509,7 +2509,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         
         if ("propnn".Contains(word))
         {
-            autocompleteEntryList.Add(new AutocompleteEntry(
+            autocompleteEntryList.Add(new AutocompleteValue(
                 "propnn",
                 AutocompleteEntryKind.Snippet,
                 () => PropSnippet(word, textSpan, "public TYPE NAME { get; set; } = null!;", resourceUri)));

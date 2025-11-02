@@ -25,9 +25,9 @@ public partial class FolderExplorerContextMenu : ComponentBase
             return _previousGetMenuRecordInvocation.menuRecord;
 
         // ----------------------------------------------------------------------
-        var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (treeViewCommandArgs, menuRecord);
-            return menuRecord;
+        var menuRecord = new MenuContainer();
+        _previousGetMenuRecordInvocation = (treeViewCommandArgs, menuRecord);
+        return menuRecord;
         // ---------------------------------------------------------------------- 
 
         /*

@@ -1018,6 +1018,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         for (; i >= 0; i--)
         {
             character = virtualizationResult.Model.GetCharacter(i);
+            Console.WriteLine(character);
             
             switch (character)
             {
@@ -1174,6 +1175,10 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         }
         
         exitOuterForLoop:
+        if (filteringWordStartInclusiveIndex == -1)
+        {
+            filteringWordStartInclusiveIndex = i;
+        }
         
         // Invalidate the parsed identifier if it starts with a number.
         if (isParsingIdentifier)
@@ -1197,6 +1202,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         
         var filteringWord = string.Empty;
         
+        Console.WriteLine(filteringWordStartInclusiveIndex);
+        Console.WriteLine("\t" + filteringWordEndExclusiveIndex);
+        
         if (filteringWordStartInclusiveIndex != -1 && filteringWordEndExclusiveIndex != -1)
         {
             var textSpan = new TextEditorTextSpan(
@@ -1204,9 +1212,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 filteringWordEndExclusiveIndex,
                 DecorationByte: 0);
                 
-            filteringWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService);
+            filteringWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService, _unsafeGetTextStringBuilder);
         }
-    
+        
         CSharpAutocompleteContainer autocompleteContainer;
         int writeCount = 0;
 
@@ -1229,7 +1237,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         autocompleteContainer.ResourceUri = virtualizationResult.Model!.PersistentState.ResourceUri;
         autocompleteContainer.TextEditorViewModelKey = virtualizationResult.ViewModel!.PersistentState.ViewModelKey;
         
-        var codeSnippetCount = 1;
+        var codeSnippetCount = 2;
         
         if (!virtualizationResult.IsValid)
         {
@@ -1321,6 +1329,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     
                     autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
                         displayName: "prop",
+                        autocompleteEntryKind: AutocompleteEntryKind.Snippet);
+                    autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
+                        displayName: filteringWord,
                         autocompleteEntryKind: AutocompleteEntryKind.Snippet);
                 }
             }

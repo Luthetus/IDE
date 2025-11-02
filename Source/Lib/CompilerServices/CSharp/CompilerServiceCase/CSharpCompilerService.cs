@@ -349,6 +349,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
 
         if (model is not null)
         {
+            // !!!!!!!!!!
             if (textSpan.EndExclusiveIndex > model.AllText.Length)
                 return null;
             return textSpan.GetText(model.AllText, _textEditorService);
@@ -969,7 +970,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return otherSr;
     }
 
-    private MenuContainer? GetAutocompleteMenuPart(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu, int positionIndex)
+    private List<AutocompleteValue> GetAutocompleteMenuPart(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu, int positionIndex)
     {
         if (virtualizationResult.Model is null)
             return null;
@@ -1197,7 +1198,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             
         if (foundMemberAccessToken && operatingWordEndExclusiveIndex != -1)
         {
-            var autocompleteEntryList = new List<AutocompleteEntry>();
+            var autocompleteEntryList = new List<AutocompleteValue>();
             
             var operatingWordAmongPositionIndex = operatingWordEndExclusiveIndex - 1;
            
@@ -1465,26 +1466,15 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             }
         
             if (autocompleteEntryList.Count == 0)
-                return new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+                return autocompleteEntryList;
             
-            return new MenuRecord(
-                autocompleteEntryList.Select(entry =>
-                {
-                    var menuOptionRecord = new MenuOptionRecord(
-                        entry.DisplayName,
-                        MenuOptionKind.Other,
-                        _ => entry.SideEffectFunc?.Invoke() ?? Task.CompletedTask);
-                    
-                    menuOptionRecord.IconKind = entry.AutocompleteEntryKind;
-                    return menuOptionRecord;
-                })
-                .ToList());
+            return autocompleteEntryList;
         }
         
         return null;
     }
 
-    public MenuContainer GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
+    public List<AutocompleteValue> GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
         var positionIndex = virtualizationResult.Model.GetPositionIndex(virtualizationResult.ViewModel);
         
@@ -1502,12 +1492,8 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             positionIndex,
             0);
     
-        var compilerServiceAutocompleteEntryList = OBSOLETE_GetAutocompleteEntries(
-            word,
-            textSpan,
-            virtualizationResult);
-    
-        return autocompleteMenu;
+        return OBSOLETE_GetAutocompleteEntries(word, textSpan, virtualizationResult)
+            ?? new();
     }
     
     private Task MemberAutocomplete(string text, string filteringWord, ResourceUri resourceUri, int viewModelKey)
@@ -1598,7 +1584,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         MenuContainer menu;
         
         if (menuOptionList.Count == 0)
-            menu = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+            menu = new MenuContainer();
         else
             menu = new MenuContainer(menuOptionList);
     
@@ -2331,7 +2317,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return default;
     }
     
-    public List<AutocompleteEntry>? OBSOLETE_GetAutocompleteEntries(string word, TextEditorTextSpan textSpan, TextEditorVirtualizationResult virtualizationResult)
+    public List<AutocompleteValue>? OBSOLETE_GetAutocompleteEntries(string word, TextEditorTextSpan textSpan, TextEditorVirtualizationResult virtualizationResult)
     {
         if (virtualizationResult.Model is null)
             return null;
@@ -2347,7 +2333,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         if (boundScope.IsDefault())
             return null;
         
-        var autocompleteEntryList = new List<AutocompleteEntry>();
+        var autocompleteEntryList = new List<AutocompleteValue>();
 
         var targetScope = boundScope;
         
@@ -2508,7 +2494,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return autocompleteEntryList.DistinctBy(x => x.DisplayName).ToList();
     }
     
-    private void AddSnippets(List<AutocompleteEntry> autocompleteEntryList, string word, TextEditorTextSpan textSpan, ResourceUri resourceUri)
+    private void AddSnippets(List<AutocompleteValue> autocompleteEntryList, string word, TextEditorTextSpan textSpan, ResourceUri resourceUri)
     {
         if ("prop".Contains(word))
         {

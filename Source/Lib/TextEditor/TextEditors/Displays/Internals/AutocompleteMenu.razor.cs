@@ -28,7 +28,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
             new("No results", MenuOptionKind.Other)
         });
 
-    private List<AutocompleteEntry> _autocompleteOptionValueList = new();
+    private List<AutocompleteValue> _autocompleteOptionValueList = new();
     
     private Key<TextEditorComponentData> _componentDataKeyPrevious = Key<TextEditorComponentData>.Empty;
     private TextEditorComponentData? _componentData;
@@ -176,7 +176,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
 
     public async Task InsertAutocompleteMenuOption(
         string word,
-        AutocompleteEntry autocompleteEntry,
+        AutocompleteValue autocompleteEntry,
         TextEditorViewModel viewModel)
     {
         var virtualizationResult = GetVirtualizationResult();
@@ -457,7 +457,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
         }    
     }
 
-    public List<AutocompleteEntry> GetAutocompleteOptions()
+    public List<AutocompleteValue> GetAutocompleteOptions()
     {
         return new();
     }

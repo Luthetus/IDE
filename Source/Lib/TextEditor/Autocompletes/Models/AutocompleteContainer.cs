@@ -27,4 +27,8 @@ public class AutocompleteContainer
     }
 
     public AutocompleteValue[] AutocompleteMenuList { get; set; }
+    
+    public virtual void OnClick(AutocompleteValue entry)
+    {
+    }
 }

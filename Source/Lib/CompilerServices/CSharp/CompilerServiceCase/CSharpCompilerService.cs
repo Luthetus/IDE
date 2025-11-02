@@ -56,6 +56,10 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         _intToFileAbsolutePathMap.Add(1, string.Empty);
     }
     
+    private const int MAX_AUTOCOMPLETE_OPTIONS = 25;
+    private SynchronizationContext? _previousSynchronizationContext;
+    private AutocompleteContainer? _uiAutocompleteContainer = new AutocompleteContainer(new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
+    
     public TextEditorService TextEditorService => _textEditorService;
 
     /// <summary>
@@ -972,11 +976,25 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
 
     public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
-        Console.WriteLine(SynchronizationContext.Current);
-        //if ( == )
-        //{
-        //}
-        return null;
+        AutocompleteContainer autocompleteContainer;
+        int writeCount = 0;
+
+        if (_previousSynchronizationContext == SynchronizationContext.Current)
+        {
+            autocompleteContainer = _uiAutocompleteContainer;
+        }
+        else
+        {
+            _previousSynchronizationContext = SynchronizationContext.Current;
+            autocompleteContainer = new AutocompleteContainer(new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
+        }
+        
+        for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS)
+        {
+            autocompleteContainer.[i] = ;
+        }
+        
+        return autocompleteContainer;
     }
     
     public ValueTask<MenuContainer> GetQuickActionsSlashRefactorMenu(

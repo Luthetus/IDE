@@ -201,7 +201,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
         switch (eventArgsKeyDown.Key)
         {
             case "ArrowDown":
-                if (_activeIndex >= _autocompleteContainer..Count - 1)
+                if (_activeIndex >= _autocompleteContainer.AutocompleteMenuList.Length - 1)
                 {
                     _activeIndex = 0;
                 }
@@ -213,7 +213,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
             case "ArrowUp":
                 if (_activeIndex <= 0)
                 {
-                    _activeIndex = _autocompleteOptionValueList.Count - 1;
+                    _activeIndex = _autocompleteContainer.AutocompleteMenuList.Length - 1;
                 }
                 else
                 {
@@ -230,14 +230,14 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
                 _activeIndex = 0;
                 break;
             case "End":
-                _activeIndex = _autocompleteOptionValueList.Count - 1;
+                _activeIndex = _autocompleteContainer.AutocompleteMenuList.Length - 1;
                 break;
             case "Escape":
                 await Close();
                 break;
             case "Enter":
             case " ":
-                var option = _autocompleteOptionValueList[_activeIndex];
+                var option = _autocompleteContainer.AutocompleteMenuList[_activeIndex];
                 /*if (option.OnClickFunc is not null)
                 {
                     await option.OnClickFunc.Invoke(new MenuOptionOnClickArgs
@@ -298,7 +298,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
             return;
 
         _activeIndex = indexClicked;
-        var option = _autocompleteOptionValueList[indexClicked];
+        var option = _autocompleteContainer.AutocompleteMenuList[indexClicked];
         /*if (option.OnClickFunc is not null)
         {
             await option.OnClickFunc.Invoke(new MenuOptionOnClickArgs
@@ -345,7 +345,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
 
         int optionIndex = 0;
 
-        for (; optionIndex < _autocompleteOptionValueList.Count; optionIndex++)
+        for (; optionIndex < _autocompleteContainer.AutocompleteMenuList.Length; optionIndex++)
         {
             if (_horizontalRuleElementIndexHashSet.Contains(optionIndex))
                 buildHeight += HorizontalRuleVerticalOffset;
@@ -392,8 +392,8 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
     {
         if (indexLocal < 0)
             return 0;
-        else if (indexLocal >= _autocompleteOptionValueList.Count)
-            return _autocompleteOptionValueList.Count - 1;
+        else if (indexLocal >= _autocompleteContainer.AutocompleteMenuList.Length)
+            return _autocompleteContainer.AutocompleteMenuList.Length - 1;
 
         return indexLocal;
     }

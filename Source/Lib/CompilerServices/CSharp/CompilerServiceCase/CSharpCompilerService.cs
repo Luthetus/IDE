@@ -997,7 +997,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             _uiAutocompleteContainer = autocompleteContainer;
         }
         
-        for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS)
+        for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS; i++)
         {
             autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
                 displayName: "aaa",

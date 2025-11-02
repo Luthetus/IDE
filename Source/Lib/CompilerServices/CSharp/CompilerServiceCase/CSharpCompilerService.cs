@@ -979,6 +979,8 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         AutocompleteContainer autocompleteContainer;
         int writeCount = 0;
 
+        // I guess I moreso wanna check whether the UI is invoking the method.
+        // Then I'd be able to continually provide them the same instance.
         if (_previousSynchronizationContext == SynchronizationContext.Current)
         {
             autocompleteContainer = _uiAutocompleteContainer;

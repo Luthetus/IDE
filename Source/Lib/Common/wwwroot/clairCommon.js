@@ -294,9 +294,11 @@ window.clairCommon = {
     },
     menuInitialize: function (dotNetHelper, elementId) {
         let element = document.getElementById(elementId);
-        
+
+        // This somewhat reads weird, I don't want to duplicate the "empty" return value
+        // If I just 'return' then an exception is thrown in C# when it tries to create a MenuMeasurements object.
         if (!element)
-            return;
+            return this.measureMenu(elementId);
         
         if (element) {
             element.addEventListener('keydown', (event) => {

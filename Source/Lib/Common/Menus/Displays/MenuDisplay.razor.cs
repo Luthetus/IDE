@@ -12,6 +12,14 @@ public sealed partial class MenuDisplay : ComponentBase, IDisposable
     [Parameter, EditorRequired]
     public MenuContainer Menu { get; set; } = null!;
 
+    private readonly MenuContainer NoOptionsMenu = new MenuContainer(new List<MenuOptionValue>
+    {
+        new MenuOptionValue(
+            displayName: "No results",
+            MenuOptionKind.Other,
+            onClickFunc: null)
+    });
+
     /// <summary>Pixels</summary>
     private int LineHeight => CommonService.Options_LineHeight;
     

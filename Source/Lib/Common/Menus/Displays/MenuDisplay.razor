@@ -9,13 +9,23 @@
             _seenWidgetHeight = WidgetHeight;
     
         _horizontalRuleElementIndexHashSet.Clear();
+        
+        MenuContainer menuLocal;
+        if (Menu.MenuOptionList.Count > 0)
+        {
+            menuLocal = Menu;
+        }
+        else
+        {
+            menuLocal = NoOptionsMenu;
+        }
     
-        var previousKind = Menu.MenuOptionList.Count > 0 ? Menu.MenuOptionList[0].MenuOptionKind : default(MenuOptionKind);
+        var previousKind = menuLocal.MenuOptionList.Count > 0 ? menuLocal.MenuOptionList[0].MenuOptionKind : default(MenuOptionKind);
     }
     
-    @for (var i = 0; i < Menu.MenuOptionList.Count; i++)
+    @for (var i = 0; i < menuLocal.MenuOptionList.Count; i++)
     {
-        var menuOption = Menu.MenuOptionList[i];
+        var menuOption = menuLocal.MenuOptionList[i];
         
         var cssClass = _activeIndex == i
             ? "ci_menu-option-display ci_unselectable ci_active"
@@ -30,7 +40,7 @@
         
         <div class="@cssClass" style="@CommonService.Options_LineHeight_CssStyle">
             
-            @if (Menu.UseIcons)
+            @if (menuLocal.UseIcons)
             {
                 <div class="ci_menu-option-icon">
                     @switch (menuOption.IconKind)

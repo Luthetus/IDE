@@ -7,10 +7,27 @@ namespace Clair.Tests.csproj.csproj;
 /// "Group B" is intended to be read second.
 ///
 /// The classification of the groups is somewhat arbitrary.
-/// It is entirely based on what I "feel" should be where.
+/// It is entirely based on where I "feel" something should be.
 ///
 /// # Group A information
 /// =====================
+///
+/// Most importantly, a lot of text editors don't edit text this way.
+/// - Rope
+/// - Gap buffer
+/// - Piece table
+/// - ...
+///
+/// That being said I wrote the partition code without having looked
+/// at what other people were doing with respect to the editing.
+///
+/// And it currently isn't that big of a deal,
+/// and I think you actually can use partitions the entireway through without issues.
+///     - The TextEditorModel when closed needs to be put in a state where
+///         the GC is able to collect it, and the various partitions that compose the TextEditorModel's content.
+///     - This currently isn't being done. So the overhead of the partition logic is massive at the moment.
+///         - But if I can reliably prove that the GC collects everything when you close the tab,
+///             it won't be that big of a deal.
 ///
 /// Partitions have the following interactions:
 /// - Seek (find the correct partition)
@@ -57,6 +74,14 @@ namespace Clair.Tests.csproj.csproj;
 ///
 /// # Group B information
 /// =====================
+/// - Garbage Collection overhead:
+///     - Analyze memory usage by using the .NET Object Allocation tool:
+///         - https://learn.microsoft.com/en-us/visualstudio/profiling/dotnet-alloc-tool
+///     - Fundamentals of garbage collection
+///         - https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals
+///
+///
+///
 /// </summary>
 public class Partitions
 {

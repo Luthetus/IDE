@@ -9,5 +9,5 @@ public class CSharpAutocompleteContainer : AutocompleteContainer
     {
     }
     
-    public List<AutocompleteMenu> AutocompleteMenuList { get; set; }
+    public List<AutocompleteValue> AutocompleteMenuList { get; set; }
 }

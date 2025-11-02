@@ -11,17 +11,17 @@ namespace Clair.TextEditor.RazorLib.Autocompletes.Models;
 /// </summary>
 public class AutocompleteContainer
 {
-    private static readonly List<AutocompleteMenu> _empty = new();
+    private static readonly List<AutocompleteValue> _empty = new();
 
     public AutocompleteContainer()
     {
         AutocompleteMenuList = _empty;
     }
     
-    public AutocompleteContainer(List<AutocompleteMenu> autocompleteMenuList)
+    public AutocompleteContainer(List<AutocompleteValue> autocompleteMenuList)
     {
         AutocompleteMenuList = autocompleteMenuList;
     }
 
-    public List<AutocompleteMenu> AutocompleteMenuList { get; set; }
+    public List<AutocompleteValue> AutocompleteMenuList { get; set; }
 }

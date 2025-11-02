@@ -1012,16 +1012,22 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         else
         {
             var absolutePathId = TryGetFileAbsolutePathToInt(virtualizationResult.Model!.PersistentState.ResourceUri.Value);
-            if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilerServiceResource))
+            if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilationUnit))
             {
-                for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS; i++)
+                for (int i = compilationUnit.NodeOffset; i < compilationUnit.NodeOffset + compilationUnit.NodeLength; i++)
                 {
-                    autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
-                        displayName: "found",
-                        autocompleteEntryKind: AutocompleteEntryKind.Word,
-                        absolutePathId: 0,
-                        startInclusiveIndex: 0,
-                        endExclusiveIndex: 0);
+                    // __CSharpBinder.NodeList[i];
+                    // Wait isn't the set decoration byte range off by 1?
+                    if (writeCount < MAX_AUTOCOMPLETE_OPTIONS)
+                    {
+                        autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
+                            displayName: i.ToString(),
+                            autocompleteEntryKind: AutocompleteEntryKind.Word,
+                            absolutePathId: i,
+                            startInclusiveIndex: 0,
+                            endExclusiveIndex: 0);
+                    }
+                    
                 }
             }
             else

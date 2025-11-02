@@ -744,7 +744,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
     
         if (menuOptionsList.Count == 0)
         {
-            return new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+            return new MenuContainer();
         }
         else
         {

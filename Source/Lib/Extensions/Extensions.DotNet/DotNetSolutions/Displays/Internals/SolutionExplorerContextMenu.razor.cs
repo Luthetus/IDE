@@ -49,7 +49,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         if (data.IndexNodeValue == -1 ||
             data.IndexNodeValue >= data.TreeViewContainer.NodeValueList.Count)
         {
-            var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+            var menuRecord = new MenuContainer();
             _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
@@ -153,7 +153,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
 
         if (menuOptionList.Count == 0)
         {
-            var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+            var menuRecord = new MenuContainer();
             _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
@@ -168,7 +168,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
 
     private MenuContainer GetMenuRecordManySelections(TreeViewCommandArgs solutionExplorerContextMenuData)
     {
-        return new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+        return new MenuContainer();
 
         /*
         var menuOptionList = new List<MenuOptionRecord>();

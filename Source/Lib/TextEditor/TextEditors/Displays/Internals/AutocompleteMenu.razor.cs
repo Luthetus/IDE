@@ -108,52 +108,21 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
         if (!virtualizationResult.IsValid)
             return;
     
-        _ = Task.Run(async () =>
+        TextEditorService.WorkerArbitrary.PostUnique(async editContext =>
         {
-            try
+            var viewModelModifier = editContext.GetViewModelModifier(virtualizationResult.ViewModel.PersistentState.ViewModelKey);
+
+            if (viewModelModifier.PersistentState.MenuKind != MenuKind.None)
             {
-                TextEditorService.WorkerArbitrary.PostUnique(editContext =>
-                {
-                    var viewModelModifier = editContext.GetViewModelModifier(virtualizationResult.ViewModel.PersistentState.ViewModelKey);
-
-                    if (viewModelModifier.PersistentState.MenuKind != MenuKind.None)
-                    {
-                        TextEditorCommandDefaultFunctions.RemoveDropdown(
-                            editContext,
-                            viewModelModifier,
-                            TextEditorService.CommonService);
-                    }
-
-                    return virtualizationResult.ViewModel.FocusAsync();
-                });
-                
-                // (2025-01-21)
-                // ====================================================================================
-                // System.NullReferenceException: Object reference not set to an instance of an object.
-                //    at Clair.TextEditor.RazorLib.TextEditors.Displays.Internals.AutocompleteMenu.<>c__DisplayClass30_0.<<SelectMenuOption>b__0>d.MoveNext() in C:\Users\hunte\Repos\Clair.Ide_Fork\Source\Lib\TextEditor\TextEditors\Displays\Internals\AutocompleteMenu.razor.cs:line 235
-                // System.NullReferenceException: Object reference not set to an instance of an object.
-                //    at Clair.TextEditor.RazorLib.TextEditors.Displays.Internals.AutocompleteMenu.<>c__DisplayClass30_0.<<SelectMenuOption>b__0>d.MoveNext() in C:\Users\hunte\Repos\Clair.Ide_Fork\Source\Lib\TextEditor\TextEditors\Displays\Internals\AutocompleteMenu.razor.cs:line 235
-                // System.NullReferenceException: Object reference not set to an instance of an object.
-                //    at Clair.TextEditor.RazorLib.TextEditors.Displays.Internals.AutocompleteMenu.<>c__DisplayClass30_0.<<SelectMenuOption>b__0>d.MoveNext() in C:\Users\hunte\Repos\Clair.Ide_Fork\Source\Lib\TextEditor\TextEditors\Displays\Internals\AutocompleteMenu.razor.cs:line 235
-                // System.NullReferenceException: Object reference not set to an instance of an object.
-                //    at Clair.TextEditor.RazorLib.TextEditors.Displays.Internals.AutocompleteMenu.<>c__DisplayClass30_0.<<SelectMenuOption>b__0>d.MoveNext() in C:\Users\hunte\Repos\Clair.Ide_Fork\Source\Lib\TextEditor\TextEditors\Displays\Internals\AutocompleteMenu.razor.cs:line 235
-                // PS C:\Users\hunte\Repos\Clair.Ide_Fork\Source\Lib\Ide\Host.Photino\bin\Release\net8.0\publish>
-                try
-                {
-                    await menuOptionAction.Invoke().ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                TextEditorCommandDefaultFunctions.RemoveDropdown(
+                    editContext,
+                    viewModelModifier,
+                    TextEditorService.CommonService);
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }, CancellationToken.None);
 
-        await virtualizationResult.ViewModel.FocusAsync();
+            await menuOptionAction.Invoke().ConfigureAwait(false);
+            await virtualizationResult.ViewModel.FocusAsync();
+        });
     }
 
     public async Task InsertAutocompleteMenuOption(

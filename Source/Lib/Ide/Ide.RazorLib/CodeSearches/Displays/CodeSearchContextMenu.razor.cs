@@ -61,7 +61,7 @@ public partial class CodeSearchContextMenu : ComponentBase
 
         if (menuOptionRecordList.Count == 0)
         {
-            var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
+            var menuRecord = new MenuContainer();
             _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
             return menuRecord;
         }

@@ -1,6 +1,17 @@
 namespace Clair.Tests.csproj.csproj;
 
 /// <summary>
+///
+/// Information is split into "Group A" and "Group B".
+/// "Group A" is intended to be read first.
+/// "Group B" is intended to be read second.
+///
+/// The classification of the groups is somewhat arbitrary.
+/// It is entirely based on what I "feel" should be where.
+///
+/// # Group A information
+/// =====================
+///
 /// Partitions have the following interactions:
 /// - Seek (find the correct partition)
 /// - Multi-byte characters should be maintained within the same partition
@@ -43,6 +54,9 @@ namespace Clair.Tests.csproj.csproj;
 ///             - Once you have that you can do something along the lines of 'insert while (countOfAvailableSpace)'
 ///                 - (TODO: Determine exactly what the code for that 'insert while (countOfAvailableSpace)' looks like).
 ///             - If you run out of a "count of available" space then you need to start the method over again at the 'Seek' step.
+///
+/// # Group B information
+/// =====================
 /// </summary>
 public class Partitions
 {

@@ -56,7 +56,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         _intToFileAbsolutePathMap.Add(1, string.Empty);
     }
     
-    private const int MAX_AUTOCOMPLETE_OPTIONS = 25;
+    private const int MAX_AUTOCOMPLETE_OPTIONS = 5;
     private SynchronizationContext? _previousSynchronizationContext;
     private AutocompleteContainer? _uiAutocompleteContainer = new AutocompleteContainer(new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
     

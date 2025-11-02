@@ -168,10 +168,7 @@ public partial class ClairWebsiteInitializer : ComponentBase
                 if (modelModifier is null)
                     return ValueTask.CompletedTask;
     
-                DotNetService.TextEditorService.Model_AddPresentationModel(
-                    editContext,
-                    modelModifier,
-                    TextEditorFacts.FindOverlayPresentation_EmptyPresentationModel);
+                modelModifier.PerformRegisterPresentationModelAction(TextEditorFacts.FindOverlayPresentation_EmptyPresentationModel);
     
                 programCsModel.PersistentState.CompilerService.RegisterResource(
                     programCsModel.PersistentState.ResourceUri,

@@ -26,7 +26,7 @@ namespace Clair.Tests.csproj.csproj;
 ///     - The TextEditorModel when closed needs to be put in a state where
 ///         the GC is able to collect it, and the various partitions that compose the TextEditorModel's content.
 ///     - This currently isn't being done. So the overhead of the partition logic is massive at the moment.
-///         - But if I can reliably prove that the GC collects everything when you close the tab,
+///         - But if I can reliably prove that the GC collects everything eventually after you close the tab,
 ///             it won't be that big of a deal.
 ///
 /// Partitions have the following interactions:

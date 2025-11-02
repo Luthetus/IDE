@@ -22,7 +22,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
     
     public const string HTML_ELEMENT_ID = "ci_te_autocomplete-menu-id";
     
-    private List<AutocompleteValue> _autocompleteOptionValueList = new();
+    private AutocompleteContainer _autocompleteContainer = new();
     
     private Key<TextEditorComponentData> _componentDataKeyPrevious = Key<TextEditorComponentData>.Empty;
     private TextEditorComponentData? _componentData;
@@ -201,7 +201,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
         switch (eventArgsKeyDown.Key)
         {
             case "ArrowDown":
-                if (_activeIndex >= _autocompleteOptionValueList.Count - 1)
+                if (_activeIndex >= _autocompleteContainer..Count - 1)
                 {
                     _activeIndex = 0;
                 }
@@ -408,8 +408,14 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
         }    
     }
 
-    public List<AutocompleteValue> GetAutocompleteOptions()
+    public AutocompleteContainer GetAutocompleteOptions()
     {
+        var virtualizationResult = GetVirtualizationResult();
+        if (virtualizationResult.IsValid)
+        {
+            return virtualizationResult.Model!.PersistentState.CompilerService.GetAutocompleteMenu(virtualizationResult, this);
+        }
+        
         return new();
     }
 

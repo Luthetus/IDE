@@ -972,6 +972,10 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
 
     public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
+        Console.WriteLine(SynchronizationContext.Current);
+        //if ( == )
+        //{
+        //}
         return null;
     }
     

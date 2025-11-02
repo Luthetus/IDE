@@ -4,7 +4,7 @@ namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
 
 public class CSharpAutocompleteContainer : AutocompleteContainer
 {
-    public CSharpAutocompleteContainer(List<AutocompleteValue> autocompleteMenuList)
+    public CSharpAutocompleteContainer(AutocompleteValue[] autocompleteMenuList)
         : base(autocompleteMenuList)
     {
     }

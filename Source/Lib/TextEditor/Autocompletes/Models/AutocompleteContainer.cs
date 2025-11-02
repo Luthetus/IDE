@@ -3,6 +3,8 @@ using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
 namespace Clair.TextEditor.RazorLib.Autocompletes.Models;
 
 /// <summary>
+/// TODO: Maybe can keep autocompletion as part of Menu.
+///
 /// Do not modify the AutocompleteMenuList.
 /// 
 /// IReadOnlyList would presumably add an extra layer of code when indexing.
@@ -14,17 +16,15 @@ namespace Clair.TextEditor.RazorLib.Autocompletes.Models;
 /// </summary>
 public class AutocompleteContainer
 {
-    private static readonly List<AutocompleteValue> _empty = new();
-
     public AutocompleteContainer()
     {
-        AutocompleteMenuList = _empty;
+        AutocompleteMenuList = Array.Empty<AutocompleteValue>();
     }
     
-    public AutocompleteContainer(List<AutocompleteValue> autocompleteMenuList)
+    public AutocompleteContainer(AutocompleteValue[] autocompleteMenuList)
     {
         AutocompleteMenuList = autocompleteMenuList;
     }
 
-    public List<AutocompleteValue> AutocompleteMenuList { get; set; }
+    public AutocompleteValue[] AutocompleteMenuList { get; set; }
 }

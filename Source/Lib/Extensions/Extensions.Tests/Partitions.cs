@@ -75,10 +75,24 @@ namespace Clair.Tests.csproj.csproj;
 /// # Group B information
 /// =====================
 /// - Garbage Collection overhead:
-///     - Analyze memory usage by using the .NET Object Allocation tool:
-///         - https://learn.microsoft.com/en-us/visualstudio/profiling/dotnet-alloc-tool
-///     - Fundamentals of garbage collection
-///         - https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals
+///     - (links/resources)
+///         - Analyze memory usage by using the .NET Object Allocation tool:
+///             - https://learn.microsoft.com/en-us/visualstudio/profiling/dotnet-alloc-tool
+///         - Fundamentals of garbage collection
+///             - https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals
+///     - The cost of text insertion when using a partition is extremely high.
+///         - This is because if I hold down the letter 'j', for example, then
+///             each insertion has to recreate whichever partition my cursor resides on.
+///         - The worst part of this is specifically the immense GC overhead that comes from
+///             allocating large partitions over and over.
+///         - The solution is to use SynchronizationContext to create a thread safe context.
+///             - Within this thread safe context, you can then make many object allocation optimizations
+///                 by pooling the objects (Exchange is a word I use sometimes for single object pools, I might rename these).
+///             - I began writing the TextEditorContext without knowing about SynchronizationContext.
+///                 - Once I understood more about the SynchronizationContext I didn't change to using it,
+///                     because it just isn't a high priority when the TextEditorContext is working
+///                     and I have other features to implement still.
+///                 
 ///
 ///
 ///

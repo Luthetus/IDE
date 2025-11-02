@@ -1201,9 +1201,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         }
         
         var filteringWord = string.Empty;
-        
-        Console.WriteLine(filteringWordStartInclusiveIndex);
-        Console.WriteLine("\t" + filteringWordEndExclusiveIndex);
+        var operatingWord = string.Empty;
         
         if (filteringWordStartInclusiveIndex != -1 && filteringWordEndExclusiveIndex != -1)
         {
@@ -1213,6 +1211,16 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 DecorationByte: 0);
                 
             filteringWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService, _unsafeGetTextStringBuilder);
+        }
+        
+        if (operatingWordEndExclusiveIndex != -1)
+        {
+            var textSpan = new TextEditorTextSpan(
+                i + 1,
+                operatingWordEndExclusiveIndex + 1,
+                DecorationByte: 0);
+                
+            operatingWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService, _unsafeGetTextStringBuilder);
         }
         
         CSharpAutocompleteContainer autocompleteContainer;
@@ -1240,7 +1248,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         autocompleteContainer.ResourceUri = virtualizationResult.Model!.PersistentState.ResourceUri;
         autocompleteContainer.TextEditorViewModelKey = virtualizationResult.ViewModel!.PersistentState.ViewModelKey;
         
-        var codeSnippetCount = 2;
+        var codeSnippetCount = 3;
         
         if (!virtualizationResult.IsValid)
         {
@@ -1335,6 +1343,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                         autocompleteEntryKind: AutocompleteEntryKind.Snippet);
                     autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
                         displayName: filteringWord,
+                        autocompleteEntryKind: AutocompleteEntryKind.Snippet);
+                    autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
+                        displayName: operatingWord,
                         autocompleteEntryKind: AutocompleteEntryKind.Snippet);
                 }
             }

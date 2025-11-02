@@ -160,24 +160,6 @@ public partial class TextEditorService
         modelModifier.DeleteByRange(count, viewModel);
     }
 
-    public void Model_DeleteTextByMotion(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        TextEditorViewModel viewModel,
-        MotionKind motionKind)
-    {
-        modelModifier.DeleteTextByMotion(motionKind, viewModel);
-    }
-
-    public void Model_DeleteTextByMotionUnsafe(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        TextEditorViewModel viewModel,
-        MotionKind motionKind)
-    {
-        modelModifier.DeleteTextByMotion(motionKind, viewModel);
-    }
-
     public void Model_AddPresentationModel(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,

@@ -439,32 +439,16 @@ public sealed class TextEditorModel
             usePositionIndex: true);
     }
 
-    public void DeleteTextByMotion(MotionKind motionKind, TextEditorViewModel viewModel)
-    {
-        var keymapArgs = motionKind switch
-        {
-            MotionKind.Backspace => new KeymapArgs { Key = CommonFacts.BACKSPACE },
-            MotionKind.Delete => new KeymapArgs { Key = CommonFacts.DELETE },
-            _ => throw new ClairTextEditorException($"The {nameof(MotionKind)}: {motionKind} was not recognized.")
-        };
-
-        HandleKeyboardEvent(
-            keymapArgs,
-            viewModel);
-    }
-
     public void DeleteByRange(int count, TextEditorViewModel viewModel)
     {
         // TODO: This needs to be rewritten everything should be deleted at the same time not a foreach loop for each character
         for (var deleteIndex = 0; deleteIndex < count; deleteIndex++)
         {
-            HandleKeyboardEvent(
-                new KeymapArgs
-                {
-                    Code = CommonFacts.DELETE,
-                    Key = CommonFacts.DELETE,
-                },
-                viewModel);
+            Delete(
+                viewModel,
+                1,
+                expandWord: false,
+                DeleteKind.Delete);
         }
     }
 

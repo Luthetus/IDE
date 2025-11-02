@@ -4,7 +4,7 @@ using Clair.Common.RazorLib.Menus.Models;
 
 namespace Clair.Common.RazorLib.Menus.Displays;
 
-public sealed partial class MenuDisplay : ComponentBase, IDisposable
+public sealed partial class AutocompleteMenuDisplay : ComponentBase, IDisposable
 {
     [Inject]
     private CommonService CommonService { get; set; } = null!;

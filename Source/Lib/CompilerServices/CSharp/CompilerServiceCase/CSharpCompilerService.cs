@@ -314,7 +314,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return compilerServiceResource;
     }
     
-    public MenuRecord GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu)
+    public MenuContainer GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu)
     {
         return contextMenu.GetDefaultMenuRecord();
     }
@@ -969,7 +969,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return otherSr;
     }
 
-    private MenuRecord? GetAutocompleteMenuPart(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu, int positionIndex)
+    private MenuContainer? GetAutocompleteMenuPart(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu, int positionIndex)
     {
         if (virtualizationResult.Model is null)
             return null;
@@ -1465,7 +1465,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             }
         
             if (autocompleteEntryList.Count == 0)
-                return new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+                return new MenuContainer(MenuContainer.NoMenuOptionsExistList);
             
             return new MenuRecord(
                 autocompleteEntryList.Select(entry =>
@@ -1484,7 +1484,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return null;
     }
 
-    public MenuRecord GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
+    public MenuContainer GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
         var positionIndex = virtualizationResult.Model.GetPositionIndex(virtualizationResult.ViewModel);
         
@@ -1526,7 +1526,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return Task.CompletedTask;
     }
     
-    public ValueTask<MenuRecord> GetQuickActionsSlashRefactorMenu(
+    public ValueTask<MenuContainer> GetQuickActionsSlashRefactorMenu(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,
         TextEditorViewModel viewModelModifier)
@@ -1545,15 +1545,15 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             ? null
             : null; // __CSharpBinder.GetSyntaxNode(null, primaryCursorPositionIndex.Value, (CSharpCompilationUnit)compilerServiceResource);
             
-        var menuOptionList = new List<MenuOptionRecord>();
+        var menuOptionList = new List<MenuOptionValue>();
             
-        menuOptionList.Add(new MenuOptionRecord(
+        menuOptionList.Add(new MenuOptionValue(
             "QuickActionsSlashRefactorMenu",
             MenuOptionKind.Other));
             
         if (syntaxNode is null)
         {
-            menuOptionList.Add(new MenuOptionRecord(
+            menuOptionList.Add(new MenuOptionValue(
                 "syntaxNode was null",
                 MenuOptionKind.Other,
                 onClickFunc: async _ => {}));
@@ -1588,19 +1588,19 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             }
             else
             {*/
-                menuOptionList.Add(new MenuOptionRecord(
+                menuOptionList.Add(new MenuOptionValue(
                     syntaxNode.SyntaxKind.ToString(),
                     MenuOptionKind.Other,
                     onClickFunc: async _ => {}));
             /*}*/
         }
         
-        MenuRecord menu;
+        MenuContainer menu;
         
         if (menuOptionList.Count == 0)
-            menu = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            menu = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
         else
-            menu = new MenuRecord(menuOptionList);
+            menu = new MenuContainer(menuOptionList);
     
         return ValueTask.FromResult(menu);
     }
@@ -2019,7 +2019,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 }
             }
             
-            var menuOptionList = new List<MenuOptionRecord>();
+            var menuOptionList = new List<MenuOptionValue>();
             
             siblingFileStringList = siblingFileStringList.OrderBy(x => x).ToList();
             
@@ -2032,7 +2032,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 
                 var siblingAbsolutePath = new AbsolutePath(file, false, _textEditorService.CommonService.FileSystemProvider, tokenBuilder: new StringBuilder(), formattedBuilder: new StringBuilder(), AbsolutePathNameKind.NameWithExtension);
                 
-                menuOptionList.Add(new MenuOptionRecord(
+                menuOptionList.Add(new MenuOptionValue(
                     siblingAbsolutePath.Name,
                     MenuOptionKind.Other,
                     onClickFunc: async _ => 
@@ -2095,12 +2095,12 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             }
             else
             {
-                MenuRecord menu;
+                MenuContainer menu;
                 
                 if (menuOptionList.Count == 0)
-                    menu = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+                    menu = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
                 else
-                    menu = new MenuRecord(menuOptionList);
+                    menu = new MenuContainer(menuOptionList);
                 
                 menu.InitialActiveMenuOptionRecordIndex = initialActiveMenuOptionRecordIndex;
                 

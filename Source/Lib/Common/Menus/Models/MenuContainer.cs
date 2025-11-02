@@ -15,9 +15,9 @@ namespace Clair.Common.RazorLib.Menus.Models;
 /// and modify the shallow copy if modification of the list
 /// after exposing it publically is necessary.
 /// </summary>
-public record MenuRecord(IReadOnlyList<MenuOptionRecord> MenuOptionList)
+public record MenuContainer(IReadOnlyList<MenuOptionValue> MenuOptionList)
 {
-    public static readonly IReadOnlyList<MenuOptionRecord> NoMenuOptionsExistList = new List<MenuOptionRecord>
+    public static readonly IReadOnlyList<MenuOptionValue> NoMenuOptionsExistList = new List<MenuOptionValue>
     {
         new("No menu options exist for this item.", MenuOptionKind.Other)
     };
@@ -29,7 +29,7 @@ public record MenuRecord(IReadOnlyList<MenuOptionRecord> MenuOptionList)
     
     public static void OpenSubMenu(
         CommonService commonService,
-        MenuRecord subMenu,
+        MenuContainer subMenu,
         MenuMeasurements menuMeasurements,
         double topOffsetOptionFromMenu,
         string elementIdToRestoreFocusToOnClose)

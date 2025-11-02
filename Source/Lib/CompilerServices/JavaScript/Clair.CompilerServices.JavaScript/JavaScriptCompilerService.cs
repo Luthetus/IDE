@@ -79,22 +79,22 @@ public class JavaScriptCompilerService : ICompilerService
         }
     }
     
-    public MenuRecord GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu)
+    public MenuContainer GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu)
     {
         return contextMenu.GetDefaultMenuRecord();
     }
 
-    public MenuRecord GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
+    public MenuContainer GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
         return autocompleteMenu.GetDefaultMenuRecord();
     }
     
-    public ValueTask<MenuRecord> GetQuickActionsSlashRefactorMenu(
+    public ValueTask<MenuContainer> GetQuickActionsSlashRefactorMenu(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,
         TextEditorViewModel viewModelModifier)
     {
-        return ValueTask.FromResult(new MenuRecord(MenuRecord.NoMenuOptionsExistList));
+        return ValueTask.FromResult(new MenuContainer(MenuContainer.NoMenuOptionsExistList));
     }
     
     public ValueTask OnInspect(

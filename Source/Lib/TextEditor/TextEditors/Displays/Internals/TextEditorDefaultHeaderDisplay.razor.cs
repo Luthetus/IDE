@@ -238,11 +238,11 @@ public sealed partial class TextEditorDefaultHeaderDisplay : ComponentBase, ITex
             .MeasureElementById(_reloadButtonHtmlElementId)
             .ConfigureAwait(false);
             
-        var menuOptionList = new List<MenuOptionRecord>();
+        var menuOptionList = new List<MenuOptionValue>();
         
         var absolutePath = new AbsolutePath(virtualizationResult.Model.PersistentState.ResourceUri.Value, false, TextEditorService.CommonService.FileSystemProvider, tokenBuilder: new StringBuilder(), formattedBuilder: new StringBuilder(), AbsolutePathNameKind.NameWithExtension);
 
-        menuOptionList.Add(new MenuOptionRecord(
+        menuOptionList.Add(new MenuOptionValue(
             "Cancel",
             MenuOptionKind.Read,
             onClickFunc: _ =>
@@ -251,7 +251,7 @@ public sealed partial class TextEditorDefaultHeaderDisplay : ComponentBase, ITex
                 return Task.CompletedTask;
             }));
             
-        menuOptionList.Add(new MenuOptionRecord(
+        menuOptionList.Add(new MenuOptionValue(
             $"Reset: '{absolutePath.Name}'",
             MenuOptionKind.Delete,
             onClickFunc: _ =>
@@ -266,7 +266,7 @@ public sealed partial class TextEditorDefaultHeaderDisplay : ComponentBase, ITex
                 return Task.CompletedTask;
             }));
             
-        var menu = new MenuRecord(menuOptionList);
+        var menu = new MenuContainer(menuOptionList);
 
         var dropdownRecord = new DropdownRecord(
             dropdownKey,

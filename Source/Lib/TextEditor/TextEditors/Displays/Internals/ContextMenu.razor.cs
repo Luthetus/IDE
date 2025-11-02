@@ -95,14 +95,14 @@ public sealed partial class ContextMenu : ComponentBase, ITextEditorDependentCom
         }
     }
 
-    private MenuRecord GetMenuRecord()
+    private MenuContainer GetMenuRecord()
     {
-        MenuRecord menu;
+        MenuContainer menu;
     
         var virtualizationResult = GetVirtualizationResult();
         if (!virtualizationResult.IsValid)
         {
-            menu = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            menu = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
         }
         else
         {
@@ -116,20 +116,20 @@ public sealed partial class ContextMenu : ComponentBase, ITextEditorDependentCom
         return menu;
     }
     
-    public MenuRecord GetDefaultMenuRecord()
+    public MenuContainer GetDefaultMenuRecord()
     {
-        List<MenuOptionRecord> menuOptionRecordsList = new();
+        List<MenuOptionValue> menuOptionRecordsList = new();
         
-        var cut = new MenuOptionRecord("Cut (Ctrl x)", MenuOptionKind.Other, _ => SelectMenuOption(CutMenuOption));
+        var cut = new MenuOptionValue("Cut (Ctrl x)", MenuOptionKind.Other, _ => SelectMenuOption(CutMenuOption));
         menuOptionRecordsList.Add(cut);
 
-        var copy = new MenuOptionRecord("Copy (Ctrl c)", MenuOptionKind.Other, _ => SelectMenuOption(CopyMenuOption));
+        var copy = new MenuOptionValue("Copy (Ctrl c)", MenuOptionKind.Other, _ => SelectMenuOption(CopyMenuOption));
         menuOptionRecordsList.Add(copy);
 
-        var paste = new MenuOptionRecord("Paste (Ctrl v)", MenuOptionKind.Other, _ => SelectMenuOption(PasteMenuOption));
+        var paste = new MenuOptionValue("Paste (Ctrl v)", MenuOptionKind.Other, _ => SelectMenuOption(PasteMenuOption));
         menuOptionRecordsList.Add(paste);
         
-        var findInTextEditor = new MenuOptionRecord("Find (Ctrl f)", MenuOptionKind.Other, _ => SelectMenuOption(FindInTextEditor));
+        var findInTextEditor = new MenuOptionValue("Find (Ctrl f)", MenuOptionKind.Other, _ => SelectMenuOption(FindInTextEditor));
         menuOptionRecordsList.Add(findInTextEditor);
         
         /*
@@ -138,22 +138,22 @@ public sealed partial class ContextMenu : ComponentBase, ITextEditorDependentCom
         menuOptionRecordsList.Add(findAllReferences);
         */
         
-        var relatedFilesQuickPick = new MenuOptionRecord("Related Files (F7)", MenuOptionKind.Other, _ => SelectMenuOption(RelatedFilesQuickPick));
+        var relatedFilesQuickPick = new MenuOptionValue("Related Files (F7)", MenuOptionKind.Other, _ => SelectMenuOption(RelatedFilesQuickPick));
         menuOptionRecordsList.Add(relatedFilesQuickPick);
         
-        var peekDefinition = new MenuOptionRecord("Peek definition (Alt F12)", MenuOptionKind.Other, _ => SelectMenuOption(PeekDefinitionOption));
+        var peekDefinition = new MenuOptionValue("Peek definition (Alt F12)", MenuOptionKind.Other, _ => SelectMenuOption(PeekDefinitionOption));
         menuOptionRecordsList.Add(peekDefinition);
         
-        var goToDefinition = new MenuOptionRecord("Go to definition (F12)", MenuOptionKind.Other, _ => SelectMenuOption(GoToDefinitionOption));
+        var goToDefinition = new MenuOptionValue("Go to definition (F12)", MenuOptionKind.Other, _ => SelectMenuOption(GoToDefinitionOption));
         menuOptionRecordsList.Add(goToDefinition);
         
-        var quickActionsSlashRefactors = new MenuOptionRecord("QuickActions/Refactors (Ctrl .)", MenuOptionKind.Other, _ => SelectMenuOption(QuickActionsSlashRefactors));
+        var quickActionsSlashRefactors = new MenuOptionValue("QuickActions/Refactors (Ctrl .)", MenuOptionKind.Other, _ => SelectMenuOption(QuickActionsSlashRefactors));
         menuOptionRecordsList.Add(quickActionsSlashRefactors);
 
         if (menuOptionRecordsList.Count == 0)
-            menuOptionRecordsList.Add(new MenuOptionRecord("No Context Menu Options for this item", MenuOptionKind.Other));
+            menuOptionRecordsList.Add(new MenuOptionValue("No Context Menu Options for this item", MenuOptionKind.Other));
 
-        return new MenuRecord(menuOptionRecordsList);
+        return new MenuContainer(menuOptionRecordsList);
     }
 
     public Task SelectMenuOption(Func<Task> menuOptionAction)

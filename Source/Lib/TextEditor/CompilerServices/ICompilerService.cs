@@ -32,11 +32,11 @@ public interface ICompilerService
 
     public ICompilerServiceResource? GetResourceByResourceUri(ResourceUri resourceUri);
 
-    public MenuRecord GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu);
+    public MenuContainer GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu);
 
-    public MenuRecord GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu);
+    public MenuContainer GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu);
 
-    public ValueTask<MenuRecord> GetQuickActionsSlashRefactorMenu(
+    public ValueTask<MenuContainer> GetQuickActionsSlashRefactorMenu(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,
         TextEditorViewModel viewModelModifier);

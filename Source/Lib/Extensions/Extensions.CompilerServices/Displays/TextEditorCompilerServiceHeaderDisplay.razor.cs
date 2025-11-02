@@ -113,9 +113,7 @@ public partial class TextEditorCompilerServiceHeaderDisplay : ComponentBase, ITe
                 viewModelModifier.PersistentState.FirstPresentationLayerKeysList = copy;
             }
         
-            TextEditorService.Model_StartPendingCalculatePresentationModel(
-                editContext,
-                modelModifier,
+            modelModifier.StartPendingCalculatePresentationModel(
                 TextEditorFacts.DevToolsPresentation_PresentationKey,
                 TextEditorFacts.DevToolsPresentation_EmptyPresentationModel);
     
@@ -128,9 +126,7 @@ public partial class TextEditorCompilerServiceHeaderDisplay : ComponentBase, ITe
             var resourceUri = modelModifier.PersistentState.ResourceUri;
     
             if (modelModifier.PersistentState.CompilerService is not IExtendedCompilerService extendedCompilerService)
-                return;
-
-            var absolutePathId = extendedCompilerService.TryGetFileAbsolutePathToInt(modelModifier.PersistentState.ResourceUri.Value);
+                return;            var absolutePathId = extendedCompilerService.TryGetFileAbsolutePathToInt(modelModifier.PersistentState.ResourceUri.Value);
             if (absolutePathId == 0)
                 return;
 

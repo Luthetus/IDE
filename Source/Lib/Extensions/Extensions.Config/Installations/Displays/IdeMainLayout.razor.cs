@@ -535,9 +535,9 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
     
         if (_userInterfaceSawIsExecuting)
         {
-            var menuOptionList = new List<MenuOptionRecord>();
+            var menuOptionList = new List<MenuOptionValue>();
             
-            menuOptionList.Add(new MenuOptionRecord(
+            menuOptionList.Add(new MenuOptionValue(
                 "View Output",
                 MenuOptionKind.Other,
                 onClickFunc: _ => 
@@ -559,7 +559,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                     return Task.CompletedTask;
                 }));
                 
-            menuOptionList.Add(new MenuOptionRecord(
+            menuOptionList.Add(new MenuOptionValue(
                 "View Terminal",
                 MenuOptionKind.Other,
                 onClickFunc: _ => 
@@ -581,7 +581,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                     return Task.CompletedTask;
                 }));
                 
-            menuOptionList.Add(new MenuOptionRecord(
+            menuOptionList.Add(new MenuOptionValue(
                 "Stop Execution",
                 MenuOptionKind.Other,
                 onClickFunc: _ =>
@@ -608,7 +608,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                 _startButtonElementId,
                 DropdownOrientation.Bottom,
                 _startButtonDropdownKey,
-                new MenuRecord(menuOptionList),
+                new MenuContainer(menuOptionList),
                 _startButtonElementId,
                 preventScroll: false);
         }
@@ -643,12 +643,12 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                 null));
     }
     
-    public static MenuRecord InitializeMenuRun(DotNetService DotNetService)
+    public static MenuContainer InitializeMenuRun(DotNetService DotNetService)
     {
-        var menuOptionsList = new List<MenuOptionRecord>();
+        var menuOptionsList = new List<MenuOptionValue>();
 
         // Menu Option Build Project (startup project)
-        menuOptionsList.Add(new MenuOptionRecord(
+        menuOptionsList.Add(new MenuOptionValue(
             "Build Project (startup project)",
             MenuOptionKind.Create,
             _ =>
@@ -671,7 +671,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
             }));
 
         // Menu Option Clean (startup project)
-        menuOptionsList.Add(new MenuOptionRecord(
+        menuOptionsList.Add(new MenuOptionValue(
             "Clean Project (startup project)",
             MenuOptionKind.Create,
             _ =>
@@ -694,7 +694,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
             }));
 
         // Menu Option Build Solution
-        menuOptionsList.Add(new MenuOptionRecord(
+        menuOptionsList.Add(new MenuOptionValue(
             "Build Solution",
             MenuOptionKind.Delete,
             _ =>
@@ -710,7 +710,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
             }));
 
         // Menu Option Clean Solution
-        menuOptionsList.Add(new MenuOptionRecord(
+        menuOptionsList.Add(new MenuOptionValue(
             "Clean Solution",
             MenuOptionKind.Delete,
             _ =>
@@ -725,18 +725,18 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                 return Task.CompletedTask;
             }));
 
-        return new MenuRecord(menuOptionsList);
+        return new MenuContainer(menuOptionsList);
     }
     
-    public static MenuRecord InitializeMenuView(DotNetService DotNetService)
+    public static MenuContainer InitializeMenuView(DotNetService DotNetService)
     {
         var panelState = DotNetService.CommonService.GetPanelState();
         var dialogState = DotNetService.CommonService.GetDialogState();
-        var menuOptionsList = new List<MenuOptionRecord>(capacity: panelState.PanelList.Count);
+        var menuOptionsList = new List<MenuOptionValue>(capacity: panelState.PanelList.Count);
 
         foreach (var panel in panelState.PanelList)
         {
-            menuOptionsList.Add(new MenuOptionRecord(
+            menuOptionsList.Add(new MenuOptionValue(
                 panel.Title,
                 MenuOptionKind.Delete,
                 _ => DotNetService.CommonService.ShowOrAddPanelTab(panel)));
@@ -744,32 +744,32 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
     
         if (menuOptionsList.Count == 0)
         {
-            return new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            return new MenuContainer(MenuContainer.NoMenuOptionsExistList);
         }
         else
         {
-            return new MenuRecord(menuOptionsList);
+            return new MenuContainer(menuOptionsList);
         }
     }
     
-    public static MenuRecord InitializeMenuFile(DotNetService DotNetService)
+    public static MenuContainer InitializeMenuFile(DotNetService DotNetService)
     {
-        var menuOptionsList = new List<MenuOptionRecord>();
+        var menuOptionsList = new List<MenuOptionValue>();
 
         // Menu Option New
-        var menuOptionNewDotNetSolution = new MenuOptionRecord(
+        var menuOptionNewDotNetSolution = new MenuOptionValue(
             ".NET Solution",
             MenuOptionKind.Other,
             _ => DotNetService.OpenNewDotNetSolutionDialog());
 
-        var menuOptionNew = new MenuOptionRecord(
+        var menuOptionNew = new MenuOptionValue(
             "New",
             MenuOptionKind.Other,
             menuOptionOnClickArgs =>
             {
-                MenuRecord.OpenSubMenu(
+                MenuContainer.OpenSubMenu(
                     DotNetService.CommonService,
-                    subMenu: new MenuRecord(new List<MenuOptionRecord> { menuOptionNewDotNetSolution }),
+                    subMenu: new MenuContainer(new List<MenuOptionValue> { menuOptionNewDotNetSolution }),
                     menuOptionOnClickArgs.MenuMeasurements,
                     menuOptionOnClickArgs.TopOffsetOptionFromMenu,
                     elementIdToRestoreFocusToOnClose: menuOptionOnClickArgs.MenuHtmlId);
@@ -784,7 +784,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
         menuOptionsList.Add(menuOptionNew);
         
         // Menu Option Open
-        var menuOptionOpenDotNetSolution = new MenuOptionRecord(
+        var menuOptionOpenDotNetSolution = new MenuOptionValue(
             ".NET Solution",
             MenuOptionKind.Other,
             _ =>
@@ -793,7 +793,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                 return Task.CompletedTask;
             });
         
-        var menuOptionOpenFile = new MenuOptionRecord(
+        var menuOptionOpenFile = new MenuOptionValue(
             "File",
             MenuOptionKind.Other,
             _ =>
@@ -802,7 +802,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                 return Task.CompletedTask;
             });
 
-        var menuOptionOpenDirectory = new MenuOptionRecord(
+        var menuOptionOpenDirectory = new MenuOptionValue(
             "Directory",
             MenuOptionKind.Other,
             _ =>
@@ -811,14 +811,14 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                 return Task.CompletedTask;
             });
 
-        var menuOptionOpen = new MenuOptionRecord(
+        var menuOptionOpen = new MenuOptionValue(
             "Open",
             MenuOptionKind.Other,
             menuOptionOnClickArgs =>
             {
-                MenuRecord.OpenSubMenu(
+                MenuContainer.OpenSubMenu(
                     DotNetService.CommonService,
-                    subMenu: new MenuRecord(new List<MenuOptionRecord>()
+                    subMenu: new MenuContainer(new List<MenuOptionValue>()
                     {
                         menuOptionOpenDotNetSolution,
                         menuOptionOpenFile,
@@ -837,7 +837,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
 
         menuOptionsList.Add(menuOptionOpen);
 
-        var menuOptionSave = new MenuOptionRecord(
+        var menuOptionSave = new MenuOptionValue(
             "Save (Ctrl s)",
             MenuOptionKind.Other,
             _ =>
@@ -847,7 +847,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
             });
         menuOptionsList.Add(menuOptionSave);
 
-        var menuOptionSaveAll = new MenuOptionRecord(
+        var menuOptionSaveAll = new MenuOptionValue(
             "Save All (Ctrl Shift s)",
             MenuOptionKind.Other,
             _ =>
@@ -858,22 +858,22 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
         menuOptionsList.Add(menuOptionSaveAll);
 
         // Menu Option Permissions
-        var menuOptionPermissions = new MenuOptionRecord(
+        var menuOptionPermissions = new MenuOptionValue(
             "Permissions",
             MenuOptionKind.Delete,
             _ => InitializationHelper.ShowPermissionsDialog(DotNetService));
 
         menuOptionsList.Add(menuOptionPermissions);
 
-        return new MenuRecord(menuOptionsList);
+        return new MenuContainer(menuOptionsList);
     }
 
-    public static MenuRecord InitializeMenuTools(DotNetService DotNetService)
+    public static MenuContainer InitializeMenuTools(DotNetService DotNetService)
     {
-        var menuOptionsList = new List<MenuOptionRecord>();
+        var menuOptionsList = new List<MenuOptionValue>();
 
         // Menu Option Find All
-        var menuOptionFindAll = new MenuOptionRecord(
+        var menuOptionFindAll = new MenuOptionValue(
             "Find All (Ctrl Shift f)",
             MenuOptionKind.Delete,
             _ =>
@@ -885,7 +885,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
         menuOptionsList.Add(menuOptionFindAll);
 
         // Menu Option Code Search
-        var menuOptionCodeSearch = new MenuOptionRecord(
+        var menuOptionCodeSearch = new MenuOptionValue(
             "Code Search (Ctrl ,)",
             MenuOptionKind.Delete,
             _ =>
@@ -905,7 +905,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
 
         menuOptionsList.Add(menuOptionCodeSearch);
 
-        return new MenuRecord(menuOptionsList);
+        return new MenuContainer(menuOptionsList);
     }
     
     public void Dispose()

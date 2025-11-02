@@ -21,8 +21,8 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
     
     public const string HTML_ELEMENT_ID = "ci_te_autocomplete-menu-id";
     
-    private static readonly MenuRecord NoResultsMenuRecord = new(
-        new List<MenuOptionRecord>()
+    private static readonly MenuContainer NoResultsMenuRecord = new(
+        new List<MenuOptionValue>()
         {
             new("No results", MenuOptionKind.Other)
         });
@@ -78,7 +78,7 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
         await InvokeAsync(StateHasChanged);
     }
 
-    private MenuRecord GetMenuRecord()
+    private MenuContainer GetMenuRecord()
     {
         var virtualizationResult = GetVirtualizationResult();
         if (!virtualizationResult.IsValid)
@@ -109,67 +109,41 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
         }
     }
     
-    public MenuRecord GetDefaultMenuRecord(List<AutocompleteEntry>? otherAutocompleteEntryList = null)
+    public MenuContainer GetDefaultMenuRecord(List<AutocompleteEntry>? otherAutocompleteEntryList = null)
     {
         var virtualizationResult = GetVirtualizationResult();
         if (!virtualizationResult.IsValid)
             return NoResultsMenuRecord;
     
-        try
+        if (virtualizationResult.ViewModel.ColumnIndex > 0)
         {
-            if (virtualizationResult.ViewModel.ColumnIndex > 0)
+            List<MenuOptionValue> menuOptionRecordsList = new();
+
+            if (word is not null)
             {
-                var word = virtualizationResult.Model.ReadPreviousWordOrDefault(
-                    virtualizationResult.ViewModel.LineIndex,
-                    virtualizationResult.ViewModel.ColumnIndex);
-
-                List<MenuOptionRecord> menuOptionRecordsList = new();
-
-                if (word is not null)
+                menuOptionRecordsList = autocompleteEntryList.Select(entry =>
                 {
-                    List<string> autocompleteWordsList = new();
-
-                    var autocompleteEntryList = autocompleteWordsList
-                        .Select(aw => new AutocompleteEntry(aw, AutocompleteEntryKind.Word, null))
-                        .ToList();
-                     
-                    if (otherAutocompleteEntryList is not null && otherAutocompleteEntryList.Count != 0)   
-                    {
-                        otherAutocompleteEntryList.AddRange(autocompleteEntryList);
-                        autocompleteEntryList = otherAutocompleteEntryList;
-                    }
-
-                    menuOptionRecordsList = autocompleteEntryList.Select(entry =>
-                    {
-                        var menuOptionRecord = new MenuOptionRecord(
-                            entry.DisplayName,
-                            MenuOptionKind.Other,
-                            _ => SelectMenuOption(() =>
-                            {
-                                if (entry.AutocompleteEntryKind != AutocompleteEntryKind.Snippet)
-                                    InsertAutocompleteMenuOption(word, entry, virtualizationResult.ViewModel);
-                                    
-                                return entry.SideEffectFunc?.Invoke();
-                            }));
-                        
-                        menuOptionRecord.IconKind = entry.AutocompleteEntryKind;
-                        return menuOptionRecord;
-                    })
-                    .ToList();
-                }
-
-                if (menuOptionRecordsList.Count == 0)
-                    menuOptionRecordsList.Add(new MenuOptionRecord("No results", MenuOptionKind.Other));
-
-                return new MenuRecord(menuOptionRecordsList);
+                    var menuOptionRecord = new MenuOptionRecord(
+                        entry.DisplayName,
+                        MenuOptionKind.Other,
+                        _ => SelectMenuOption(() =>
+                        {
+                            if (entry.AutocompleteEntryKind != AutocompleteEntryKind.Snippet)
+                                InsertAutocompleteMenuOption(word, entry, virtualizationResult.ViewModel);
+                                
+                            return entry.SideEffectFunc?.Invoke();
+                        }));
+                    
+                    menuOptionRecord.IconKind = entry.AutocompleteEntryKind;
+                    return menuOptionRecord;
+                })
+                .ToList();
             }
 
-            return NoResultsMenuRecord;
-        }
-        // Catching 'InvalidOperationException' is for the currently occurring case: "Collection was modified; enumeration operation may not execute."
-        catch (Exception e) when (e is ClairTextEditorException || e is InvalidOperationException)
-        {
-            return NoResultsMenuRecord;
+            if (menuOptionRecordsList.Count == 0)
+                menuOptionRecordsList.Add(new MenuOptionValue("No results", MenuOptionKind.Other));
+
+            return new MenuContainer(menuOptionRecordsList);
         }
     }
 
@@ -240,15 +214,10 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
         {
             var modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
             var viewModelModifier = editContext.GetViewModelModifier(viewModel.PersistentState.ViewModelKey);
-
             if (modelModifier is null || viewModelModifier is null)
                 return ValueTask.CompletedTask;
         
-            TextEditorService.Model_InsertText(
-                editContext,
-                modelModifier,
-                viewModelModifier,
-                autocompleteEntry.DisplayName.Substring(word.Length));
+            modelModifier.Insert(autocompleteEntry.DisplayName.Substring(word.Length), viewModel);
                 
             return virtualizationResult.ViewModel.FocusAsync();
         });

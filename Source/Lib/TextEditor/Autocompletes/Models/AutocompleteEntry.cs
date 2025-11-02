@@ -7,14 +7,14 @@ public struct AutocompleteEntry
     public AutocompleteEntry(
         string displayName,
         AutocompleteEntryKind autocompleteEntryKind,
-        Func<Task>? sideEffectFunc)
+        int startInclusiveIndex)
     {
         DisplayName = displayName;
         AutocompleteEntryKind = autocompleteEntryKind;
-        SideEffectFunc = sideEffectFunc;
+        StartInclusiveIndex = startInclusiveIndex;
     }
 
     public string DisplayName { get; }
     public AutocompleteEntryKind AutocompleteEntryKind { get; }
-    public Func<Task>? SideEffectFunc { get; }
+    public int StartInclusiveIndex { get; }
 }

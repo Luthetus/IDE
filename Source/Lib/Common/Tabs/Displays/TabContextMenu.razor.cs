@@ -13,35 +13,35 @@ public partial class TabContextMenu : ComponentBase
 
     public static readonly Key<DropdownRecord> ContextMenuEventDropdownKey = Key<DropdownRecord>.NewKey();
 
-    private (TabContextMenuEventArgs tabContextMenuEventArgs, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
+    private (TabContextMenuEventArgs tabContextMenuEventArgs, MenuContainer menuRecord) _previousGetMenuRecordInvocation;
 
-    private MenuRecord GetMenuRecord(TabContextMenuEventArgs tabContextMenuEventArgs)
+    private MenuContainer GetMenuRecord(TabContextMenuEventArgs tabContextMenuEventArgs)
     {
         if (_previousGetMenuRecordInvocation.tabContextMenuEventArgs == tabContextMenuEventArgs)
             return _previousGetMenuRecordInvocation.menuRecord;
 
-        var menuOptionList = new List<MenuOptionRecord>();
+        var menuOptionList = new List<MenuOptionValue>();
 
-        menuOptionList.Add(new MenuOptionRecord(
+        menuOptionList.Add(new MenuOptionValue(
             "Close All",
             MenuOptionKind.Delete,
             _ => tabContextMenuEventArgs.Tab.TabGroup.CloseAllAsync()));
 
-        menuOptionList.Add(new MenuOptionRecord(
+        menuOptionList.Add(new MenuOptionValue(
             "Close Others",
             MenuOptionKind.Delete,
             _ => tabContextMenuEventArgs.Tab.TabGroup.CloseOthersAsync(tabContextMenuEventArgs.Tab)));
 
         if (menuOptionList.Count == 0)
         {
-            var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (tabContextMenuEventArgs, menuRecord);
             return menuRecord;
         }
 
         // Default case
         {
-            var menuRecord = new MenuRecord(menuOptionList);
+            var menuRecord = new MenuContainer(menuOptionList);
             _previousGetMenuRecordInvocation = (tabContextMenuEventArgs, menuRecord);
             return menuRecord;
         }

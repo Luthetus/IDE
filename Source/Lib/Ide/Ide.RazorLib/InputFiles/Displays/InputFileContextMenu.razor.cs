@@ -17,11 +17,11 @@ public partial class InputFileContextMenu : ComponentBase
 
     public static readonly Key<DropdownRecord> ContextMenuKey = Key<DropdownRecord>.NewKey();
 
-    private (TreeViewCommandArgs treeViewCommandArgs, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
+    private (TreeViewCommandArgs treeViewCommandArgs, MenuContainer menuRecord) _previousGetMenuRecordInvocation;
 
-    private MenuRecord GetMenuRecord(TreeViewCommandArgs commandArgs)
+    private MenuContainer GetMenuRecord(TreeViewCommandArgs commandArgs)
     {
-        var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+        var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
         _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
         return menuRecord;
         
@@ -75,9 +75,9 @@ public partial class InputFileContextMenu : ComponentBase
         */
     }
 
-    private MenuOptionRecord[] GetDirectoryMenuOptions(TreeViewNodeValue treeViewModel)
+    private MenuOptionValue[] GetDirectoryMenuOptions(TreeViewNodeValue treeViewModel)
     {
-        return new MenuOptionRecord[]
+        return new MenuOptionValue[]
         {
             /*
             // 2025-10-22 (rewrite TreeViews)
@@ -103,11 +103,11 @@ public partial class InputFileContextMenu : ComponentBase
         };
     }
 
-    private MenuOptionRecord[] GetFileMenuOptions(
+    private MenuOptionValue[] GetFileMenuOptions(
         TreeViewNodeValue treeViewModel,
         TreeViewNodeValue parentTreeViewModel)
     {
-        return Array.Empty<MenuOptionRecord>();
+        return Array.Empty<MenuOptionValue>();
         /*return new[]
         {
             IdeService.CopyFile(
@@ -133,9 +133,9 @@ public partial class InputFileContextMenu : ComponentBase
         };*/
     }
 
-    private MenuOptionRecord[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)
+    private MenuOptionValue[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)
     {
-        return new MenuOptionRecord[]
+        return new MenuOptionValue[]
         {
             // new MenuOptionRecord(
             //     $"namespace: {treeViewModel.Item.Namespace}",

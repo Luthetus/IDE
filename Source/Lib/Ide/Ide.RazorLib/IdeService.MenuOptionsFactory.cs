@@ -9,14 +9,14 @@ namespace Clair.Ide.RazorLib;
 
 public partial class IdeService
 {
-    public MenuOptionRecord NewEmptyFile(AbsolutePath parentDirectory, Func<Task> onAfterCompletion)
+    public MenuOptionValue NewEmptyFile(AbsolutePath parentDirectory, Func<Task> onAfterCompletion)
     {
-        return new MenuOptionRecord(
+        return new MenuOptionValue(
             "New Empty File",
             MenuOptionKind.Create,
             menuOptionOnClickArgs => 
             {
-                MenuRecord.OpenWidget(
+                MenuContainer.OpenWidget(
                     CommonService,
                     menuOptionOnClickArgs.MenuMeasurements,
                     menuOptionOnClickArgs.TopOffsetOptionFromMenu,
@@ -48,14 +48,14 @@ public partial class IdeService
             };
     }
 
-    public MenuOptionRecord NewTemplatedFile(AbsolutePath parentDirectory, Func<string> getParentDirectoryNamespaceFunc, Func<Task> onAfterCompletion)
+    public MenuOptionValue NewTemplatedFile(AbsolutePath parentDirectory, Func<string> getParentDirectoryNamespaceFunc, Func<Task> onAfterCompletion)
     {
-        return new MenuOptionRecord(
+        return new MenuOptionValue(
             "New Templated File",
             MenuOptionKind.Create,
             menuOptionOnClickArgs => 
             {
-                MenuRecord.OpenWidget(
+                MenuContainer.OpenWidget(
                     CommonService,
                     menuOptionOnClickArgs.MenuMeasurements,
                     menuOptionOnClickArgs.TopOffsetOptionFromMenu,
@@ -87,14 +87,14 @@ public partial class IdeService
             };
     }
 
-    public MenuOptionRecord NewDirectory(AbsolutePath parentDirectory, Func<Task> onAfterCompletion)
+    public MenuOptionValue NewDirectory(AbsolutePath parentDirectory, Func<Task> onAfterCompletion)
     {
-        return new MenuOptionRecord(
+        return new MenuOptionValue(
             "New Directory",
             MenuOptionKind.Create,
             menuOptionOnClickArgs => 
             {
-                MenuRecord.OpenWidget(
+                MenuContainer.OpenWidget(
                     CommonService,
                     menuOptionOnClickArgs.MenuMeasurements,
                     menuOptionOnClickArgs.TopOffsetOptionFromMenu,
@@ -119,14 +119,14 @@ public partial class IdeService
             };
     }
 
-    public MenuOptionRecord DeleteFile(AbsolutePath absolutePath, Func<Task> onAfterCompletion)
+    public MenuOptionValue DeleteFile(AbsolutePath absolutePath, Func<Task> onAfterCompletion)
     {
-        return new MenuOptionRecord(
+        return new MenuOptionValue(
             "Delete",
             MenuOptionKind.Delete,
             menuOptionOnClickArgs => 
             {
-                MenuRecord.OpenWidget(
+                MenuContainer.OpenWidget(
                     CommonService,
                     menuOptionOnClickArgs.MenuMeasurements,
                     menuOptionOnClickArgs.TopOffsetOptionFromMenu,
@@ -151,14 +151,14 @@ public partial class IdeService
             };
     }
 
-    public MenuOptionRecord RenameFile(AbsolutePath sourceAbsolutePath, CommonService commonService, Func<Task> onAfterCompletion)
+    public MenuOptionValue RenameFile(AbsolutePath sourceAbsolutePath, CommonService commonService, Func<Task> onAfterCompletion)
     {
-        return new MenuOptionRecord(
+        return new MenuOptionValue(
             "Rename",
             MenuOptionKind.Update,
             menuOptionOnClickArgs => 
             {
-                MenuRecord.OpenWidget(
+                MenuContainer.OpenWidget(
                     CommonService,
                     menuOptionOnClickArgs.MenuMeasurements,
                     menuOptionOnClickArgs.TopOffsetOptionFromMenu,
@@ -182,9 +182,9 @@ public partial class IdeService
             };
     }
 
-    public MenuOptionRecord CopyFile(AbsolutePath absolutePath, Func<Task> onAfterCompletion)
+    public MenuOptionValue CopyFile(AbsolutePath absolutePath, Func<Task> onAfterCompletion)
     {
-        return new MenuOptionRecord("Copy", MenuOptionKind.Update,
+        return new MenuOptionValue("Copy", MenuOptionKind.Update,
             onClickFunc: _ =>
             {
                 Enqueue_PerformCopyFile(absolutePath, onAfterCompletion);
@@ -192,9 +192,9 @@ public partial class IdeService
             });
     }
 
-    public MenuOptionRecord CutFile(AbsolutePath absolutePath, Func<Task> onAfterCompletion)
+    public MenuOptionValue CutFile(AbsolutePath absolutePath, Func<Task> onAfterCompletion)
     {
-        return new MenuOptionRecord("Cut", MenuOptionKind.Update,
+        return new MenuOptionValue("Cut", MenuOptionKind.Update,
             onClickFunc: _ =>
             {
                 Enqueue_PerformCutFile(absolutePath, onAfterCompletion);
@@ -202,9 +202,9 @@ public partial class IdeService
             });
     }
 
-    public MenuOptionRecord PasteClipboard(AbsolutePath directoryAbsolutePath, Func<Task> onAfterCompletion)
+    public MenuOptionValue PasteClipboard(AbsolutePath directoryAbsolutePath, Func<Task> onAfterCompletion)
     {
-        return new MenuOptionRecord("Paste", MenuOptionKind.Update,
+        return new MenuOptionValue("Paste", MenuOptionKind.Update,
             onClickFunc: _ =>
             {
                 Enqueue_PerformPasteFile(directoryAbsolutePath, onAfterCompletion);

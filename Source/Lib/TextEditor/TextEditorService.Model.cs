@@ -45,50 +45,16 @@ public partial class TextEditorService
 
     public string? xModel_GetAllText(ResourceUri resourceUri)
     {
-        return Model_GetOrDefault(resourceUri)?.xGetAllText(); ;
+        return Model_GetOrDefault(resourceUri)?.xGetAllText();
     }
 
     public TextEditorModel? Model_GetOrDefault(ResourceUri resourceUri)
     {
-        return TextEditorState.ModelGetOrDefault(
-            resourceUri);
-    }
-
-    public Dictionary<ResourceUri, TextEditorModel> Model_GetModels()
-    {
-        return TextEditorState.ModelGetModels();
-    }
-
-    public int Model_GetModelsCount()
-    {
-        return TextEditorState.ModelGetModelsCount();
+        return TextEditorState.ModelGetOrDefault(resourceUri);
     }
     #endregion
 
     #region UPDATE_METHODS
-    /*public void Model_UndoEdit(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier)
-    {
-        modelModifier.UndoEdit();
-    }*/
-
-    public void Model_SetUsingLineEndKind(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        LineEndKind lineEndKind)
-    {
-        modelModifier.SetLineEndKindPreference(lineEndKind);
-    }
-
-    public void Model_SetResourceData(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        DateTime resourceLastWriteTime)
-    {
-        modelModifier.SetResourceData(modelModifier.PersistentState.ResourceUri, resourceLastWriteTime);
-    }
-
     public void Model_Reload(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,
@@ -97,97 +63,6 @@ public partial class TextEditorService
     {
         modelModifier.SetContent(content);
         modelModifier.SetResourceData(modelModifier.PersistentState.ResourceUri, resourceLastWriteTime);
-    }
-
-    /*public void Model_RedoEdit(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier)
-    {
-        modelModifier.RedoEdit();
-    }*/
-
-    public void Model_InsertText(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        TextEditorViewModel viewModel,
-        string content)
-    {
-        modelModifier.Insert(content, viewModel);
-    }
-
-    public void Model_InsertTextUnsafe(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        TextEditorViewModel viewModel,
-        string content)
-    {
-        modelModifier.Insert(content, viewModel);
-    }
-
-    public void Model_HandleKeyboardEvent(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        TextEditorViewModel viewModel,
-        KeymapArgs keymapArgs)
-    {
-        modelModifier.HandleKeyboardEvent(keymapArgs, viewModel);
-    }
-
-    public void Model_HandleKeyboardEventUnsafe(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        TextEditorViewModel viewModel,
-        KeymapArgs keymapArgs)
-    {
-        modelModifier.HandleKeyboardEvent(keymapArgs, viewModel);
-    }
-
-    public void Model_DeleteTextByRange(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        TextEditorViewModel viewModel,
-        int count)
-    {
-        modelModifier.DeleteByRange(count, viewModel);
-    }
-
-    public void Model_DeleteTextByRangeUnsafe(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        TextEditorViewModel viewModel,
-        int count)
-    {
-        modelModifier.DeleteByRange(count, viewModel);
-    }
-
-    public void Model_AddPresentationModel(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        TextEditorPresentationModel emptyPresentationModel)
-    {
-        modelModifier.PerformRegisterPresentationModelAction(emptyPresentationModel);
-    }
-
-    public void Model_StartPendingCalculatePresentationModel(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        Key<TextEditorPresentationModel> presentationKey,
-        TextEditorPresentationModel emptyPresentationModel)
-    {
-        modelModifier.StartPendingCalculatePresentationModel(presentationKey, emptyPresentationModel);
-    }
-
-    public void Model_CompletePendingCalculatePresentationModel(
-        TextEditorEditContext editContext,
-        TextEditorModel modelModifier,
-        Key<TextEditorPresentationModel> presentationKey,
-        TextEditorPresentationModel emptyPresentationModel,
-        List<TextEditorTextSpan> calculatedTextSpans)
-    {
-        modelModifier.CompletePendingCalculatePresentationModel(
-            presentationKey,
-            emptyPresentationModel,
-            calculatedTextSpans);
     }
 
     public void Model_ApplyDecorationRange(

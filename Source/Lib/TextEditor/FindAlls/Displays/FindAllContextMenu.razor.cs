@@ -13,9 +13,9 @@ public partial class FindAllContextMenu : ComponentBase
 
     public static readonly Key<DropdownRecord> ContextMenuEventDropdownKey = Key<DropdownRecord>.NewKey();
 
-    private (TreeViewCommandArgs treeViewCommandArgs, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
+    private (TreeViewCommandArgs treeViewCommandArgs, MenuContainer menuRecord) _previousGetMenuRecordInvocation;
     
-    private MenuRecord GetMenuRecord(TreeViewCommandArgs commandArgs)
+    private MenuContainer GetMenuRecord(TreeViewCommandArgs commandArgs)
     {
         if (_previousGetMenuRecordInvocation.treeViewCommandArgs == commandArgs)
             return _previousGetMenuRecordInvocation.menuRecord;
@@ -38,37 +38,37 @@ public partial class FindAllContextMenu : ComponentBase
         }
         */
 
-        var menuRecordsList = new List<MenuOptionRecord>();
+        var menuRecordsList = new List<MenuOptionValue>();
 
         if (menuRecordsList.Count == 0)
         {
-            var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
             return menuRecord;
         }
 
         // Default case
         {
-            var menuRecord = new MenuRecord(menuRecordsList);
+            var menuRecord = new MenuContainer(menuRecordsList);
             _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
             return menuRecord;
         }
     }
 
-    private MenuRecord GetMultiSelectionMenuRecord(TreeViewCommandArgs commandArgs)
+    private MenuContainer GetMultiSelectionMenuRecord(TreeViewCommandArgs commandArgs)
     {
-        var menuOptionRecordList = new List<MenuOptionRecord>();
+        var menuOptionRecordList = new List<MenuOptionValue>();
 
         if (menuOptionRecordList.Count == 0)
         {
-            var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            var menuRecord = new MenuContainer(MenuContainer.NoMenuOptionsExistList);
             _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
             return menuRecord;
         }
 
         // Default case
         {
-            var menuRecord = new MenuRecord(menuOptionRecordList);
+            var menuRecord = new MenuContainer(menuOptionRecordList);
             _previousGetMenuRecordInvocation = (commandArgs, menuRecord);
             return menuRecord;
         }

@@ -17,6 +17,9 @@ public struct XmlLexerOutput
     public void AddTextSpan(TextEditorTextSpan textSpan)
     {
         TextSpanList?.Add(textSpan);
-        ModelModifier?.ApplySyntaxHighlightingByTextSpan(textSpan);
+        ModelModifier?.__SetDecorationByteRange(
+            textSpan.StartInclusiveIndex,
+            textSpan.EndExclusiveIndex,
+            textSpan.DecorationByte);
     }
 }

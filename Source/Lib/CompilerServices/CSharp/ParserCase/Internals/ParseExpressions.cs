@@ -1116,10 +1116,10 @@ public static partial class Parser
             ++parserModel.Compilation.SymbolLength;
 
 
-            parserModel.TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(typeClauseNode.TypeIdentifierToken.TextSpan with
-            {
-                DecorationByte = (byte)GenericDecorationKind.Type
-            });
+            parserModel.TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                typeClauseNode.TypeIdentifierToken.TextSpan.StartInclusiveIndex,
+                typeClauseNode.TypeIdentifierToken.TextSpan.EndExclusiveIndex,
+                (byte)GenericDecorationKind.Type);
 
             if (parserModel.Binder.SymbolIdToExternalTextSpanMap.TryGetValue(parserModel.AbsolutePathId, out var symbolIdToExternalTextSpanMap) &&
                 !typeDefinitionNode.IsDefault() &&
@@ -1229,10 +1229,10 @@ public static partial class Parser
                             typeClauseNode.TypeIdentifierToken.TextSpan.ByteIndex));
                     ++parserModel.Compilation.SymbolLength;
 
-                    parserModel.TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(typeClauseNode.TypeIdentifierToken.TextSpan with
-                    {
-                        DecorationByte = (byte)GenericDecorationKind.Type
-                    });
+                    parserModel.TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                        typeClauseNode.TypeIdentifierToken.TextSpan.StartInclusiveIndex,
+                        typeClauseNode.TypeIdentifierToken.TextSpan.EndExclusiveIndex,
+                        (byte)GenericDecorationKind.Type);
 
                     if (parserModel.Binder.SymbolIdToExternalTextSpanMap.TryGetValue(parserModel.AbsolutePathId, out var symbolIdToExternalTextSpanMap) &&
                         typeClauseNode.ExplicitDefinitionAbsolutePathId != parserModel.AbsolutePathId)
@@ -1297,10 +1297,10 @@ public static partial class Parser
                 ++parserModel.Compilation.SymbolLength;
 
 
-                parserModel.TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan with
-                {
-                    DecorationByte = (byte)GenericDecorationKind.Function
-                });
+                parserModel.TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                    functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan.StartInclusiveIndex,
+                    functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan.EndExclusiveIndex,
+                    (byte)GenericDecorationKind.Function);
 
                 // TODO: Method groups
 
@@ -3773,10 +3773,10 @@ public static partial class Parser
                 ++parserModel.Compilation.SymbolLength;
 
 
-                parserModel.TokenWalker.TextEditorModel?.ApplySyntaxHighlightingByTextSpan(functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan with
-                {
-                    DecorationByte = (byte)GenericDecorationKind.Function
-                });
+                parserModel.TokenWalker.TextEditorModel?.__SetDecorationByteRange(
+                    functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan.StartInclusiveIndex,
+                    functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan.EndExclusiveIndex,
+                    (byte)GenericDecorationKind.Function);
 
                 if (parserModel.Binder.SymbolIdToExternalTextSpanMap.TryGetValue(parserModel.AbsolutePathId, out var symbolIdToExternalTextSpanMap))
                 {

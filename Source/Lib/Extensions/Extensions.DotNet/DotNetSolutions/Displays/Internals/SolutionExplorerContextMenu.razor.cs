@@ -33,9 +33,9 @@ public partial class SolutionExplorerContextMenu : ComponentBase
 
     public static readonly Key<DropdownRecord> ContextMenuEventDropdownKey = Key<DropdownRecord>.NewKey();
 
-    private (SolutionExplorerContextMenuData solutionExplorerContextMenuData, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
+    private (SolutionExplorerContextMenuData solutionExplorerContextMenuData, MenuContainer menuRecord) _previousGetMenuRecordInvocation;
 
-    private MenuRecord GetMenuRecord(SolutionExplorerContextMenuData data)
+    private MenuContainer GetMenuRecord(SolutionExplorerContextMenuData data)
     {
         /*_previousGetMenuRecordInvocation = (solutionExplorerContextMenuData, new MenuRecord(MenuRecord.NoMenuOptionsExistList));
         return _previousGetMenuRecordInvocation.menuRecord;*/
@@ -49,12 +49,12 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         if (data.IndexNodeValue == -1 ||
             data.IndexNodeValue >= data.TreeViewContainer.NodeValueList.Count)
         {
-            var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            var menuRecord = new MenuContainer();
             _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
 
-        var menuOptionList = new List<MenuOptionRecord>();
+        var menuOptionList = new List<MenuOptionValue>();
         var treeViewModel = data.TreeViewContainer.NodeValueList[data.IndexNodeValue];
         
         TreeViewNodeValue parentTreeViewModel;
@@ -153,22 +153,22 @@ public partial class SolutionExplorerContextMenu : ComponentBase
 
         if (menuOptionList.Count == 0)
         {
-            var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            var menuRecord = new MenuContainer();
             _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
 
         // Default case
         {
-            var menuRecord = new MenuRecord(menuOptionList);
+            var menuRecord = new MenuContainer(menuOptionList);
             _previousGetMenuRecordInvocation = (data, menuRecord);
             return menuRecord;
         }
     }
 
-    private MenuRecord GetMenuRecordManySelections(TreeViewCommandArgs solutionExplorerContextMenuData)
+    private MenuContainer GetMenuRecordManySelections(TreeViewCommandArgs solutionExplorerContextMenuData)
     {
-        return new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+        return new MenuContainer();
 
         /*
         var menuOptionList = new List<MenuOptionRecord>();
@@ -239,16 +239,16 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         }*/
     }
 
-    private MenuOptionRecord[] GetDotNetSolutionMenuOptions(DotNetSolutionModel dotNetSolutionModel)
+    private MenuOptionValue[] GetDotNetSolutionMenuOptions(DotNetSolutionModel dotNetSolutionModel)
     {
         // TODO: Add menu options for non C# projects perhaps a more generic option is good
 
-        var addNewCSharpProject = new MenuOptionRecord(
+        var addNewCSharpProject = new MenuOptionValue(
             "New C# Project",
             MenuOptionKind.Other,
             _ => OpenNewCSharpProjectDialog(dotNetSolutionModel));
 
-        var addExistingCSharpProject = new MenuOptionRecord(
+        var addExistingCSharpProject = new MenuOptionValue(
             "Existing C# Project",
             MenuOptionKind.Other,
             _ =>
@@ -257,14 +257,14 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 return Task.CompletedTask;
             });
 
-        var createOptions = new MenuOptionRecord(
+        var createOptions = new MenuOptionValue(
             "Add",
             MenuOptionKind.Create,
             menuOptionOnClickArgs =>
             {
-                MenuRecord.OpenSubMenu(
+                MenuContainer.OpenSubMenu(
                     DotNetService.CommonService,
-                    subMenu: new MenuRecord(new List<MenuOptionRecord>
+                    subMenu: new MenuContainer(new List<MenuOptionValue>
                     {
                         addNewCSharpProject,
                         addExistingCSharpProject,
@@ -279,12 +279,12 @@ public partial class SolutionExplorerContextMenu : ComponentBase
             IconKind = AutocompleteEntryKind.Chevron
         };
 
-        var openInTextEditor = new MenuOptionRecord(
+        var openInTextEditor = new MenuOptionValue(
             "Open in text editor",
             MenuOptionKind.Update,
             _ => OpenSolutionInTextEditor(dotNetSolutionModel));
 
-        var properties = new MenuOptionRecord(
+        var properties = new MenuOptionValue(
             "Properties",
             MenuOptionKind.Update,
             _ => OpenSolutionProperties(dotNetSolutionModel));
@@ -297,7 +297,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         };
     }
 
-    private MenuOptionRecord[] GetCSharpProjectMenuOptions(
+    private MenuOptionValue[] GetCSharpProjectMenuOptions(
         SolutionExplorerTreeViewContainer container,
         int indexNodeValue,
         Clair.CompilerServices.DotNetSolution.Models.Project.IDotNetProject project,
@@ -308,7 +308,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
     
         var parentDirectory = absolutePath.CreateSubstringParentDirectory();
         if (parentDirectory is null)
-            return Array.Empty<MenuOptionRecord>();
+            return Array.Empty<MenuOptionValue>();
 
         var treeViewSolution = container.DotNetSolutionModel;
 
@@ -394,7 +394,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         };
     }
 
-    private MenuOptionRecord[] GetCSharpProjectToProjectReferenceMenuOptions(
+    private MenuOptionValue[] GetCSharpProjectToProjectReferenceMenuOptions(
         TreeViewNodeValue treeViewCSharpProjectToProjectReference)
     {
         /*
@@ -407,10 +407,10 @@ public partial class SolutionExplorerContextMenu : ComponentBase
                 () => Task.CompletedTask),
         };
         */
-        return Array.Empty<MenuOptionRecord>();
+        return Array.Empty<MenuOptionValue>();
     }
 
-    private IReadOnlyList<MenuOptionRecord> GetTreeViewLightWeightNugetPackageRecordMenuOptions(
+    private IReadOnlyList<MenuOptionValue> GetTreeViewLightWeightNugetPackageRecordMenuOptions(
         TreeViewNodeValue treeViewCSharpProjectNugetPackageReference)
     {
         /*
@@ -432,10 +432,10 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         };
         */
 
-        return Array.Empty<MenuOptionRecord>();
+        return Array.Empty<MenuOptionValue>();
     }
 
-    private MenuOptionRecord[] GetDirectoryMenuOptions(
+    private MenuOptionValue[] GetDirectoryMenuOptions(
         SolutionExplorerTreeViewContainer container,
         int indexNodeValue,
         AbsolutePath absolutePath,
@@ -543,7 +543,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         return namespaceBuilder.ToString();
     }
 
-    private MenuOptionRecord[] GetFileMenuOptions(
+    private MenuOptionValue[] GetFileMenuOptions(
         SolutionExplorerTreeViewContainer container,
         AbsolutePath absolutePath,
         TreeViewNodeValue treeViewModel,
@@ -574,7 +574,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         };
     }
 
-    private MenuOptionRecord[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)
+    private MenuOptionValue[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)
     {
         /*
         return new MenuOptionRecord[]
@@ -584,7 +584,7 @@ public partial class SolutionExplorerContextMenu : ComponentBase
             //     MenuOptionKind.Read)
         };
         */
-        return Array.Empty<MenuOptionRecord>();
+        return Array.Empty<MenuOptionValue>();
     }
 
     private Task OpenNewCSharpProjectDialog(DotNetSolutionModel dotNetSolutionModel)

@@ -4,6 +4,7 @@ using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
+using Clair.TextEditor.RazorLib.Autocompletes.Models;
 
 namespace Clair.TextEditor.RazorLib.CompilerServices;
 
@@ -28,22 +29,22 @@ public class CompilerServiceDoNothing : ICompilerService
         return null;
     }
 
-    public MenuRecord GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu)
+    public MenuContainer GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu)
     {
         return contextMenu.GetDefaultMenuRecord();
     }
 
-    public MenuRecord GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
+    public AutocompleteContainer GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
-        return autocompleteMenu.GetDefaultMenuRecord();
+        return new();
     }
 
-    public ValueTask<MenuRecord> GetQuickActionsSlashRefactorMenu(
+    public ValueTask<MenuContainer> GetQuickActionsSlashRefactorMenu(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
-        return ValueTask.FromResult(new MenuRecord(MenuRecord.NoMenuOptionsExistList));
+        return ValueTask.FromResult(new MenuContainer());
     }
     
     public ValueTask OnInspect(

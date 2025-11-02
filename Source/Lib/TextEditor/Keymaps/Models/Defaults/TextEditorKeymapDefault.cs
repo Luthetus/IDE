@@ -412,12 +412,14 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     if (("ArrowDown" == code || "ArrowUp" == code) &&
                         viewModel.PersistentState.MenuKind == MenuKind.AutoCompleteMenu)
                     {
+                        /*
                         // TODO: Focusing the menu from here isn't working?
                         await editContext.TextEditorService.JsRuntimeCommonApi.FocusHtmlElementById(
                             AutocompleteMenu.HTML_ELEMENT_ID,
                             preventScroll: true);
                             
                         componentData.MenuShouldTakeFocus = true;
+                        */
                         menuKind = MenuKind.AutoCompleteMenu;
                         
                         break;

@@ -1,8 +1,8 @@
 namespace Clair.Common.RazorLib.Menus.Models;
 
-public struct MenuOptionRecord
+public struct MenuOptionValue
 {
-    public MenuOptionRecord(
+    public MenuOptionValue(
         string displayName,
         MenuOptionKind menuOptionKind,
         Func<MenuOptionOnClickArgs, Task>? onClickFunc = null)

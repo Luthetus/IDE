@@ -3082,13 +3082,11 @@ public sealed partial class TextEditorService
 
             if (absolutePathString is not null)
             {
-                fileLastWriteTime = await CommonService.FileSystemProvider.File.GetLastWriteTimeAsync(
-                        absolutePathString,
-                        CancellationToken.None)
+                fileLastWriteTime = await CommonService.FileSystemProvider.File
+                    .GetLastWriteTimeAsync(absolutePathString, CancellationToken.None)
                     .ConfigureAwait(false);
-                Model_SetResourceData(
-                    editContext,
-                    innerTextEditor,
+                innerTextEditor.SetResourceData(
+                    innerTextEditor.PersistentState.ResourceUri,
                     fileLastWriteTime.Value);
             }
         });

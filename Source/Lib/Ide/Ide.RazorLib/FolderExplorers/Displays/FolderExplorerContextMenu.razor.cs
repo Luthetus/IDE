@@ -17,17 +17,17 @@ public partial class FolderExplorerContextMenu : ComponentBase
 
     public static readonly Key<DropdownRecord> ContextMenuEventDropdownKey = Key<DropdownRecord>.NewKey();
 
-    private (TreeViewCommandArgs treeViewCommandArgs, MenuRecord menuRecord) _previousGetMenuRecordInvocation;
+    private (TreeViewCommandArgs treeViewCommandArgs, MenuContainer menuRecord) _previousGetMenuRecordInvocation;
 
-    private MenuRecord GetMenuRecord(TreeViewCommandArgs treeViewCommandArgs)
+    private MenuContainer GetMenuRecord(TreeViewCommandArgs treeViewCommandArgs)
     {
         if (_previousGetMenuRecordInvocation.treeViewCommandArgs == treeViewCommandArgs)
             return _previousGetMenuRecordInvocation.menuRecord;
 
         // ----------------------------------------------------------------------
-        var menuRecord = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
-            _previousGetMenuRecordInvocation = (treeViewCommandArgs, menuRecord);
-            return menuRecord;
+        var menuRecord = new MenuContainer();
+        _previousGetMenuRecordInvocation = (treeViewCommandArgs, menuRecord);
+        return menuRecord;
         // ---------------------------------------------------------------------- 
 
         /*
@@ -74,9 +74,9 @@ public partial class FolderExplorerContextMenu : ComponentBase
         }*/
     }
 
-    private MenuOptionRecord[] GetDirectoryMenuOptions(TreeViewNodeValue treeViewModel)
+    private MenuOptionValue[] GetDirectoryMenuOptions(TreeViewNodeValue treeViewModel)
     {
-        return new MenuOptionRecord[]
+        return new MenuOptionValue[]
         {
             /*
             // 2025-10-22 (rewrite TreeViews)
@@ -102,11 +102,11 @@ public partial class FolderExplorerContextMenu : ComponentBase
         };
     }
 
-    private MenuOptionRecord[] GetFileMenuOptions(
+    private MenuOptionValue[] GetFileMenuOptions(
         TreeViewNodeValue treeViewModel,
         TreeViewNodeValue parentTreeViewModel)
     {
-        return new MenuOptionRecord[]
+        return new MenuOptionValue[]
         {
             /*
             // 2025-10-22 (rewrite TreeViews)
@@ -134,9 +134,9 @@ public partial class FolderExplorerContextMenu : ComponentBase
         };
     }
 
-    private MenuOptionRecord[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)
+    private MenuOptionValue[] GetDebugMenuOptions(TreeViewNodeValue treeViewModel)
     {
-        return new MenuOptionRecord[]
+        return new MenuOptionValue[]
         {
             // new MenuOptionRecord(
             //     $"namespace: {treeViewModel.Item.Namespace}",

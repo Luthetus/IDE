@@ -77,9 +77,7 @@ public partial class FindOverlayDisplay : ComponentBase, IDisposable
                         viewModelModifier.PersistentState.FirstPresentationLayerKeysList = nextFirstPresentationLayerKeysList;
                     }
 
-                    TextEditorService.Model_StartPendingCalculatePresentationModel(
-                        editContext,
-                        modelModifier,
+                    modelModifier.StartPendingCalculatePresentationModel(
                         TextEditorFacts.FindOverlayPresentation_PresentationKey,
                         TextEditorFacts.FindOverlayPresentation_EmptyPresentationModel);
 
@@ -236,9 +234,7 @@ public partial class FindOverlayDisplay : ComponentBase, IDisposable
                 if (modelModifier is null)
                     return ValueTask.CompletedTask;
 
-                TextEditorService.Model_StartPendingCalculatePresentationModel(
-                    editContext,
-                    modelModifier,
+                modelModifier.StartPendingCalculatePresentationModel(
                     TextEditorFacts.FindOverlayPresentation_PresentationKey,
                     TextEditorFacts.FindOverlayPresentation_EmptyPresentationModel);
 

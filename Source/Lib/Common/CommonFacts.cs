@@ -631,7 +631,7 @@ public partial class {className} : ComponentBase
         string anchorHtmlElementId,
         DropdownOrientation dropdownOrientation,
         Key<DropdownRecord> dropdownKey,
-        MenuRecord menu,
+        MenuContainer menu,
         string? elementHtmlIdForReturnFocus,
         bool preventScroll)
     {
@@ -665,7 +665,7 @@ public partial class {className} : ComponentBase
         string anchorHtmlElementId,
         DropdownOrientation dropdownOrientation,
         Key<DropdownRecord> dropdownKey,
-        MenuRecord menu,
+        MenuContainer menu,
         ElementReference? elementReferenceForReturnFocus)
     {
         return RenderDropdownAsync(
@@ -701,7 +701,7 @@ public partial class {className} : ComponentBase
         string anchorHtmlElementId,
         DropdownOrientation dropdownOrientation,
         Key<DropdownRecord> dropdownKey,
-        MenuRecord menu,
+        MenuContainer menu,
         Func<Task>? restoreFocusOnClose)
     {
         var buttonDimensions = await clairCommonJavaScriptInteropApi

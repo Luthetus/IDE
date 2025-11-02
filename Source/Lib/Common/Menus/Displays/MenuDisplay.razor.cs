@@ -10,7 +10,15 @@ public sealed partial class MenuDisplay : ComponentBase, IDisposable
     private CommonService CommonService { get; set; } = null!;
 
     [Parameter, EditorRequired]
-    public MenuRecord Menu { get; set; } = null!;
+    public MenuContainer Menu { get; set; } = null!;
+
+    private readonly MenuContainer NoOptionsMenu = new MenuContainer(new List<MenuOptionValue>
+    {
+        new MenuOptionValue(
+            displayName: "No results",
+            MenuOptionKind.Other,
+            onClickFunc: null)
+    });
 
     /// <summary>Pixels</summary>
     private int LineHeight => CommonService.Options_LineHeight;

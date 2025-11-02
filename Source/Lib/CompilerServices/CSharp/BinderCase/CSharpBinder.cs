@@ -1376,6 +1376,9 @@ public sealed partial class CSharpBinder
         }
     }
     
+    // I can confirm that this isn't fully working it probably is off by 1 when transitioning partitions or something
+    // because the first ... amount of chas in a single partition look correct.
+    
     /// <summary>
     /// TODO: In 'GetDefinitionNode(...)' The positionIndex to determine IScope is the same that is used to determine the 'name' of the ISyntaxNode...
     ///       ...This should likely be changed, because function argument goto definition won't work if done from the argument listing, rather than the code block of the function.

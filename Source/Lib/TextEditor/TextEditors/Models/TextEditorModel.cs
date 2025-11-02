@@ -439,32 +439,16 @@ public sealed class TextEditorModel
             usePositionIndex: true);
     }
 
-    public void DeleteTextByMotion(MotionKind motionKind, TextEditorViewModel viewModel)
-    {
-        var keymapArgs = motionKind switch
-        {
-            MotionKind.Backspace => new KeymapArgs { Key = CommonFacts.BACKSPACE },
-            MotionKind.Delete => new KeymapArgs { Key = CommonFacts.DELETE },
-            _ => throw new ClairTextEditorException($"The {nameof(MotionKind)}: {motionKind} was not recognized.")
-        };
-
-        HandleKeyboardEvent(
-            keymapArgs,
-            viewModel);
-    }
-
     public void DeleteByRange(int count, TextEditorViewModel viewModel)
     {
         // TODO: This needs to be rewritten everything should be deleted at the same time not a foreach loop for each character
         for (var deleteIndex = 0; deleteIndex < count; deleteIndex++)
         {
-            HandleKeyboardEvent(
-                new KeymapArgs
-                {
-                    Code = CommonFacts.DELETE,
-                    Key = CommonFacts.DELETE,
-                },
-                viewModel);
+            Delete(
+                viewModel,
+                1,
+                expandWord: false,
+                DeleteKind.Delete);
         }
     }
 
@@ -1394,6 +1378,10 @@ public sealed class TextEditorModel
             __InsertRange(
                 cursorPositionIndex,
                 value.Select(character => new RichCharacter(character, 0)));
+            
+            /*__InsertString(
+                cursorPositionIndex,
+                value);*/
         }
     }
 
@@ -1922,7 +1910,7 @@ public sealed class TextEditorModel
         __RemoveRange(positionIndex, count);
     }
 
-    public void ApplySyntaxHighlightingByTextSpan(TextEditorTextSpan textSpan)
+    public void xApplySyntaxHighlightingByTextSpan(TextEditorTextSpan textSpan)
     {
         for (var i = textSpan.StartInclusiveIndex; i < textSpan.EndExclusiveIndex; i++)
         {
@@ -2509,6 +2497,76 @@ public sealed class TextEditorModel
             indexOfPartitionWithAvailableSpace,
             outPartition);
     }
+    
+    public void __SetDecorationByteRange(
+        int startInclusiveIndex,
+        int endExclusiveIndex,
+        byte decorationByte)
+    {
+        //try
+        //{
+            var length = endExclusiveIndex - startInclusiveIndex;
+            var decorationBytesSet = 0;
+            while (decorationBytesSet < length)
+            {
+                int indexOfPartitionWithAvailableSpace = -1;
+                int relativePositionIndex = -1;
+                var runningCount = 0;
+                var globalPositionIndex = startInclusiveIndex;
+
+                TextEditorPartition partition = default;
+
+                for (int i = 0; i < PartitionList.Count; i++)
+                {
+                    partition = PartitionList[i];
+
+                    if (runningCount + partition.RichCharacterList.Count > globalPositionIndex)
+                    {
+                        // This is the partition we want to modify.
+                        relativePositionIndex = globalPositionIndex - runningCount;
+                        indexOfPartitionWithAvailableSpace = i;
+                        break;
+                    }
+                    else
+                    {
+                        runningCount += partition.Count;
+                    }
+                }
+
+                if (indexOfPartitionWithAvailableSpace == -1)
+                    throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
+
+                if (relativePositionIndex == -1)
+                    throw new ClairTextEditorException("if (relativePositionIndex == -1)");
+
+                var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
+                var partitionRemainingCount = inPartition.Count - relativePositionIndex;
+
+                while (partitionRemainingCount > 0 && decorationBytesSet < length)
+                {
+                    if (relativePositionIndex >= inPartition.RichCharacterList.Count)
+                    {
+
+                    }
+
+                    inPartition.RichCharacterList[relativePositionIndex] = inPartition.RichCharacterList[relativePositionIndex] with
+                    {
+                        DecorationByte = decorationByte
+                    };
+
+                    --partitionRemainingCount;
+                    ++decorationBytesSet;
+
+                    ++relativePositionIndex;
+                    ++globalPositionIndex;
+                }
+            }
+        //}
+        //catch (Exception e)
+        //{
+        //
+        //}
+    }
 
     public void __SetDecorationByte(
         int globalPositionIndex,
@@ -2548,6 +2606,20 @@ public sealed class TextEditorModel
             targetRichCharacter.Value,
             decorationByte);
         //_partitionListChanged = false;
+    }
+    
+    public void __ZeroOutDecorationBytes()
+    {
+        foreach (var partition in PartitionList)
+        {
+            for (int i = 0; i < partition.RichCharacterList.Count; i++)
+            {
+                partition.RichCharacterList[i] = partition.RichCharacterList[i] with
+                {
+                    DecorationByte = 0
+                };
+            }
+        }
     }
     
     public void __SetPartitionListChanged(bool value)
@@ -2717,6 +2789,132 @@ public sealed class TextEditorModel
             globalPositionIndex += richCharacterBatchInsertList.Count;
         }
     }
+
+    /*
+    // TODO: Attempted to write more optimized version of the method here but I'm tired and...
+    // ...changing this one is far sketchier than changing the character insertion method '__Insert(...)'.
+    public void __InsertRange(int globalPositionIndex, IEnumerable<RichCharacter> richCharacterList)
+    {
+        var richCharacterEnumerator = richCharacterList.GetEnumerator();
+
+        while (richCharacterEnumerator.MoveNext())
+        {
+            int indexOfPartitionWithAvailableSpace = -1;
+            int relativePositionIndex = -1;
+            var runningCount = 0;
+            TextEditorPartition partition;
+
+            for (int i = 0; i < PartitionList.Count; i++)
+            {
+                partition = PartitionList[i];
+
+                if (runningCount + partition.Count >= globalPositionIndex)
+                {
+                    if (partition.Count >= PersistentState.PartitionSize)
+                    {
+                        __SplitIntoTwoPartitions(i);
+                        i--;
+                        continue;
+                    }
+
+                    relativePositionIndex = globalPositionIndex - runningCount;
+                    indexOfPartitionWithAvailableSpace = i;
+                    break;
+                }
+                else
+                {
+                    runningCount += partition.Count;
+                }
+            }
+
+            if (indexOfPartitionWithAvailableSpace == -1)
+                throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
+
+            if (relativePositionIndex == -1)
+                throw new ClairTextEditorException("if (relativePositionIndex == -1)");
+
+            partition = PartitionList[indexOfPartitionWithAvailableSpace];
+            var partitionAvailableSpace = PersistentState.PartitionSize - partition.Count;
+
+            var richCharacterBatchInsertList = new List<RichCharacter> { richCharacterEnumerator.Current };
+
+            while (richCharacterBatchInsertList.Count < partitionAvailableSpace && richCharacterEnumerator.MoveNext())
+            {
+                richCharacterBatchInsertList.Add(richCharacterEnumerator.Current);
+            }
+
+            partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(PartitionList[indexOfPartitionWithAvailableSpace]);
+            partition.RichCharacterList.InsertRange(relativePositionIndex, richCharacterBatchInsertList);
+            PartitionListSetItem(indexOfPartitionWithAvailableSpace, partition);
+
+            globalPositionIndex += richCharacterBatchInsertList.Count;
+        }
+    }
+    */
+    
+    /*
+    // TODO: Attempted to write more optimized version of the IEnumerable '__InsertRange(...)' method here but I'm tired and...
+    // ...this one is far sketchier than changing the character insertion method '__Insert(...)'.
+    public void __InsertString(int globalPositionIndex, string value)
+    {
+        // var richCharacterEnumerator = richCharacterList.GetEnumerator();
+
+        for (int indexStr = 0; indexStr < value.Length; indexStr++)
+        {
+            int indexOfPartitionWithAvailableSpace = -1;
+            int relativePositionIndex = -1;
+            var runningCount = 0;
+            TextEditorPartition partition;
+
+            for (int i = 0; i < PartitionList.Count; i++)
+            {
+                partition = PartitionList[i];
+
+                if (runningCount + partition.Count >= globalPositionIndex)
+                {
+                    if (partition.Count >= PersistentState.PartitionSize)
+                    {
+                        __SplitIntoTwoPartitions(i);
+                        i--;
+                        continue;
+                    }
+
+                    relativePositionIndex = globalPositionIndex - runningCount;
+                    indexOfPartitionWithAvailableSpace = i;
+                    break;
+                }
+                else
+                {
+                    runningCount += partition.Count;
+                }
+            }
+
+            if (indexOfPartitionWithAvailableSpace == -1)
+                throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
+
+            if (relativePositionIndex == -1)
+                throw new ClairTextEditorException("if (relativePositionIndex == -1)");
+
+            partition = PartitionList[indexOfPartitionWithAvailableSpace];
+            var partitionAvailableSpace = PersistentState.PartitionSize - partition.Count;
+
+            partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(PartitionList[indexOfPartitionWithAvailableSpace]);
+            
+            var min = Math.Min(partitionAvailableSpace, value.Length - indexStr);
+            indexStr += min;
+            --indexStr;
+            
+            for (int takeCount = 0; takeCount < partitionAvailableSpace; takeCount++)
+            {
+                // TODO: Get a span and InsertRange
+                partition.RichCharacterList.Insert(relativePositionIndex, new RichCharacter(value[indexStr], default));
+            }
+            PartitionListSetItem(indexOfPartitionWithAvailableSpace, partition);
+
+            globalPositionIndex += min;
+        }
+    }
+    */
     
     public void __Insert(int globalPositionIndex, RichCharacter richCharacter)
     {
@@ -2754,14 +2952,9 @@ public sealed class TextEditorModel
         if (relativePositionIndex == -1)
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
-        partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(
-            PartitionList[indexOfPartitionWithAvailableSpace]);
-
+        partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(PartitionList[indexOfPartitionWithAvailableSpace]);
         partition.RichCharacterList.Insert(relativePositionIndex, richCharacter);
-        
-        PartitionListSetItem(
-            indexOfPartitionWithAvailableSpace,
-            partition);
+        PartitionListSetItem(indexOfPartitionWithAvailableSpace, partition);
     }
 
     public void __RemoveRange(int targetGlobalPositionIndex, int targetDeleteCount)

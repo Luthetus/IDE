@@ -855,7 +855,7 @@ public class TextEditorCommandDefaultFunctions
             Console.WriteLine(e);
         }
         
-        var menuOptionList = new List<MenuOptionRecord>();
+        var menuOptionList = new List<MenuOptionValue>();
         
         siblingFileStringList = siblingFileStringList.OrderBy(x => x).ToArray();
         
@@ -867,7 +867,7 @@ public class TextEditorCommandDefaultFunctions
             
             var siblingAbsolutePath = new AbsolutePath(file, false, fileSystemProvider, tokenBuilder: new StringBuilder(), formattedBuilder: new StringBuilder(), AbsolutePathNameKind.NameWithExtension);
             
-            menuOptionList.Add(new MenuOptionRecord(
+            menuOptionList.Add(new MenuOptionValue(
                 siblingAbsolutePath.Name,
                 MenuOptionKind.Other,
                 onClickFunc: _ =>
@@ -889,12 +889,12 @@ public class TextEditorCommandDefaultFunctions
                 initialActiveMenuOptionRecordIndex = i;
         }
         
-        MenuRecord menu;
+        MenuContainer menu;
         
         if (menuOptionList.Count == 0)
-            menu = new MenuRecord(MenuRecord.NoMenuOptionsExistList);
+            menu = new MenuContainer();
         else
-            menu = new MenuRecord(menuOptionList);
+            menu = new MenuContainer(menuOptionList);
         
         menu.InitialActiveMenuOptionRecordIndex = initialActiveMenuOptionRecordIndex;
         menu.ElementIdToRestoreFocusToOnClose = componentData.PrimaryCursorContentId;

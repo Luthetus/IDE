@@ -50,14 +50,10 @@ public sealed partial class TextEditorDefaultFooterDisplay : ComponentBase
                 TextEditorService.WorkerArbitrary.PostUnique(editContext =>
                 {
                     var modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
-                    
                     if (modelModifier is null)
                         return ValueTask.CompletedTask;
                     
-                    TextEditorService.Model_SetUsingLineEndKind(
-                        editContext,
-                        modelModifier,
-                        rowEndingKind);
+                    modelModifier.SetLineEndKindPreference(rowEndingKind);
                     return ValueTask.CompletedTask;
                 });
             }

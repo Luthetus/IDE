@@ -286,10 +286,10 @@ public static class XmlLexer
                                         DecorationByte = (byte)GenericDecorationKind.Xml_TagNameSelf,
                                     };
                                 }
-                                output.ModelModifier?.ApplySyntaxHighlightingByTextSpan(textSpanOfMostRecentTagOpen with
-                                {
-                                    DecorationByte = (byte)GenericDecorationKind.Xml_TagNameSelf,
-                                });
+                                output.ModelModifier?.__SetDecorationByteRange(
+                                    textSpanOfMostRecentTagOpen.StartInclusiveIndex,
+                                    textSpanOfMostRecentTagOpen.EndExclusiveIndex,
+                                    (byte)GenericDecorationKind.Xml_TagNameSelf);
                                 indexOfMostRecentTagOpen = -1;
                                 textSpanOfMostRecentTagOpen = default;
                             }

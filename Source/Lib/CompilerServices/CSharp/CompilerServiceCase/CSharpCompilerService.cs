@@ -1031,7 +1031,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     {
                         break;
                     }
-                    
                 }
             }
             else

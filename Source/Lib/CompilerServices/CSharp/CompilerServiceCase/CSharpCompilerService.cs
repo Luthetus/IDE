@@ -970,7 +970,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return otherSr;
     }
 
-    private List<AutocompleteValue> GetAutocompleteMenuPart(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu, int positionIndex)
+    private AutocompleteContainer? GetAutocompleteMenuPart(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu, int positionIndex)
     {
         if (virtualizationResult.Model is null)
             return null;
@@ -1418,10 +1418,13 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                                                 absolutePathId = innerAbsolutePathId;
                                             }
                                             
-                                            autocompleteEntryList.Add(new AutocompleteEntry(
+                                            autocompleteEntryList.Add(new AutocompleteValue(
                                                 UnsafeGetText(absolutePathId, variableDeclarationNode.IdentifierToken.TextSpan) ?? string.Empty,
                                                 AutocompleteEntryKind.Variable,
-                                                () => MemberAutocomplete(UnsafeGetText(absolutePathId, variableDeclarationNode.IdentifierToken.TextSpan) ?? string.Empty, filteringWord, virtualizationResult.Model.PersistentState.ResourceUri, virtualizationResult.ViewModel.PersistentState.ViewModelKey)));
+                                                () => MemberAutocomplete(UnsafeGetText() ?? string.Empty, filteringWord, virtualizationResult.Model.PersistentState.ResourceUri, virtualizationResult.ViewModel.PersistentState.ViewModelKey),
+                                                absolutePathId,
+                                                variableDeclarationNode.IdentifierToken.TextSpan.StartInclusiveIndex,
+                                                variableDeclarationNode.IdentifierToken.TextSpan.EndExclusiveIndex));
                                             break;
                                         }
                                         case SyntaxKind.FunctionDefinitionNode:
@@ -1442,7 +1445,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                                                 absolutePathId = innerAbsolutePathId;
                                             }
                                             
-                                            autocompleteEntryList.Add(new AutocompleteEntry(
+                                            autocompleteEntryList.Add(new AutocompleteValue(
                                                 UnsafeGetText(absolutePathId, functionDefinitionNode.IdentifierToken.TextSpan) ?? string.Empty,
                                                 AutocompleteEntryKind.Function,
                                                 () => MemberAutocomplete(UnsafeGetText(absolutePathId, functionDefinitionNode.IdentifierToken.TextSpan) ?? string.Empty, filteringWord, virtualizationResult.Model.PersistentState.ResourceUri, virtualizationResult.ViewModel.PersistentState.ViewModelKey)));
@@ -1451,7 +1454,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                                         case SyntaxKind.TypeDefinitionNode:
                                         {
                                             var innerTypeDefinitionNode = member;
-                                            autocompleteEntryList.Add(new AutocompleteEntry(
+                                            autocompleteEntryList.Add(new AutocompleteValue(
                                                 UnsafeGetText(innerAbsolutePathId, innerTypeDefinitionNode.IdentifierToken.TextSpan) ?? string.Empty,
                                                 AutocompleteEntryKind.Type,
                                                 () => MemberAutocomplete(UnsafeGetText(innerAbsolutePathId, innerTypeDefinitionNode.IdentifierToken.TextSpan) ?? string.Empty, filteringWord, virtualizationResult.Model.PersistentState.ResourceUri, virtualizationResult.ViewModel.PersistentState.ViewModelKey)));
@@ -1474,7 +1477,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return null;
     }
 
-    public List<AutocompleteValue> GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
+    public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
         var positionIndex = virtualizationResult.Model.GetPositionIndex(virtualizationResult.ViewModel);
         

@@ -2,6 +2,7 @@ using Clair.Common.RazorLib.Menus.Models;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.TextEditor.RazorLib;
 using Clair.TextEditor.RazorLib.CompilerServices;
+using Clair.TextEditor.RazorLib.Autocompletes.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
@@ -84,9 +85,9 @@ public sealed class XmlCompilerService : ICompilerService
         return contextMenu.GetDefaultMenuRecord();
     }
 
-    public MenuContainer GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
+    public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
-        return autocompleteMenu.GetDefaultMenuRecord();
+        return null;
     }
     
     public ValueTask<MenuContainer> GetQuickActionsSlashRefactorMenu(
@@ -135,9 +136,7 @@ public sealed class XmlCompilerService : ICompilerService
     
     public ValueTask ParseAsync(TextEditorEditContext editContext, TextEditorModel modelModifier, bool shouldApplySyntaxHighlighting)
     {
-        using StreamReader sr = new StreamReader(modelModifier.PersistentState.ResourceUri.Value);
-
-        editContext.TextEditorService.Model_BeginStreamSyntaxHighlighting(
+        using StreamReader sr = new StreamReader(modelModifier.PersistentState.ResourceUri.Value);        editContext.TextEditorService.Model_BeginStreamSyntaxHighlighting(
             editContext,
             modelModifier);
 

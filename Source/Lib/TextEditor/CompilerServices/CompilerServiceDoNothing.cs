@@ -4,6 +4,7 @@ using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
+using Clair.TextEditor.RazorLib.Autocompletes.Models;
 
 namespace Clair.TextEditor.RazorLib.CompilerServices;
 
@@ -33,9 +34,9 @@ public class CompilerServiceDoNothing : ICompilerService
         return contextMenu.GetDefaultMenuRecord();
     }
 
-    public MenuContainer GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
+    public AutocompleteContainer GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
-        return autocompleteMenu.GetDefaultMenuRecord();
+        return new();
     }
 
     public ValueTask<MenuContainer> GetQuickActionsSlashRefactorMenu(

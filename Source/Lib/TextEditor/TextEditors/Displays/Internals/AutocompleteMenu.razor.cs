@@ -22,12 +22,6 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
     
     public const string HTML_ELEMENT_ID = "ci_te_autocomplete-menu-id";
     
-    private static readonly MenuContainer NoResultsMenuRecord = new(
-        new List<MenuOptionValue>()
-        {
-            new("No results", MenuOptionKind.Other)
-        });
-
     private List<AutocompleteValue> _autocompleteOptionValueList = new();
     
     private Key<TextEditorComponentData> _componentDataKeyPrevious = Key<TextEditorComponentData>.Empty;
@@ -100,24 +94,12 @@ public sealed partial class AutocompleteMenu : ComponentBase, ITextEditorDepende
         await InvokeAsync(StateHasChanged);
     }
 
-    private MenuContainer GetMenuRecord()
+    private AutocompleteContainer GetMenuRecord()
     {
         var virtualizationResult = GetVirtualizationResult();
         if (!virtualizationResult.IsValid)
-            return NoResultsMenuRecord;
-    
-        var componentData = virtualizationResult.ViewModel.PersistentState.ComponentData;
-        string elementIdToRestoreFocusToOnClose;
-        if (componentData is null)
-            elementIdToRestoreFocusToOnClose = CommonFacts.RootHtmlElementId;
-        else
-            elementIdToRestoreFocusToOnClose = componentData.PrimaryCursorContentId;
-
-        var menu = virtualizationResult.Model.PersistentState.CompilerService.GetAutocompleteMenu(virtualizationResult, this);
-        menu.ShouldImmediatelyTakeFocus = false;
-        menu.UseIcons = true;
-        menu.ElementIdToRestoreFocusToOnClose = elementIdToRestoreFocusToOnClose;
-        return menu;
+            return null;
+        return virtualizationResult.Model.PersistentState.CompilerService.GetAutocompleteMenu(virtualizationResult, this);
     }
 
     public async Task SelectMenuOption(Func<Task> menuOptionAction)

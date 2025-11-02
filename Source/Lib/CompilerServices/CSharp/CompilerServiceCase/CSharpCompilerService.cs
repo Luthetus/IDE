@@ -974,6 +974,11 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return otherSr;
     }
 
+    /// <summary>
+    /// Continuation token?
+    /// If add more text then filter previous if something gets filtered
+    /// go back to the previous end point and take more entries until MAX.
+    /// </summary>
     public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
         AutocompleteContainer autocompleteContainer;
@@ -989,11 +994,17 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         {
             _previousSynchronizationContext = SynchronizationContext.Current;
             autocompleteContainer = new AutocompleteContainer(new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
+            _uiAutocompleteContainer = autocompleteContainer;
         }
         
         for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS)
         {
-            autocompleteContainer.[i] = ;
+            autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
+                displayName: "aaa",
+                autocompleteEntryKind: AutocompleteEntryKind.Word,
+                absolutePathId: 0,
+                startInclusiveIndex: 0,
+                endExclusiveIndex: 0);
         }
         
         return autocompleteContainer;

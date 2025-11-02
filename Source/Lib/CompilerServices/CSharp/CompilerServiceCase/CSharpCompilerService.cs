@@ -997,14 +997,45 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             _uiAutocompleteContainer = autocompleteContainer;
         }
         
-        for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS; i++)
+        if (!virtualizationResult.IsValid)
         {
-            autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
-                displayName: "aaa",
-                autocompleteEntryKind: AutocompleteEntryKind.Word,
-                absolutePathId: 0,
-                startInclusiveIndex: 0,
-                endExclusiveIndex: 0);
+            for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS; i++)
+            {
+                autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
+                    displayName: "aaa",
+                    autocompleteEntryKind: AutocompleteEntryKind.Word,
+                    absolutePathId: 0,
+                    startInclusiveIndex: 0,
+                    endExclusiveIndex: 0);
+            }
+        }
+        else
+        {
+            var absolutePathId = TryGetFileAbsolutePathToInt(virtualizationResult.Model!.PersistentState.ResourceUri.Value);
+            if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilerServiceResource))
+            {
+                for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS; i++)
+                {
+                    autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
+                        displayName: "found",
+                        autocompleteEntryKind: AutocompleteEntryKind.Word,
+                        absolutePathId: 0,
+                        startInclusiveIndex: 0,
+                        endExclusiveIndex: 0);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS; i++)
+                {
+                    autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
+                        displayName: "aaa",
+                        autocompleteEntryKind: AutocompleteEntryKind.Word,
+                        absolutePathId: 0,
+                        startInclusiveIndex: 0,
+                        endExclusiveIndex: 0);
+                }
+            }
         }
         
         return autocompleteContainer;

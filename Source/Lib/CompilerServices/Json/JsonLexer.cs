@@ -92,11 +92,10 @@ public static class JsonLexer
                         _ = streamReaderWrap.ReadCharacter();
                     }
                     
-                    output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                    output.ModelModifier.__SetDecorationByteRange(
                         textStartPosition,
                         streamReaderWrap.PositionIndex,
-                        (byte)GenericDecorationKind.Json_Keyword,
-                        textStartByte));
+                        (byte)GenericDecorationKind.Json_Keyword);
                     goto default;
                 case '0':
                 case '1':
@@ -144,19 +143,17 @@ public static class JsonLexer
                     
                     if (streamReaderWrap.CurrentCharacter == ':')
                     {
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             stringStartPosition,
                             endPosition,
-                            (byte)GenericDecorationKind.Json_PropertyKey,
-                            stringStartByte));
+                            (byte)GenericDecorationKind.Json_PropertyKey);
                     }
                     else
                     {
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             stringStartPosition,
                             endPosition,
-                            (byte)GenericDecorationKind.Json_String,
-                            stringStartByte));
+                            (byte)GenericDecorationKind.Json_String);
                     }
                     continue;
                 case '/':
@@ -179,11 +176,10 @@ public static class JsonLexer
                             _ = streamReaderWrap.ReadCharacter();
                         }
                         
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             commentStartPosition,
                             streamReaderWrap.PositionIndex,
-                            (byte)GenericDecorationKind.Json_BlockComment,
-                            commentStartByte));
+                            (byte)GenericDecorationKind.Json_BlockComment);
                         continue;
                     }
                 
@@ -203,11 +199,10 @@ public static class JsonLexer
                             _ = streamReaderWrap.ReadCharacter();
                         }
                         
-                        output.ModelModifier.ApplySyntaxHighlightingByTextSpan(new TextEditorTextSpan(
+                        output.ModelModifier.__SetDecorationByteRange(
                             commentStartPosition,
                             streamReaderWrap.PositionIndex,
-                            (byte)GenericDecorationKind.Json_LineComment,
-                            commentStartByte));
+                            (byte)GenericDecorationKind.Json_LineComment);
                         continue;
                     }
                     else

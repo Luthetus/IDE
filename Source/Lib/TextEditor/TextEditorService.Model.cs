@@ -269,11 +269,7 @@ public partial class TextEditorService
         TextEditorEditContext editContext,
         TextEditorModel modelModifier)
     {
-        for (var i = 0; i < modelModifier.RichCharacterList.Length; i++)
-        {
-            // DecorationByte of 0 is to be 'None'
-            modelModifier.__SetDecorationByte(i, 0);
-        }
+        modelModifier.__ZeroOutDecorationBytes();
     }
     
     public void Model_FinalizeStreamSyntaxHighlighting(

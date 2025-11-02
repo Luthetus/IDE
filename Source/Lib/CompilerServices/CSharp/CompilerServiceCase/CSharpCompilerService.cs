@@ -61,6 +61,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     private const int MAX_AUTOCOMPLETE_OPTIONS = 5;
     private SynchronizationContext? _previousSynchronizationContext;
     private CSharpAutocompleteContainer _uiAutocompleteContainer;
+    private string? _uiLeftOff_PreviousSearch = null;
+    private int _uiLeftOff_LowerBound = 0;
+    private int _uiLeftOff_UpperBound = 0;
     
     public TextEditorService TextEditorService => _textEditorService;
 
@@ -983,6 +986,227 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// </summary>
     public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
+        var positionIndex = virtualizationResult.Model.GetPositionIndex(virtualizationResult.ViewModel);
+    
+        var character = '\0';
+        
+        var foundMemberAccessToken = false;
+        var memberAccessTokenPositionIndex = -1;
+        
+        var isParsingIdentifier = false;
+        var isParsingNumber = false;
+        
+        // banana.Price
+        //
+        // 'banana.' is  the context
+        // 'banana' is the operating word
+        var operatingWordEndExclusiveIndex = -1;
+        
+        var filteringWordEndExclusiveIndex = -1;
+        var filteringWordStartInclusiveIndex = -1;
+        
+        // '|' indicates cursor position:
+        //
+        // "apple banana.Pri|ce"
+        // "apple.banana Pri|ce"
+        var notParsingButTouchingletterOrDigit = false;
+        var letterOrDigitIntoNonMatchingCharacterKindOccurred = false;
+        
+        var i = positionIndex - 1;
+        
+        // TODO: Write a reverse C# lexer so you can handle method invocation and still get the method name.
+        for (; i >= 0; i--)
+        {
+            character = virtualizationResult.Model.GetCharacter(i);
+            
+            switch (character)
+            {
+                /* Lowercase Letters */
+                case 'a':
+                case 'b':
+                case 'c':
+                case 'd':
+                case 'e':
+                case 'f':
+                case 'g':
+                case 'h':
+                case 'i':
+                case 'j':
+                case 'k':
+                case 'l':
+                case 'm':
+                case 'n':
+                case 'o':
+                case 'p':
+                case 'q':
+                case 'r':
+                case 's':
+                case 't':
+                case 'u':
+                case 'v':
+                case 'w':
+                case 'x':
+                case 'y':
+                case 'z':
+                /* Uppercase Letters */
+                case 'A':
+                case 'B':
+                case 'C':
+                case 'D':
+                case 'E':
+                case 'F':
+                case 'G':
+                case 'H':
+                case 'I':
+                case 'J':
+                case 'K':
+                case 'L':
+                case 'M':
+                case 'N':
+                case 'O':
+                case 'P':
+                case 'Q':
+                case 'R':
+                case 'S':
+                case 'T':
+                case 'U':
+                case 'V':
+                case 'W':
+                case 'X':
+                case 'Y':
+                case 'Z':
+                /* Underscore */
+                case '_':
+                    if (foundMemberAccessToken)
+                    {
+                        isParsingIdentifier = true;
+                        
+                        if (operatingWordEndExclusiveIndex == -1)
+                            operatingWordEndExclusiveIndex = i;
+                    }
+                    else
+                    {
+                        if (!notParsingButTouchingletterOrDigit)
+                        {
+                            notParsingButTouchingletterOrDigit = true;
+                            
+                            if (filteringWordEndExclusiveIndex == -1)
+                                filteringWordEndExclusiveIndex = i + 1;
+                        }
+                    }
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    if (foundMemberAccessToken)
+                    {
+                        if (!isParsingIdentifier)
+                        {
+                            isParsingNumber = true;
+                            
+                            if (operatingWordEndExclusiveIndex == -1)
+                                operatingWordEndExclusiveIndex = i;
+                        }
+                    }
+                    else
+                    {
+                        if (!notParsingButTouchingletterOrDigit)
+                        {
+                            notParsingButTouchingletterOrDigit = true;
+                            
+                            if (filteringWordEndExclusiveIndex == -1)
+                                filteringWordEndExclusiveIndex = i + 1;
+                        }
+                    }
+                    break;
+                case '\r':
+                case '\n':
+                case '\t':
+                case ' ':
+                    if (isParsingIdentifier || isParsingNumber)
+                        goto exitOuterForLoop;
+        
+                    if (notParsingButTouchingletterOrDigit)
+                    {
+                        if (letterOrDigitIntoNonMatchingCharacterKindOccurred)
+                        {
+                            goto exitOuterForLoop;
+                        }
+                        else
+                        {
+                            letterOrDigitIntoNonMatchingCharacterKindOccurred = true;
+                        }
+                    }
+                    break;
+                case '.':
+                    if (!foundMemberAccessToken)
+                    {
+                        if (notParsingButTouchingletterOrDigit && filteringWordStartInclusiveIndex == -1)
+                            filteringWordStartInclusiveIndex = i + 1;
+                    
+                        foundMemberAccessToken = true;
+                        notParsingButTouchingletterOrDigit = false;
+                        letterOrDigitIntoNonMatchingCharacterKindOccurred = false;
+                        
+                        if (i > 0)
+                        {
+                            var innerCharacter = virtualizationResult.Model.GetCharacter(i - 1);
+                            
+                            if (innerCharacter == '?' || innerCharacter == '!')
+                                i--;
+                        }
+                    }
+                    else
+                    {
+                        goto exitOuterForLoop;
+                    }
+                    break;
+                default:
+                    goto exitOuterForLoop;
+            }
+        }
+        
+        exitOuterForLoop:
+        
+        // Invalidate the parsed identifier if it starts with a number.
+        if (isParsingIdentifier)
+        {
+            switch (character)
+            {
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    isParsingIdentifier = false;
+                    break;
+            }
+        }
+        
+        var filteringWord = string.Empty;
+        
+        if (filteringWordStartInclusiveIndex != -1 && filteringWordEndExclusiveIndex != -1)
+        {
+            var textSpan = new TextEditorTextSpan(
+                filteringWordStartInclusiveIndex,
+                filteringWordEndExclusiveIndex,
+                DecorationByte: 0);
+                
+            filteringWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService);
+        }
+    
         CSharpAutocompleteContainer autocompleteContainer;
         int writeCount = 0;
 
@@ -996,6 +1220,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         {
             _previousSynchronizationContext = SynchronizationContext.Current;
             autocompleteContainer = new CSharpAutocompleteContainer(_textEditorService, new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
+            _uiLeftOff_PreviousSearch = null;
+            _uiLeftOff_LowerBound = 0;
+            _uiLeftOff_UpperBound = 0;
             _uiAutocompleteContainer = autocompleteContainer;
         }
         
@@ -1006,9 +1233,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         
         if (!virtualizationResult.IsValid)
         {
-            for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS - codeSnippetCount; i++)
+            for (int k = 0; k < MAX_AUTOCOMPLETE_OPTIONS - codeSnippetCount; k++)
             {
-                autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
+                autocompleteContainer.AutocompleteMenuList[k] = new AutocompleteValue(
                     displayName: "aaa",
                     autocompleteEntryKind: AutocompleteEntryKind.Word);
             }
@@ -1040,9 +1267,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     //
                     // But when it comes to streaming the text, you don't necessarily
                     // have to open tons of StreamReaders to do the autocompletion?
-                    for (int i = compilationUnit.NodeOffset; i < compilationUnit.NodeOffset + compilationUnit.NodeLength; i++)
+                    for (int indexNode = compilationUnit.NodeOffset; indexNode < compilationUnit.NodeOffset + compilationUnit.NodeLength; indexNode++)
                     {
-                        var nodeValue = __CSharpBinder.NodeList[i];
+                        var nodeValue = __CSharpBinder.NodeList[indexNode];
                         // Wait isn't the set decoration byte range off by 1?
                         if (writeCount < MAX_AUTOCOMPLETE_OPTIONS - codeSnippetCount)
                         {
@@ -1087,6 +1314,11 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                         }
                     }
                     
+                    //_uiLeftOff_PreviousSearch = ;
+                    
+                    _uiLeftOff_LowerBound = 0;
+                    _uiLeftOff_UpperBound = 0;
+                    
                     autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
                         displayName: "prop",
                         autocompleteEntryKind: AutocompleteEntryKind.Snippet);
@@ -1094,9 +1326,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             }
             else
             {
-                for (int i = 0; i < MAX_AUTOCOMPLETE_OPTIONS; i++)
+                for (int k = 0; k < MAX_AUTOCOMPLETE_OPTIONS; k++)
                 {
-                    autocompleteContainer.AutocompleteMenuList[i] = new AutocompleteValue(
+                    autocompleteContainer.AutocompleteMenuList[k] = new AutocompleteValue(
                         displayName: "aaa",
                         autocompleteEntryKind: AutocompleteEntryKind.Word);
                 }

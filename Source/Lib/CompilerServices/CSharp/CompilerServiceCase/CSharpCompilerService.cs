@@ -58,7 +58,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     
     private const int MAX_AUTOCOMPLETE_OPTIONS = 5;
     private SynchronizationContext? _previousSynchronizationContext;
-    private AutocompleteContainer? _uiAutocompleteContainer = new AutocompleteContainer(new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
+    private AutocompleteContainer _uiAutocompleteContainer = new AutocompleteContainer(new AutocompleteValue[MAX_AUTOCOMPLETE_OPTIONS]);
     
     public TextEditorService TextEditorService => _textEditorService;
 
@@ -1026,6 +1026,10 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                             absolutePathId: i,
                             startInclusiveIndex: 0,
                             endExclusiveIndex: 0);
+                    }
+                    else
+                    {
+                        break;
                     }
                     
                 }

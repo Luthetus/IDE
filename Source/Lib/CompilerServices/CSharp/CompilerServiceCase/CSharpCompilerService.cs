@@ -1234,6 +1234,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             _uiAutocompleteContainer = autocompleteContainer;
         }
         
+        // TODO: Repeat searches you don't have to reallocate the text because you track the new index characters...
+        // ...and can for loop index into the string or something? Idk what I'm talking about.
+        
         autocompleteContainer.ResourceUri = virtualizationResult.Model!.PersistentState.ResourceUri;
         autocompleteContainer.TextEditorViewModelKey = virtualizationResult.ViewModel!.PersistentState.ViewModelKey;
         

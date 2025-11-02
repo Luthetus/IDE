@@ -2519,58 +2519,69 @@ public sealed class TextEditorModel
         int endExclusiveIndex,
         byte decorationByte)
     {
-        var length = endExclusiveIndex - startInclusiveIndex;
-        var decorationBytesSet = 0;
-        while (decorationBytesSet < length)
-        {
-            int indexOfPartitionWithAvailableSpace = -1;
-            int relativePositionIndex = -1;
-            var runningCount = 0;
-            var globalPositionIndex = startInclusiveIndex;
-    
-            TextEditorPartition partition = default;
-            
-            for (int i = 0; i < PartitionList.Count; i++)
+        //try
+        //{
+            var length = endExclusiveIndex - startInclusiveIndex;
+            var decorationBytesSet = 0;
+            while (decorationBytesSet < length)
             {
-                partition = PartitionList[i];
-    
-                if (runningCount + partition.RichCharacterList.Count > globalPositionIndex)
+                int indexOfPartitionWithAvailableSpace = -1;
+                int relativePositionIndex = -1;
+                var runningCount = 0;
+                var globalPositionIndex = startInclusiveIndex;
+
+                TextEditorPartition partition = default;
+
+                for (int i = 0; i < PartitionList.Count; i++)
                 {
-                    // This is the partition we want to modify.
-                    relativePositionIndex = globalPositionIndex - runningCount;
-                    indexOfPartitionWithAvailableSpace = i;
-                    break;
+                    partition = PartitionList[i];
+
+                    if (runningCount + partition.RichCharacterList.Count > globalPositionIndex)
+                    {
+                        // This is the partition we want to modify.
+                        relativePositionIndex = globalPositionIndex - runningCount;
+                        indexOfPartitionWithAvailableSpace = i;
+                        break;
+                    }
+                    else
+                    {
+                        runningCount += partition.Count;
+                    }
                 }
-                else
+
+                if (indexOfPartitionWithAvailableSpace == -1)
+                    throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
+
+                if (relativePositionIndex == -1)
+                    throw new ClairTextEditorException("if (relativePositionIndex == -1)");
+
+                var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
+                var partitionRemainingCount = inPartition.Count - relativePositionIndex;
+
+                while (partitionRemainingCount > 0 && decorationBytesSet < length)
                 {
-                    runningCount += partition.Count;
+                    if (relativePositionIndex >= inPartition.RichCharacterList.Count)
+                    {
+
+                    }
+
+                    inPartition.RichCharacterList[relativePositionIndex] = inPartition.RichCharacterList[relativePositionIndex] with
+                    {
+                        DecorationByte = decorationByte
+                    };
+
+                    --partitionRemainingCount;
+                    ++decorationBytesSet;
+
+                    ++relativePositionIndex;
+                    ++globalPositionIndex;
                 }
             }
-    
-            if (indexOfPartitionWithAvailableSpace == -1)
-                throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
-    
-            if (relativePositionIndex == -1)
-                throw new ClairTextEditorException("if (relativePositionIndex == -1)");
-    
-            var partitionAvailableSpace = PersistentState.PartitionSize - partition.Count;
-            
-            var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
-            
-            while (partitionAvailableSpace > 0 && decorationBytesSet < length)
-            {
-                inPartition.RichCharacterList[relativePositionIndex] = inPartition.RichCharacterList[relativePositionIndex] with
-                {
-                    DecorationByte = decorationByte
-                };
-                
-                --partitionAvailableSpace;
-                ++decorationBytesSet;
-                
-                ++relativePositionIndex;
-                ++globalPositionIndex;
-            }
-        }
+        //}
+        //catch (Exception e)
+        //{
+        //
+        //}
     }
 
     public void __SetDecorationByte(

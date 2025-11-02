@@ -1012,35 +1012,78 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         else
         {
             var absolutePathId = TryGetFileAbsolutePathToInt(virtualizationResult.Model!.PersistentState.ResourceUri.Value);
-            if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilationUnit))
+            if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilationUnit) &&
+                virtualizationResult.Model!.PersistentState.ResourceUri.Value != string.Empty &&
+                File.Exists(virtualizationResult.Model!.PersistentState.ResourceUri.Value))
             {
-                // Within file search
-                // vs
-                // Member access search
-                //
-                // Fear is optimization but I can probably get extremely far by taking advantage
-                // of both cases being the same file over and over?
-                //
-                // Maybe not for partial types and etc...
-                //
-                // But when it comes to streaming the text, you don't necessarily
-                // have to open tons of StreamReaders to do the autocompletion?
-                for (int i = compilationUnit.NodeOffset; i < compilationUnit.NodeOffset + compilationUnit.NodeLength; i++)
+                using (StreamReaderPooledBuffer sr = new StreamReaderPooledBuffer(
+                    new FileStream(virtualizationResult.Model!.PersistentState.ResourceUri.Value, FileMode.Open, FileAccess.Read, FileShare.Read, StreamReaderPooledBuffer.DefaultFileStreamBufferSize),
+                    Encoding.UTF8,
+                    new byte[StreamReaderPooledBuffer.DefaultBufferSize],
+                    new char[UTF8_MaxCharCount]))
                 {
-                    // __CSharpBinder.NodeList[i];
-                    // Wait isn't the set decoration byte range off by 1?
-                    if (writeCount < MAX_AUTOCOMPLETE_OPTIONS)
+                    // I presume this is needed so the StreamReader can get the encoding.
+                    sr.Read();
+                    
+                    // Within file search
+                    // vs
+                    // Member access search
+                    //
+                    // Fear is optimization but I can probably get extremely far by taking advantage
+                    // of both cases being the same file over and over?
+                    //
+                    // Maybe not for partial types and etc...
+                    //
+                    // But when it comes to streaming the text, you don't necessarily
+                    // have to open tons of StreamReaders to do the autocompletion?
+                    for (int i = compilationUnit.NodeOffset; i < compilationUnit.NodeOffset + compilationUnit.NodeLength; i++)
                     {
-                        autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
-                            displayName: i.ToString(),
-                            autocompleteEntryKind: AutocompleteEntryKind.Word,
-                            absolutePathId: i,
-                            startInclusiveIndex: 0,
-                            endExclusiveIndex: 0);
-                    }
-                    else
-                    {
-                        break;
+                        var nodeValue = __CSharpBinder.NodeList[i];
+                        // Wait isn't the set decoration byte range off by 1?
+                        if (writeCount < MAX_AUTOCOMPLETE_OPTIONS)
+                        {
+                            sr.BaseStream.Seek(nodeValue.IdentifierToken.TextSpan.ByteIndex, SeekOrigin.Begin);
+                            sr.DiscardBufferedData();
+                
+                            string stringValue;
+                            
+                            if (nodeValue.IdentifierToken.TextSpan.Length <= GET_TEXT_BUFFER_SIZE)
+                            {
+                                sr.Read(_unsafeGetTextBuffer, 0, nodeValue.IdentifierToken.TextSpan.Length);
+                                stringValue = new string(_unsafeGetTextBuffer, 0, nodeValue.IdentifierToken.TextSpan.Length);
+                            }
+                            else
+                            {
+                                _unsafeGetTextStringBuilder.Clear();
+                                var remainder = nodeValue.IdentifierToken.TextSpan.Length;
+                                while (remainder > 0)
+                                {
+                                    var countTryRead = remainder >= GET_TEXT_BUFFER_SIZE ? GET_TEXT_BUFFER_SIZE : remainder;
+                                    sr.Read(_unsafeGetTextBuffer, 0, countTryRead);
+                                    remainder -= countTryRead; // not necessarily the actual, perhaps a check that sr.Read(...) returns the correct amount of characters is could be useful?
+                                    for (int j = 0; j < countTryRead; j++)
+                                    {
+                                        _unsafeGetTextStringBuilder.Append(_unsafeGetTextBuffer[j]);
+                                    }
+                                }
+                                stringValue = _unsafeGetTextStringBuilder.ToString();
+                            }
+                            
+                            /*if (stringValue.Contains())
+                            {
+                            }*/
+                            
+                            autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
+                                displayName: stringValue,
+                                autocompleteEntryKind: AutocompleteEntryKind.Word,
+                                absolutePathId: i,
+                                startInclusiveIndex: 0,
+                                endExclusiveIndex: 0);
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
             }

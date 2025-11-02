@@ -1,6 +1,7 @@
 using Clair.TextEditor.RazorLib;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.Autocompletes.Models;
+using Clair.Common.RazorLib.Menus.Models;
 
 namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
 
@@ -25,9 +26,22 @@ public class CSharpAutocompleteContainer : AutocompleteContainer
             var modelModifier = editContext.GetModelModifier(ResourceUri);
             var viewModelModifier = editContext.GetViewModelModifier(TextEditorViewModelKey);
             
-            modelModifier.Insert(
-                entry.DisplayName,
-                viewModelModifier);
+            if (entry.AutocompleteEntryKind != AutocompleteEntryKind.Snippet)
+            {
+                modelModifier.Insert(
+                    entry.DisplayName,
+                    viewModelModifier);
+            }
+            else
+            {
+                if (entry.DisplayName == "prop")
+                {
+                    modelModifier.Insert(
+                        "public TYPE NAME { get; set; }",
+                        viewModelModifier);
+                }
+            }
+            
             return ValueTask.CompletedTask;
         });
     }

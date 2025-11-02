@@ -1089,7 +1089,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     
                     autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
                         displayName: "prop",
-                        autocompleteEntryKind: AutocompleteEntryKind.Word);
+                        autocompleteEntryKind: AutocompleteEntryKind.Snippet);
                 }
             }
             else

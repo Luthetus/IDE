@@ -547,7 +547,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                     var outputPanel = (Panel?)null;
                     for (int i = 0; i < panelState.PanelList.Count; i++)
                     {
-                        var x = panelState.PanelList.u_Items[i];
+                        var x = panelState.PanelList[i];
                         if (x.Title == "Output")
                         {
                             outputPanel = x;
@@ -570,7 +570,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                     var outputPanel = (Panel?)null;
                     for (int i = 0; i < panelState.PanelList.Count; i++)
                     {
-                        var x = panelState.PanelList.u_Items[i];
+                        var x = panelState.PanelList[i];
                         if (x.Title == "Terminal")
                         {
                             outputPanel = x;
@@ -738,7 +738,7 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
 
         for (int i = 0; i < panelState.PanelList.Count; i++)
         {
-            var panel = panelState.PanelList.u_Items[i];
+            var panel = panelState.PanelList[i];
             menuOptionsList.Add(new MenuOptionValue(
                 panel.Title,
                 MenuOptionKind.Delete,

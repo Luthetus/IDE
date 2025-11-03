@@ -84,9 +84,9 @@
 @if (dropdownState.DropdownList.Count > 0)
 {
     var shouldShowOutOfBoundsClickDisplay = false;
-    foreach (var x in dropdownState.DropdownList.UNSAFE_Items)
+    for (int i = 0; i < dropdownState.DropdownList.Count; i++)
     {
-        if (x.ShouldShowOutOfBoundsClickDisu
+        if (dropdownState.DropdownList.u_Items[i].ShouldShowOutOfBoundsClickDisplay)
             shouldShowOutOfBoundsClickDisplay = true;
     }
     if (shouldShowOutOfBoundsClickDisplay)
@@ -95,10 +95,10 @@
                                  OnMouseDownCallback="DROPDOWN_ClearActiveKeyList" />
     }
 }
-@foreach (var dropdown in dropdownState.DropdownList.UNSAFE_Items)
+@for (int i = 0; i < dropdownState.DropdownList.Count; i++)
 {
-	<DropdownDisplay @key="dropdown.Key"
-					 Dropdown="dropdown"/>
+	<DropdownDisplay @key="dropdownState.DropdownList.u_Items[i].Key"
+                     Dropdown="dropdownState.DropdownList.u_Items[i]" />
 }
 
 

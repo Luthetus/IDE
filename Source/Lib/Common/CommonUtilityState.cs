@@ -115,11 +115,11 @@ public record struct ThemeState(ValueList<ThemeRecord> ThemeList)
 /// TODO: SphagettiCode - The resizing and hiding/showing is a bit scuffed. (2023-09-19)
 /// </summary>
 public record struct PanelState(
-    List<Panel> PanelList,
+    ValueList<Panel> PanelList,
     IPanelTab?  DragEventArgs_PanelTab,
     PanelGroup? DragEventArgs_PanelGroup)
 {
-    public PanelState() : this(new List<Panel>(), DragEventArgs_PanelTab: null, DragEventArgs_PanelGroup: null)
+    public PanelState() : this(new ValueList<Panel>(capacity: 4), DragEventArgs_PanelTab: null, DragEventArgs_PanelGroup: null)
     {
         TopLeftPanelGroup = ConstructTopLeftGroup();
         TopRightPanelGroup = ConstructTopRightGroup();

@@ -320,7 +320,7 @@ public static class InitializationHelper
             typeof(Clair.Extensions.DotNet.DotNetSolutions.Displays.SolutionExplorerDisplay),
             null,
             DotNetService.CommonService);
-        ((List<Panel>)panelState.PanelList).Add(solutionExplorerPanel);
+        panelState.PanelList = panelState.PanelList.C_Add(solutionExplorerPanel);
         ((List<IPanelTab>)leftPanel.TabList).Add(solutionExplorerPanel);
         
         // folderExplorerPanel
@@ -331,7 +331,7 @@ public static class InitializationHelper
             typeof(FolderExplorerDisplay),
             null,
             DotNetService.CommonService);
-        ((List<Panel>)panelState.PanelList).Add(folderExplorerPanel);
+        panelState.PanelList = panelState.PanelList.C_Add(folderExplorerPanel);
         ((List<IPanelTab>)leftPanel.TabList).Add(folderExplorerPanel);
         
         // InitializeRightPanelTabs();
@@ -350,7 +350,7 @@ public static class InitializationHelper
             typeof(Clair.Ide.RazorLib.Terminals.Displays.TerminalGroupDisplay),
             null,
             DotNetService.CommonService);
-        ((List<Panel>)panelState.PanelList).Add(terminalGroupPanel);
+        panelState.PanelList = panelState.PanelList.C_Add(terminalGroupPanel);
         ((List<IPanelTab>)bottomPanel.TabList).Add(terminalGroupPanel);
 
         // SetActivePanelTabAction
@@ -364,7 +364,7 @@ public static class InitializationHelper
             typeof(Clair.Extensions.DotNet.Outputs.Displays.OutputPanelDisplay),
             null,
             DotNetService.CommonService);
-        ((List<Panel>)panelState.PanelList).Add(outputPanel);
+        panelState.PanelList = panelState.PanelList.C_Add(outputPanel);
         ((List<IPanelTab>)bottomPanel.TabList).Add(outputPanel);
 
         // testExplorerPanel
@@ -375,7 +375,7 @@ public static class InitializationHelper
             typeof(Clair.Extensions.DotNet.TestExplorers.Displays.TestExplorerDisplay),
             null,
             DotNetService.CommonService);
-        ((List<Panel>)panelState.PanelList).Add(testExplorerPanel);
+        panelState.PanelList = panelState.PanelList.C_Add(testExplorerPanel);
         ((List<IPanelTab>)bottomPanel.TabList).Add(testExplorerPanel);
 
         // nuGetPanel
@@ -386,8 +386,10 @@ public static class InitializationHelper
             typeof(Clair.Extensions.DotNet.Nugets.Displays.NuGetPackageManager),
             null,
             DotNetService.CommonService);
-        ((List<Panel>)panelState.PanelList).Add(nuGetPanel);
+        panelState.PanelList = panelState.PanelList.C_Add(nuGetPanel);
         ((List<IPanelTab>)bottomPanel.TabList).Add(nuGetPanel);
+        
+        DotNetService.CommonService.SetPanelState(panelState);
         
         // SetActivePanelTabAction
         DotNetService.CommonService.SetActivePanelTab(leftPanel.Key, solutionExplorerPanel.Key);

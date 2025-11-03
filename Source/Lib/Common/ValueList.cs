@@ -94,6 +94,7 @@ public struct ValueList<T>
     {
         var output = new ValueList<T>(Capacity);
         Array.Copy(u_Items, output.u_Items, Count);
+        output.Count = Count;
         return output;
     }
 
@@ -112,11 +113,19 @@ public struct ValueList<T>
         // while passively sitting in the heap.
 
         ValueList<T> output;
-        
+
         if (Count == Capacity)
+        {
             output = new ValueList<T>(Capacity * 2);
+            
+        }
         else
-            output = this;
+        {
+            output = new ValueList<T>(Capacity);
+        }
+
+        Array.Copy(u_Items, output.u_Items, Count);
+        output.Count = Count;
 
         output.u_Items[output.Count++] = item;
         return output;
@@ -201,9 +210,15 @@ public struct ValueList<T>
         ValueList<T> output;
 
         if (Count == Capacity)
+        {
             output = new ValueList<T>(Capacity * 2);
+            Array.Copy(u_Items, output.u_Items, Count);
+            output.Count = Count;
+        }
         else
+        {
             output = this;
+        }
 
         output.u_Items[output.Count++] = item;
         return output;
@@ -223,12 +238,12 @@ public struct ValueList<T>
         if (Count == Capacity)
         {
             output = new ValueList<T>(Capacity * 2);
+            Array.Copy(u_Items, output.u_Items, Count);
             output.Count = Count;
         }
         else
         {
-            output = new ValueList<T>(Capacity);
-            output.Count = Count;
+            output = this;
         }
 
         if (indexToInsert != 0)
@@ -250,7 +265,7 @@ public struct ValueList<T>
     // decreased by one.
     public ValueList<T> C_RemoveAt(int index)
     {
-        var output = new ValueList<T>(Capacity);
+        var output = this;
         output.Count = Count;
         Array.Copy(u_Items, output.u_Items, length: index);
         Array.Copy(u_Items, index + 1, output.u_Items, index, Count - index);

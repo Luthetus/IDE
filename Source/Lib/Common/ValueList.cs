@@ -68,6 +68,9 @@ namespace Clair.Common.RazorLib;
 /// or if you want a new Clone_
 /// but if I get rid of Clone_ prefix for the Clone_ methods then
 /// you only have the New_ and the no prefix version and it makes more sense.
+/// 
+/// Actually I'm gonna use the C_ prefix because then I a can more simply search for
+/// the methods without the compilers.
 /// </summary>
 public struct ValueList<T>
 {
@@ -186,7 +189,7 @@ public struct ValueList<T>
     // before adding the new element.
     //
     // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ValueList<T> Add(T item)
+    public ValueList<T> C_Add(T item)
     {
         // There's some code in List to account for multithreading that creates local copies of things.
         // There's also code that accounts for method inlining and uncommon paths.
@@ -206,7 +209,7 @@ public struct ValueList<T>
         return output;
     }
 
-    public ValueList<T> Insert(int indexToInsert, T item)
+    public ValueList<T> C_Insert(int indexToInsert, T item)
     {
         // There's some code in List to account for multithreading that creates local copies of things.
         // There's also code that accounts for method inlining and uncommon paths.
@@ -245,7 +248,7 @@ public struct ValueList<T>
 
     // Removes the element at the given index. The size of the list is
     // decreased by one.
-    public ValueList<T> RemoveAt(int index)
+    public ValueList<T> C_RemoveAt(int index)
     {
         var output = new ValueList<T>(Capacity);
         output.Count = Count;
@@ -261,7 +264,7 @@ public struct ValueList<T>
         return output;
     }
 
-    public ValueList<T> SetItem(int index, T item)
+    public ValueList<T> C_SetItem(int index, T item)
     {
         u_Items[index] = item;
         return this;

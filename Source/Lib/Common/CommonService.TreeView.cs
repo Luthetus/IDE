@@ -99,7 +99,7 @@ public partial class CommonService
         
         _treeViewState = inState with
         {
-            ContainerList = inState.ContainerList.RemoveAt(indexContainer)
+            ContainerList = inState.ContainerList.New_RemoveAt(indexContainer)
         };
         
         if (shouldFireStateChangedEvent)

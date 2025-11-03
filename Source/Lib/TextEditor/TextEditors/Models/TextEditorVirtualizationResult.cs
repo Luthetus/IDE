@@ -831,7 +831,7 @@ public sealed class TextEditorVirtualizationResult
                      i < boundsInLineIndexUnits.LastLineToSelectDataExclusive;
                      i++)
                 {
-                    PresentationLayerStyleList.C_Add(PresentationGetCssStyleString(
+                    PresentationLayerStyleList = PresentationLayerStyleList.C_Add(PresentationGetCssStyleString(
                         boundsInPositionIndexUnits.StartInclusiveIndex,
                         boundsInPositionIndexUnits.EndExclusiveIndex,
                         lineIndex: i,
@@ -840,7 +840,7 @@ public sealed class TextEditorVirtualizationResult
                 }
             }
             
-            PresentationLayerGroupList.C_Add(
+            PresentationLayerGroupList = PresentationLayerGroupList.C_Add(
                 (
                     presentationLayer.CssClassString,
                     indexInclusiveStart,

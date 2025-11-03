@@ -4,12 +4,8 @@
     var themeState = CommonService.GetThemeState();
     var appOptionsState = CommonService.GetAppOptionsState();
 
-    var themesInScopeList = themeState.ThemeList
-        .Where(x => x.IncludeScopeApp)
-        .ToArray();
-        
     var isActiveValid = CheckIsActiveValid(
-        themesInScopeList,
+        themeState,
         appOptionsState.Options.ThemeKey);
 }
     
@@ -21,15 +17,20 @@
         Select a Theme
     </option>
     
-    @foreach (var theme in themesInScopeList)
+    @for (int i = 0; i < themeState.ThemeList.Count; i++)
     {
-        var isActiveSelection = CheckIsActiveSelection(
-            theme.Key,
-            appOptionsState.Options.ThemeKey);
+        var theme = themeState.ThemeList.u_Items[i];
 
-        <option value="@theme.Key.ToString()"
-                selected="@isActiveSelection">
-            @theme.DisplayName
-        </option>
+        if (theme.IncludeScopeApp)
+        {
+            var isActiveSelection = CheckIsActiveSelection(
+                theme.Key,
+                appOptionsState.Options.ThemeKey);
+
+            <option value="@theme.Key.ToString()"
+                    selected="@isActiveSelection">
+                @theme.DisplayName
+            </option>
+        }
     }
 </select>

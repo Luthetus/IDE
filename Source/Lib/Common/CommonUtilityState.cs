@@ -83,23 +83,14 @@ public record struct AppOptionsState(CommonOptions Options)
 /// The list provided should not be modified after passing it as a parameter.
 /// Make a shallow copy, and pass the shallow copy, if further modification of your list will be necessary.
 /// </summary>
-public record struct ThemeState(IReadOnlyList<ThemeRecord> ThemeList)
+public record struct ThemeState(ValueList<ThemeRecord> ThemeList)
 {
-    public ThemeState()
-        : this(new List<ThemeRecord>(capacity: 4)
-            {
-                // Constructor for initial capacity of 4 may or may not do something meaningful.
-                //
-                // Parameterless-construct's initial array is a static length 0 array.
-                // Then it immediately becomes 4 upon the first add.
-                //
-                CommonFacts.VisualStudioDarkThemeClone,
-                CommonFacts.VisualStudioLightThemeClone,
-                CommonFacts.DarkTheme,
-                CommonFacts.LightTheme,
-            })
+    public ThemeState() : this(new ValueList<ThemeRecord>(capacity: 4))
     {
-        
+        ThemeList = ThemeList.C_Add(CommonFacts.VisualStudioDarkThemeClone);
+        ThemeList = ThemeList.C_Add(CommonFacts.VisualStudioLightThemeClone);
+        ThemeList = ThemeList.C_Add(CommonFacts.DarkTheme);
+        ThemeList = ThemeList.C_Add(CommonFacts.LightTheme);
     }
 }
 /* End IThemeService */

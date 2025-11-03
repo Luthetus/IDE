@@ -7,9 +7,10 @@
         var themesList = TextEditorService.CommonService.GetThemeState().ThemeList;
 
         var chosenThemeKey = TextEditorService.Options_GetTextEditorOptionsState().Options.CommonOptions.ThemeKey;
-        
-        foreach (var theme in themesList)
+
+        for (int i = 0; i < themesList.Count; i++)
         {
+            var theme = themesList.u_Items[i];
             <option value="@theme.Key.ToString()"
                     selected="@(chosenThemeKey == theme.Key)">
                 @theme.DisplayName

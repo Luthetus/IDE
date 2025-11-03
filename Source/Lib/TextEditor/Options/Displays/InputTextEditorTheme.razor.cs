@@ -23,8 +23,9 @@ public sealed partial class InputTextEditorTheme : ComponentBase, IDisposable
         if (int.TryParse(chosenThemeKeyIntString, out var chosenThemeKeyInt))
         {
             var foundTheme = default(ThemeRecord);
-            foreach (var x in themeList)
+            for (int i = 0; i < themeList.Count; i++)
             {
+                var x = themeList.u_Items[i];
                 if (x.Key == chosenThemeKeyInt)
                 {
                     foundTheme = x;

@@ -24,13 +24,11 @@ public sealed partial class InputAppTheme : IDisposable
 
         if (int.TryParse(intAsString, out var intValue))
         {
-            var themesInScopeList = themeState.ThemeList.Where(x => x.IncludeScopeApp)
-                .ToArray();
-
             var existingThemeRecord = default(ThemeRecord);
-            foreach (var btr in themesInScopeList)
+            for (int i = 0; i < themeState.ThemeList.Count; i++)
             {
-                if (btr.Key == intValue)
+                var btr = themeState.ThemeList.u_Items[i];
+                if (btr.IncludeScopeApp && btr.Key == intValue)
                 {
                     existingThemeRecord = btr;
                     break;
@@ -42,11 +40,12 @@ public sealed partial class InputAppTheme : IDisposable
         }
     }
 
-    private bool CheckIsActiveValid(ThemeRecord[] themeRecordList, int activeThemeKey)
+    private bool CheckIsActiveValid(ThemeState themeState, int activeThemeKey)
     {
-        foreach (var btr in themeRecordList)
+        for (int i = 0; i < themeState.ThemeList.Count; i++)
         {
-            if (btr.Key == activeThemeKey)
+            var btr = themeState.ThemeList.u_Items[i];
+            if (btr.IncludeScopeApp && btr.Key == activeThemeKey)
                 return true;
         }
         return false;

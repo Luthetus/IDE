@@ -62,23 +62,22 @@ public partial class CommonService
             else
                 return;
             
-            foreach (var x in inPanelGroup.TabList)
+            for (int i = 0; i < inPanelGroup.TabList.Count; i++)
             {
+                var x = inPanelGroup.TabList.u_Items[i];
                 if (x.Key == panelTab.Key)
                     return;
             }
 
-            var outTabList = new List<IPanelTab>(inPanelGroup.TabList);
-            outTabList.Insert(insertAtIndexZero ? 0 : outTabList.Count, panelTab);
-            
             var outPanelGroup = inPanelGroup with
             {
-                TabList = outTabList,
+                TabList = inPanelGroup.TabList.New_Insert(insertAtIndexZero ? 0 : inPanelGroup.TabList.Count, panelTab),
                 ActiveTab = null
             };
             
-            foreach (var x in outPanelGroup.TabList)
+            for (int i = 0; i < outPanelGroup.TabList.Count; i++)
             {
+                var x = outPanelGroup.TabList.u_Items[i];
                 if (x.Key == outPanelGroup.ActiveTabKey)
                 {
                     outPanelGroup.ActiveTab = x;
@@ -143,7 +142,7 @@ public partial class CommonService
             var indexPanelTab = -1;
             for (int i = 0; i < inPanelGroup.TabList.Count; i++)
             {
-                if (inPanelGroup.TabList[i].Key == panelTabKey)
+                if (inPanelGroup.TabList.u_Items[i].Key == panelTabKey)
                 {
                     indexPanelTab = i;
                     break;
@@ -152,19 +151,17 @@ public partial class CommonService
 
             if (indexPanelTab != -1)
             {
-                inPanelGroup.TabList[indexPanelTab].TabGroup = null;
-            
-                var outTabList = new List<IPanelTab>(inPanelGroup.TabList);
-                outTabList.RemoveAt(indexPanelTab);
-    
+                inPanelGroup.TabList.u_Items[indexPanelTab].TabGroup = null;
+
                 var outPanelGroup = inPanelGroup with
                 {
-                    TabList = outTabList,
+                    TabList = inPanelGroup.TabList.New_RemoveAt(indexPanelTab),
                     ActiveTab = null
                 };
                 
-                foreach (var x in outPanelGroup.TabList)
+                for (int i = 0; i < outPanelGroup.TabList.Count; i++)
                 {
+                    var x = outPanelGroup.TabList.u_Items[i];
                     if (x.Key == outPanelGroup.ActiveTabKey)
                     {
                         outPanelGroup.ActiveTab = x;
@@ -227,8 +224,9 @@ public partial class CommonService
                 ActiveTab = null
             };
 
-            foreach (var x in outPanelGroup.TabList)
+            for (var i = 0; i < outPanelGroup.TabList.Count; i++)
             {
+                var x = outPanelGroup.TabList.u_Items[i];
                 if (x.Key == outPanelGroup.ActiveTabKey)
                 {
                     outPanelGroup.ActiveTab = x;

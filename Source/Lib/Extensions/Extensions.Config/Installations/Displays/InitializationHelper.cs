@@ -321,7 +321,7 @@ public static class InitializationHelper
             null,
             DotNetService.CommonService);
         panelState.PanelList = panelState.PanelList.C_Add(solutionExplorerPanel);
-        ((List<IPanelTab>)leftPanel.TabList).Add(solutionExplorerPanel);
+        leftPanel.TabList = leftPanel.TabList.C_Add(solutionExplorerPanel);
         
         // folderExplorerPanel
         var folderExplorerPanel = new Panel(
@@ -332,7 +332,7 @@ public static class InitializationHelper
             null,
             DotNetService.CommonService);
         panelState.PanelList = panelState.PanelList.C_Add(folderExplorerPanel);
-        ((List<IPanelTab>)leftPanel.TabList).Add(folderExplorerPanel);
+        leftPanel.TabList = leftPanel.TabList.C_Add(folderExplorerPanel);
         
         // InitializeRightPanelTabs();
         var rightPanel = panelState.TopRightPanelGroup;
@@ -351,7 +351,7 @@ public static class InitializationHelper
             null,
             DotNetService.CommonService);
         panelState.PanelList = panelState.PanelList.C_Add(terminalGroupPanel);
-        ((List<IPanelTab>)bottomPanel.TabList).Add(terminalGroupPanel);
+        bottomPanel.TabList = bottomPanel.TabList.C_Add(terminalGroupPanel);
 
         // SetActivePanelTabAction
         //_panelService.SetActivePanelTab(bottomPanel.Key, terminalGroupPanel.Key);
@@ -365,7 +365,7 @@ public static class InitializationHelper
             null,
             DotNetService.CommonService);
         panelState.PanelList = panelState.PanelList.C_Add(outputPanel);
-        ((List<IPanelTab>)bottomPanel.TabList).Add(outputPanel);
+        bottomPanel.TabList = bottomPanel.TabList.C_Add(outputPanel);
 
         // testExplorerPanel
         var testExplorerPanel = new Panel(
@@ -376,7 +376,7 @@ public static class InitializationHelper
             null,
             DotNetService.CommonService);
         panelState.PanelList = panelState.PanelList.C_Add(testExplorerPanel);
-        ((List<IPanelTab>)bottomPanel.TabList).Add(testExplorerPanel);
+        bottomPanel.TabList = bottomPanel.TabList.C_Add(testExplorerPanel);
 
         // nuGetPanel
         var nuGetPanel = new Panel(
@@ -387,7 +387,7 @@ public static class InitializationHelper
             null,
             DotNetService.CommonService);
         panelState.PanelList = panelState.PanelList.C_Add(nuGetPanel);
-        ((List<IPanelTab>)bottomPanel.TabList).Add(nuGetPanel);
+        bottomPanel.TabList = bottomPanel.TabList.C_Add(nuGetPanel);
         
         DotNetService.CommonService.SetPanelState(panelState);
         

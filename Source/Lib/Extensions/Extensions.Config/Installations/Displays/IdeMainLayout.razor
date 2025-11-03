@@ -165,8 +165,9 @@
                  style="@DotNetService.CommonService.Rotate_Options_LineHeight_CssStyle"
         		 id="@_leftPanelGroupParameter.HtmlIdTabs">
         
-                @foreach (var panelTab in leftPanelGroup.TabList)
+                @for (int i = 0; i < leftPanelGroup.TabList.Count; i++)
                 {
+                    var panelTab = leftPanelGroup.TabList.u_Items[i];
                     panelTab.TabGroup = leftPanelGroup;
                     panelTab.TabCascadingValueBatch = _tabCascadingValueBatch;
                 
@@ -247,8 +248,9 @@
         		 style="@DotNetService.CommonService.Rotate_Options_LineHeight_CssStyle"
         		 id="@_rightPanelGroupParameter.HtmlIdTabs">
         
-                @foreach (var panelTab in rightPanelGroup.TabList)
+                @for (int i = 0; i < rightPanelGroup.TabList.Count; i++)
                 {
+                    var panelTab = rightPanelGroup.TabList.u_Items[i];
                     panelTab.TabGroup = rightPanelGroup;
                     panelTab.TabCascadingValueBatch = _tabCascadingValueBatch;
                 
@@ -322,8 +324,10 @@
     		 style="@DotNetService.CommonService.Options_LineHeight_CssStyle"
     		 id="@_bottomPanelGroupParameter.HtmlIdTabs">
     
-            @foreach (var panelTab in bottomPanelGroup.TabList)
+            @for (int i = 0; i < bottomPanelGroup.TabList.Count; i++)
             {
+                var panelTab = bottomPanelGroup.TabList.u_Items[i];
+                
                 panelTab.TabGroup = bottomPanelGroup;
                 panelTab.TabCascadingValueBatch = _tabCascadingValueBatch;
             

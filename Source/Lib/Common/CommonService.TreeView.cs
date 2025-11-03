@@ -66,10 +66,13 @@ public partial class CommonService
             return;
         }
 
-        var outContainerList = new List<TreeViewContainer>(inState.ContainerList);
+        var outContainerList = new List<TreeViewContainer>();
         outContainerList.Add(container);
         
-        _treeViewState = inState with { ContainerList = outContainerList };
+        _treeViewState = inState with
+        {
+            ContainerList = inState.ContainerList.New_Add(container)
+        };
         
         if (shouldFireStateChangedEvent)
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
@@ -94,10 +97,10 @@ public partial class CommonService
             return;
         }
         
-        var outContainerList = new List<TreeViewContainer>(inState.ContainerList);
-        outContainerList.RemoveAt(indexContainer);
-        
-        _treeViewState = inState with { ContainerList = outContainerList };
+        _treeViewState = inState with
+        {
+            ContainerList = inState.ContainerList.RemoveAt(indexContainer)
+        };
         
         if (shouldFireStateChangedEvent)
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);

@@ -16,7 +16,7 @@ public partial class CommonService
         var indexExistingDropdown = -1;
         for (int i = 0; i < inState.DropdownList.Count; i++)
         {
-            if (inState.DropdownList[i].Key == dropdown.Key)
+            if (inState.DropdownList.Items[i].Key == dropdown.Key)
             {
                 indexExistingDropdown = i;
                 break;
@@ -29,12 +29,9 @@ public partial class CommonService
             return;
         }
 
-        var outDropdownList = new List<DropdownRecord>(inState.DropdownList);
-        outDropdownList.Add(dropdown);
-
         _dropdownState = inState with
         {
-            DropdownList = outDropdownList
+            DropdownList = inState.DropdownList.Add(dropdown)
         };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DropdownStateChanged);
@@ -48,7 +45,7 @@ public partial class CommonService
         var indexExistingDropdown = -1;
         for (int i = 0; i < inState.DropdownList.Count; i++)
         {
-            if (inState.DropdownList[i].Key == key)
+            if (inState.DropdownList.Items[i].Key == key)
             {
                 indexExistingDropdown = i;
                 break;
@@ -61,12 +58,9 @@ public partial class CommonService
             return;
         }
             
-        var outDropdownList = new List<DropdownRecord>(inState.DropdownList);
-        outDropdownList.RemoveAt(indexExistingDropdown);
-
         _dropdownState = inState with
         {
-            DropdownList = outDropdownList
+            DropdownList = inState.DropdownList.RemoveAt(indexExistingDropdown)
         };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DropdownStateChanged);
@@ -77,11 +71,9 @@ public partial class CommonService
     {
         var inState = GetDropdownState();
     
-        var outDropdownList = new List<DropdownRecord>();
-    
         _dropdownState = inState with
         {
-            DropdownList = outDropdownList
+            DropdownList = new ValueList<DropdownRecord>(capacity: 4)
         };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DropdownStateChanged);
@@ -95,7 +87,7 @@ public partial class CommonService
         var indexExistingDropdown = -1;
         for (int i = 0; i < inState.DropdownList.Count; i++)
         {
-            if (inState.DropdownList[i].Key == dropdown.Key)
+            if (inState.DropdownList.Items[i].Key == dropdown.Key)
             {
                 indexExistingDropdown = i;
                 break;
@@ -108,7 +100,7 @@ public partial class CommonService
             return;
         }
         
-        var inDropdown = inState.DropdownList[indexExistingDropdown];
+        var inDropdown = inState.DropdownList.Items[indexExistingDropdown];
 
         var outDropdown = inDropdown with
         {

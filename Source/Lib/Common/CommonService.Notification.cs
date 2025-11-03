@@ -13,9 +13,10 @@ public partial class CommonService
     {
         lock (_stateModificationLock)
         {
-            var outDefaultList = new List<INotification>(_notificationState.DefaultList);
-            outDefaultList.Add(notification);
-            _notificationState = _notificationState with { DefaultList = outDefaultList };
+            _notificationState = _notificationState with
+            {
+                DefaultList = _notificationState.DefaultList.Add(notification)
+            };
         }
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.NotificationStateChanged);
@@ -28,7 +29,7 @@ public partial class CommonService
             var indexNotification = -1;
             for (int i = 0; i < _notificationState.DefaultList.Count; i++)
             {
-                if (_notificationState.DefaultList[i].DynamicViewModelKey == key)
+                if (_notificationState.DefaultList.Items[i].DynamicViewModelKey == key)
                 {
                     indexNotification = i;
                     break;
@@ -37,10 +38,10 @@ public partial class CommonService
     
             if (indexNotification != -1)
             {
-                var inNotification = _notificationState.DefaultList[indexNotification];
-                var outDefaultList = new List<INotification>(_notificationState.DefaultList);
-                outDefaultList.RemoveAt(indexNotification);
-                _notificationState = _notificationState with { DefaultList = outDefaultList };
+                _notificationState = _notificationState with
+                {
+                    DefaultList = _notificationState.DefaultList.RemoveAt(indexNotification)
+                };
             }
         }
         
@@ -49,7 +50,7 @@ public partial class CommonService
 
     public void Notification_ReduceClearDefaultAction()
     {
-        lock (_stateModificationLock)
+        /*lock (_stateModificationLock)
         {
             _notificationState = _notificationState with
             {
@@ -57,6 +58,6 @@ public partial class CommonService
             };
         }
         
-        CommonUiStateChanged?.Invoke(CommonUiEventKind.NotificationStateChanged);
+        CommonUiStateChanged?.Invoke(CommonUiEventKind.NotificationStateChanged);*/
     }
 }

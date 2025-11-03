@@ -50,7 +50,7 @@
 
 @foreach (var dialog in dialogList)
 {
-    <DialogDisplay @key="dialog.DynamicViewModelKey" 
+    <DialogDisplay @key="dialog.DynamicViewModelKey"
                    Dialog="dialog"/>
 }
 
@@ -72,7 +72,7 @@
 @for (int i = 0; i < notificationState.DefaultList.Count; i++)
 {
     var index = i;
-    var notification = notificationState.DefaultList[index];
+    var notification = notificationState.DefaultList.Items[index];
     
     <NotificationDisplay @key="notification.DynamicViewModelKey" 
                          Notification="notification"

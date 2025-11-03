@@ -51,6 +51,9 @@ namespace Clair.Common.RazorLib;
 /// With this type it is "unsafe" and "you can still modify it but I'm calling it immutable"
 /// But I get some optimizations out of it idk.
 /// 
+/// This is my third attempt at saying what I was originally trying to say for my second point...
+/// I edit the lists within a thread safe context, thus the collection itself "inherits" thread safety.
+/// 
 /// </summary>
 public struct ValueList<T>
 {

@@ -1,9 +1,16 @@
+using Clair.Common.RazorLib;
+
 namespace Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 
 public sealed class TextEditorLineIndexCache
 {
+    /*public TextEditorLineIndexCache()
+    {
+        VirtualizationSpanList = VirtualizationSpanList_Empty;
+    }*/
+
     /// <summary>TODO: Don't do this.</summary>
-    public static List<TextEditorVirtualizationSpan> VirtualizationSpanList_Empty { get; } = new();
+    public static ValueList<TextEditorVirtualizationSpan> VirtualizationSpanList_Empty { get; } = new(capacity: 4);
 
     /// <summary>
     /// Every virtualized line has its "spans" stored in this flat list.
@@ -14,7 +21,7 @@ public sealed class TextEditorLineIndexCache
     /// This points to a TextEditorViewModel('s) VirtualizationGrid('s) list directly.
     /// If you clear it that'll cause a UI race condition exception.
     /// </summary>
-    public List<TextEditorVirtualizationSpan> VirtualizationSpanList { get; set; } = new();
+    public ValueList<TextEditorVirtualizationSpan> VirtualizationSpanList { get; set; } = new(capacity: 4);
     
     public bool IsInvalid { get; set; }
     public HashSet<int> UsedKeyHashSet { get; set; } = new();

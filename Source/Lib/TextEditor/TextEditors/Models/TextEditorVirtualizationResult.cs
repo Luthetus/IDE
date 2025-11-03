@@ -20,7 +20,7 @@ public sealed class TextEditorVirtualizationResult
     /// </summary>
     public static TextEditorVirtualizationResult ConstructEmpty() => new TextEditorVirtualizationResult(
         Array.Empty<TextEditorVirtualizationLine>(),
-        new List<TextEditorVirtualizationSpan>(),
+        new ValueList<TextEditorVirtualizationSpan>(capacity: 4),
         resultWidth: 0,
         resultHeight: 0,
         left: 0,
@@ -43,7 +43,7 @@ public sealed class TextEditorVirtualizationResult
     /// <summary>A constructor for 'ConstructEmpty()'</summary>
     public TextEditorVirtualizationResult(
         TextEditorVirtualizationLine[] entryList,
-        List<TextEditorVirtualizationSpan> virtualizationSpanList,
+        ValueList<TextEditorVirtualizationSpan> virtualizationSpanList,
         int resultWidth,
         int resultHeight,
         double left,
@@ -78,7 +78,7 @@ public sealed class TextEditorVirtualizationResult
     /// </summary>
     public TextEditorVirtualizationResult(
         TextEditorVirtualizationLine[] entryList,
-        List<TextEditorVirtualizationSpan> virtualizationSpanList,
+        ValueList<TextEditorVirtualizationSpan> virtualizationSpanList,
         int resultWidth,
         int resultHeight,
         double left,
@@ -187,7 +187,7 @@ public sealed class TextEditorVirtualizationResult
     /// </summary>
     public int Count { get; set; }
     
-    public List<TextEditorVirtualizationSpan> VirtualizationSpanList { get; init; }
+    public ValueList<TextEditorVirtualizationSpan> VirtualizationSpanList { get; set; }
 
     /// <summary>Width (only rendered elements)</summary>
     public int VirtualWidth { get; init; }

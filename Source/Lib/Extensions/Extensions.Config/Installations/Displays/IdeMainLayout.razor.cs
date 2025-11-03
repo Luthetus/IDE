@@ -545,8 +545,9 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                     var panelState = DotNetService.CommonService.GetPanelState();
                     
                     var outputPanel = (Panel?)null;
-                    foreach (var x in panelState.PanelList)
+                    for (int i = 0; i < panelState.PanelList.Count; i++)
                     {
+                        var x = panelState.PanelList.u_Items[i];
                         if (x.Title == "Output")
                         {
                             outputPanel = x;
@@ -567,8 +568,9 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
                     DotNetService.IdeService.TerminalGroup_SetActiveTerminal(IdeFacts.EXECUTION_KEY);
                     var panelState = DotNetService.CommonService.GetPanelState();
                     var outputPanel = (Panel?)null;
-                    foreach (var x in panelState.PanelList)
+                    for (int i = 0; i < panelState.PanelList.Count; i++)
                     {
+                        var x = panelState.PanelList.u_Items[i];
                         if (x.Title == "Terminal")
                         {
                             outputPanel = x;
@@ -734,8 +736,9 @@ public partial class IdeMainLayout : LayoutComponentBase, IDisposable
         var dialogState = DotNetService.CommonService.GetDialogState();
         var menuOptionsList = new List<MenuOptionValue>(capacity: panelState.PanelList.Count);
 
-        foreach (var panel in panelState.PanelList)
+        for (int i = 0; i < panelState.PanelList.Count; i++)
         {
+            var panel = panelState.PanelList.u_Items[i];
             menuOptionsList.Add(new MenuOptionValue(
                 panel.Title,
                 MenuOptionKind.Delete,

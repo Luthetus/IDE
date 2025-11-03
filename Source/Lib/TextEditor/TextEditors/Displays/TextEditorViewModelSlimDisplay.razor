@@ -27,8 +27,8 @@
     
     @if (virtualizationResult.IsValid)
     {
-    	var presentationLayerGroupSpan = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(virtualizationResult.PresentationLayerGroupList);
-        var presentationLayerStyleSpan = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(virtualizationResult.PresentationLayerStyleList);
+		var presentationLayerGroupSpan = new Span<(string CssClassString, int StartInclusiveIndex, int EndExclusiveIndex)>(virtualizationResult.PresentationLayerGroupList.u_Items);
+		var presentationLayerStyleSpan = new Span<string>(virtualizationResult.PresentationLayerStyleList.u_Items);
 
         var firstPresentationLayerGroupSpan = presentationLayerGroupSpan.Slice(
             virtualizationResult.FirstPresentationLayerGroupStartInclusiveIndex,

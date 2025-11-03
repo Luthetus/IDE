@@ -38,6 +38,19 @@ namespace Clair.Common.RazorLib;
 /// This optimization becomes increasingly overly optimized as you try to extend the use of it.
 /// As well, it is less safe since there is 0 thread safety concerns.
 /// 
+/// Oh yeah that's what I was gonna say.
+/// 
+/// I do my edits to the list by recreating the list entirely to avoid the UI
+/// enumerating a list as it changes.
+/// 
+/// So this type is "agreed upon immutability".
+/// With ImmutableList each entry is a reference type that wraps T
+/// This is extremely expensive but presumably it has to do with
+/// safety of the type being used in various .NET scenarios.
+/// 
+/// With this type it is "unsafe" and "you can still modify it but I'm calling it immutable"
+/// But I get some optimizations out of it idk.
+/// 
 /// </summary>
 public struct ValueList<T>
 {

@@ -59,6 +59,10 @@ namespace Clair.Common.RazorLib;
 /// 
 /// Otherwise you start with Clone_Clone() then you use X_...()
 /// for many edits.
+/// 
+/// nvm use New_Clone() to get the clone then if invoking on a clone
+/// use Clone_...();
+/// New_...() gets you a clone in the process of making the edit.
 /// </summary>
 public struct ValueList<T>
 {

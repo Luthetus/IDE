@@ -112,7 +112,7 @@ public partial class CommonService
         
         _dropdownState = inState with
         {
-            DropdownList = inState.DropdownList.Clone_SetItem(indexExistingDropdown, outDropdown)
+            DropdownList = inState.DropdownList.New_SetItem(indexExistingDropdown, outDropdown)
         };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DropdownStateChanged);

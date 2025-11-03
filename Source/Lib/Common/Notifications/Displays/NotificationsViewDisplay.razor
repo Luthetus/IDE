@@ -28,27 +28,14 @@
 
     <div class="ci_web_notifications-view-body">
         @{
-            IReadOnlyList<INotification> entriesToRenderList;
-            var clearOnClick = _defaultClearAction;
-
-            switch (_chosenNotificationsViewKind)
-            {
-                case NotificationsViewKind.Notifications:
-                    entriesToRenderList = notificationState.DefaultList;
-                    clearOnClick = Clear;
-                    break;
-            	default:
-            		entriesToRenderList = Array.Empty<INotification>();
-            		break;
-            }
-
             <button class="ci_button"
-                    @onclick="clearOnClick">
+                    @onclick="_defaultClearAction">
                 Clear @_chosenNotificationsViewKind
             </button>
 
-            foreach (var entry in entriesToRenderList)
+            for (int i = 0; i < notificationState.DefaultList.Count; i++)
             {
+                var entry = notificationState.DefaultList.u_Items[i];
                 <div @key="entry.DynamicViewModelKey"
                      class="ci_web_notifications-view-body-entry">
                     

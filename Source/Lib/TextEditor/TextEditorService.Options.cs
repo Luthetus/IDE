@@ -73,8 +73,10 @@ public partial class TextEditorService
     public void HandleThemeChange()
     {
         ThemeRecord usingThemeCss = default;
-        foreach (var theme in CommonService.GetThemeState().ThemeList)
+        var themeState = CommonService.GetThemeState();
+        for (int i = 0; i < themeState.ThemeList.Count; i++)
         {
+            var theme = themeState.ThemeList.u_Items[i];
             if (theme.Key == Options_GetTextEditorOptionsState().Options.CommonOptions.ThemeKey)
             {
                 usingThemeCss = theme;
@@ -339,8 +341,10 @@ public partial class TextEditorService
         var inState = Options_GetTextEditorOptionsState();
 
         ThemeRecord matchedTheme = default;
-        foreach (var theme in CommonService.GetThemeState().ThemeList)
+        var themeState = CommonService.GetThemeState();
+        for (int i = 0; i < themeState.ThemeList.Count; i++)
         {
+            var theme = themeState.ThemeList.u_Items[i];
             if (theme.Key == themeKey)
             {
                 matchedTheme = theme;

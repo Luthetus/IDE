@@ -1,3 +1,4 @@
+using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.TextEditor.RazorLib.Cursors.Models;
 using Clair.TextEditor.RazorLib.Decorations.Models;
@@ -204,8 +205,8 @@ public sealed class TextEditorVirtualizationResult
     public bool IsValid { get; }
     public bool ShouldCalculateVirtualizationResult { get; set; }
     
-    public List<(string CssClassString, int StartInclusiveIndex, int EndExclusiveIndex)> PresentationLayerGroupList { get; set; } = new();
-    public List<string> PresentationLayerStyleList { get; set; } = new();
+    public ValueList<(string CssClassString, int StartInclusiveIndex, int EndExclusiveIndex)> PresentationLayerGroupList { get; set; } = new(capacity: 4);
+    public ValueList<string> PresentationLayerStyleList { get; set; } = new(capacity: 4);
     public int FirstPresentationLayerGroupStartInclusiveIndex { get; set; }
     public int FirstPresentationLayerGroupEndExclusiveIndex { get; set; }
     public int LastPresentationLayerGroupStartInclusiveIndex { get; set; }
@@ -830,7 +831,7 @@ public sealed class TextEditorVirtualizationResult
                      i < boundsInLineIndexUnits.LastLineToSelectDataExclusive;
                      i++)
                 {
-                    PresentationLayerStyleList.Add(PresentationGetCssStyleString(
+                    PresentationLayerStyleList.C_Add(PresentationGetCssStyleString(
                         boundsInPositionIndexUnits.StartInclusiveIndex,
                         boundsInPositionIndexUnits.EndExclusiveIndex,
                         lineIndex: i,
@@ -839,7 +840,7 @@ public sealed class TextEditorVirtualizationResult
                 }
             }
             
-            PresentationLayerGroupList.Add(
+            PresentationLayerGroupList.C_Add(
                 (
                     presentationLayer.CssClassString,
                     indexInclusiveStart,

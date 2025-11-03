@@ -264,7 +264,7 @@ public partial class CommonUiIsland : ComponentBase, IDisposable
         // and seeing the non-Func ones in the search results is triggering me lol.
         // Probably is better to leave them but I wanna see where things go ".Any()"ways.
         var firstDropdown = dropdownList.Count > 0
-            ? dropdownList[0]
+            ? dropdownList.u_Items[0]
             : default(DropdownRecord);
 
         if (firstDropdown is not null)
@@ -466,7 +466,7 @@ public partial class CommonUiIsland : ComponentBase, IDisposable
                 var dialogState = DotNetService.CommonService.GetDialogState();
                 if (_index < dialogState.DialogList.Count)
                 {
-                    var dialog = dialogState.DialogList[_index];
+                    var dialog = dialogState.DialogList.u_Items[_index];
                     await DotNetService.CommonService.JsRuntimeCommonApi.JsRuntime.InvokeVoidAsync(
                         "clairCommon.focusHtmlElementById",
                         dialog.DialogFocusPointHtmlElementId,

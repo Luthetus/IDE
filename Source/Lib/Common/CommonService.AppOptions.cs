@@ -79,8 +79,10 @@ public partial class CommonService
     private void HandleThemeChange()
     {
         ThemeRecord usingTheme = default;
-        foreach (var theme in GetThemeState().ThemeList)
+        var themeState = GetThemeState();
+        for (int i = 0; i < themeState.ThemeList.Count; i++)
         {
+            var theme = GetThemeState().ThemeList.u_Items[i];
             if (theme.Key == GetAppOptionsState().Options.ThemeKey)
             {
                 usingTheme = theme;
@@ -336,8 +338,10 @@ public partial class CommonService
         var inState = GetAppOptionsState();
 
         ThemeRecord matchedTheme = default;
-        foreach (var theme in GetThemeState().ThemeList)
+        var themeState = GetThemeState();
+        for (int i = 0; i < themeState.ThemeList.Count; i++)
         {
+            ThemeRecord theme = GetThemeState().ThemeList.u_Items[i];
             if (theme.Key == optionsJson.ThemeKey)
             {
                 matchedTheme = theme;

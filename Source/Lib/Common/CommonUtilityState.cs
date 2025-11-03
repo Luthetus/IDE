@@ -83,23 +83,14 @@ public record struct AppOptionsState(CommonOptions Options)
 /// The list provided should not be modified after passing it as a parameter.
 /// Make a shallow copy, and pass the shallow copy, if further modification of your list will be necessary.
 /// </summary>
-public record struct ThemeState(IReadOnlyList<ThemeRecord> ThemeList)
+public record struct ThemeState(ValueList<ThemeRecord> ThemeList)
 {
-    public ThemeState()
-        : this(new List<ThemeRecord>(capacity: 4)
-            {
-                // Constructor for initial capacity of 4 may or may not do something meaningful.
-                //
-                // Parameterless-construct's initial array is a static length 0 array.
-                // Then it immediately becomes 4 upon the first add.
-                //
-                CommonFacts.VisualStudioDarkThemeClone,
-                CommonFacts.VisualStudioLightThemeClone,
-                CommonFacts.DarkTheme,
-                CommonFacts.LightTheme,
-            })
+    public ThemeState() : this(new ValueList<ThemeRecord>(capacity: 4))
     {
-        
+        ThemeList = ThemeList.C_Add(CommonFacts.VisualStudioDarkThemeClone);
+        ThemeList = ThemeList.C_Add(CommonFacts.VisualStudioLightThemeClone);
+        ThemeList = ThemeList.C_Add(CommonFacts.DarkTheme);
+        ThemeList = ThemeList.C_Add(CommonFacts.LightTheme);
     }
 }
 /* End IThemeService */
@@ -124,7 +115,7 @@ public record struct ThemeState(IReadOnlyList<ThemeRecord> ThemeList)
 /// TODO: SphagettiCode - The resizing and hiding/showing is a bit scuffed. (2023-09-19)
 /// </summary>
 public record struct PanelState(
-    IReadOnlyList<Panel> PanelList,
+    List<Panel> PanelList,
     IPanelTab?  DragEventArgs_PanelTab,
     PanelGroup? DragEventArgs_PanelGroup)
 {
@@ -214,7 +205,7 @@ public record struct DialogState
     {
     }
 
-    public IReadOnlyList<IDialog> DialogList { get; init; } = Array.Empty<IDialog>();
+    public ValueList<IDialog> DialogList { get; init; } = new ValueList<IDialog>(capacity: 4);
     /// <summary>
     /// The active dialog is either:<br/><br/>
     /// -the one which has focus within it,<br/>
@@ -235,9 +226,9 @@ public record struct DialogState
 /// The list provided should not be modified after passing it as a parameter.
 /// Make a shallow copy, and pass the shallow copy, if further modification of your list will be necessary.
 /// </summary>
-public record struct NotificationState(IReadOnlyList<INotification> DefaultList)
+public record struct NotificationState(ValueList<INotification> DefaultList)
 {
-    public NotificationState() : this(Array.Empty<INotification>())
+    public NotificationState() : this(new ValueList<INotification>(capacity: 4))
     {
         
     }
@@ -249,9 +240,9 @@ public record struct NotificationState(IReadOnlyList<INotification> DefaultList)
 /// The list provided should not be modified after passing it as a parameter.
 /// Make a shallow copy, and pass the shallow copy, if further modification of your list will be necessary.
 /// </summary>
-public record struct DropdownState(IReadOnlyList<DropdownRecord> DropdownList)
+public record struct DropdownState(ValueList<DropdownRecord> DropdownList)
 {
-    public DropdownState() : this(Array.Empty<DropdownRecord>())
+    public DropdownState() : this(new ValueList<DropdownRecord>(capacity: 4))
     {
         
     }
@@ -304,9 +295,9 @@ public record struct DragState(
 /// but what if someone modifies it.
 /// have property be IReadOnlyList and private List that is the?
 /// </summary>
-public record struct TreeViewState(IReadOnlyList<TreeViewContainer> ContainerList)
+public record struct TreeViewState(ValueList<TreeViewContainer> ContainerList)
 {
-    public TreeViewState() : this(Array.Empty<TreeViewContainer>())
+    public TreeViewState() : this(new ValueList<TreeViewContainer>(capacity: 4))
     {
     }
 }

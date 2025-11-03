@@ -1,3 +1,4 @@
+using System.Text;
 using Clair.TextEditor.RazorLib.Characters.Models;
 
 namespace Clair.TextEditor.RazorLib.Lexers.Models;
@@ -83,21 +84,15 @@ public record struct TextEditorTextSpan(
         return null;
     }
     
-    public string? GetText(RichCharacter[] richCharacterList, TextEditorService? textEditorService)
+    public string? GetText(RichCharacter[] richCharacterList, TextEditorService? textEditorService, StringBuilder builder)
     {
-        /*if (StartInclusiveIndex < sourceText.Length && EndExclusiveIndex <= sourceText.Length && EndExclusiveIndex >= StartInclusiveIndex)
+        for (int i = StartInclusiveIndex; i < EndExclusiveIndex; i++)
         {
-            if (textEditorService is null)
-            {
-                return sourceText.Substring(StartInclusiveIndex, Length);
-            }
-            else
-            {
-                return textEditorService.EditContext_GetText(
-                    sourceText.AsSpan(StartInclusiveIndex, Length));
-            }
-        }*/
+            builder.Append(richCharacterList[i].Value);
+        }
         
-        return null;
+        var value = builder.ToString();
+        builder.Clear();
+        return value;
     }
 }

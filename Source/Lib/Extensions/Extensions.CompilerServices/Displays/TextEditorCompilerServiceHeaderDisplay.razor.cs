@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Clair.Common.RazorLib.Keys.Models;
 using Clair.TextEditor.RazorLib;
@@ -35,6 +36,8 @@ public partial class TextEditorCompilerServiceHeaderDisplay : ComponentBase, ITe
     private Key<TextEditorComponentData> _componentDataKeyPrevious = Key<TextEditorComponentData>.Empty;
     private TextEditorComponentData? _componentData;
     
+    private StringBuilder _builder = new();
+    
     protected override void OnInitialized()
     {
         TextEditorService.SecondaryChanged += OnTextEditorWrapperCssStateChanged;
@@ -46,7 +49,7 @@ public partial class TextEditorCompilerServiceHeaderDisplay : ComponentBase, ITe
         if (componentData?.Virtualization?.Model is null)
             return null;
     
-        return textSpan.GetText(componentData.Virtualization.Model.RichCharacterList, TextEditorService);
+        return textSpan.GetText(componentData.Virtualization.Model.RichCharacterList, TextEditorService, _builder);
     }
     
     private TextEditorVirtualizationResult GetVirtualizationResult()

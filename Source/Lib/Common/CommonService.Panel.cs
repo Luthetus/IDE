@@ -304,8 +304,9 @@ public partial class CommonService
             var dialogState = GetDialogState();
             
             IDialog? existingDialog = null;
-            foreach (var x in dialogState.DialogList)
+            for (int i = 0; i < dialogState.DialogList.Count; i++)
             {
+                var x = dialogState.DialogList.u_Items[i];
                 if (x.DynamicViewModelKey == panel.DynamicViewModelKey)
                 {
                     existingDialog = x;

@@ -48,9 +48,10 @@
     </div>
 }
 
-@foreach (var dialog in dialogList)
+@for (int i = 0; i < dialogList.Count; i++)
 {
-    <DialogDisplay @key="dialog.DynamicViewModelKey" 
+    var dialog = dialogList.u_Items[i];
+    <DialogDisplay @key="dialog.DynamicViewModelKey"
                    Dialog="dialog"/>
 }
 
@@ -72,7 +73,7 @@
 @for (int i = 0; i < notificationState.DefaultList.Count; i++)
 {
     var index = i;
-    var notification = notificationState.DefaultList[index];
+    var notification = notificationState.DefaultList.u_Items[index];
     
     <NotificationDisplay @key="notification.DynamicViewModelKey" 
                          Notification="notification"
@@ -84,9 +85,9 @@
 @if (dropdownState.DropdownList.Count > 0)
 {
     var shouldShowOutOfBoundsClickDisplay = false;
-    foreach (var x in dropdownState.DropdownList)
+    for (int i = 0; i < dropdownState.DropdownList.Count; i++)
     {
-        if (x.ShouldShowOutOfBoundsClickDisplay)
+        if (dropdownState.DropdownList.u_Items[i].ShouldShowOutOfBoundsClickDisplay)
             shouldShowOutOfBoundsClickDisplay = true;
     }
     if (shouldShowOutOfBoundsClickDisplay)
@@ -95,14 +96,14 @@
                                  OnMouseDownCallback="DROPDOWN_ClearActiveKeyList" />
     }
 }
-@foreach (var dropdown in dropdownState.DropdownList)
+@for (int i = 0; i < dropdownState.DropdownList.Count; i++)
 {
-	<DropdownDisplay @key="dropdown.Key"
-					 Dropdown="dropdown"/>
+	<DropdownDisplay @key="dropdownState.DropdownList.u_Items[i].Key"
+                     Dropdown="dropdownState.DropdownList.u_Items[i]" />
 }
 
 
-<div class="ci_tooltip-initializer"></div>
+<div class="ci_tooltip-inuzer"></div>
 @{
     var tooltipModel = DotNetService.CommonService.GetTooltipState().TooltipModel;
     
@@ -158,7 +159,7 @@
             <h2>Dialogs</h2>
             @for (int i = 0; i < dialogList.Count; i++)
             {
-                var dialog = dialogList[i];
+                var dialog = dialogList.u_Items[i];
                 
                 string cssClass;
                 

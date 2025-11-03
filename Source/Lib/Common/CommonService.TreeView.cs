@@ -12,13 +12,18 @@ public partial class CommonService
     public TreeViewState GetTreeViewState() => _treeViewState;
     
     public TreeViewContainer? GetTreeViewContainer(Key<TreeViewContainer> containerKey)    {
-        foreach (var container in _treeViewState.ContainerList)        {
+        var inState = GetTreeViewState();
+        for (int i = 0; i < inState.ContainerList.Count; i++)        {
+            var container = inState.ContainerList.u_Items[i];
             if (container.Key == containerKey)                return container;        }
         return null;    }
 
     public bool TryGetTreeViewContainer(Key<TreeViewContainer> containerKey, out TreeViewContainer? container)
     {
-        foreach (var c in GetTreeViewState().ContainerList)        {            if (c.Key == containerKey)            {                container = c;                return true;            }            }        container = null;
+        var inState = GetTreeViewState();
+        for (int i = 0; i < inState.ContainerList.Count; i++)        {
+            var c = inState.ContainerList.u_Items[i];
+            if (c.Key == containerKey)            {                container = c;                return true;            }            }        container = null;
         return false;
     }
 
@@ -45,7 +50,9 @@ public partial class CommonService
     public string TreeView_GetActiveNodeElementId(Key<TreeViewContainer> containerKey)
     {
         var inState = GetTreeViewState();        TreeViewContainer? inContainer = null;
-        foreach (var c in inState.ContainerList)        {            if (c.Key == containerKey)            {                inContainer = c;                break;            }        }
+        for (int i = 0; i < inState.ContainerList.Count; i++)        {
+            var c = inState.ContainerList.u_Items[i];
+            if (c.Key == containerKey)            {                inContainer = c;                break;            }        }
         if (inContainer is not null)
             return inContainer.ActiveNodeElementId;
         
@@ -58,7 +65,9 @@ public partial class CommonService
             throw new NotImplementedException("container.Key == Key<TreeViewContainer>.Empty; must not be true");
     
         var inState = GetTreeViewState();        TreeViewContainer? inContainer = null;
-        foreach (var c in inState.ContainerList)        {            if (c.Key == container.Key)            {                inContainer = c;                break;            }        }
+        for (int i = 0; i < inState.ContainerList.Count; i++)        {
+            var c = inState.ContainerList.u_Items[i];
+            if (c.Key == container.Key)            {                inContainer = c;                break;            }        }
 
         if (inContainer is not null)
         {
@@ -66,10 +75,10 @@ public partial class CommonService
             return;
         }
 
-        var outContainerList = new List<TreeViewContainer>(inState.ContainerList);
-        outContainerList.Add(container);
-        
-        _treeViewState = inState with { ContainerList = outContainerList };
+        _treeViewState = inState with
+        {
+            ContainerList = inState.ContainerList.New_Add(container)
+        };
         
         if (shouldFireStateChangedEvent)
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
@@ -82,7 +91,7 @@ public partial class CommonService
         var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;
@@ -94,10 +103,10 @@ public partial class CommonService
             return;
         }
         
-        var outContainerList = new List<TreeViewContainer>(inState.ContainerList);
-        outContainerList.RemoveAt(indexContainer);
-        
-        _treeViewState = inState with { ContainerList = outContainerList };
+        _treeViewState = inState with
+        {
+            ContainerList = inState.ContainerList.New_RemoveAt(indexContainer)
+        };
         
         if (shouldFireStateChangedEvent)
             CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
@@ -205,7 +214,7 @@ public partial class CommonService
         var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;
@@ -218,7 +227,7 @@ public partial class CommonService
             return;
         }
 
-        var inContainer = inState.ContainerList[indexContainer];
+        var inContainer = inState.ContainerList.u_Items[indexContainer];
 
         inContainer.ActiveNodeValueIndex = indexActiveNode;
 
@@ -240,7 +249,7 @@ public partial class CommonService
         var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;
@@ -253,15 +262,15 @@ public partial class CommonService
             return;
         }
 
-        var inContainer = inState.ContainerList[indexContainer];
+        var inContainer = inState.ContainerList.u_Items[indexContainer];
         
         var outContainer = PerformRemoveSelectedNode(inContainer, containerKey, keyOfNodeToRemove);
 
-        var outContainerList = new List<TreeViewContainer>(inState.ContainerList);
-            
-        outContainerList[indexContainer] = outContainer;
+        _treeViewState = inState with
+        {
+            ContainerList = inState.ContainerList.New_SetItem(indexContainer, outContainer)
+        };
 
-        _treeViewState = inState with { ContainerList = outContainerList };
         CommonUiStateChanged?.Invoke(CommonUiEventKind.TreeViewStateChanged);
         return;
     }
@@ -276,7 +285,7 @@ public partial class CommonService
         var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;
@@ -289,7 +298,7 @@ public partial class CommonService
             return;
         }
             
-        var inContainer = inState.ContainerList[indexContainer];
+        var inContainer = inState.ContainerList.u_Items[indexContainer];
         var activeNodeValueIndex = inContainer.ActiveNodeValueIndex;
         if (inContainer is null ||
             activeNodeValueIndex == -1 ||
@@ -330,7 +339,7 @@ public partial class CommonService
         var inState = GetTreeViewState();        var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;
@@ -343,7 +352,7 @@ public partial class CommonService
             return;
         }
 
-        var inContainer = inState.ContainerList[indexContainer];
+        var inContainer = inState.ContainerList.u_Items[indexContainer];
         if (inContainer.ActiveNodeValueIndex == -1)
         {
             return;
@@ -423,7 +432,7 @@ public partial class CommonService
         var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;
@@ -436,7 +445,7 @@ public partial class CommonService
             return;
         }
 
-        var inContainer = inState.ContainerList[indexContainer];
+        var inContainer = inState.ContainerList.u_Items[indexContainer];
         
         var activeNode = inContainer.NodeValueList[inContainer.ActiveNodeValueIndex];
         
@@ -507,7 +516,7 @@ public partial class CommonService
         var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;
@@ -520,7 +529,7 @@ public partial class CommonService
             return;
         }
         
-        var inContainer = inState.ContainerList[indexContainer];
+        var inContainer = inState.ContainerList.u_Items[indexContainer];
             
         if (inContainer.ActiveNodeValueIndex == -1)
         {
@@ -558,7 +567,7 @@ public partial class CommonService
         var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;
@@ -571,7 +580,7 @@ public partial class CommonService
             return;
         }
             
-        var inContainer = inState.ContainerList[indexContainer];
+        var inContainer = inState.ContainerList.u_Items[indexContainer];
 
         if (inContainer.NodeValueList.Count > 0)
             inContainer.ActiveNodeValueIndex = 0;
@@ -589,7 +598,7 @@ public partial class CommonService
         var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;
@@ -602,7 +611,7 @@ public partial class CommonService
             return;
         }
         
-        var inContainer = inState.ContainerList[indexContainer];
+        var inContainer = inState.ContainerList.u_Items[indexContainer];
         
         if (inContainer.IndexRootNode < 0 ||
             inContainer.IndexRootNode >= inContainer.NodeValueList.Count)

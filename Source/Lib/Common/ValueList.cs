@@ -13,7 +13,7 @@ namespace Clair.Common.RazorLib;
 ///
 /// When dealing with non-storage and non-dependency scenarios
 /// your List will be collected eventually so just use a List.
-/// (allocating a loop within a for loop isn't usually a great idea either
+/// (allocating a list within a for loop isn't usually a great idea either
 ///  but hopefully the purpose of this type is getting portrayed well enough...
 ///  I have a bunch of lists just sitting in dependency injection
 ///  and I want these lists to not carry as much overhead).
@@ -30,6 +30,13 @@ namespace Clair.Common.RazorLib;
 /// - Presume that any modifications to this are done in a thread safe context.
 ///     - This opens the possibility for some optimizations
 /// - 
+/// 
+/// This type is NOT thread safe.
+/// I mentioned about storing a List in dependency injection being one my reasons for this.
+/// A List is a reference type that then contains an array, i.e.: another reference type.
+/// The core of my app can have nearly half the allocations if it stores the "List" as a value type.
+/// This optimization becomes increasingly overly optimized as you try to extend the use of it.
+/// As well, it is less safe since there is 0 thread safety concerns.
 /// 
 /// </summary>
 public struct ValueList<T>

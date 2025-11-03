@@ -1018,7 +1018,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         for (; i >= 0; i--)
         {
             character = virtualizationResult.Model.GetCharacter(i);
-            Console.WriteLine(character);
             
             switch (character)
             {

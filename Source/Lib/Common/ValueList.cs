@@ -69,14 +69,15 @@ public struct ValueList<T>
     public ValueList(int capacity)
     {
         Capacity = capacity;
-        UNSAFE_Items = new T[Capacity];
+        u_Items = new T[Capacity];
     }
 
     /// <summary>
-    /// 'UNSAFE_Items.Length' gives the capacity of the ValueList and thus
-    /// you cannot foreach 'UNSAFE_Items.Length' directly or you'll get back default values.
+    /// The 'u_' stands for unsafe.
+    /// 'u_Items.Length' gives the capacity of the ValueList and thus
+    /// you cannot foreach 'u_Items.Length' directly or you'll get back default values.
     /// </summary>
-    public T[] UNSAFE_Items { get; }
+    public T[] u_Items { get; }
 
     public int Capacity { get; set; }
     public int Count { get; set; }
@@ -84,7 +85,7 @@ public struct ValueList<T>
     public ValueList<T> New_Clone()
     {
         var output = new ValueList<T>(Capacity);
-        Array.Copy(UNSAFE_Items, output.UNSAFE_Items, Count);
+        Array.Copy(u_Items, output.u_Items, Count);
         return output;
     }
 
@@ -109,7 +110,7 @@ public struct ValueList<T>
         else
             output = this;
 
-        output.UNSAFE_Items[output.Count++] = item;
+        output.u_Items[output.Count++] = item;
         return output;
     }
     
@@ -137,15 +138,15 @@ public struct ValueList<T>
 
         if (indexToInsert != 0)
         {
-            Array.Copy(UNSAFE_Items, output.UNSAFE_Items, length: indexToInsert);
+            Array.Copy(u_Items, output.u_Items, length: indexToInsert);
         }
 
         if (Count != indexToInsert)
         {
-            Array.Copy(UNSAFE_Items, indexToInsert, output.UNSAFE_Items, indexToInsert + 1, Count - indexToInsert);
+            Array.Copy(u_Items, indexToInsert, output.u_Items, indexToInsert + 1, Count - indexToInsert);
         }
 
-        output.UNSAFE_Items[indexToInsert] = item;
+        output.u_Items[indexToInsert] = item;
         ++output.Count;
         return output;
     }
@@ -156,13 +157,13 @@ public struct ValueList<T>
     {
         var output = new ValueList<T>(Capacity);
         output.Count = Count;
-        Array.Copy(UNSAFE_Items, output.UNSAFE_Items, length: index);
-        Array.Copy(UNSAFE_Items, index + 1, output.UNSAFE_Items, index, Count - index);
+        Array.Copy(u_Items, output.u_Items, length: index);
+        Array.Copy(u_Items, index + 1, output.u_Items, index, Count - index);
         output.Count--;
         
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
-            output.UNSAFE_Items[output.Count] = default!;
+            output.u_Items[output.Count] = default!;
         }
 
         return output;
@@ -171,7 +172,7 @@ public struct ValueList<T>
     public ValueList<T> New_SetItem(int index, T item)
     {
         var output = New_Clone();
-        output.UNSAFE_Items[index] = item;
+        output.u_Items[index] = item;
         return output;
     }
 
@@ -196,7 +197,7 @@ public struct ValueList<T>
         else
             output = this;
 
-        output.UNSAFE_Items[output.Count++] = item;
+        output.u_Items[output.Count++] = item;
         return output;
     }
 
@@ -224,15 +225,15 @@ public struct ValueList<T>
 
         if (indexToInsert != 0)
         {
-            Array.Copy(UNSAFE_Items, output.UNSAFE_Items, length: indexToInsert);
+            Array.Copy(u_Items, output.u_Items, length: indexToInsert);
         }
 
         if (Count != indexToInsert)
         {
-            Array.Copy(UNSAFE_Items, indexToInsert, output.UNSAFE_Items, indexToInsert + 1, Count - indexToInsert);
+            Array.Copy(u_Items, indexToInsert, output.u_Items, indexToInsert + 1, Count - indexToInsert);
         }
 
-        output.UNSAFE_Items[indexToInsert] = item;
+        output.u_Items[indexToInsert] = item;
         ++output.Count;
         return output;
     }
@@ -243,13 +244,13 @@ public struct ValueList<T>
     {
         var output = new ValueList<T>(Capacity);
         output.Count = Count;
-        Array.Copy(UNSAFE_Items, output.UNSAFE_Items, length: index);
-        Array.Copy(UNSAFE_Items, index + 1, output.UNSAFE_Items, index, Count - index);
+        Array.Copy(u_Items, output.u_Items, length: index);
+        Array.Copy(u_Items, index + 1, output.u_Items, index, Count - index);
         output.Count--;
 
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
-            output.UNSAFE_Items[output.Count] = default!;
+            output.u_Items[output.Count] = default!;
         }
 
         return output;
@@ -257,7 +258,7 @@ public struct ValueList<T>
 
     public ValueList<T> xClone_SetItem(int index, T item)
     {
-        UNSAFE_Items[index] = item;
+        u_Items[index] = item;
         return this;
     }
 }

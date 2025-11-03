@@ -72,7 +72,7 @@
 @for (int i = 0; i < notificationState.DefaultList.Count; i++)
 {
     var index = i;
-    var notification = notificationState.DefaultList.UNSAFE_Items[index];
+    var notification = notificationState.DefaultList.u_Items[index];
     
     <NotificationDisplay @key="notification.DynamicViewModelKey" 
                          Notification="notification"
@@ -84,10 +84,9 @@
 @if (dropdownState.DropdownList.Count > 0)
 {
     var shouldShowOutOfBoundsClickDisplay = false;
-    for (var i = 0; i < dropdownState.DropdownList.Count; i++)
+    foreach (var x in dropdownState.DropdownList.UNSAFE_Items)
     {
-        var x = dropdownState.DropdownList.UNSAFE_Items[i];
-        if (x.ShouldShowOutOfBoundsClickDisplay)
+        if (x.ShouldShowOutOfBoundsClickDisu
             shouldShowOutOfBoundsClickDisplay = true;
     }
     if (shouldShowOutOfBoundsClickDisplay)
@@ -96,15 +95,14 @@
                                  OnMouseDownCallback="DROPDOWN_ClearActiveKeyList" />
     }
 }
-@for (var i = 0; i < dropdownState.DropdownList.Count; i++)
+@foreach (var dropdown in dropdownState.DropdownList.UNSAFE_Items)
 {
-    var dropdown = dropdownState.DropdownList.UNSAFE_Items[i];
 	<DropdownDisplay @key="dropdown.Key"
 					 Dropdown="dropdown"/>
 }
 
 
-<div class="ci_tooltip-initializer"></div>
+<div class="ci_tooltip-inuzer"></div>
 @{
     var tooltipModel = DotNetService.CommonService.GetTooltipState().TooltipModel;
     

@@ -82,7 +82,7 @@ public partial class CommonService
         var indexContainer = -1;
         for (int i = 0; i < inState.ContainerList.Count; i++)
         {
-            if (inState.ContainerList[i].Key == containerKey)
+            if (inState.ContainerList.u_Items[i].Key == containerKey)
             {
                 indexContainer = i;
                 break;

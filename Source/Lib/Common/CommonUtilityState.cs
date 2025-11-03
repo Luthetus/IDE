@@ -304,9 +304,9 @@ public record struct DragState(
 /// but what if someone modifies it.
 /// have property be IReadOnlyList and private List that is the?
 /// </summary>
-public record struct TreeViewState(IReadOnlyList<TreeViewContainer> ContainerList)
+public record struct TreeViewState(ValueList<TreeViewContainer> ContainerList)
 {
-    public TreeViewState() : this(Array.Empty<TreeViewContainer>())
+    public TreeViewState() : this(new ValueList<TreeViewContainer>(capacity: 4))
     {
     }
 }

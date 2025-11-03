@@ -29,7 +29,7 @@ public partial class CommonService
             var indexNotification = -1;
             for (int i = 0; i < _notificationState.DefaultList.Count; i++)
             {
-                if (_notificationState.DefaultList.UNSAFE_Items[i].DynamicViewModelKey == key)
+                if (_notificationState.DefaultList.u_Items[i].DynamicViewModelKey == key)
                 {
                     indexNotification = i;
                     break;

@@ -264,7 +264,7 @@ public partial class CommonUiIsland : ComponentBase, IDisposable
         // and seeing the non-Func ones in the search results is triggering me lol.
         // Probably is better to leave them but I wanna see where things go ".Any()"ways.
         var firstDropdown = dropdownList.Count > 0
-            ? dropdownList.UNSAFE_Items[0]
+            ? dropdownList.u_Items[0]
             : default(DropdownRecord);
 
         if (firstDropdown is not null)

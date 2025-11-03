@@ -16,7 +16,7 @@ public partial class CommonService
         var indexExistingDropdown = -1;
         for (int i = 0; i < inState.DropdownList.Count; i++)
         {
-            if (inState.DropdownList.UNSAFE_Items[i].Key == dropdown.Key)
+            if (inState.DropdownList.u_Items[i].Key == dropdown.Key)
             {
                 indexExistingDropdown = i;
                 break;
@@ -45,7 +45,7 @@ public partial class CommonService
         var indexExistingDropdown = -1;
         for (int i = 0; i < inState.DropdownList.Count; i++)
         {
-            if (inState.DropdownList.UNSAFE_Items[i].Key == key)
+            if (inState.DropdownList.u_Items[i].Key == key)
             {
                 indexExistingDropdown = i;
                 break;
@@ -87,7 +87,7 @@ public partial class CommonService
         var indexExistingDropdown = -1;
         for (int i = 0; i < inState.DropdownList.Count; i++)
         {
-            if (inState.DropdownList.UNSAFE_Items[i].Key == dropdown.Key)
+            if (inState.DropdownList.u_Items[i].Key == dropdown.Key)
             {
                 indexExistingDropdown = i;
                 break;
@@ -100,7 +100,7 @@ public partial class CommonService
             return;
         }
         
-        var inDropdown = inState.DropdownList.UNSAFE_Items[indexExistingDropdown];
+        var inDropdown = inState.DropdownList.u_Items[indexExistingDropdown];
 
         var outDropdown = inDropdown with
         {

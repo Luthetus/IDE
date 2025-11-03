@@ -235,9 +235,9 @@ public record struct DialogState
 /// The list provided should not be modified after passing it as a parameter.
 /// Make a shallow copy, and pass the shallow copy, if further modification of your list will be necessary.
 /// </summary>
-public record struct NotificationState(NotificationValueList DefaultList)
+public record struct NotificationState(ValueList<INotification> DefaultList)
 {
-    public NotificationState() : this(new NotificationValueList(capacity: 4))
+    public NotificationState() : this(new ValueList<INotification>(capacity: 4))
     {
         
     }

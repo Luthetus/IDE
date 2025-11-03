@@ -13,6 +13,11 @@ namespace Clair.Common.RazorLib;
 ///
 /// When dealing with non-storage and non-dependency scenarios
 /// your List will be collected eventually so just use a List.
+/// (allocating a loop within a for loop isn't usually a great idea either
+///  but hopefully the purpose of this type is getting portrayed well enough...
+///  I have a bunch of lists just sitting in dependency injection
+///  and I want these lists to not carry as much overhead).
+///  
 ///
 /// As for making this a generic, I probably will
 /// but for the first attempt I don't wanna bother with any of that.
@@ -27,15 +32,15 @@ namespace Clair.Common.RazorLib;
 /// - 
 /// 
 /// </summary>
-public struct NotificationValueList
+public struct ValueList<T>
 {
-    public NotificationValueList(int capacity)
+    public ValueList(int capacity)
     {
         Capacity = capacity;
-        Items = new INotification[Capacity];
+        Items = new T[Capacity];
     }
     
-    public INotification[] Items { get; }
+    public T[] Items { get; }
 
     public int Capacity { get; set; }
     public int Count { get; set; }
@@ -45,7 +50,7 @@ public struct NotificationValueList
     // before adding the new element.
     //
     // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public NotificationValueList Add(INotification item)
+    public ValueList<T> Add(T item)
     {
         // There's some code in List to account for multithreading that creates local copies of things.
         // There's also code that accounts for method inlining and uncommon paths.
@@ -58,14 +63,14 @@ public struct NotificationValueList
         
         if (Count == Capacity)
         {
-            output = new NotificationValueList(Capacity * 2);
+            output = new ValueList<T>(Capacity * 2);
         }
         
         output.Items[output.Count++] = item;
         return output;
     }
     
-    public NotificationValueList Insert(int indexToInsert, INotification item)
+    public ValueList<T> Insert(int indexToInsert, T item)
     {
         // There's some code in List to account for multithreading that creates local copies of things.
         // There's also code that accounts for method inlining and uncommon paths.
@@ -74,16 +79,16 @@ public struct NotificationValueList
         // I just want my long living objects to carry the least amount of overhead as possible
         // while passively sitting in the heap.
 
-        NotificationValueList output;
+        ValueList<T> output;
 
         if (Count == Capacity)
         {
-            output = new NotificationValueList(Capacity * 2);
+            output = new ValueList<T>(Capacity * 2);
             output.Count = Count;
         }
         else
         {
-            output = new NotificationValueList(Capacity);
+            output = new ValueList<T>(Capacity);
             output.Count = Count;
         }
 
@@ -104,14 +109,19 @@ public struct NotificationValueList
 
     // Removes the element at the given index. The size of the list is
     // decreased by one.
-    public NotificationValueList RemoveAt(int index)
+    public ValueList<T> RemoveAt(int index)
     {
-        var output = new NotificationValueList(Capacity);
+        var output = new ValueList<T>(Capacity);
         output.Count = Count;
         Array.Copy(Items, output.Items, length: index);
         Array.Copy(Items, index + 1, output.Items, index, Count - index);
         output.Count--;
-        output.Items[output.Count] = default!;
+        
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            output.Items[output.Count] = default!;
+        }
+
         return output;
     }
 }

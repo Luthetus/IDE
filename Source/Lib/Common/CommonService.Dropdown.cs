@@ -31,7 +31,7 @@ public partial class CommonService
 
         _dropdownState = inState with
         {
-            DropdownList = inState.DropdownList.Add(dropdown)
+            DropdownList = inState.DropdownList.Clone_Add(dropdown)
         };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DropdownStateChanged);
@@ -60,7 +60,7 @@ public partial class CommonService
             
         _dropdownState = inState with
         {
-            DropdownList = inState.DropdownList.RemoveAt(indexExistingDropdown)
+            DropdownList = inState.DropdownList.Clone_RemoveAt(indexExistingDropdown)
         };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DropdownStateChanged);
@@ -110,12 +110,9 @@ public partial class CommonService
             Top = dropdown.Top
         };
         
-        var outDropdownList = new List<DropdownRecord>(inState.DropdownList);
-        outDropdownList[indexExistingDropdown] = outDropdown;
-
         _dropdownState = inState with
         {
-            DropdownList = outDropdownList
+            DropdownList = inState.DropdownList.Clone_SetItem(indexExistingDropdown, outDropdown)
         };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DropdownStateChanged);

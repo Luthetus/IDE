@@ -73,7 +73,7 @@ public struct ValueList<T>
     public int Capacity { get; set; }
     public int Count { get; set; }
 
-    public ValueList<T> Clone_Clone()
+    public ValueList<T> New_Clone()
     {
         var output = new ValueList<T>(Capacity);
         Array.Copy(Items, output.Items, Count);
@@ -85,7 +85,7 @@ public struct ValueList<T>
     // before adding the new element.
     //
     // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ValueList<T> Clone_Add(T item)
+    public ValueList<T> New_Add(T item)
     {
         // There's some code in List to account for multithreading that creates local copies of things.
         // There's also code that accounts for method inlining and uncommon paths.
@@ -105,6 +105,91 @@ public struct ValueList<T>
         return output;
     }
     
+    public ValueList<T> New_Insert(int indexToInsert, T item)
+    {
+        // There's some code in List to account for multithreading that creates local copies of things.
+        // There's also code that accounts for method inlining and uncommon paths.
+        // I'm not worried about either of these.
+        //
+        // I just want my long living objects to carry the least amount of overhead as possible
+        // while passively sitting in the heap.
+
+        ValueList<T> output;
+
+        if (Count == Capacity)
+        {
+            output = new ValueList<T>(Capacity * 2);
+            output.Count = Count;
+        }
+        else
+        {
+            output = new ValueList<T>(Capacity);
+            output.Count = Count;
+        }
+
+        if (indexToInsert != 0)
+        {
+            Array.Copy(Items, output.Items, length: indexToInsert);
+        }
+
+        if (Count != indexToInsert)
+        {
+            Array.Copy(Items, indexToInsert, output.Items, indexToInsert + 1, Count - indexToInsert);
+        }
+
+        output.Items[indexToInsert] = item;
+        ++output.Count;
+        return output;
+    }
+
+    // Removes the element at the given index. The size of the list is
+    // decreased by one.
+    public ValueList<T> New_RemoveAt(int index)
+    {
+        var output = new ValueList<T>(Capacity);
+        output.Count = Count;
+        Array.Copy(Items, output.Items, length: index);
+        Array.Copy(Items, index + 1, output.Items, index, Count - index);
+        output.Count--;
+        
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            output.Items[output.Count] = default!;
+        }
+
+        return output;
+    }
+
+    public ValueList<T> New_SetItem(int index, T item)
+    {
+
+    }
+
+    // Adds the given object to the end of this list. The size of the list is
+    // increased by one. If required, the capacity of the list is doubled
+    // before adding the new element.
+    //
+    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ValueList<T> Clone_Add(T item)
+    {
+        // There's some code in List to account for multithreading that creates local copies of things.
+        // There's also code that accounts for method inlining and uncommon paths.
+        // I'm not worried about either of these.
+        //
+        // I just want my long living objects to carry the least amount of overhead as possible
+        // while passively sitting in the heap.
+
+        ValueList<T> output;
+
+        if (Count == Capacity)
+            output = new ValueList<T>(Capacity * 2);
+        else
+            output = this;
+
+        output.Items[output.Count++] = item;
+        return output;
+    }
+
     public ValueList<T> Clone_Insert(int indexToInsert, T item)
     {
         // There's some code in List to account for multithreading that creates local copies of things.
@@ -151,91 +236,6 @@ public struct ValueList<T>
         Array.Copy(Items, output.Items, length: index);
         Array.Copy(Items, index + 1, output.Items, index, Count - index);
         output.Count--;
-        
-        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-        {
-            output.Items[output.Count] = default!;
-        }
-
-        return output;
-    }
-
-    public ValueList<T> Clone_SetItem(int index)
-    {
-
-    }
-
-    // Adds the given object to the end of this list. The size of the list is
-    // increased by one. If required, the capacity of the list is doubled
-    // before adding the new element.
-    //
-    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ValueList<T> X_Add(T item)
-    {
-        // There's some code in List to account for multithreading that creates local copies of things.
-        // There's also code that accounts for method inlining and uncommon paths.
-        // I'm not worried about either of these.
-        //
-        // I just want my long living objects to carry the least amount of overhead as possible
-        // while passively sitting in the heap.
-
-        ValueList<T> output;
-
-        if (Count == Capacity)
-            output = new ValueList<T>(Capacity * 2);
-        else
-            output = this;
-
-        output.Items[output.Count++] = item;
-        return output;
-    }
-
-    public ValueList<T> X_Insert(int indexToInsert, T item)
-    {
-        // There's some code in List to account for multithreading that creates local copies of things.
-        // There's also code that accounts for method inlining and uncommon paths.
-        // I'm not worried about either of these.
-        //
-        // I just want my long living objects to carry the least amount of overhead as possible
-        // while passively sitting in the heap.
-
-        ValueList<T> output;
-
-        if (Count == Capacity)
-        {
-            output = new ValueList<T>(Capacity * 2);
-            output.Count = Count;
-        }
-        else
-        {
-            output = new ValueList<T>(Capacity);
-            output.Count = Count;
-        }
-
-        if (indexToInsert != 0)
-        {
-            Array.Copy(Items, output.Items, length: indexToInsert);
-        }
-
-        if (Count != indexToInsert)
-        {
-            Array.Copy(Items, indexToInsert, output.Items, indexToInsert + 1, Count - indexToInsert);
-        }
-
-        output.Items[indexToInsert] = item;
-        ++output.Count;
-        return output;
-    }
-
-    // Removes the element at the given index. The size of the list is
-    // decreased by one.
-    public ValueList<T> X_RemoveAt(int index)
-    {
-        var output = new ValueList<T>(Capacity);
-        output.Count = Count;
-        Array.Copy(Items, output.Items, length: index);
-        Array.Copy(Items, index + 1, output.Items, index, Count - index);
-        output.Count--;
 
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
@@ -245,7 +245,7 @@ public struct ValueList<T>
         return output;
     }
 
-    public ValueList<T> X_SetItem(int index)
+    public ValueList<T> Clone_SetItem(int index, T item)
     {
 
     }

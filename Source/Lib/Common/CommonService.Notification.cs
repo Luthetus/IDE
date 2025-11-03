@@ -15,7 +15,7 @@ public partial class CommonService
         {
             _notificationState = _notificationState with
             {
-                DefaultList = _notificationState.DefaultList.Add(notification)
+                DefaultList = _notificationState.DefaultList.Clone_Add(notification)
             };
         }
         
@@ -40,7 +40,7 @@ public partial class CommonService
             {
                 _notificationState = _notificationState with
                 {
-                    DefaultList = _notificationState.DefaultList.RemoveAt(indexNotification)
+                    DefaultList = _notificationState.DefaultList.Clone_RemoveAt(indexNotification)
                 };
             }
         }

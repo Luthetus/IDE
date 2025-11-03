@@ -15,7 +15,7 @@ public partial class CommonService
         {
             _notificationState = _notificationState with
             {
-                DefaultList = _notificationState.DefaultList.Clone_Add(notification)
+                DefaultList = _notificationState.DefaultList.New_Add(notification)
             };
         }
         
@@ -29,7 +29,7 @@ public partial class CommonService
             var indexNotification = -1;
             for (int i = 0; i < _notificationState.DefaultList.Count; i++)
             {
-                if (_notificationState.DefaultList.Items[i].DynamicViewModelKey == key)
+                if (_notificationState.DefaultList.UNSAFE_Items[i].DynamicViewModelKey == key)
                 {
                     indexNotification = i;
                     break;
@@ -40,7 +40,7 @@ public partial class CommonService
             {
                 _notificationState = _notificationState with
                 {
-                    DefaultList = _notificationState.DefaultList.Clone_RemoveAt(indexNotification)
+                    DefaultList = _notificationState.DefaultList.New_RemoveAt(indexNotification)
                 };
             }
         }

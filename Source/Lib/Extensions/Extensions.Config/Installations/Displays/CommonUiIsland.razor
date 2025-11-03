@@ -72,7 +72,7 @@
 @for (int i = 0; i < notificationState.DefaultList.Count; i++)
 {
     var index = i;
-    var notification = notificationState.DefaultList.Items[index];
+    var notification = notificationState.DefaultList.UNSAFE_Items[index];
     
     <NotificationDisplay @key="notification.DynamicViewModelKey" 
                          Notification="notification"
@@ -84,8 +84,9 @@
 @if (dropdownState.DropdownList.Count > 0)
 {
     var shouldShowOutOfBoundsClickDisplay = false;
-    foreach (var x in dropdownState.DropdownList)
+    for (var i = 0; i < dropdownState.DropdownList.Count; i++)
     {
+        var x = dropdownState.DropdownList.UNSAFE_Items[i];
         if (x.ShouldShowOutOfBoundsClickDisplay)
             shouldShowOutOfBoundsClickDisplay = true;
     }
@@ -95,8 +96,9 @@
                                  OnMouseDownCallback="DROPDOWN_ClearActiveKeyList" />
     }
 }
-@foreach (var dropdown in dropdownState.DropdownList)
+@for (var i = 0; i < dropdownState.DropdownList.Count; i++)
 {
+    var dropdown = dropdownState.DropdownList.UNSAFE_Items[i];
 	<DropdownDisplay @key="dropdown.Key"
 					 Dropdown="dropdown"/>
 }

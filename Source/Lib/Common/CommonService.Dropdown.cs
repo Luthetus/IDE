@@ -16,7 +16,7 @@ public partial class CommonService
         var indexExistingDropdown = -1;
         for (int i = 0; i < inState.DropdownList.Count; i++)
         {
-            if (inState.DropdownList.Items[i].Key == dropdown.Key)
+            if (inState.DropdownList.UNSAFE_Items[i].Key == dropdown.Key)
             {
                 indexExistingDropdown = i;
                 break;
@@ -31,7 +31,7 @@ public partial class CommonService
 
         _dropdownState = inState with
         {
-            DropdownList = inState.DropdownList.Clone_Add(dropdown)
+            DropdownList = inState.DropdownList.New_Add(dropdown)
         };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DropdownStateChanged);
@@ -45,7 +45,7 @@ public partial class CommonService
         var indexExistingDropdown = -1;
         for (int i = 0; i < inState.DropdownList.Count; i++)
         {
-            if (inState.DropdownList.Items[i].Key == key)
+            if (inState.DropdownList.UNSAFE_Items[i].Key == key)
             {
                 indexExistingDropdown = i;
                 break;
@@ -60,7 +60,7 @@ public partial class CommonService
             
         _dropdownState = inState with
         {
-            DropdownList = inState.DropdownList.Clone_RemoveAt(indexExistingDropdown)
+            DropdownList = inState.DropdownList.New_RemoveAt(indexExistingDropdown)
         };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DropdownStateChanged);
@@ -87,7 +87,7 @@ public partial class CommonService
         var indexExistingDropdown = -1;
         for (int i = 0; i < inState.DropdownList.Count; i++)
         {
-            if (inState.DropdownList.Items[i].Key == dropdown.Key)
+            if (inState.DropdownList.UNSAFE_Items[i].Key == dropdown.Key)
             {
                 indexExistingDropdown = i;
                 break;
@@ -100,7 +100,7 @@ public partial class CommonService
             return;
         }
         
-        var inDropdown = inState.DropdownList.Items[indexExistingDropdown];
+        var inDropdown = inState.DropdownList.UNSAFE_Items[indexExistingDropdown];
 
         var outDropdown = inDropdown with
         {

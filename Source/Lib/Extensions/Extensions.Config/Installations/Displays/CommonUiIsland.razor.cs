@@ -466,7 +466,7 @@ public partial class CommonUiIsland : ComponentBase, IDisposable
                 var dialogState = DotNetService.CommonService.GetDialogState();
                 if (_index < dialogState.DialogList.Count)
                 {
-                    var dialog = dialogState.DialogList[_index];
+                    var dialog = dialogState.DialogList.u_Items[_index];
                     await DotNetService.CommonService.JsRuntimeCommonApi.JsRuntime.InvokeVoidAsync(
                         "clairCommon.focusHtmlElementById",
                         dialog.DialogFocusPointHtmlElementId,

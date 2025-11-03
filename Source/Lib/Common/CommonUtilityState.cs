@@ -205,7 +205,7 @@ public record struct DialogState
     {
     }
 
-    public IReadOnlyList<IDialog> DialogList { get; init; } = Array.Empty<IDialog>();
+    public ValueList<IDialog> DialogList { get; init; } = new ValueList<IDialog>(capacity: 4);
     /// <summary>
     /// The active dialog is either:<br/><br/>
     /// -the one which has focus within it,<br/>

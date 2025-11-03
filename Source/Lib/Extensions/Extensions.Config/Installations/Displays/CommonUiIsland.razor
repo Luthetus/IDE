@@ -48,8 +48,9 @@
     </div>
 }
 
-@foreach (var dialog in dialogList)
+@for (int i = 0; i < dialogList.Count; i++)
 {
+    var dialog = dialogList.u_Items[i];
     <DialogDisplay @key="dialog.DynamicViewModelKey"
                    Dialog="dialog"/>
 }
@@ -158,7 +159,7 @@
             <h2>Dialogs</h2>
             @for (int i = 0; i < dialogList.Count; i++)
             {
-                var dialog = dialogList[i];
+                var dialog = dialogList.u_Items[i];
                 
                 string cssClass;
                 

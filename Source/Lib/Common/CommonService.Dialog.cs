@@ -16,9 +16,10 @@ public partial class CommonService
     public void Dialog_ReduceRegisterAction(IDialog dialog)
     {
         var inState = GetDialogState();
-        
-        foreach (var x in inState.DialogList)
+
+        for (int i = 0; i < inState.DialogList.Count; i++)
         {
+            var x = inState.DialogList.u_Items[i];
             if (x.DynamicViewModelKey == dialog.DynamicViewModelKey)
             {
                 _ = Task.Run(async () =>
@@ -31,12 +32,9 @@ public partial class CommonService
             }
         }
 
-        var outDialogList = new List<IDialog>(inState.DialogList);
-        outDialogList.Add(dialog);
-
         _dialogState = inState with 
         {
-            DialogList = outDialogList,
+            DialogList = inState.DialogList.New_Add(dialog),
             ActiveDialogKey = dialog.DynamicViewModelKey,
         };
         
@@ -53,7 +51,7 @@ public partial class CommonService
         var indexDialog = -1;
         for (int i = 0; i < inState.DialogList.Count; i++)
         {
-            if (inState.DialogList[i].DynamicViewModelKey == dynamicViewModelKey)
+            if (inState.DialogList.u_Items[i].DynamicViewModelKey == dynamicViewModelKey)
             {
                 indexDialog = i;
                 break;
@@ -66,13 +64,11 @@ public partial class CommonService
             return;
         }
             
-        var inDialog = inState.DialogList[indexDialog];
-
-        var outDialogList = new List<IDialog>(inState.DialogList);
-        
-        outDialogList[indexDialog] = inDialog.SetDialogIsMaximized(isMaximized);
-
-        _dialogState = inState with { DialogList = outDialogList };
+        var inDialog = inState.DialogList.u_Items[indexDialog];
+        _dialogState = inState with
+        {
+            DialogList = inState.DialogList.New_SetItem(indexDialog, inDialog.SetDialogIsMaximized(isMaximized))
+        };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DialogStateChanged);
         return;
@@ -95,7 +91,7 @@ public partial class CommonService
         var indexDialog = -1;
         for (int i = 0; i < inState.DialogList.Count; i++)
         {
-            if (inState.DialogList[i].DynamicViewModelKey == dynamicViewModelKey)
+            if (inState.DialogList.u_Items[i].DynamicViewModelKey == dynamicViewModelKey)
             {
                 indexDialog = i;
                 break;
@@ -108,12 +104,10 @@ public partial class CommonService
             return;
         }
 
-        var inDialog = inState.DialogList[indexDialog];
-
-        var outDialogList = new List<IDialog>(inState.DialogList);
-        outDialogList.RemoveAt(indexDialog);
-
-        _dialogState = inState with { DialogList = outDialogList };
+        _dialogState = inState with
+        {
+            DialogList = inState.DialogList.New_RemoveAt(indexDialog)
+        };
         
         CommonUiStateChanged?.Invoke(CommonUiEventKind.DialogStateChanged);
         return;

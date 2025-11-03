@@ -54,6 +54,11 @@ namespace Clair.Common.RazorLib;
 /// This is my third attempt at saying what I was originally trying to say for my second point...
 /// I edit the lists within a thread safe context, thus the collection itself "inherits" thread safety.
 /// 
+/// If you're only doing a single edit to the array, then the Clone_...() methods
+/// can optimize for this.
+/// 
+/// Otherwise you start with Clone_Clone() then you use X_...()
+/// for many edits.
 /// </summary>
 public struct ValueList<T>
 {

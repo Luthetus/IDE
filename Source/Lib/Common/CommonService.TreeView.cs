@@ -50,7 +50,7 @@ public partial class CommonService
     public string TreeView_GetActiveNodeElementId(Key<TreeViewContainer> containerKey)
     {
         var inState = GetTreeViewState();        TreeViewContainer? inContainer = null;
-        for (int i = 0; i < inState.ContainerList.u_Items.Length; i++)        {
+        for (int i = 0; i < inState.ContainerList.Count; i++)        {
             var c = inState.ContainerList.u_Items[i];
             if (c.Key == containerKey)            {                inContainer = c;                break;            }        }
         if (inContainer is not null)
@@ -65,7 +65,7 @@ public partial class CommonService
             throw new NotImplementedException("container.Key == Key<TreeViewContainer>.Empty; must not be true");
     
         var inState = GetTreeViewState();        TreeViewContainer? inContainer = null;
-        for (int i = 0; i < inState.ContainerList.u_Items.Length; i++)        {
+        for (int i = 0; i < inState.ContainerList.Count; i++)        {
             var c = inState.ContainerList.u_Items[i];
             if (c.Key == container.Key)            {                inContainer = c;                break;            }        }
 

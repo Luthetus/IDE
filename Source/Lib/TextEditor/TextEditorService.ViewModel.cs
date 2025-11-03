@@ -772,7 +772,9 @@ public partial class TextEditorService
 
         viewModel.Virtualization = new TextEditorVirtualizationResult(
             virtualizedLineList,
-            new List<TextEditorVirtualizationSpan>(capacity: viewModel.Virtualization.VirtualizationSpanList.Count),
+            new ValueList<TextEditorVirtualizationSpan>(capacity: viewModel.Virtualization.VirtualizationSpanList.Count > 0
+                ? viewModel.Virtualization.VirtualizationSpanList.Count
+                : 4),
             resultWidth: (int)Math.Ceiling(horizontalTake * viewModel.PersistentState.CharAndLineMeasurements.CharacterWidth),
             resultHeight: verticalTake * viewModel.PersistentState.CharAndLineMeasurements.LineHeight,
             left: (int)(horizontalStartingIndex * viewModel.PersistentState.CharAndLineMeasurements.CharacterWidth),
@@ -833,7 +835,7 @@ public partial class TextEditorService
 
         int lineOffset = -1;
 
-        var entireSpan = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(componentData.LineIndexCache.VirtualizationSpanList);
+        var entireSpan = new Span<TextEditorVirtualizationSpan>(componentData.LineIndexCache.VirtualizationSpanList.u_Items);
 
         int position_StartInclusiveIndex;
         int position_EndExclusiveIndex;
@@ -868,7 +870,7 @@ public partial class TextEditorService
                     componentData.LineIndexCache.Map[lineIndex].VirtualizationSpan_EndExclusiveIndex - componentData.LineIndexCache.Map[lineIndex].VirtualizationSpan_StartInclusiveIndex);
                 foreach (var virtualizedSpan in smallSpan)
                 {
-                    viewModel.Virtualization.VirtualizationSpanList.Add(virtualizedSpan);
+                    viewModel.Virtualization.VirtualizationSpanList = viewModel.Virtualization.VirtualizationSpanList.C_Add(virtualizedSpan);
                 }
                 cacheEntryCopy.VirtualizationSpan_EndExclusiveIndex = viewModel.Virtualization.VirtualizationSpanList.Count;
 
@@ -1102,7 +1104,7 @@ public partial class TextEditorService
                     }
                     else
                     {
-                        viewModel.Virtualization.VirtualizationSpanList.Add(new TextEditorVirtualizationSpan(
+                        viewModel.Virtualization.VirtualizationSpanList = viewModel.Virtualization.VirtualizationSpanList.C_Add(new TextEditorVirtualizationSpan(
                             cssClass: modelModifier.PersistentState.DecorationMapper.Map(currentDecorationByte),
                             text: __StringBuilder.ToString()));
                         __StringBuilder.Clear();
@@ -1146,7 +1148,7 @@ public partial class TextEditorService
                 }
 
                 /* Final grouping of contiguous characters */
-                viewModel.Virtualization.VirtualizationSpanList.Add(new TextEditorVirtualizationSpan(
+                viewModel.Virtualization.VirtualizationSpanList = viewModel.Virtualization.VirtualizationSpanList.C_Add(new TextEditorVirtualizationSpan(
                     cssClass: modelModifier.PersistentState.DecorationMapper.Map(currentDecorationByte),
                     text: __StringBuilder.ToString()));
                 __StringBuilder.Clear();

@@ -99,7 +99,7 @@
     	<div class="ci_te_text-section">
     	
     	    @{
-    	        var entireSpan = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(virtualizationResult.VirtualizationSpanList);
+    	        var entireSpan = new Span<TextEditorVirtualizationSpan>(virtualizationResult.VirtualizationSpanList.u_Items);
     	    }
     	
 	    	@for (int virtualizationResultIndex = 0;

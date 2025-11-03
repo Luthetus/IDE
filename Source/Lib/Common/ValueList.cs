@@ -76,6 +76,11 @@ public struct ValueList<T>
 {
     public ValueList(int capacity)
     {
+#if DEBUG
+        // Debug.Assert probably idk I gotta go to the bathroom and I just wanna accept the PR
+        if (capacity == 0)
+            throw new NotImplementedException();
+#endif
         Capacity = capacity;
         u_Items = new T[Capacity];
     }

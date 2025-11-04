@@ -50,7 +50,6 @@ public sealed class TextEditorModel
             editBlockIndex: 0);
     
         // Initialize
-        _richCharacterList = Array.Empty<RichCharacter>();
         PresentationModelList = new();
         OnlyLineEndKind = LineEndKind.Unset;
         LineEndKindPreference = LineEndKind.Unset;
@@ -84,7 +83,6 @@ public sealed class TextEditorModel
         PersistentState = other.PersistentState;
 
         _partitionList = other.PartitionList;
-        _richCharacterList = other.RichCharacterList;
         LineEndList = other.LineEndList;
         PresentationModelList = other.PresentationModelList;
         TabCharPositionIndexList = other.TabCharPositionIndexList;
@@ -128,38 +126,6 @@ public sealed class TextEditorModel
         {
             _partitionListChanged = true;
             _partitionList = value;
-        }
-    }
-    
-    public RichCharacter[] _richCharacterList;
-    public RichCharacter[] RichCharacterList
-    {
-        get
-        {
-            if (_partitionListChanged)
-            {
-                _partitionListChanged = false;
-                _allText = null;
-                _charCount = -1;
-                
-                var rcArr = new RichCharacter[CharCount];
-                var index = 0;
-                foreach (var partition in PartitionList)
-                {
-                    foreach (var rc in partition.RichCharacterList)
-                    {
-                        rcArr[index++] = rc;
-                    }
-                }
-                _richCharacterList = rcArr;
-            }
-            
-            return _richCharacterList;
-        }
-        set
-        {
-            _partitionListChanged = false;
-            _richCharacterList = value;
         }
     }
     
@@ -289,7 +255,7 @@ public sealed class TextEditorModel
     /// </summary>
     public bool ShouldCalculateVirtualizationResult { get; set; }
 
-    public int DocumentLength => RichCharacterList.Length;
+    public int DocumentLength => CharCount;
     
     public const int GUTTER_PADDING_LEFT_IN_PIXELS = 3;
     public const int GUTTER_PADDING_RIGHT_IN_PIXELS = 17;
@@ -334,7 +300,7 @@ public sealed class TextEditorModel
         SetIsDirtyTrue();
     }
 
-    public void HandleKeyboardEvent(KeymapArgs keymapArgs, TextEditorViewModel viewModel)
+    /*public void HandleKeyboardEvent(KeymapArgs keymapArgs, TextEditorViewModel viewModel)
     {
         if (CommonFacts.IsMetaKey(keymapArgs))
         {
@@ -392,7 +358,7 @@ public sealed class TextEditorModel
                 valueToInsert,
                 viewModel);
         }
-    }
+    }*/
 
     private void PerformInsert(TextEditorViewModel viewModel, int positionIndex, string content)
     {

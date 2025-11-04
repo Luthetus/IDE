@@ -100,7 +100,78 @@ namespace Clair.Tests.csproj.csproj;
 public class Partitions
 {
     [Fact]
-    public void Aaa()
+    public void Seek_FirstPartition_FirstCharacter()
+    {
+    }
+
+    [Fact]
+    public void Seek_FirstPartition_IntermediateCharacter()
+    {
+    }
+    
+    [Fact]
+    public void Seek_FirstPartition_LastCharacter()
+    {
+    }
+
+    [Fact]
+    public void Seek_IntermediatePartition_FirstCharacter()
+    {
+    }
+
+    [Fact]
+    public void Seek_IntermediatePartition_IntermediateCharacter()
+    {
+    }
+
+    [Fact]
+    public void Seek_IntermediatePartition_LastCharacter()
+    {
+    }
+
+    [Fact]
+    public void Seek_LastPartition_FirstCharacter()
+    {
+    }
+
+    [Fact]
+    public void Seek_LastPartition_IntermediateCharacter()
+    {
+    }
+
+    [Fact]
+    public void Seek_LastPartition_LastCharacter()
+    {
+    }
+
+    /// <summary>
+    /// This should be allowed to occur, not because
+    /// the behavior is desirable,
+    /// but because any invoker is intended to start off
+    /// at a position index which is provided by the TextEditorModel
+    /// that is having its partitions walked.
+    /// 
+    /// Then, this TextEditorModel has the responsibility of not
+    /// returning a character position index that resides in a multibyte character.
+    /// 
+    /// Following that, any edits are presumed to properly reposition the cursor
+    /// such that the user's cursor isn't between a multibyte character.
+    /// 
+    /// Thus, the cost of checking for a multibyte character only needs to be incurred
+    /// a single time at the start of a "transaction".
+    /// </summary>
+    [Fact]
+    public void Seek_MiddleMultibyteCharacter()
+    {
+    }
+
+    /// <summary>
+    /// Transitioning from n partition to n+1 partition because the data
+    /// in partition n was fully enumerated and the next value is
+    /// the next partition's first entry.
+    /// </summary>
+    [Fact]
+    public void Enumerate_PartitionOverflow()
     {
     }
 }

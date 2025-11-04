@@ -13,6 +13,7 @@ namespace Clair.TextEditor.RazorLib.TextEditors;
 /// - Edits to a TextEditorModel resulting in an invalid PartitionWalker
 /// 
 /// 
+/// 
 /// # Goal of class
 /// ===============
 /// Abstract enumeration of RichCharacter "partitions" by
@@ -71,7 +72,7 @@ namespace Clair.TextEditor.RazorLib.TextEditors;
 /// via the <see cref="TextEditorViewModelLiason"/>
 /// for this reason. I have no proof for this being the case
 /// and in fact I've added an extra object allocation to the app as whole
-/// by doing this ... as well other worsening things... I don't know what I'm doing.
+/// by doing this... as well other worsening things... I don't know what I'm doing.
 /// </summary>
 public class PartitionWalker
 {

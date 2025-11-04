@@ -1,4 +1,6 @@
-﻿using Clair.TextEditor.RazorLib.TextEditors.Models;
+﻿using Clair.TextEditor.RazorLib.Characters.Models;
+using Clair.TextEditor.RazorLib.Exceptions;
+using Clair.TextEditor.RazorLib.TextEditors.Models;
 
 namespace Clair.TextEditor.RazorLib.TextEditors;
 
@@ -94,7 +96,7 @@ public class PartitionWalker
 
     public int PartitionIndex { get; set; }
     public TextEditorPartition PartitionCurrent { get; set; }
-    public int RelativeIndex { get; set; }
+    public int RelativePositionIndex { get; set; }
     public int GlobalIndex { get; set; }
 
     /// <summary>
@@ -114,8 +116,40 @@ public class PartitionWalker
     /// Else if the last partition, ??? RichCharacter is closest to the next desired globalIndex,
     /// then start there.
     /// </remarks>
-    public void SeekPartition(int globalIndex)
+    public void Seek(int globalPositionIndex)
     {
-        
+        var runningCount = 0;
+        TextEditorPartition partition;
+
+        for (int i = 0; i < _model.PartitionList.Count; i++)
+        {
+            partition = _model.PartitionList[i];
+
+            if (runningCount + partition.Count >= globalPositionIndex)
+            {
+                RelativePositionIndex = globalPositionIndex - runningCount;
+                PartitionIndex = i;
+                break;
+            }
+            else
+            {
+                runningCount += partition.Count;
+            }
+        }
+
+        if (PartitionIndex == -1)
+            throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
+
+        if (RelativePositionIndex == -1)
+            throw new ClairTextEditorException("if (relativePositionIndex == -1)");
+
+        /*
+        if (partition.Count >= _model.PersistentState.PartitionSize)
+        {
+            _model.__SplitIntoTwoPartitions(i);
+            i--;
+            continue;
+        }
+         */
     }
 }

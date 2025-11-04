@@ -95,13 +95,14 @@ namespace Clair.Tests.csproj.csproj;
 ///                 
 ///
 ///
-///
+/// 
 /// </summary>
 public class Partitions
 {
     [Fact]
     public void Seek_FirstPartition_FirstCharacter()
     {
+
     }
 
     [Fact]
@@ -145,11 +146,9 @@ public class Partitions
     }
 
     /// <summary>
-    /// This should be allowed to occur, not because
-    /// the behavior is desirable,
-    /// but because any invoker is intended to start off
-    /// at a position index which is provided by the TextEditorModel
-    /// that is having its partitions walked.
+    /// This should be allowed to occur, not because the behavior is desirable,
+    /// but because any invoker is intended to start off at a position index which
+    /// is provided by the TextEditorModel that is having its partitions walked.
     /// 
     /// Then, this TextEditorModel has the responsibility of not
     /// returning a character position index that resides in a multibyte character.

@@ -124,51 +124,127 @@ public class Partitions
     [Fact]
     public void Seek_FirstPartition_FirstCharacter()
     {
-        var model = GetTestModel(string.Empty);
+        var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.SeekPartition(0);
+        partitionWalker.SeekPartition(globalIndex: 0);
+        Assert.Equal(0, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[0], partitionWalker.PartitionCurrent);
+        Assert.Equal(0, partitionWalker.RelativeIndex);
+        Assert.Equal(0, partitionWalker.GlobalIndex);
     }
 
     [Fact]
     public void Seek_FirstPartition_IntermediateCharacter()
     {
+        var model = GetTestModel(_content);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
+
+        partitionWalker.SeekPartition(globalIndex: 3);
+        Assert.Equal(0, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[0], partitionWalker.PartitionCurrent);
+        Assert.Equal(3, partitionWalker.RelativeIndex);
+        Assert.Equal(3, partitionWalker.GlobalIndex);
     }
     
     [Fact]
     public void Seek_FirstPartition_LastCharacter()
     {
+        var model = GetTestModel(_content);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
+
+        partitionWalker.SeekPartition(globalIndex: 4063);
+        Assert.Equal(0, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[0], partitionWalker.PartitionCurrent);
+        Assert.Equal(4063, partitionWalker.RelativeIndex);
+        Assert.Equal(4063, partitionWalker.GlobalIndex);
     }
 
     [Fact]
     public void Seek_IntermediatePartition_FirstCharacter()
     {
+        var model = GetTestModel(_content);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
+
+        partitionWalker.SeekPartition(globalIndex: 4064);
+        Assert.Equal(1, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[1], partitionWalker.PartitionCurrent);
+        Assert.Equal(0, partitionWalker.RelativeIndex);
+        Assert.Equal(4064, partitionWalker.GlobalIndex);
     }
 
     [Fact]
     public void Seek_IntermediatePartition_IntermediateCharacter()
     {
+        var model = GetTestModel(_content);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
+
+        partitionWalker.SeekPartition(globalIndex: 4067);
+        Assert.Equal(1, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[1], partitionWalker.PartitionCurrent);
+        Assert.Equal(3, partitionWalker.RelativeIndex);
+        Assert.Equal(4067, partitionWalker.GlobalIndex);
     }
 
     [Fact]
     public void Seek_IntermediatePartition_LastCharacter()
     {
+        var model = GetTestModel(_content);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
+
+        partitionWalker.SeekPartition(globalIndex: 8126);
+        Assert.Equal(1, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[1], partitionWalker.PartitionCurrent);
+        Assert.Equal(4063, partitionWalker.RelativeIndex);
+        Assert.Equal(8126, partitionWalker.GlobalIndex);
     }
 
     [Fact]
     public void Seek_LastPartition_FirstCharacter()
     {
+        var model = GetTestModel(_content);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
+
+        partitionWalker.SeekPartition(globalIndex: 8127);
+        Assert.Equal(2, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[2], partitionWalker.PartitionCurrent);
+        Assert.Equal(0, partitionWalker.RelativeIndex);
+        Assert.Equal(8127, partitionWalker.GlobalIndex);
     }
 
     [Fact]
     public void Seek_LastPartition_IntermediateCharacter()
     {
+        var model = GetTestModel(_content);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
+
+        partitionWalker.SeekPartition(globalIndex: 8130);
+        Assert.Equal(2, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[2], partitionWalker.PartitionCurrent);
+        Assert.Equal(3, partitionWalker.RelativeIndex);
+        Assert.Equal(8130, partitionWalker.GlobalIndex);
     }
 
     [Fact]
     public void Seek_LastPartition_LastCharacter()
     {
+        var model = GetTestModel(_content);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
+
+        partitionWalker.SeekPartition(globalIndex: 12083);
+        Assert.Equal(2, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[2], partitionWalker.PartitionCurrent);
+        Assert.Equal(3957, partitionWalker.RelativeIndex);
+        Assert.Equal(12083, partitionWalker.GlobalIndex);
     }
 
     /// <summary>

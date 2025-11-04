@@ -11,6 +11,7 @@ namespace Clair.TextEditor.RazorLib.TextEditors;
 ///       rather than having this separate type?
 /// - Long Term usage
 /// - Edits to a TextEditorModel resulting in an invalid PartitionWalker
+/// - Scuffed code markers for regression
 /// 
 /// 
 /// 
@@ -73,6 +74,14 @@ namespace Clair.TextEditor.RazorLib.TextEditors;
 /// for this reason. I have no proof for this being the case
 /// and in fact I've added an extra object allocation to the app as whole
 /// by doing this... as well other worsening things... I don't know what I'm doing.
+/// 
+/// 
+/// 
+/// # Scuffed code markers for regression
+/// =====================================
+/// The text: "2025-11-04 partition changes"
+/// will be commented above anything that I recklessly comment out
+/// in order to run the tests without build errors.
 /// </summary>
 public class PartitionWalker
 {

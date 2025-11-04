@@ -43,6 +43,8 @@ public class TextEditorCommandDefaultFunctions
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
+        /*
+        // 2025-11-04 partition changes
         if (!TextEditorSelectionHelper.HasSelectedText(viewModel))
         {
             var positionIndex = modelModifier.GetPositionIndex(viewModel);
@@ -60,6 +62,7 @@ public class TextEditorCommandDefaultFunctions
         modelModifier.HandleKeyboardEvent(
             new KeymapArgs { Key = CommonFacts.DELETE },
             viewModel);
+        */
     }
 
     public static async ValueTask PasteAsync(

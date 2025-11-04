@@ -1,3 +1,6 @@
+using Clair.TextEditor.RazorLib.TextEditors;
+using Clair.TextEditor.RazorLib.TextEditors.Models;
+
 namespace Clair.Tests.csproj.csproj;
 
 /// <summary>
@@ -99,10 +102,26 @@ namespace Clair.Tests.csproj.csproj;
 /// </summary>
 public class Partitions
 {
+    public TextEditorModel GetTestModel(string content)
+    {
+        return new TextEditorModel(
+            new TextEditor.RazorLib.Lexers.Models.ResourceUri("unittest"),
+            DateTime.UtcNow,
+            fileExtension: string.Empty,
+            content: _content,
+            decorationMapper: null,
+            compilerService: null,
+            textEditorService: null);
+    }
+
     [Fact]
     public void Seek_FirstPartition_FirstCharacter()
     {
+        var model = GetTestModel(string.Empty);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
 
+        partitionWalker.SeekPartition(0);
     }
 
     [Fact]
@@ -173,4 +192,263 @@ public class Partitions
     public void Enumerate_PartitionOverflow()
     {
     }
+
+    /// <summary>
+    /// TODO: I'll have to figure out the test text later...
+    /// ...I think I changed the code in the TextEditorModel recently
+    /// such that you have to use at least a 4,096 partition size.
+    /// I need 3 partitions to test First, Intermediate, Last.
+    /// Thus this is 3 partitions worth of text.
+    /// </summary>
+    private static readonly string _content = @"using Microsoft.AspNetCore.Components.Web;
+using Clair.Common.RazorLib;
+using Clair.Common.RazorLib.Keys.Models;
+using Clair.Common.RazorLib.Dimensions.Models;
+using Clair.Common.RazorLib.Dynamics.Models;
+using Clair.Common.RazorLib.JavaScriptObjects.Models;
+using Clair.Common.RazorLib.Panels.Models;
+using Clair.Common.RazorLib.Tooltips.Models;
+using Clair.Common.RazorLib.Tabs.Models;
+using Clair.Common.RazorLib.BackgroundTasks.Models;
+using Clair.TextEditor.RazorLib.JavaScriptObjects.Models;
+using Clair.TextEditor.RazorLib.Lexers.Models;
+using Clair.TextEditor.RazorLib.Decorations.Models;
+using Clair.TextEditor.RazorLib.Groups.Models;
+using Clair.TextEditor.RazorLib.TextEditors.Displays;
+
+namespace Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
+
+/// <summary>
+/// This type reduces the amount of properties that need to be copied from one TextEditorViewModel instance to another
+/// by chosing to have some of the state shared between instances.
+/// </summary>
+public sealed class TextEditorViewModelPersistentState : IDisposable, ITab, IPanelTab, IDialog, IDrag
+{
+    public TextEditorViewModelPersistentState(
+        int viewModelKey,
+        ResourceUri resourceUri,
+        TextEditorService textEditorService,
+        Category category,
+        Action<TextEditorModel>? onSaveRequested,
+        Func<TextEditorModel, string>? getTabDisplayNameFunc,
+        List<Key<TextEditorPresentationModel>> firstPresentationLayerKeysList,
+        List<Key<TextEditorPresentationModel>> lastPresentationLayerKeysList,
+        bool showFindOverlay,
+        string replaceValueInFindOverlay,
+        bool showReplaceButtonInFindOverlay,
+        string findOverlayValue,
+        bool findOverlayValueExternallyChangedMarker,
+        MenuKind menuKind,
+        ITooltipModel tooltipModel,
+        bool shouldRevealCursor,
+        TextEditorDimensions textEditorDimensions,
+        int scrollLeft,
+        int scrollTop,
+        int scrollWidth,
+        int scrollHeight,
+        int marginScrollHeight,
+        CharAndLineMeasurements charAndLineMeasurements)
+    {
+        ViewModelKey = viewModelKey;
+        ResourceUri = resourceUri;
+        TextEditorService = textEditorService;
+        Category = category;
+        OnSaveRequested = onSaveRequested;
+        GetTabDisplayNameFunc = getTabDisplayNameFunc;
+        FirstPresentationLayerKeysList = firstPresentationLayerKeysList;
+        LastPresentationLayerKeysList = lastPresentationLayerKeysList;
+        
+        ShowFindOverlay = showFindOverlay;
+        ReplaceValueInFindOverlay = replaceValueInFindOverlay;
+        ShowReplaceButtonInFindOverlay = showReplaceButtonInFindOverlay;
+        FindOverlayValue = findOverlayValue;
+        FindOverlayValueExternallyChangedMarker = findOverlayValueExternallyChangedMarker;
+        
+        MenuKind = menuKind;
+        TooltipModel = tooltipModel;
+
+        ShouldRevealCursor = shouldRevealCursor;
+        
+        ComponentType = typeof(TextEditorViewModelDisplay);
+        ComponentParameterMap = new()
+        {
+            { nameof(TextEditorViewModelDisplay.TextEditorViewModelKey), ViewModelKey }
+        };
+
+        _dragTabComponentType = typeof(Clair.Common.RazorLib.Drags.Displays.DragDisplay);
+
+        DialogFocusPointHtmlElementId = $""ci_dialog-focus-point_{DynamicViewModelKey.Guid}"";
+    
+        TextEditorDimensions = textEditorDimensions;
+        ScrollLeft = scrollLeft;
+        ScrollTop = scrollTop;
+        ScrollWidth = scrollWidth;
+        ScrollHeight = scrollHeight;
+        MarginScrollHeight = marginScrollHeight;
+        CharAndLineMeasurements = charAndLineMeasurements;
+    }
+
+    /// <summary>
+    /// The main unique identifier for a <see cref=""TextEditorViewModel""/>, used in many API.
+    /// 
+    /// 0 indicates 'Empty'
+    /// 
+    /// As for int max value wrap around resulting in two keys that are equal.
+    /// You shouldn't be holding on to a viewmodel long enough to invoke NewViewModelKey int.MaxValue amount of times
+    /// while still holding a reference to the first viewmodel with that same key.
+    /// 
+    /// It isn't that you can't get more than int.MavValue amount of ids, it is that
+    /// you shouldn't be holding onto any individual view model for that length of time.
+    /// 
+    /// If you have long life viewmodels then use GetViewModelKeyLongLife().
+    /// 0 remains 'Empty' but during an int wraparound, a check is done
+    /// for whether you've landed on an int that was returned from GetViewModelKeyLongLife()
+    /// if so then continue to the next key instead.
+    /// 
+    /// Theoretically you could GetViewModelKeyLongLife() for every valid int value.
+    /// But once again, if you do such a thing you are likely storing
+    /// the viewmodel object and thus you have bigger problems on your hands from a GarbageCollection perspective.
+    /// </summary>
+    public int ViewModelKey { get; set; }
+    /// <summary>
+    /// The unique identifier for a <see cref=""TextEditorModel""/>. The model is to say a representation of the file on a filesystem.
+    /// The contents and such. Whereas the viewmodel is to track state regarding a rendered editor for that file, for example the cursor position.
+    /// </summary>
+    public ResourceUri ResourceUri { get; set; }
+    /// <summary>
+    /// Most API invocation (if not all) occurs through the <see cref=""ITextEditorService""/>
+    /// </summary>
+    public TextEditorService TextEditorService { get; set; }
+    /// <summary>
+    /// <inheritdoc cref=""Models.Category""/>
+    /// </summary>
+    public Category Category { get; set; }
+    /// <summary>
+    /// If one hits the keymap { Ctrl + s } when browser focus is within a text editor.
+    /// </summary>
+    public Action<TextEditorModel>? OnSaveRequested { get; set; }
+    /// <summary>
+    /// When a view model is rendered within a <see cref=""TextEditorGroup""/>, this Func can be used to render a more friendly tab name, than the resource uri path.
+    /// </summary>
+    public Func<TextEditorModel, string>? GetTabDisplayNameFunc { get; set; }
+    /// <summary>
+    /// <see cref=""FirstPresentationLayerKeysList""/> is painted prior to any internal workings of the text editor.<br/><br/>
+    /// Therefore the selected text background is rendered after anything in the <see cref=""FirstPresentationLayerKeysList""/>.<br/><br/>
+    /// When using the <see cref=""FirstPresentationLayerKeysList""/> one might find their css overriden by for example, text being selected.
+    /// </summary>
+    public List<Key<TextEditorPresentationModel>> FirstPresentationLayerKeysList { get; set; }
+    /// <summary>
+    /// <see cref=""LastPresentationLayerKeysList""/> is painted after any internal workings of the text editor.<br/><br/>
+    /// Therefore the selected text background is rendered before anything in the <see cref=""LastPresentationLayerKeysList""/>.<br/><br/>
+    /// When using the <see cref=""LastPresentationLayerKeysList""/> one might find the selected text background
+    /// not being rendered with the text selection css if it were overriden by something in the <see cref=""LastPresentationLayerKeysList""/>.
+    /// </summary>
+    public List<Key<TextEditorPresentationModel>> LastPresentationLayerKeysList { get; set; }
+    
+    /// <summary>
+    /// The find overlay refers to hitting the keymap { Ctrl + f } when browser focus is within a text editor.
+    /// </summary>
+    public bool ShowFindOverlay { get; set; }
+    public bool ShowReplaceButtonInFindOverlay { get; set; }
+    /// <summary>
+    /// The find overlay refers to hitting the keymap { Ctrl + f } when browser focus is within a text editor.
+    /// This property is what the find overlay input element binds to.
+    /// </summary>
+    public string FindOverlayValue { get; set; }
+    /// <summary>
+    /// If the user presses the keybind to show the FindOverlayDisplay while focused on the Text Editor,
+    /// check if the user has a text selection.
+    ///
+    /// If they do have a text selection, then populate the FindOverlayDisplay with their selection.
+    ///
+    /// The issue arises however, how does one know whether FindOverlayValue changed due to
+    /// the input element itself being typed into, versus some 'background action'.
+    ///
+    /// Because the UI already will update properly if the input element itself is interacted with.
+    ///
+    /// We only need to solve the case where it was a 'background action'.
+    ///
+    /// So, if this bool toggles to a different value than what the UI last saw,
+    /// then the UI is to set the input element's value equal to the 'FindOverlayValue'
+    /// because a 'background action' modified the value.
+    /// </summary>
+    public bool FindOverlayValueExternallyChangedMarker { get; set; }
+    public string ReplaceValueInFindOverlay { get; set; }
+    
+    /// <summary>
+    /// This property determines the menu that is shown in the text editor.
+    ///
+    /// For example, when this property is <see cref=""MenuKind.AutoCompleteMenu""/>,
+    /// then the autocomplete menu is displayed in the text editor.
+    /// </summary>
+    public MenuKind MenuKind { get; set; }
+    /// <summary>
+    /// This property determines the tooltip that is shown in the text editor.
+    /// </summary>
+    public ITooltipModel? TooltipModel { get; set; }
+    
+    public bool ShouldRevealCursor { get; set; }
+    
+    private int _seenGutterWidth = -2;
+    private string _gutterWidthCssValue;
+    
+    /// <summary>
+    /// This method is not intuitive, because it doesn't make use of 'Changed_GutterWidth'.
+    ///
+    /// It tracks the int value for the '_gutterWidth' when it does the '.ToString()',
+    /// then it checks if the int value had changed.
+    ///
+    /// This is because if the method were to use 'Changed_GutterWidth',
+    /// then it'd presumably want to say 'Changed_GutterWidth = false'
+    /// when doing the '.ToString()' so that it re-uses the value.
+    ///
+    /// But, this would then clobber the functionality of 'TextEditorVirtualizationResult'.
+    /// </summary>
+    public string GetGutterWidthCssValue()
+    {
+        if (_seenGutterWidth != _gutterWidth)
+        {
+            _seenGutterWidth = _gutterWidth;
+            _gutterWidthCssValue = GutterWidth.ToString();
+        }
+        return _gutterWidthCssValue;
+    }
+    
+    private int _seenTextEditorHeight;
+    private int _seenLineHeight;
+    private string _gutterColumnHeightCssValue;
+    
+    public void ManuallyPropagateOnContextMenu(MouseEventArgs mouseEventArgs)
+    {
+        var localHandleTabButtonOnContextMenu = TabCascadingValueBatch?.HandleTabButtonOnContextMenu;
+        if (localHandleTabButtonOnContextMenu is null)
+            return;
+
+        CommonService.Enqueue(new CommonWorkArgs
+        {
+            WorkKind = CommonWorkKind.Tab_ManuallyPropagateOnContextMenu,
+            HandleTabButtonOnContextMenu = localHandleTabButtonOnContextMenu,
+            TabContextMenuEventArgs = new TabContextMenuEventArgs(mouseEventArgs, this, () => Task.CompletedTask),
+        });
+    }
+    
+    public async Task CloseTabOnClickAsync()
+    {
+        var localTabGroup = TabGroup;
+        if (localTabGroup is null)
+            return;
+
+        await localTabGroup.CloseAsync(this).ConfigureAwait(false);
+    }
+    
+    public void Dispose()
+    {
+        TextEditorService.WorkerArbitrary.PostUnique(editContext =>
+        {
+            DisposeComponentData(editContext, ComponentData);
+            return ValueTask.CompletedTask;
+        });
+    }
+}
+";
 }

@@ -531,6 +531,8 @@ public class TextEditorCommandDefaultFunctions
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
+        /*
+        // 2025-11-04 partition changes
         viewModel.SelectionAnchorPositionIndex = -1;
 
         var lengthOfLine = modelModifier.GetLineLength(viewModel.LineIndex);
@@ -565,6 +567,7 @@ public class TextEditorCommandDefaultFunctions
         }
 
         modelModifier.Insert(valueToInsert, viewModel);
+        */
     }
 
     public static void NewLineAbove(
@@ -572,6 +575,8 @@ public class TextEditorCommandDefaultFunctions
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
+        /*
+        // 2025-11-04 partition changes
         viewModel.SelectionAnchorPositionIndex = -1;
             
         var originalColumnIndex = viewModel.ColumnIndex;
@@ -615,6 +620,7 @@ public class TextEditorCommandDefaultFunctions
             viewModel.LineIndex--;
             viewModel.ColumnIndex = indentationLength;
         }
+        */
     }
     
     public static void MoveLineDown(

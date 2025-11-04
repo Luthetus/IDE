@@ -114,6 +114,13 @@ public class Partitions
             textEditorService: null);
     }
 
+    /// <summary>
+    /// This test runs (it does nothing currently, but there's no errors or exceptions).
+    /// Nothing matters unless the partition logic is written perfectly and performently(?).
+    /// So depending on how lazy I am nothing will work for some amount of time.
+    /// And I'll just focus on the partition code / not accept the PR of this
+    /// in order to keep main "functional".
+    /// </summary>
     [Fact]
     public void Seek_FirstPartition_FirstCharacter()
     {

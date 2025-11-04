@@ -278,6 +278,8 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     shouldRevealCursor = true;
                     break;
                 case "Enter":
+                    /*
+                    // 2025-11-04 partition changes
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
                     var valueToInsert = modelModifier.LineEndKindPreference.AsCharacters();
             
@@ -318,6 +320,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                         
                     shouldRevealCursor = true;
                     shouldApplySyntaxHighlighting = true;
+                    */
                     break;
                 case "BracketRight":
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
@@ -534,6 +537,8 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     shouldClearTooltip = true;
                     break;
                 case "Enter":
+                    /*
+                    // 2025-11-04 partition changes
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
                     var valueToInsert = modelModifier.LineEndKindPreference.AsCharacters();
             
@@ -572,6 +577,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     menuKind = MenuKind.None;
                     shouldClearTooltip = true;
                     shouldApplySyntaxHighlighting = true;
+                    */
                     break;
                 case "Tab":
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
@@ -714,20 +720,26 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                         componentData.TextEditorViewModelSlimDisplay.TextEditorService.CommonService);
                     break;
                 case MenuKind.ContextMenu:
+                    /*
+                    // 2025-11-04 partition changes
                     TextEditorCommandDefaultFunctions.ShowContextMenu(
                         editContext,
                         modelModifier,
                         viewModel,
                         componentData.TextEditorViewModelSlimDisplay.TextEditorService.CommonService,
                         componentData);
+                    */
                     break;
                 case MenuKind.AutoCompleteMenu:
+                    /*
+                    // 2025-11-04 partition changes
                     TextEditorCommandDefaultFunctions.ShowAutocompleteMenu(
                         editContext,
                         modelModifier,
                         viewModel,
                         componentData.TextEditorViewModelSlimDisplay.TextEditorService.CommonService,
                         componentData);
+                    */
                     break;
             }
         }
@@ -748,9 +760,12 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
         
         if (shouldApplySyntaxHighlighting)
         {
+            /*
+            // 2025-11-04 partition changes
             componentData.ThrottleApplySyntaxHighlighting(modelModifier);
+            */
         }
-        
+
         // TODO: Do this code first so the user gets immediate UI feedback in the event that
         //       their keydown code takes a long time?
         editContext.TextEditorService.ViewModel_StopCursorBlinking();

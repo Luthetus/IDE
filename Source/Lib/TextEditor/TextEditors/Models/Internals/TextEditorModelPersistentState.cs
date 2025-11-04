@@ -23,10 +23,13 @@ public sealed class TextEditorModelPersistentState
         int editBlockIndex,
         List<TextEditorEdit> editBlockList)
     {
+        /*
+        // 2025-11-04 partition changes
         __LocalLineEndList = textEditorService.__LocalLineEndList;
         __LocalTabPositionList = textEditorService.__LocalTabPositionList;
         __TextEditorViewModelLiason = textEditorService.__TextEditorViewModelLiason;
-        
+        */
+
         ViewModelKeyList = viewModelKeyList;
         
         FileExtension = fileExtension;

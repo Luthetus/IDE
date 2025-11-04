@@ -296,6 +296,8 @@ public partial class TextEditorService
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
+        /*
+        // 2025-11-04 partition changes
         var shouldClearSelection = false;
 
         if (shiftKey)
@@ -611,6 +613,7 @@ public partial class TextEditorService
             viewModel.SelectionAnchorPositionIndex = -1;
             viewModel.SelectionEndingPositionIndex = 0;
         }
+        */
     }
 
     public void ViewModel_CursorMovePageTop(
@@ -704,6 +707,8 @@ public partial class TextEditorService
         TextEditorViewModel viewModel,
         TextEditorComponentData componentData)
     {
+        /*
+        // 2025-11-04 partition changes
         var tabWidth = editContext.TextEditorService.Options_GetOptions().TabWidth;
         viewModel.Virtualization.ShouldCalculateVirtualizationResult = false;
 
@@ -1147,7 +1152,7 @@ public partial class TextEditorService
                     }
                 }
 
-                /* Final grouping of contiguous characters */
+                /* Final grouping of contiguous characters *//*
                 viewModel.Virtualization.VirtualizationSpanList = viewModel.Virtualization.VirtualizationSpanList.C_Add(new TextEditorVirtualizationSpan(
                     cssClass: modelModifier.PersistentState.DecorationMapper.Map(currentDecorationByte),
                     text: __StringBuilder.ToString()));
@@ -1219,6 +1224,7 @@ public partial class TextEditorService
         }
 
         componentData.Virtualization = viewModel.Virtualization;
+        */
     }
 
     private static int ViewModel_CountDigits(int argumentNumber)

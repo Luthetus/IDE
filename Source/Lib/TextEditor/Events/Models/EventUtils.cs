@@ -100,6 +100,8 @@ public static class EventUtils
         TextEditorComponentData componentData,
         TextEditorEditContext editContext)
     {
+        /*
+        // 2025-11-04 partition changes
         var globalTextEditorOptions = editContext.TextEditorService.Options_GetTextEditorOptionsState().Options;
 
         if (modelModifier is null || viewModel is null)
@@ -197,5 +199,7 @@ public static class EventUtils
             : columnIndexInt;
         
         return Task.FromResult((lineIndex, literalLength, positionX, positionY));
+        */
+        return Task.FromResult((0, 0, 0d, 0d));
     }
 }

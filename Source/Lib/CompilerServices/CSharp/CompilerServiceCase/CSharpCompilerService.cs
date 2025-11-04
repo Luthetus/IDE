@@ -986,6 +986,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// </summary>
     public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
+        return null;
+        /*
+        // 2025-11-04 partition changes
         var positionIndex = virtualizationResult.Model.GetPositionIndex(virtualizationResult.ViewModel);
     
         var character = '\0';
@@ -1021,7 +1024,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             
             switch (character)
             {
-                /* Lowercase Letters */
+                /* Lowercase Letters *//*
                 case 'a':
                 case 'b':
                 case 'c':
@@ -1048,7 +1051,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 case 'x':
                 case 'y':
                 case 'z':
-                /* Uppercase Letters */
+                /* Uppercase Letters *//*
                 case 'A':
                 case 'B':
                 case 'C':
@@ -1075,7 +1078,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 case 'X':
                 case 'Y':
                 case 'Z':
-                /* Underscore */
+                /* Underscore *//*
                 case '_':
                     if (foundMemberAccessToken)
                     {
@@ -1320,8 +1323,8 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                             
                             /*if (stringValue.Contains())
                             {
-                            }*/
-                            
+                            }*//*
+
                             autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
                                 displayName: stringValue,
                                 autocompleteEntryKind: AutocompleteEntryKind.Word);
@@ -1360,6 +1363,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         }
         
         return autocompleteContainer;
+        */
     }
     
     public ValueTask<MenuContainer> GetQuickActionsSlashRefactorMenu(

@@ -70,6 +70,8 @@ public partial class TextEditorService
         TextEditorModel modelModifier,
         IEnumerable<TextEditorTextSpan> textSpans)
     {
+        /*
+        // 2025-11-04 partition changes
         var localRichCharacterList = modelModifier.RichCharacterList;
 
         var positionsPainted = new HashSet<int>();
@@ -97,6 +99,7 @@ public partial class TextEditorService
 
         modelModifier.__SetPartitionListChanged(true);
         modelModifier.ShouldCalculateVirtualizationResult = true;
+        */
     }
 
     public void Model_ApplySyntaxHighlighting(

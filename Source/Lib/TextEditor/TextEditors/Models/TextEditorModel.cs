@@ -579,8 +579,11 @@ public sealed class TextEditorModel
 
         SetIsDirtyTrue();
         ShouldCalculateVirtualizationResult = true;
-        
+
+        // 2025-11-04 partition changes
+        /*
         PersistentState.__TextEditorViewModelLiason.SetContent(PersistentState.ViewModelKeyList);
+        */
     }
 
     public void ClearEditBlocks()
@@ -1535,6 +1538,10 @@ public sealed class TextEditorModel
         DeleteKind deleteKind,
         bool usePositionIndex)
     {
+        // TODO: DeleteMetadata should NOT be a nullable value tuple, heap allocation every non-null read.
+        return null;
+        /*
+        // 2025-11-04 partition changes
         var initiallyHadSelection = TextEditorSelectionHelper.HasSelectedText(viewModel);
         var initialLineIndex = viewModel.LineIndex;
         var positionIndex = this.GetPositionIndex(viewModel);
@@ -1865,6 +1872,7 @@ public sealed class TextEditorModel
         {
             throw new NotImplementedException();
         }
+        */
     }
 
     private void DeleteValue(int positionIndex, int count)
@@ -1878,6 +1886,8 @@ public sealed class TextEditorModel
 
     public void xApplySyntaxHighlightingByTextSpan(TextEditorTextSpan textSpan)
     {
+        /*
+        // 2025-11-04 partition changes
         for (var i = textSpan.StartInclusiveIndex; i < textSpan.EndExclusiveIndex; i++)
         {
             if (i < 0 || i >= RichCharacterList.Length)
@@ -1885,6 +1895,7 @@ public sealed class TextEditorModel
 
             __SetDecorationByte(i, textSpan.DecorationByte);
         }
+        */
     }
     #endregion
 
@@ -1924,6 +1935,8 @@ public sealed class TextEditorModel
     /// </param>
     public RichCharacter[][] GetLineRichCharacterRange(int startingLineIndex, int count)
     {
+        /*
+        // 2025-11-04 partition changes
         var lineCountAvailable = LineEndList.Count - startingLineIndex;
 
         var lineCountToReturn = count < lineCountAvailable
@@ -1954,6 +1967,8 @@ public sealed class TextEditorModel
         }
 
         return lineList;
+        */
+        return null;
     }
 
     public int GetTabCountOnSameLineBeforeCursor(int lineIndex, int columnIndex)
@@ -2023,10 +2038,14 @@ public sealed class TextEditorModel
     /// </summary>
     public char GetCharacter(int positionIndex)
     {
+        /*
+        // 2025-11-04 partition changes
         if (positionIndex == CharCount)
             return '\0';
 
         return RichCharacterList[positionIndex].Value;
+        */
+        return default;
     }
 
     /// <summary>
@@ -2034,11 +2053,15 @@ public sealed class TextEditorModel
     /// </summary>
     public string GetString(int positionIndex, int count)
     {
+        /*
+        // 2025-11-04 partition changes
         return new string(RichCharacterList
             .Skip(positionIndex)
             .Take(count)
             .Select(x => x.Value)
             .ToArray());
+        */
+        return string.Empty;
     }
 
     public string GetLineTextRange(int lineIndex, int count)
@@ -2256,6 +2279,9 @@ public sealed class TextEditorModel
         int columnIndex,
         bool moveBackwards)
     {
+        return -1;
+        /*
+        // 2025-11-04 partition changes
         var iterateBy = moveBackwards
             ? -1
             : 1;
@@ -2302,6 +2328,7 @@ public sealed class TextEditorModel
             positionIndex += 1;
 
         return positionIndex - lineStartPositionIndex;
+        */
     }
 
     public bool CanUndoEdit()
@@ -2316,10 +2343,14 @@ public sealed class TextEditorModel
 
     public CharacterKind GetCharacterKind(int positionIndex)
     {
+        /*
+        // 2025-11-04 partition changes
         if (positionIndex == CharCount)
             return CharacterKind.Bad;
 
         return CharacterKindHelper.CharToCharacterKind(RichCharacterList[positionIndex].Value);
+        */
+        return default;
     }
 
     /// <summary>

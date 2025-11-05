@@ -103,14 +103,6 @@ public class PartitionWalker
     /// If the list of partitions were to be flattened
     /// </summary>
     public int GlobalCharacterIndex { get; set; }
-    /// <summary>
-    /// ...RunningCount is probably calculable and if so remove it / expression bound property it...
-    /// It is but you'd have to loop over any partitions before you
-    /// because the counts aren't always the same.
-    /// 
-    /// ... isn't the running count the global position + 1????
-    /// </summary>
-    public int RunningCount => GlobalCharacterIndex + 1;
     public TextEditorPartition PartitionCurrent => _model.PartitionList[PartitionIndex];
 
     /// <summary>
@@ -185,11 +177,11 @@ public class PartitionWalker
 
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
-            if (RunningCount + PartitionCurrent.Count >= targetGlobalCharacterIndex)
+            if (GlobalCharacterIndex + PartitionCurrent.Count > targetGlobalCharacterIndex)
             {
-                RelativeCharacterIndex = targetGlobalCharacterIndex - RunningCount;
+                RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
                 PartitionIndex = i;
-                GlobalCharacterIndex += RelativeCharacterIndex + 1;
+                GlobalCharacterIndex += RelativeCharacterIndex;
                 break;
             }
             else

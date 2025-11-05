@@ -527,6 +527,11 @@ public class Partitions
         // But I can't have the partitionWalker iterate otherwise optimization would be a mess
         // because the edit I'm performing would probably need to be abstracted into something,
         // and that abstraction would be the overhead.
+
+        // Not only am I still exhausted,
+        // but I still have cellulitis, what a bummer.
+        //
+        // In fact I'm scheduled to take an antibiotic right now brb
     }
 
     /// <summary>

@@ -95,9 +95,14 @@ public class PartitionWalker
     }
 
     public int PartitionIndex { get; set; }
-    public TextEditorPartition PartitionCurrent => _model.PartitionList[PartitionIndex];
-    public int RelativePositionIndex { get; set; }
-    public int GlobalIndex { get; set; }
+    /// <summary>
+    /// Relative to the current position
+    /// </summary>
+    public int RelativeCharacterIndex { get; set; }
+    /// <summary>
+    /// If the list of partitions were to be flattened
+    /// </summary>
+    public int GlobalCharacterIndex { get; set; }
     /// <summary>
     /// ...RunningCount is probably calculable and if so remove it / expression bound property it...
     /// It is but you'd have to loop over any partitions before you
@@ -105,7 +110,8 @@ public class PartitionWalker
     /// 
     /// ... isn't the running count the global position + 1????
     /// </summary>
-    public int RunningCount { get; set; }
+    public int RunningCount => GlobalCharacterIndex + 1;
+    public TextEditorPartition PartitionCurrent => _model.PartitionList[PartitionIndex];
 
     /// <summary>
     /// Updates the <see cref="PartitionIndex"/>, and <see cref="PartitionCurrent"/> properties
@@ -124,30 +130,35 @@ public class PartitionWalker
     /// Else if the last partition, ??? RichCharacter is closest to the next desired globalIndex,
     /// then start there.
     /// </remarks>
-    public void Seek(int globalPositionIndex)
+    public void Seek(int targetGlobalCharacterIndex)
     {
-        // RunningCount is probably calculable
-        // and if so remove it / expression bound property it
-        RunningCount = 0;
+        // First iteration will reset position to the first partition, first character.
+        // Eventually support for seek origin should be added.
+        PartitionIndex = 0;
+        RelativeCharacterIndex = 0;
+        GlobalCharacterIndex = 0;
+
+        // runningCount has to start at 0 and then equal the count iterations beyond the first because of 0 indexing
 
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
-            if (RunningCount + PartitionCurrent.Count >= globalPositionIndex)
+            if (RunningCount + PartitionCurrent.Count >= targetGlobalCharacterIndex)
             {
-                RelativePositionIndex = globalPositionIndex - RunningCount;
+                RelativeCharacterIndex = targetGlobalCharacterIndex - RunningCount;
                 PartitionIndex = i;
+                GlobalCharacterIndex += RelativeCharacterIndex + 1;
                 break;
             }
             else
             {
-                RunningCount += PartitionCurrent.Count;
+                GlobalCharacterIndex += PartitionCurrent.Count;
             }
         }
 
         if (PartitionIndex == -1)
             throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
 
-        if (RelativePositionIndex == -1)
+        if (RelativeCharacterIndex == -1)
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
         /*

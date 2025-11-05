@@ -466,6 +466,27 @@ public class Partitions
     }
 
     /// <summary>
+    /// Transitioning from n partition to n+1 partition because the data
+    /// in partition n was fully enumerated and the next value is
+    /// the next partition's first entry.
+    /// </summary>
+    [Fact]
+    public void Enumerate_PartitionOverflow()
+    {
+        var model = GetTestModel(_content);
+        var partitionWalker = new PartitionWalker();
+        partitionWalker.ReInitialize(model);
+
+        var partitionList = model.PartitionList;
+        var flatList = model.PartitionList.SelectMany(x => x.RichCharacterList).ToList();
+
+        partitionWalker.Seek(targetGlobalCharacterIndex: 8130);
+        Assert.Equal(8130, partitionWalker.GlobalCharacterIndex);
+        Assert.Equal(2, partitionWalker.PartitionIndex);
+        Assert.Equal(2, partitionWalker.RelativeCharacterIndex);
+    }
+
+    /// <summary>
     /// This should be allowed to occur, not because the behavior is desirable,
     /// but because any invoker is intended to start off at a position index which
     /// is provided by the TextEditorModel that is having its partitions walked.
@@ -481,16 +502,6 @@ public class Partitions
     /// </summary>
     [Fact]
     public void Seek_MiddleMultibyteCharacter()
-    {
-    }
-
-    /// <summary>
-    /// Transitioning from n partition to n+1 partition because the data
-    /// in partition n was fully enumerated and the next value is
-    /// the next partition's first entry.
-    /// </summary>
-    [Fact]
-    public void Enumerate_PartitionOverflow()
     {
     }
 

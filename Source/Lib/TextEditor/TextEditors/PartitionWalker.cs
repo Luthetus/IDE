@@ -178,4 +178,78 @@ public class PartitionWalker
         }
          */
     }
+
+    /// <summary>
+    /// Goal will be to decorate RichCharacter
+    /// 
+    /// There is the need to seek, then insert,
+    /// and at some point during that a split might be needed.
+    /// but umm.
+    /// 
+    /// Remove?
+    /// 
+    /// But also just purely enumerate.
+    /// So I want enumerate.
+    /// 
+    /// I want a while loop that surrounds a for loop
+    /// and the while loop invokes this method to know how much of the remaining length
+    /// can be read from the current partition.
+    /// 
+    /// Then, after reading the amount you can from the current partition
+    /// you would hit the continue of the while loop and
+    /// re-invoke this.
+    /// </summary>
+    public int CalculateSubLengthByCurrentPartition(int length)
+    {
+        // First iteration will reset position to the first partition, first character.
+        // Eventually support for seek origin should be added.
+        PartitionIndex = 0;
+        RelativeCharacterIndex = 0;
+        GlobalCharacterIndex = 0;
+        var runningCount = 0;
+
+        for (int i = 0; i < _model.PartitionList.Count; i++)
+        {
+            // Counts are always greater than indices so this sounds correct,
+            // in addition to making the test pass.
+            //
+            // When checking if the 0th index in a partition... it is the count of the previous partitions.
+            //
+            // But this if statement seems just plain wrong.
+            //
+            // You have some available current index then want to determine if the next partition would make
+            // the target index available?
+            //
+            //
+            // The if statement is saying if I have a partition of count 0,
+            // and the target is 4064 that I'd have space in the second partition...
+            if (targetGlobalCharacterIndex < GlobalCharacterIndex + _model.PartitionList[i].Count)
+            {
+                RelativeCharacterIndex = targetGlobalCharacterIndex - runningCount;
+                GlobalCharacterIndex += RelativeCharacterIndex;
+                PartitionIndex = i;
+                break;
+            }
+            else
+            {
+                GlobalCharacterIndex += _model.PartitionList[i].Count;
+                runningCount += _model.PartitionList[i].Count;
+            }
+        }
+
+        if (PartitionIndex == -1)
+            throw new ClairTextEditorException("if (indexOfPartitionWithAvailableSpace == -1)");
+
+        if (RelativeCharacterIndex == -1)
+            throw new ClairTextEditorException("if (relativePositionIndex == -1)");
+
+        /*
+        if (partition.Count >= _model.PersistentState.PartitionSize)
+        {
+            _model.__SplitIntoTwoPartitions(i);
+            i--;
+            continue;
+        }
+         */
+    }
 }

@@ -262,6 +262,10 @@ public class Partitions
     [Fact]
     public void Seek_IntermediatePartition_LastCharacter()
     {
+        // I need to stop "shitposting" on youtube and study more lmao
+        // I'm supposed to go to bed for work tomorrow but I'm determined
+        // to finish this.
+
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //                                          ^
 

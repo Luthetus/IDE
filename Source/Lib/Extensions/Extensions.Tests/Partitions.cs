@@ -224,6 +224,28 @@ public class Partitions
         // PartitionIndex: 1
         // Count: 6
 
+        // The question is what math tells me the available indices in the partition.
+        // I'm gonna forget the running count idea because I have no idea what it was even doing.
+        //
+        // Partition 0
+        // (0, 3)
+        //
+        // Partition 1
+        // (4, 7)
+        //
+        // Partition 2
+        // (8, 11)
+
+        // I start at 0, this doesn't mean that 0 index is available though
+        // so I can't say that the comparison is inclusive it has to be a greater than check.
+        // 
+        // Otherwise with a 0 sized partition I'm saying
+        // GlobalCharacterIndex:0 + PartitionCount:0 >= TargetGlobalCharacterIndex:0
+        //
+        // Probably have to just start with GlobalCharacterIndex == -1
+
+
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);

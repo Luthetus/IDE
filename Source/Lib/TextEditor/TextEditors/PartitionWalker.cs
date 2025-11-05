@@ -134,15 +134,27 @@ public class PartitionWalker
 
         // First iteration will reset position to the first partition, first character.
         // Eventually support for seek origin should be added.
-        PartitionIndex = 0;
+        PartitionIndex = -1;
         RelativeCharacterIndex = 0;
         GlobalCharacterIndex = 0;
+
+        // Now only the first partition cases work and the non-first-partition cases are all failing.
+        // This is good because it makes more sense and is a better "pattern"
+        
+        // It might be a matter of being inclusive on either end vs any variety of other options.
+        // By throwing an exception in the out of bounds case you can get the inclusive on both ends I think
+        //
+
+        if (targetGlobalCharacterIndex >= _model.CharCount)
+        {
+            throw new ClairTextEditorException("if (targetGlobalCharacterIndex >= _model.CharCount)");
+        }
 
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
             // Counts are always greater than indices so this sounds correct,
             // in addition to making the test pass.
-            if (GlobalCharacterIndex + PartitionCurrent.Count > targetGlobalCharacterIndex)
+            if (GlobalCharacterIndex + _model.PartitionList[PartitionIndex + 1].Count > targetGlobalCharacterIndex)
             {
                 RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
                 PartitionIndex = i;
@@ -151,7 +163,7 @@ public class PartitionWalker
             }
             else
             {
-                GlobalCharacterIndex += PartitionCurrent.Count - 1;
+                GlobalCharacterIndex += _model.PartitionList[PartitionIndex].Count - 1;
             }
         }
 

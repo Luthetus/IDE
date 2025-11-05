@@ -102,6 +102,8 @@ public class PartitionWalker
     /// ...RunningCount is probably calculable and if so remove it / expression bound property it...
     /// It is but you'd have to loop over any partitions before you
     /// because the counts aren't always the same.
+    /// 
+    /// ... isn't the running count the global position + 1????
     /// </summary>
     public int RunningCount { get; set; }
 

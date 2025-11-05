@@ -503,13 +503,9 @@ public class Partitions
 
             int takeActual;
             if (lengthToDecorate < thisLoopAvailableCharacterCount)
-            {
                 takeActual = lengthToDecorate;
-            }
             else
-            {
                 takeActual = thisLoopAvailableCharacterCount;
-            }
 
             for (int i = 0; i < takeActual; i++)
             {
@@ -521,6 +517,11 @@ public class Partitions
                     };
                 --lengthToDecorate;
             }
+
+            if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                break;
+            else
+                ++partitionWalker.PartitionIndex;
         }
     }
 

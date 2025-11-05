@@ -134,6 +134,9 @@ public class Partitions
         // RelativeCharacterIndex: 0
         // PartitionIndex: 0
         // Count: 0
+        
+        // Was the runningCount the offset for the start of the partition?
+
 
 
         var model = GetTestModel(_content);

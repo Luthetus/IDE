@@ -129,9 +129,9 @@ public class PartitionWalker
 
         // First iteration will reset position to the first partition, first character.
         // Eventually support for seek origin should be added.
-        PartitionIndex = -1;
+        PartitionIndex = 0;
         RelativeCharacterIndex = 0;
-        GlobalCharacterIndex = -1;
+        GlobalCharacterIndex = 0;
 
         /*if ()
         {
@@ -165,16 +165,16 @@ public class PartitionWalker
             //
             // You have some available current index then want to determine if the next partition would make
             // the target index available?
-            if (GlobalCharacterIndex + _model.PartitionList[PartitionIndex + 1].Count > targetGlobalCharacterIndex)
+            if (GlobalCharacterIndex + _model.PartitionList[i].Count > targetGlobalCharacterIndex)
             {
                 RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
                 PartitionIndex = i;
-                GlobalCharacterIndex += RelativeCharacterIndex + 1;
+                GlobalCharacterIndex += RelativeCharacterIndex;
                 break;
             }
             else
             {
-                GlobalCharacterIndex += _model.PartitionList[PartitionIndex + 1].Count;
+                GlobalCharacterIndex += _model.PartitionList[i].Count;
             }
         }
 

@@ -95,9 +95,14 @@ public class PartitionWalker
     }
 
     public int PartitionIndex { get; set; }
-    public TextEditorPartition PartitionCurrent { get; set; }
+    public TextEditorPartition PartitionCurrent => _model.PartitionList[PartitionIndex];
     public int RelativePositionIndex { get; set; }
     public int GlobalIndex { get; set; }
+    /// <summary>
+    /// RunningCount is probably calculable
+    /// and if so remove it / expression bound property it
+    /// </summary>
+    public int RunningCount { get; set; }
 
     /// <summary>
     /// Updates the <see cref="PartitionIndex"/>, and <see cref="PartitionCurrent"/> properties
@@ -118,22 +123,21 @@ public class PartitionWalker
     /// </remarks>
     public void Seek(int globalPositionIndex)
     {
-        var runningCount = 0;
-        TextEditorPartition partition;
+        // RunningCount is probably calculable
+        // and if so remove it / expression bound property it
+        RunningCount = 0;
 
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
-            partition = _model.PartitionList[i];
-
-            if (runningCount + partition.Count >= globalPositionIndex)
+            if (RunningCount + PartitionCurrent.Count >= globalPositionIndex)
             {
-                RelativePositionIndex = globalPositionIndex - runningCount;
+                RelativePositionIndex = globalPositionIndex - RunningCount;
                 PartitionIndex = i;
                 break;
             }
             else
             {
-                runningCount += partition.Count;
+                RunningCount += PartitionCurrent.Count;
             }
         }
 

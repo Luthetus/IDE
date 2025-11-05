@@ -128,11 +128,11 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(globalIndex: 0);
-        Assert.Equal(0, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[0], partitionWalker.PartitionCurrent);
-        Assert.Equal(0, partitionWalker.RelativePositionIndex);
+        partitionWalker.Seek(globalPositionIndex: 0);
         Assert.Equal(0, partitionWalker.GlobalIndex);
+        Assert.Equal(0, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[0].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
+        Assert.Equal(0, partitionWalker.RelativePositionIndex);
     }
 
     [Fact]
@@ -142,11 +142,11 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(globalIndex: 3);
-        Assert.Equal(0, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[0], partitionWalker.PartitionCurrent);
-        Assert.Equal(3, partitionWalker.RelativePositionIndex);
+        partitionWalker.Seek(globalPositionIndex: 3);
         Assert.Equal(3, partitionWalker.GlobalIndex);
+        Assert.Equal(0, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[0].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
+        Assert.Equal(3, partitionWalker.RelativePositionIndex);
     }
     
     [Fact]
@@ -156,11 +156,11 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(globalIndex: 4063);
-        Assert.Equal(0, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[0], partitionWalker.PartitionCurrent);
-        Assert.Equal(4063, partitionWalker.RelativePositionIndex);
+        partitionWalker.Seek(globalPositionIndex: 4063);
         Assert.Equal(4063, partitionWalker.GlobalIndex);
+        Assert.Equal(0, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[0].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
+        Assert.Equal(4063, partitionWalker.RelativePositionIndex);
     }
 
     [Fact]
@@ -170,11 +170,11 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(globalIndex: 4064);
-        Assert.Equal(1, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[1], partitionWalker.PartitionCurrent);
-        Assert.Equal(0, partitionWalker.RelativePositionIndex);
+        partitionWalker.Seek(globalPositionIndex: 4064);
         Assert.Equal(4064, partitionWalker.GlobalIndex);
+        Assert.Equal(1, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[1].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
+        Assert.Equal(0, partitionWalker.RelativePositionIndex);
     }
 
     [Fact]
@@ -184,11 +184,11 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(globalIndex: 4067);
-        Assert.Equal(1, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[1], partitionWalker.PartitionCurrent);
-        Assert.Equal(3, partitionWalker.RelativePositionIndex);
+        partitionWalker.Seek(globalPositionIndex: 4067);
         Assert.Equal(4067, partitionWalker.GlobalIndex);
+        Assert.Equal(1, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[1].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
+        Assert.Equal(3, partitionWalker.RelativePositionIndex);
     }
 
     [Fact]
@@ -198,11 +198,11 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(globalIndex: 8126);
-        Assert.Equal(1, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[1], partitionWalker.PartitionCurrent);
-        Assert.Equal(4063, partitionWalker.RelativePositionIndex);
+        partitionWalker.Seek(globalPositionIndex: 8126);
         Assert.Equal(8126, partitionWalker.GlobalIndex);
+        Assert.Equal(1, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[1].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
+        Assert.Equal(4063, partitionWalker.RelativePositionIndex);
     }
 
     [Fact]
@@ -212,11 +212,11 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(globalIndex: 8127);
-        Assert.Equal(2, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[2], partitionWalker.PartitionCurrent);
-        Assert.Equal(0, partitionWalker.RelativePositionIndex);
+        partitionWalker.Seek(globalPositionIndex: 8127);
         Assert.Equal(8127, partitionWalker.GlobalIndex);
+        Assert.Equal(2, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[2].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
+        Assert.Equal(0, partitionWalker.RelativePositionIndex);
     }
 
     [Fact]
@@ -226,11 +226,11 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(globalIndex: 8130);
-        Assert.Equal(2, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[2], partitionWalker.PartitionCurrent);
-        Assert.Equal(3, partitionWalker.RelativePositionIndex);
+        partitionWalker.Seek(globalPositionIndex: 8130);
         Assert.Equal(8130, partitionWalker.GlobalIndex);
+        Assert.Equal(2, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[2].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
+        Assert.Equal(3, partitionWalker.RelativePositionIndex);
     }
 
     [Fact]
@@ -240,11 +240,11 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(globalIndex: 12083);
-        Assert.Equal(2, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[2], partitionWalker.PartitionCurrent);
-        Assert.Equal(3957, partitionWalker.RelativePositionIndex);
+        partitionWalker.Seek(globalPositionIndex: 12083);
         Assert.Equal(12083, partitionWalker.GlobalIndex);
+        Assert.Equal(2, partitionWalker.PartitionIndex);
+        Assert.Equal(model.PartitionList[2].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
+        Assert.Equal(3957, partitionWalker.RelativePositionIndex);
     }
 
     /// <summary>

@@ -132,7 +132,7 @@ public class PartitionWalker
         PartitionIndex = 0;
         RelativeCharacterIndex = 0;
         GlobalCharacterIndex = 0;
-        var runningCount = 0;
+        // var runningCount = 0;
 
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
@@ -145,17 +145,29 @@ public class PartitionWalker
             //
             // You have some available current index then want to determine if the next partition would make
             // the target index available?
-            if (runningCount + _model.PartitionList[i].Count > targetGlobalCharacterIndex)
+            //
+            //
+            // The if statement is saying if I have a partition of count 0,
+            // and the target is 4064 that I'd have space in the second partition...
+            if (GlobalCharacterIndex + _model.PartitionList[i].Count > targetGlobalCharacterIndex)
             {
-                RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
+                if (i == 0)
+                {
+                    RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
+                    GlobalCharacterIndex += targetGlobalCharacterIndex - GlobalCharacterIndex;
+                }
+                else
+                {
+                    RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
+                    GlobalCharacterIndex += targetGlobalCharacterIndex - GlobalCharacterIndex;
+                }
+                
                 PartitionIndex = i;
-                GlobalCharacterIndex += RelativeCharacterIndex;
                 break;
             }
             else
             {
-                runningCount += _model.PartitionList[i].Count;
-                GlobalCharacterIndex += runningCount;
+                GlobalCharacterIndex += _model.PartitionList[i].Count;
             }
         }
 

@@ -129,7 +129,7 @@ public class PartitionWalker
 
         // First iteration will reset position to the first partition, first character.
         // Eventually support for seek origin should be added.
-        PartitionIndex = 0;
+        PartitionIndex = -1;
         RelativeCharacterIndex = 0;
         GlobalCharacterIndex = 0;
         // var runningCount = 0;

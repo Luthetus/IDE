@@ -265,6 +265,14 @@ public class Partitions
         // I need to stop "shitposting" on youtube and study more lmao
         // I'm supposed to go to bed for work tomorrow but I'm determined
         // to finish this.
+        //
+        // *sigh* I can still get 8 hours of sleep if I go to bed right now.
+        // I'm washed. Coach is telling me to hang up my jersey.
+        // I don't blame him.
+        // I'm gonna get this done tomorrow, just gotta
+        // make sure I get enough sleep tonight.
+        //
+        // (if I didn't have to bed time I'd have finished this fr fr)
 
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //                                          ^

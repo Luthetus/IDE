@@ -129,10 +129,10 @@ public class PartitionWalker
 
         // First iteration will reset position to the first partition, first character.
         // Eventually support for seek origin should be added.
-        PartitionIndex = -1;
+        PartitionIndex = 0;
         RelativeCharacterIndex = 0;
         GlobalCharacterIndex = 0;
-        // var runningCount = 0;
+        var runningCount = 0;
 
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
@@ -149,25 +149,17 @@ public class PartitionWalker
             //
             // The if statement is saying if I have a partition of count 0,
             // and the target is 4064 that I'd have space in the second partition...
-            if (GlobalCharacterIndex + _model.PartitionList[i].Count > targetGlobalCharacterIndex)
+            if (targetGlobalCharacterIndex < GlobalCharacterIndex + _model.PartitionList[i].Count)
             {
-                if (i == 0)
-                {
-                    RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
-                    GlobalCharacterIndex += targetGlobalCharacterIndex - GlobalCharacterIndex;
-                }
-                else
-                {
-                    RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
-                    GlobalCharacterIndex += targetGlobalCharacterIndex - GlobalCharacterIndex;
-                }
-                
+                RelativeCharacterIndex = targetGlobalCharacterIndex - runningCount;
+                GlobalCharacterIndex += RelativeCharacterIndex;
                 PartitionIndex = i;
                 break;
             }
             else
             {
                 GlobalCharacterIndex += _model.PartitionList[i].Count;
+                runningCount += _model.PartitionList[i].Count;
             }
         }
 

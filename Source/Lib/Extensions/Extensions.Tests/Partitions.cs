@@ -1,5 +1,6 @@
 using Clair.TextEditor.RazorLib.TextEditors;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
+using System.Diagnostics;
 
 namespace Clair.Tests.csproj.csproj;
 
@@ -294,8 +295,25 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(targetGlobalCharacterIndex: 8126);
-        Assert.Equal(8126, partitionWalker.GlobalCharacterIndex);
+        // Are you sure you have the correct indices the expected assertions????????????
+        // Check character at partition index x then flatten partitions and check at global index see if char same
+
+        var partitionList = model.PartitionList;
+        var flatList = model.PartitionList.SelectMany(x => x.RichCharacterList).ToList();
+
+        /*
+        var x = partitionList[1].RichCharacterList[4063];
+        var yl2 = flatList[8124];
+        var yl1 = flatList[8125];
+        var y = flatList[8126];
+        var yh1 = flatList[8127];
+        var yh2 = flatList[8128];
+        */
+
+        //var count;
+
+        partitionWalker.Seek(targetGlobalCharacterIndex: 8127);
+        Assert.Equal(8127, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(1, partitionWalker.PartitionIndex);
         Assert.Equal(4063, partitionWalker.RelativeCharacterIndex);
     }
@@ -321,8 +339,31 @@ public class Partitions
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
 
-        partitionWalker.Seek(targetGlobalCharacterIndex: 8127);
-        Assert.Equal(8127, partitionWalker.GlobalCharacterIndex);
+        // Are you sure you have the correct indices the expected assertions????????????
+        // Check character at partition index x then flatten partitions and check at global index see if char same
+
+        var partitionList = model.PartitionList;
+        var flatList = model.PartitionList.SelectMany(x => x.RichCharacterList).ToList();
+
+        /*
+        var x = partitionList[1].RichCharacterList[4063];
+        var yl2 = flatList[8124];
+        var yl1 = flatList[8125];
+        var y = flatList[8126];
+        var yh1 = flatList[8127];
+        var yh2 = flatList[8128];
+        */
+
+        // Global index to first character of arbitrary partition is the count of RichCharacter in every partition that came prior
+        // 8128 makes complete sense since I am doing 4096 partition size and then during the SetContent in particular
+        // the split occurs at partition_size - 32 so you get 4064 count in every partition.
+        //
+        // The final partition has 2 prior, 4064 * 2 => 8128
+        //
+        // My indices were wrong lmao
+
+        partitionWalker.Seek(targetGlobalCharacterIndex: 8128);
+        Assert.Equal(8128, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(2, partitionWalker.PartitionIndex);
         Assert.Equal(0, partitionWalker.RelativeCharacterIndex);
     }
@@ -348,6 +389,21 @@ public class Partitions
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
+
+        // Are you sure you have the correct indices the expected assertions????????????
+        // Check character at partition index x then flatten partitions and check at global index see if char same
+
+        var partitionList = model.PartitionList;
+        var flatList = model.PartitionList.SelectMany(x => x.RichCharacterList).ToList();
+
+        /*
+        var x = partitionList[1].RichCharacterList[4063];
+        var yl2 = flatList[8124];
+        var yl1 = flatList[8125];
+        var y = flatList[8126];
+        var yh1 = flatList[8127];
+        var yh2 = flatList[8128];
+        */
 
         partitionWalker.Seek(targetGlobalCharacterIndex: 8130);
         Assert.Equal(8130, partitionWalker.GlobalCharacterIndex);
@@ -376,6 +432,21 @@ public class Partitions
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
+
+        // Are you sure you have the correct indices the expected assertions????????????
+        // Check character at partition index x then flatten partitions and check at global index see if char same
+
+        var partitionList = model.PartitionList;
+        var flatList = model.PartitionList.SelectMany(x => x.RichCharacterList).ToList();
+
+        /*
+        var x = partitionList[1].RichCharacterList[4063];
+        var yl2 = flatList[8124];
+        var yl1 = flatList[8125];
+        var y = flatList[8126];
+        var yh1 = flatList[8127];
+        var yh2 = flatList[8128];
+        */
 
         partitionWalker.Seek(targetGlobalCharacterIndex: 12083);
         Assert.Equal(12083, partitionWalker.GlobalCharacterIndex);

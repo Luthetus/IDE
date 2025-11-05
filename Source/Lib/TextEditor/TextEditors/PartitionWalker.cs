@@ -145,6 +145,13 @@ public class PartitionWalker
         // By throwing an exception in the out of bounds case you can get the inclusive on both ends I think
         //
 
+        // Yeah I think it is what I just said actually.
+        // Throw if the method parameter is out of bounds.
+        // Otherwise have the 0th partition 0th character be defaulted to.
+        // Then you start the loop.
+        //
+        // Perhaps you have to do something else for the 0th iteration
+
         if (targetGlobalCharacterIndex >= _model.CharCount)
         {
             throw new ClairTextEditorException("if (targetGlobalCharacterIndex >= _model.CharCount)");

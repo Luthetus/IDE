@@ -494,6 +494,9 @@ public class Partitions
         Assert.Equal(1, partitionWalker.PartitionIndex);
         Assert.Equal(4063, partitionWalker.RelativeCharacterIndex);
 
+        var beforeRc1 = partitionList[1].RichCharacterList[4063];
+        var beforeRc2 = partitionList[2].RichCharacterList[0];
+
         var lengthToDecorate = 2;
         while (lengthToDecorate > 0)
         {
@@ -507,7 +510,6 @@ public class Partitions
                 partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
                     partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
                     {
-                        
                         DecorationByte = 1 // This originally would've defaulted to 0 so anything other than that suffices to see that something changed.
                     };
                 --lengthToDecorate;
@@ -518,6 +520,9 @@ public class Partitions
             else
                 partitionWalker.MoveToFirstCharacterOfTheNextPartition();
         }
+
+        var afterRc1 = partitionList[1].RichCharacterList[4063];
+        var afterRc2 = partitionList[2].RichCharacterList[0];
 
         // The "subLength" enumeration doesn't actually change the relative index, it just reads
         // all it can/needs to from the current partition

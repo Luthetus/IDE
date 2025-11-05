@@ -130,51 +130,6 @@ public class PartitionWalker
         RelativeCharacterIndex = 0;
         GlobalCharacterIndex = 0;
 
-        // runningCount has to start at 0 and then equal the count iterations beyond the first because of 0 indexing
-
-        // runningCount = 0;
-        // GlobalCharacterIndex = -1;
-        // RelativeCharacterIndex = -1;
-        //
-        //
-        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ]
-        // ^
-
-        // runningCount = 0;
-        // GlobalCharacterIndex = 0;
-        // RelativeCharacterIndex = 0;
-        //
-        // 
-        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ]
-        //      ^
-
-        // Actually I think it is the diagram above this comment.
-        // Whether you've moved to the first element or not.
-
-        // I don't think I want to even deal with the runningCount it is just kind of annoying to read.
-        // Cause I'm dealing with indices and then runningCount isn't an index it just is a headache.
-        // Unless I need it I'm gonna get rid of it until then.
-
-        // BUT you also have to consider what you said, the first partition is 0 based
-        // but... so you gotta diagram the transition between them.
-        // If the numbers off by 1 it ain't gonna work so I should just figure this out now.
-
-        // runningCount = 3;
-        // GlobalCharacterIndex = 3;
-        // RelativeCharacterIndex = 3;
-        //
-        //
-        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ]
-        //                     ^
-
-        // runningCount = 4;
-        // GlobalCharacterIndex = 4;
-        // RelativeCharacterIndex = 0;
-        //
-        // 
-        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ]
-        //                           ^
-
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
             if (GlobalCharacterIndex + PartitionCurrent.Count > targetGlobalCharacterIndex)

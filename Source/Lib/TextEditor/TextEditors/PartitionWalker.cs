@@ -132,6 +132,8 @@ public class PartitionWalker
 
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
+            // Counts are always greater than indices so this sounds correct,
+            // in addition to making the test pass.
             if (GlobalCharacterIndex + PartitionCurrent.Count > targetGlobalCharacterIndex)
             {
                 RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;

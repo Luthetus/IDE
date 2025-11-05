@@ -194,6 +194,12 @@ public class Partitions
     [Fact]
     public void Seek_IntermediatePartition_LastCharacter()
     {
+        /*
+            Assert.Equal() Failure: Values differ
+            Expected: 4063
+            Actual:   4062
+         */
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -208,6 +214,11 @@ public class Partitions
     [Fact]
     public void Seek_LastPartition_FirstCharacter()
     {
+        /*
+            Assert.Equal() Failure: Values differ
+            Expected: 2
+            Actual:   1
+         */
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -222,6 +233,12 @@ public class Partitions
     [Fact]
     public void Seek_LastPartition_IntermediateCharacter()
     {
+        /*
+            Assert.Equal() Failure: Values differ
+            Expected: 3
+            Actual:   2
+         */
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -236,6 +253,12 @@ public class Partitions
     [Fact]
     public void Seek_LastPartition_LastCharacter()
     {
+        /*
+            Assert.Equal() Failure: Values differ
+            Expected: 3957
+            Actual:   3955
+         */
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);

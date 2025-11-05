@@ -181,7 +181,9 @@ public class PartitionWalker
 
     public void MoveToFirstCharacterOfTheNextPartition()
     {
-
+        ++PartitionIndex;
+        RelativeCharacterIndex = 0;
+        ++GlobalCharacterIndex;
     }
 
     /// <summary>

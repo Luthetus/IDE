@@ -511,6 +511,15 @@ public class Partitions
                         DecorationByte = 1
                     };
                 --lengthToDecorate;
+
+                // The "subLength" enumeration doesn't actually change the relative index, it just reads
+                // all it can/needs to from the current partition
+                // and leaves the 'partitionWalker.RelativeCharacterIndex' unchanged.
+                //
+                // This feels odd.
+                // But I can't have the partitionWalker iterate otherwise optimization would be a mess
+                // because the edit I'm performing would probably need to be abstracted into something,
+                // and that abstraction would be the overhead.
             }
 
             if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.RichCharacterList.Count - 1)

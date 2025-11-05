@@ -179,6 +179,11 @@ public class PartitionWalker
          */
     }
 
+    public void MoveToFirstCharacterOfTheNextPartition()
+    {
+
+    }
+
     /// <summary>
     /// Goal will be to decorate RichCharacter
     /// 

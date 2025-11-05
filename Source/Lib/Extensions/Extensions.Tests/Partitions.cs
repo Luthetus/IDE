@@ -469,6 +469,15 @@ public class Partitions
     /// Transitioning from n partition to n+1 partition because the data
     /// in partition n was fully enumerated and the next value is
     /// the next partition's first entry.
+    /// 
+    /// Insert/Remove/Enumerate
+    /// 
+    /// This is just enumerate to set the decoration bytes.
+    /// If I tell the partitionWalker to seek the last character of the intermediate partition
+    /// then I can furthermore try to set the decoration bytes of the current and next RichCharacter.
+    /// 
+    /// The current RichCharacter is on intermediate partition but the next is on the last partition
+    /// so I just gotta figure out something for this like a while loop and a for loop while needs to read move next partition.
     /// </summary>
     [Fact]
     public void Enumerate_PartitionOverflow()
@@ -480,10 +489,39 @@ public class Partitions
         var partitionList = model.PartitionList;
         var flatList = model.PartitionList.SelectMany(x => x.RichCharacterList).ToList();
 
-        partitionWalker.Seek(targetGlobalCharacterIndex: 8130);
-        Assert.Equal(8130, partitionWalker.GlobalCharacterIndex);
-        Assert.Equal(2, partitionWalker.PartitionIndex);
-        Assert.Equal(2, partitionWalker.RelativeCharacterIndex);
+        partitionWalker.Seek(targetGlobalCharacterIndex: 8127);
+        Assert.Equal(8127, partitionWalker.GlobalCharacterIndex);
+        Assert.Equal(1, partitionWalker.PartitionIndex);
+        Assert.Equal(4063, partitionWalker.RelativeCharacterIndex);
+
+        var lengthToDecorate = 2;
+        while (lengthToDecorate > 0)
+        {
+            var thisLoopAvailableCharacterCount = partitionWalker.PartitionCurrent.RichCharacterList.Count - partitionWalker.RelativeCharacterIndex;
+            if (thisLoopAvailableCharacterCount <= 0)
+                break;
+
+            int takeActual;
+            if (lengthToDecorate < thisLoopAvailableCharacterCount)
+            {
+                takeActual = lengthToDecorate;
+            }
+            else
+            {
+                takeActual = thisLoopAvailableCharacterCount;
+            }
+
+            for (int i = 0; i < takeActual; i++)
+            {
+                partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
+                    partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
+                    {
+                        // 0 should be defaulted so anything other than that suffices to see that something changed.
+                        DecorationByte = 1
+                    };
+                --lengthToDecorate;
+            }
+        }
     }
 
     /// <summary>

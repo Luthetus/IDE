@@ -124,6 +124,8 @@ public class Partitions
     [Fact]
     public void Seek_FirstPartition_FirstCharacter()
     {
+        // What was I doing previously with the runningCount concept???
+
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //      ^
 

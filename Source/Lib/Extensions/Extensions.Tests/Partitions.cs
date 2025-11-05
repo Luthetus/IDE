@@ -360,7 +360,7 @@ public class Partitions
         //
         // The final partition has 2 prior, 4064 * 2 => 8128
         //
-        // My indices were wrong lmao
+        // My asserted indices were wrong lmao
 
         partitionWalker.Seek(targetGlobalCharacterIndex: 8128);
         Assert.Equal(8128, partitionWalker.GlobalCharacterIndex);
@@ -408,7 +408,7 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 8130);
         Assert.Equal(8130, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(2, partitionWalker.PartitionIndex);
-        Assert.Equal(3, partitionWalker.RelativeCharacterIndex);
+        Assert.Equal(2, partitionWalker.RelativeCharacterIndex);
     }
 
     [Fact]
@@ -448,10 +448,17 @@ public class Partitions
         var yh2 = flatList[8128];
         */
 
-        partitionWalker.Seek(targetGlobalCharacterIndex: 12083);
-        Assert.Equal(12083, partitionWalker.GlobalCharacterIndex);
+        partitionWalker.Seek(targetGlobalCharacterIndex: 11724);
+        Assert.Equal(11724, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(2, partitionWalker.PartitionIndex);
-        Assert.Equal(3957, partitionWalker.RelativeCharacterIndex);
+        Assert.Equal(3596, partitionWalker.RelativeCharacterIndex);
+
+        /*
+        omg the test passed.
+        I think I'm so deep in burnout right now that I'm on the edge of insanity.
+        I realized looking back I couldn't read the indices correctly lol
+        I have money from work so I'm gonna go play wow a bit
+         */
     }
 
     /// <summary>

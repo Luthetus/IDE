@@ -132,27 +132,7 @@ public class PartitionWalker
         PartitionIndex = 0;
         RelativeCharacterIndex = 0;
         GlobalCharacterIndex = 0;
-
-        /*if ()
-        {
-
-        }*/
-
-        // Now only the first partition cases work and the non-first-partition cases are all failing.
-        // This is good because it makes more sense and is a better "pattern"
-        
-        // It might be a matter of being inclusive on either end vs any variety of other options.
-        // By throwing an exception in the out of bounds case you can get the inclusive on both ends I think
-        //
-
-        // Yeah I think it is what I just said actually.
-        // Throw if the method parameter is out of bounds.
-        // Otherwise have the 0th partition 0th character be defaulted to.
-        // Then you start the loop.
-        //
-        // Perhaps you have to do something else for the 0th iteration
-
-        
+        var runningCount = 0;
 
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
@@ -165,7 +145,7 @@ public class PartitionWalker
             //
             // You have some available current index then want to determine if the next partition would make
             // the target index available?
-            if (GlobalCharacterIndex + _model.PartitionList[i].Count > targetGlobalCharacterIndex)
+            if (runningCount + _model.PartitionList[i].Count > targetGlobalCharacterIndex)
             {
                 RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
                 PartitionIndex = i;
@@ -174,7 +154,8 @@ public class PartitionWalker
             }
             else
             {
-                GlobalCharacterIndex += _model.PartitionList[i].Count;
+                runningCount += _model.PartitionList[i].Count;
+                GlobalCharacterIndex += runningCount;
             }
         }
 

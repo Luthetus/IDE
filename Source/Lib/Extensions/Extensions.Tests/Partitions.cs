@@ -501,12 +501,7 @@ public class Partitions
             if (thisLoopAvailableCharacterCount <= 0)
                 break;
 
-            int takeActual;
-            if (lengthToDecorate < thisLoopAvailableCharacterCount)
-                takeActual = lengthToDecorate;
-            else
-                takeActual = thisLoopAvailableCharacterCount;
-
+            int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
             for (int i = 0; i < takeActual; i++)
             {
                 partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =

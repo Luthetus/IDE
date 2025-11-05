@@ -124,19 +124,19 @@ public class PartitionWalker
     /// </remarks>
     public void Seek(int targetGlobalCharacterIndex)
     {
-
-        
-
-
-
-
-
+        if (targetGlobalCharacterIndex < 0 || targetGlobalCharacterIndex >= _model.CharCount)
+            throw new ClairTextEditorException("if (targetGlobalCharacterIndex >= _model.CharCount)");
 
         // First iteration will reset position to the first partition, first character.
         // Eventually support for seek origin should be added.
         PartitionIndex = -1;
         RelativeCharacterIndex = 0;
         GlobalCharacterIndex = 0;
+
+        /*if ()
+        {
+
+        }*/
 
         // Now only the first partition cases work and the non-first-partition cases are all failing.
         // This is good because it makes more sense and is a better "pattern"
@@ -152,16 +152,20 @@ public class PartitionWalker
         //
         // Perhaps you have to do something else for the 0th iteration
 
-        if (targetGlobalCharacterIndex >= _model.CharCount)
-        {
-            throw new ClairTextEditorException("if (targetGlobalCharacterIndex >= _model.CharCount)");
-        }
+        
 
         for (int i = 0; i < _model.PartitionList.Count; i++)
         {
             // Counts are always greater than indices so this sounds correct,
             // in addition to making the test pass.
-            if (GlobalCharacterIndex + _model.PartitionList[PartitionIndex + 1].Count > targetGlobalCharacterIndex)
+            //
+            // When checking if the 0th index in a partition... it is the count of the previous partitions.
+            //
+            // But this if statement seems just plain wrong.
+            //
+            // You have some available current index then want to determine if the next partition would make
+            // the target index available?
+            if (GlobalCharacterIndex + _model.PartitionList[PartitionIndex + 1].Count >= targetGlobalCharacterIndex)
             {
                 RelativeCharacterIndex = targetGlobalCharacterIndex - GlobalCharacterIndex;
                 PartitionIndex = i;

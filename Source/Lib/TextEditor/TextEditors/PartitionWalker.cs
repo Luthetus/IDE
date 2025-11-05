@@ -201,7 +201,9 @@ public class PartitionWalker
     /// </summary>
     public int CalculateSubLengthByCurrentPartition(int length)
     {
-        // First iteration will reset position to the first partition, first character.
+        // This might actually be a very simple idea and you just need to start with a seek I don't know I'm still exhausted.
+
+        /*// First iteration will reset position to the first partition, first character.
         // Eventually support for seek origin should be added.
         PartitionIndex = 0;
         RelativeCharacterIndex = 0;
@@ -250,6 +252,7 @@ public class PartitionWalker
             i--;
             continue;
         }
-         */
+         *//*
+        */
     }
 }

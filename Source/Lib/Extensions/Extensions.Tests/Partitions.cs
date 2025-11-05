@@ -127,10 +127,10 @@ public class Partitions
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //      ^
 
-        // TargetGlobalCharacterIndex: aaa
-        // GlobalCharacterIndex: aaa
-        // PartitionIndex: aaa
-        // TargetGlobalPositionIndex: aaa
+        // TargetGlobalCharacterIndex: 0
+        // GlobalCharacterIndex: 0
+        // RelativeCharacterIndex: 0
+        // PartitionIndex: 0
 
 
         var model = GetTestModel(_content);
@@ -149,6 +149,11 @@ public class Partitions
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //           ^
 
+        // TargetGlobalCharacterIndex: 1
+        // GlobalCharacterIndex: 1
+        // RelativeCharacterIndex: 1
+        // PartitionIndex: 0
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -164,6 +169,11 @@ public class Partitions
     {
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //                     ^
+
+        // TargetGlobalCharacterIndex: 3
+        // GlobalCharacterIndex: 3
+        // RelativeCharacterIndex: 3
+        // PartitionIndex: 0
 
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
@@ -181,6 +191,11 @@ public class Partitions
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //                           ^
 
+        // TargetGlobalCharacterIndex: 4
+        // GlobalCharacterIndex: 4
+        // RelativeCharacterIndex: 0
+        // PartitionIndex: 1
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -197,6 +212,11 @@ public class Partitions
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //                                     ^
 
+        // TargetGlobalCharacterIndex: 6
+        // GlobalCharacterIndex: 6
+        // RelativeCharacterIndex: 2
+        // PartitionIndex: 1
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -212,6 +232,11 @@ public class Partitions
     {
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //                                          ^
+
+        // TargetGlobalCharacterIndex: 7
+        // GlobalCharacterIndex: 7
+        // RelativeCharacterIndex: 3
+        // PartitionIndex: 1
 
         /*
             Assert.Equal() Failure: Values differ
@@ -235,6 +260,11 @@ public class Partitions
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //                                                 ^
 
+        // TargetGlobalCharacterIndex: 8
+        // GlobalCharacterIndex: 8
+        // RelativeCharacterIndex: 0
+        // PartitionIndex: 2
+
         /*
             Assert.Equal() Failure: Values differ
             Expected: 2
@@ -255,6 +285,11 @@ public class Partitions
     {
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //                                                      ^
+
+        // TargetGlobalCharacterIndex: 9
+        // GlobalCharacterIndex: 9
+        // RelativeCharacterIndex: 1
+        // PartitionIndex: 2
 
         /*
             Assert.Equal() Failure: Values differ
@@ -277,6 +312,11 @@ public class Partitions
     {
         //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
         //                                                                ^
+
+        // TargetGlobalCharacterIndex: 11
+        // GlobalCharacterIndex: 11
+        // RelativeCharacterIndex: 3
+        // PartitionIndex: 2
 
         /*
             Assert.Equal() Failure: Values differ

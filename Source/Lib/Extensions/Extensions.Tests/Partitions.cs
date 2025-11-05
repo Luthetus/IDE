@@ -131,6 +131,7 @@ public class Partitions
         // GlobalCharacterIndex: 0
         // RelativeCharacterIndex: 0
         // PartitionIndex: 0
+        // Count: 0
 
 
         var model = GetTestModel(_content);
@@ -153,6 +154,7 @@ public class Partitions
         // GlobalCharacterIndex: 1
         // RelativeCharacterIndex: 1
         // PartitionIndex: 0
+        // Count: 1
 
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
@@ -174,6 +176,7 @@ public class Partitions
         // GlobalCharacterIndex: 3
         // RelativeCharacterIndex: 3
         // PartitionIndex: 0
+        // Count: 3
 
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
@@ -195,6 +198,7 @@ public class Partitions
         // GlobalCharacterIndex: 4
         // RelativeCharacterIndex: 0
         // PartitionIndex: 1
+        // Count: 4
 
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
@@ -216,6 +220,7 @@ public class Partitions
         // GlobalCharacterIndex: 6
         // RelativeCharacterIndex: 2
         // PartitionIndex: 1
+        // Count: 6
 
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
@@ -237,6 +242,8 @@ public class Partitions
         // GlobalCharacterIndex: 7
         // RelativeCharacterIndex: 3
         // PartitionIndex: 1
+        // Count: 7
+
 
         /*
             Assert.Equal() Failure: Values differ
@@ -264,6 +271,7 @@ public class Partitions
         // GlobalCharacterIndex: 8
         // RelativeCharacterIndex: 0
         // PartitionIndex: 2
+        // Count: 8
 
         /*
             Assert.Equal() Failure: Values differ
@@ -290,6 +298,7 @@ public class Partitions
         // GlobalCharacterIndex: 9
         // RelativeCharacterIndex: 1
         // PartitionIndex: 2
+        // Count: 9
 
         /*
             Assert.Equal() Failure: Values differ
@@ -317,6 +326,7 @@ public class Partitions
         // GlobalCharacterIndex: 11
         // RelativeCharacterIndex: 3
         // PartitionIndex: 2
+        // Count: 11
 
         /*
             Assert.Equal() Failure: Values differ

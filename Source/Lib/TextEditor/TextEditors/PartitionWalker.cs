@@ -124,6 +124,14 @@ public class PartitionWalker
     /// </remarks>
     public void Seek(int targetGlobalCharacterIndex)
     {
+
+        
+
+
+
+
+
+
         // First iteration will reset position to the first partition, first character.
         // Eventually support for seek origin should be added.
         PartitionIndex = 0;
@@ -143,7 +151,7 @@ public class PartitionWalker
             }
             else
             {
-                GlobalCharacterIndex += PartitionCurrent.Count;
+                GlobalCharacterIndex += PartitionCurrent.Count - 1;
             }
         }
 

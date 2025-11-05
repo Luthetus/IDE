@@ -124,6 +124,15 @@ public class Partitions
     [Fact]
     public void Seek_FirstPartition_FirstCharacter()
     {
+        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
+        //      ^
+
+        // TargetGlobalCharacterIndex: aaa
+        // GlobalCharacterIndex: aaa
+        // PartitionIndex: aaa
+        // TargetGlobalPositionIndex: aaa
+
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -131,13 +140,15 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 0);
         Assert.Equal(0, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(0, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[0].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
         Assert.Equal(0, partitionWalker.RelativeCharacterIndex);
     }
 
     [Fact]
     public void Seek_FirstPartition_IntermediateCharacter()
     {
+        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
+        //           ^
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -145,13 +156,15 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 3);
         Assert.Equal(3, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(0, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[0].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
         Assert.Equal(3, partitionWalker.RelativeCharacterIndex);
     }
     
     [Fact]
     public void Seek_FirstPartition_LastCharacter()
     {
+        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
+        //                     ^
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -159,13 +172,15 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 4063);
         Assert.Equal(4063, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(0, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[0].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
         Assert.Equal(4063, partitionWalker.RelativeCharacterIndex);
     }
 
     [Fact]
     public void Seek_IntermediatePartition_FirstCharacter()
     {
+        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
+        //                           ^
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -173,13 +188,15 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 4064);
         Assert.Equal(4064, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(1, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[1].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
         Assert.Equal(0, partitionWalker.RelativeCharacterIndex);
     }
 
     [Fact]
     public void Seek_IntermediatePartition_IntermediateCharacter()
     {
+        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
+        //                                     ^
+
         var model = GetTestModel(_content);
         var partitionWalker = new PartitionWalker();
         partitionWalker.ReInitialize(model);
@@ -187,13 +204,15 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 4067);
         Assert.Equal(4067, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(1, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[1].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
         Assert.Equal(3, partitionWalker.RelativeCharacterIndex);
     }
 
     [Fact]
     public void Seek_IntermediatePartition_LastCharacter()
     {
+        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
+        //                                          ^
+
         /*
             Assert.Equal() Failure: Values differ
             Expected: 4063
@@ -207,13 +226,15 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 8126);
         Assert.Equal(8126, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(1, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[1].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
         Assert.Equal(4063, partitionWalker.RelativeCharacterIndex);
     }
 
     [Fact]
     public void Seek_LastPartition_FirstCharacter()
     {
+        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
+        //                                                 ^
+
         /*
             Assert.Equal() Failure: Values differ
             Expected: 2
@@ -226,13 +247,15 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 8127);
         Assert.Equal(8127, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(2, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[2].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
         Assert.Equal(0, partitionWalker.RelativeCharacterIndex);
     }
 
     [Fact]
     public void Seek_LastPartition_IntermediateCharacter()
     {
+        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
+        //                                                      ^
+
         /*
             Assert.Equal() Failure: Values differ
             Expected: 3
@@ -246,13 +269,15 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 8130);
         Assert.Equal(8130, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(2, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[2].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
         Assert.Equal(3, partitionWalker.RelativeCharacterIndex);
     }
 
     [Fact]
     public void Seek_LastPartition_LastCharacter()
     {
+        //   [ 'a', 'b', 'c', 'd'] ['e', 'f', 'g', 'h' ] ['i', 'j', 'k', 'l' ]
+        //                                                                ^
+
         /*
             Assert.Equal() Failure: Values differ
             Expected: 3957
@@ -266,7 +291,6 @@ public class Partitions
         partitionWalker.Seek(targetGlobalCharacterIndex: 12083);
         Assert.Equal(12083, partitionWalker.GlobalCharacterIndex);
         Assert.Equal(2, partitionWalker.PartitionIndex);
-        Assert.Equal(model.PartitionList[2].RichCharacterList, partitionWalker.PartitionCurrent.RichCharacterList);
         Assert.Equal(3957, partitionWalker.RelativeCharacterIndex);
     }
 

@@ -580,10 +580,7 @@ public sealed class TextEditorModel
         SetIsDirtyTrue();
         ShouldCalculateVirtualizationResult = true;
 
-        // 2025-11-04 partition changes
-        /*
         PersistentState.__TextEditorViewModelLiason.SetContent(PersistentState.ViewModelKeyList);
-        */
     }
 
     public void ClearEditBlocks()

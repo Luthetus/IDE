@@ -1066,7 +1066,7 @@ public partial class TextEditorService
                 
                 __PartitionWalker.Seek(targetGlobalCharacterIndex: position_StartInclusiveIndex);
                 
-                var lengthToDecorate = 2;
+                var lengthToDecorate = position_EndExclusiveIndex - position_StartInclusiveIndex;
                 int takeActual = 0;
                 //while (lengthToDecorate > 0)
                 {
@@ -1085,10 +1085,10 @@ public partial class TextEditorService
                         --lengthToDecorate;
                     }
         
-                    if (__PartitionWalker.PartitionIndex >= __PartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                    /*if (__PartitionWalker.PartitionIndex >= __PartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
                         break;
                     else
-                        __PartitionWalker.MoveToFirstCharacterOfTheNextPartition();
+                        __PartitionWalker.MoveToFirstCharacterOfTheNextPartition();*/
                 }
 
                 // TODO: ValueList the partition's RichCharacterList so you can avoid the marshaling.

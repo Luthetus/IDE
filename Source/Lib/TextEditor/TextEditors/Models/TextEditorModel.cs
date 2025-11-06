@@ -577,6 +577,7 @@ public sealed class TextEditorModel
             Position_EndExclusiveIndex = richCharacterIndex,
         };
 
+        _charCount = richCharacterIndex;
         SetIsDirtyTrue();
         ShouldCalculateVirtualizationResult = true;
 

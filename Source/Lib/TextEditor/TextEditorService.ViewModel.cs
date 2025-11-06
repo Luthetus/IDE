@@ -296,8 +296,8 @@ public partial class TextEditorService
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
-        /*
-        // 2025-11-04 partition changes
+        editContext.TextEditorService.__PartitionWalker.ReInitialize(modelModifier);
+
         var shouldClearSelection = false;
 
         if (shiftKey)
@@ -388,7 +388,10 @@ public partial class TextEditorService
                                     {
                                         while (--positionIndex > minPositionIndex)
                                         {
-                                            var currentRichCharacter = modelModifier.RichCharacterList[positionIndex];
+                                            // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
+                                            editContext.TextEditorService.__PartitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+                                            var currentRichCharacter = editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
+                                                editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex];
 
                                             if (Char.IsUpper(currentRichCharacter.Value) || currentRichCharacter.Value == '_')
                                             {
@@ -516,7 +519,10 @@ public partial class TextEditorService
                                     {
                                         while (++positionIndex < maxPositionIndex)
                                         {
-                                            var currentRichCharacter = modelModifier.RichCharacterList[positionIndex];
+                                            // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
+                                            editContext.TextEditorService.__PartitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+                                            var currentRichCharacter = editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
+                                                editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex];
 
                                             if (Char.IsUpper(currentRichCharacter.Value) || currentRichCharacter.Value == '_')
                                             {
@@ -567,7 +573,11 @@ public partial class TextEditorService
 
                     while (indentationPositionIndexExclusiveEnd < lastValidPositionIndex)
                     {
-                        var possibleIndentationChar = modelModifier.RichCharacterList[indentationPositionIndexExclusiveEnd].Value;
+                        // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
+                        editContext.TextEditorService.__PartitionWalker.Seek(targetGlobalCharacterIndex: indentationPositionIndexExclusiveEnd);
+                        var possibleIndentationChar = editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
+                                editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex]
+                            .Value;
 
                         if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
                         {
@@ -613,7 +623,6 @@ public partial class TextEditorService
             viewModel.SelectionAnchorPositionIndex = -1;
             viewModel.SelectionEndingPositionIndex = 0;
         }
-        */
     }
 
     public void ViewModel_CursorMovePageTop(

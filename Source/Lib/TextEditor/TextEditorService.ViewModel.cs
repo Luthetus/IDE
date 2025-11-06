@@ -707,7 +707,9 @@ public partial class TextEditorService
         TextEditorViewModel viewModel,
         TextEditorComponentData componentData)
     {
-        /*
+        __PartitionWalker.ReInitialize(modelModifier);
+    
+        /**/
         // 2025-11-04 partition changes
         var tabWidth = editContext.TextEditorService.Options_GetOptions().TabWidth;
         viewModel.Virtualization.ShouldCalculateVirtualizationResult = false;
@@ -1061,11 +1063,39 @@ public partial class TextEditorService
             else
             {
                 virtualizationSpan_StartInclusiveIndex = viewModel.Virtualization.VirtualizationSpanList.Count;
+                
+                __PartitionWalker.Seek(targetGlobalCharacterIndex: position_StartInclusiveIndex);
+                
+                var lengthToDecorate = 2;
+                int takeActual = 0;
+                //while (lengthToDecorate > 0)
+                {
+                    var thisLoopAvailableCharacterCount = __PartitionWalker.PartitionCurrent.RichCharacterList.Count - __PartitionWalker.RelativeCharacterIndex;
+                    if (thisLoopAvailableCharacterCount <= 0)
+                        break;
+        
+                    takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
+                    for (int i = 0; i < takeActual; i++)
+                    {
+                        __PartitionWalker.PartitionCurrent.RichCharacterList[__PartitionWalker.RelativeCharacterIndex + i] =
+                            __PartitionWalker.PartitionCurrent.RichCharacterList[__PartitionWalker.RelativeCharacterIndex + i] with
+                            {
+                                DecorationByte = 1 // This originally would've defaulted to 0 so anything other than that suffices to see that something changed.
+                            };
+                        --lengthToDecorate;
+                    }
+        
+                    if (__PartitionWalker.PartitionIndex >= __PartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                        break;
+                    else
+                        __PartitionWalker.MoveToFirstCharacterOfTheNextPartition();
+                }
 
-                var richCharacterSpan = new Span<RichCharacter>(
-                    modelModifier.RichCharacterList,
-                    position_StartInclusiveIndex,
-                    position_EndExclusiveIndex - position_StartInclusiveIndex);
+                // TODO: ValueList the partition's RichCharacterList so you can avoid the marshaling.
+                //Console.WriteLine($"rci:{__PartitionWalker.RelativeCharacterIndex}, takeActual:{takeActual}");
+                var richCharacterSpan = System.Runtime.InteropServices.CollectionsMarshal
+                    .AsSpan(__PartitionWalker.PartitionCurrent.RichCharacterList)
+                    .Slice(__PartitionWalker.RelativeCharacterIndex, takeActual);
 
                 var currentDecorationByte = richCharacterSpan[0].DecorationByte;
 
@@ -1152,7 +1182,7 @@ public partial class TextEditorService
                     }
                 }
 
-                /* Final grouping of contiguous characters *//*
+                /* Final grouping of contiguous characters */
                 viewModel.Virtualization.VirtualizationSpanList = viewModel.Virtualization.VirtualizationSpanList.C_Add(new TextEditorVirtualizationSpan(
                     cssClass: modelModifier.PersistentState.DecorationMapper.Map(currentDecorationByte),
                     text: __StringBuilder.ToString()));
@@ -1224,7 +1254,6 @@ public partial class TextEditorService
         }
 
         componentData.Virtualization = viewModel.Virtualization;
-        */
     }
 
     private static int ViewModel_CountDigits(int argumentNumber)

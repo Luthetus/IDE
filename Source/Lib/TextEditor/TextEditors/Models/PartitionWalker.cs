@@ -1,8 +1,8 @@
-﻿using Clair.TextEditor.RazorLib.Characters.Models;
+using Clair.TextEditor.RazorLib.Characters.Models;
 using Clair.TextEditor.RazorLib.Exceptions;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 
-namespace Clair.TextEditor.RazorLib.TextEditors;
+namespace Clair.TextEditor.RazorLib.TextEditors.Models;
 
 /// <summary>
 /// # TOC
@@ -125,7 +125,7 @@ public class PartitionWalker
     public void Seek(int targetGlobalCharacterIndex)
     {
         if (targetGlobalCharacterIndex < 0 || targetGlobalCharacterIndex >= _model.CharCount)
-            throw new ClairTextEditorException("if (targetGlobalCharacterIndex >= _model.CharCount)");
+            throw new ClairTextEditorException($"if (targetGlobalCharacterIndex:{targetGlobalCharacterIndex} < 0 || targetGlobalCharacterIndex:{targetGlobalCharacterIndex} >= _model.CharCount:{_model.CharCount})");
 
         // First iteration will reset position to the first partition, first character.
         // Eventually support for seek origin should be added.

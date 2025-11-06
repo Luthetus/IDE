@@ -105,6 +105,9 @@ public sealed partial class TextEditorService
         _viewModel_Exchange = original;
         return viewModel;
     }
+    
+    /// <summary>TextEditorEditContext only</summary>
+    public PartitionWalker __PartitionWalker = new();
 
     public TextEditorService(
         IJSRuntime jsRuntime,

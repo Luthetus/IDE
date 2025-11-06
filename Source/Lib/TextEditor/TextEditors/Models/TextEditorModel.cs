@@ -1,16 +1,17 @@
-using System.Text;
 using Clair.Common.RazorLib;
-using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Keymaps.Models;
+using Clair.Common.RazorLib.Keys.Models;
 using Clair.TextEditor.RazorLib.Characters.Models;
+using Clair.TextEditor.RazorLib.CompilerServices;
 using Clair.TextEditor.RazorLib.Cursors.Models;
+using Clair.TextEditor.RazorLib.Decorations.Models;
 using Clair.TextEditor.RazorLib.Edits.Models;
 using Clair.TextEditor.RazorLib.Exceptions;
-using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
-using Clair.TextEditor.RazorLib.Decorations.Models;
-using Clair.TextEditor.RazorLib.CompilerServices;
+using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
+using Microsoft.AspNetCore.Components.Forms;
+using System.Text;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
 
@@ -2088,7 +2089,7 @@ public sealed class TextEditorModel
     ///     -ELSE IF the start of a word is to the right of the cursor that word will be returned.<br/><br/>
     ///     -ELSE IF the end of a word is to the left of the cursor that word will be returned.<br/><br/>
     ///     -ELSE (GetWordTextSpanResultKind.None, default).</summary>
-    public (GetWordTextSpanResultKind ResultKind, TextEditorTextSpan TextSpan) GetWordTextSpan(int positionIndex)
+    public (GetWordTextSpanResultKind ResultKind, TextEditorTextSpan TextSpan) GetWordTextSpan(int positionIndex, PartitionWalker partitionWalker)
     {
         var previousCharacter = GetCharacter(positionIndex - 1);
         var currentCharacter = GetCharacter(positionIndex);
@@ -2104,7 +2105,8 @@ public sealed class TextEditorModel
             var wordColumnIndexStartInclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineInformation.Index,
                 columnIndex,
-                true);
+                true,
+                partitionWalker);
 
             if (wordColumnIndexStartInclusive == -1)
                 wordColumnIndexStartInclusive = 0;
@@ -2112,7 +2114,8 @@ public sealed class TextEditorModel
             var wordColumnIndexEndExclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineInformation.Index,
                 columnIndex,
-                false);
+                false,
+                partitionWalker);
 
             if (wordColumnIndexEndExclusive == -1)
                 wordColumnIndexEndExclusive = GetLineLength(lineInformation.Index);
@@ -2127,7 +2130,8 @@ public sealed class TextEditorModel
             var wordColumnIndexEndExclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineInformation.Index,
                 columnIndex,
-                false);
+                false,
+                partitionWalker);
 
             if (wordColumnIndexEndExclusive == -1)
                 wordColumnIndexEndExclusive = GetLineLength(lineInformation.Index);
@@ -2142,7 +2146,8 @@ public sealed class TextEditorModel
             var wordColumnIndexStartInclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineInformation.Index,
                 columnIndex,
-                true);
+                true,
+                partitionWalker);
 
             if (wordColumnIndexStartInclusive == -1)
                 wordColumnIndexStartInclusive = 0;
@@ -2275,11 +2280,9 @@ public sealed class TextEditorModel
     public int GetColumnIndexOfCharacterWithDifferingKind(
         int lineIndex,
         int columnIndex,
-        bool moveBackwards)
+        bool moveBackwards,
+        PartitionWalker partitionWalker)
     {
-        return -1;
-        /*
-        // 2025-11-04 partition changes
         var iterateBy = moveBackwards
             ? -1
             : 1;
@@ -2300,21 +2303,31 @@ public sealed class TextEditorModel
             positionIndex -= 1;
         }
 
-        if (positionIndex < 0 || positionIndex >= RichCharacterList.Length)
+        if (positionIndex < 0 || positionIndex >= CharCount)
             return -1;
 
-        var startCharacterKind = CharacterKindHelper.CharToCharacterKind(RichCharacterList[positionIndex].Value);
+        // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
+        partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+        var startCharacterKind = CharacterKindHelper.CharToCharacterKind(
+            partitionWalker.PartitionCurrent.RichCharacterList[
+                partitionWalker.RelativeCharacterIndex]
+            .Value);
 
         while (true)
         {
-            if (positionIndex >= RichCharacterList.Length ||
+            if (positionIndex >= CharCount ||
                 positionIndex > lastPositionIndexOnLine ||
                 positionIndex < lineStartPositionIndex)
             {
                 return -1;
             }
 
-            var currentCharacterKind = CharacterKindHelper.CharToCharacterKind(RichCharacterList[positionIndex].Value);
+            // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
+            partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+            var currentCharacterKind = CharacterKindHelper.CharToCharacterKind(
+                partitionWalker.PartitionCurrent.RichCharacterList[
+                    partitionWalker.RelativeCharacterIndex]
+                .Value);
 
             if (currentCharacterKind != startCharacterKind)
                 break;
@@ -2326,7 +2339,6 @@ public sealed class TextEditorModel
             positionIndex += 1;
 
         return positionIndex - lineStartPositionIndex;
-        */
     }
 
     public bool CanUndoEdit()
@@ -2358,6 +2370,7 @@ public sealed class TextEditorModel
     public string? ReadPreviousWordOrDefault(
         int lineIndex,
         int columnIndex,
+        PartitionWalker partitionWalker,
         bool isRecursiveCall = false)
     {
         var wordPositionIndexEndExclusive = GetPositionIndex(lineIndex, columnIndex);
@@ -2374,7 +2387,7 @@ public sealed class TextEditorModel
             var anotherAttemptColumnIndex = columnIndex - 1;
 
             if (anotherAttemptColumnIndex >= 0)
-                return ReadPreviousWordOrDefault(lineIndex, anotherAttemptColumnIndex, true);
+                return ReadPreviousWordOrDefault(lineIndex, anotherAttemptColumnIndex, partitionWalker, isRecursiveCall: true);
         }
 
         if (wordCharacterKind == CharacterKind.LetterOrDigit)
@@ -2382,7 +2395,8 @@ public sealed class TextEditorModel
             var wordColumnIndexStartInclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineIndex,
                 columnIndex,
-                true);
+                true,
+                partitionWalker);
 
             if (wordColumnIndexStartInclusive == -1)
                 wordColumnIndexStartInclusive = 0;
@@ -2400,7 +2414,7 @@ public sealed class TextEditorModel
     /// This method and <see cref="ReadPreviousWordOrDefault(TextEditorModel, int, int, bool)"/>
     /// are separate because of 'Ctrl + Space' bring up autocomplete when at a period.
     /// </summary>
-    public string? ReadNextWordOrDefault(int lineIndex, int columnIndex)
+    public string? ReadNextWordOrDefault(int lineIndex, int columnIndex, PartitionWalker partitionWalker)
     {
         var wordPositionIndexStartInclusive = GetPositionIndex(lineIndex, columnIndex);
         var wordCharacterKind = GetCharacterKind(wordPositionIndexStartInclusive);
@@ -2410,7 +2424,8 @@ public sealed class TextEditorModel
             var wordColumnIndexEndExclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineIndex,
                 columnIndex,
-                false);
+                false,
+                partitionWalker);
 
             if (wordColumnIndexEndExclusive == -1)
                 wordColumnIndexEndExclusive = GetLineLength(lineIndex);

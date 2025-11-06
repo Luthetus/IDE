@@ -359,7 +359,8 @@ public partial class TextEditorService
                             var columnIndexOfCharacterWithDifferingKind = modelModifier.GetColumnIndexOfCharacterWithDifferingKind(
                                 viewModel.LineIndex,
                                 viewModel.ColumnIndex,
-                                true);
+                                true,
+                                __PartitionWalker);
 
                             if (columnIndexOfCharacterWithDifferingKind == -1) // Move to start of line
                             {
@@ -488,7 +489,8 @@ public partial class TextEditorService
                             var columnIndexOfCharacterWithDifferingKind = modelModifier.GetColumnIndexOfCharacterWithDifferingKind(
                                 viewModel.LineIndex,
                                 viewModel.ColumnIndex,
-                                false);
+                                false,
+                                __PartitionWalker);
 
                             if (columnIndexOfCharacterWithDifferingKind == -1) // Move to end of line
                             {

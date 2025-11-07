@@ -286,10 +286,10 @@ public sealed class TextEditorModel
     {
         MostCharactersOnASingleLineTuple = (0, TextEditorModel.MOST_CHARACTERS_ON_A_SINGLE_ROW_MARGIN);
 
-        PartitionList = new List<TextEditorPartition> { new TextEditorPartition(new List<RichCharacter>()) };
+        PartitionList = new List<TextEditorPartition> { new TextEditorPartition(new ValueList<RichCharacter>(capacity: 4)) };
         _partitionListChanged = true;
 
-        LineEndList = new List<LineEnd> 
+        LineEndList = new List<LineEnd>
         {
             new LineEnd(0, 0, LineEndKind.EndOfFile)
         };
@@ -456,7 +456,7 @@ public sealed class TextEditorModel
         {
             if (partition.Count >= (PersistentState.PartitionSize - 32))
             {
-                partition = new TextEditorPartition(new List<RichCharacter>());
+                partition = new TextEditorPartition(new ValueList<RichCharacter>(capacity: 4));
                 PartitionList.Add(partition);
             }
         
@@ -2808,10 +2808,11 @@ public sealed class TextEditorModel
 
         // Replace old
         {
-            var partition = new TextEditorPartition(originalPartition.RichCharacterList
-                .Skip(0)
-                .Take(firstUnevenSplit)
-                .ToList());
+            var partition = new TextEditorPartition(new ValueList<RichCharacter>(capacity: firstUnevenSplit));
+            Array.Copy(
+                originalPartition.RichCharacterList.u_Items,
+                partition.RichCharacterList.u_Items,
+                firstUnevenSplit);
 
             PartitionListSetItem(
                 partitionIndex,
@@ -2820,10 +2821,13 @@ public sealed class TextEditorModel
 
         // Insert new
         {
-            var partition = new TextEditorPartition(originalPartition.RichCharacterList
-                .Skip(firstUnevenSplit)
-                .Take(secondUnevenSplit)
-                .ToList());
+            var partition = new TextEditorPartition(new ValueList<RichCharacter>(capacity: secondUnevenSplit));
+            Array.Copy(
+                originalPartition.RichCharacterList.u_Items,
+                firstUnevenSplit,
+                partition.RichCharacterList.u_Items,
+                0,
+                secondUnevenSplit);
 
             PartitionListInsert(
                 partitionIndex + 1,
@@ -3055,7 +3059,7 @@ public sealed class TextEditorModel
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
         partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(PartitionList[indexOfPartitionWithAvailableSpace]);
-        partition.RichCharacterList.Insert(relativePositionIndex, richCharacter);
+        partition.RichCharacterList.C_Insert(relativePositionIndex, richCharacter);
         PartitionListSetItem(indexOfPartitionWithAvailableSpace, partition);
     }
 

@@ -1537,10 +1537,9 @@ public sealed class TextEditorModel
         DeleteKind deleteKind,
         bool usePositionIndex)
     {
+        PersistentState.__TextEditorViewModelLiason.PartitionWalker.ReInitialize(this);
+
         // TODO: DeleteMetadata should NOT be a nullable value tuple, heap allocation every non-null read.
-        return null;
-        /*
-        // 2025-11-04 partition changes
         var initiallyHadSelection = TextEditorSelectionHelper.HasSelectedText(viewModel);
         var initialLineIndex = viewModel.LineIndex;
         var positionIndex = this.GetPositionIndex(viewModel);
@@ -1587,7 +1586,8 @@ public sealed class TextEditorModel
                 var columnIndexOfCharacterWithDifferingKind = this.GetColumnIndexOfCharacterWithDifferingKind(
                     viewModel.LineIndex,
                     viewModel.ColumnIndex,
-                    false);
+                    false,
+                    PersistentState.__TextEditorViewModelLiason.PartitionWalker);
 
                 // -1 implies that no differing kind was found on the current line.
                 if (columnIndexOfCharacterWithDifferingKind == -1)
@@ -1609,7 +1609,10 @@ public sealed class TextEditorModel
                 if (toDeletePositionIndex < 0 || toDeletePositionIndex >= CharCount)
                     break;
 
-                var richCharacterToDelete = RichCharacterList[toDeletePositionIndex];
+                PersistentState.__TextEditorViewModelLiason.PartitionWalker.Seek(
+                    targetGlobalCharacterIndex: toDeletePositionIndex);
+                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList[
+                        PersistentState.__TextEditorViewModelLiason.PartitionWalker.RelativeCharacterIndex];
 
                 if (CommonFacts.IsLineEndingCharacter(richCharacterToDelete.Value))
                 {
@@ -1680,7 +1683,8 @@ public sealed class TextEditorModel
                 var columnIndexOfCharacterWithDifferingKind = this.GetColumnIndexOfCharacterWithDifferingKind(
                     viewModel.LineIndex,
                     viewModel.ColumnIndex,
-                    true);
+                    true,
+                    PersistentState.__TextEditorViewModelLiason.PartitionWalker);
 
                 // -1 implies that no differing kind was found on the current line.
                 if (columnIndexOfCharacterWithDifferingKind == -1)
@@ -1700,7 +1704,10 @@ public sealed class TextEditorModel
                 if (toDeletePositionIndex < 0 || toDeletePositionIndex >= CharCount)
                     break;
 
-                var richCharacterToDelete = RichCharacterList[toDeletePositionIndex];
+                PersistentState.__TextEditorViewModelLiason.PartitionWalker.Seek(
+                    targetGlobalCharacterIndex: toDeletePositionIndex);
+                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList[
+                    PersistentState.__TextEditorViewModelLiason.PartitionWalker.RelativeCharacterIndex];
 
                 if (CommonFacts.IsLineEndingCharacter(richCharacterToDelete.Value))
                 {
@@ -1871,7 +1878,6 @@ public sealed class TextEditorModel
         {
             throw new NotImplementedException();
         }
-        */
     }
 
     private void DeleteValue(int positionIndex, int count)

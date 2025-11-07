@@ -9,6 +9,8 @@ public sealed class TextEditorViewModelLiason
         _textEditorService = textEditorService;
     }
 
+    public PartitionWalker PartitionWalker => _textEditorService.__PartitionWalker;
+
     /// <summary>
     /// 'TextEditorEditContext' is more-so just a way to indicate thread safety
     /// for a given method.

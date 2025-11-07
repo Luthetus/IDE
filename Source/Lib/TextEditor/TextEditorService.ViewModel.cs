@@ -1070,25 +1070,36 @@ public partial class TextEditorService
             }
             else
             {
-                /*
-                 * // 2025-11-04 partition changes
-                 * // TODO: Currently this works within same partition but doesn't read into the next one...
-                 * // ...so lines will stop short if they span two partitions.
-                 */
-
                 virtualizationSpan_StartInclusiveIndex = viewModel.Virtualization.VirtualizationSpanList.Count;
+
+                var lengthToDecorate = position_EndExclusiveIndex - position_StartInclusiveIndex;
+
+                virtualizationSpan_EndExclusiveIndex = viewModel.Virtualization.VirtualizationSpanList.Count;
                 
                 __PartitionWalker.Seek(targetGlobalCharacterIndex: position_StartInclusiveIndex);
-                
-                var lengthToDecorate = position_EndExclusiveIndex - position_StartInclusiveIndex;
-                int takeActual = 0;
-                //while (lengthToDecorate > 0)
+
+                while (lengthToDecorate > 0)
                 {
+                    /*
+                     * // 2025-11-04 partition changes
+                     * // TODO: Currently this works within same partition but doesn't read into the next one...
+                     * // ...so lines will stop short if they span two partitions.
+                     */
+
+
+
+                    
+                
+                
+                    int takeActual = 0;
+                
+                
                     var thisLoopAvailableCharacterCount = __PartitionWalker.PartitionCurrent.RichCharacterList.Count - __PartitionWalker.RelativeCharacterIndex;
                     if (thisLoopAvailableCharacterCount <= 0)
                         break;
         
                     takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
+                    lengthToDecorate -= takeActual;
                     /*for (int i = 0; i < takeActual; i++)
                     {
                         __PartitionWalker.PartitionCurrent.RichCharacterList[__PartitionWalker.RelativeCharacterIndex + i] =
@@ -1097,112 +1108,116 @@ public partial class TextEditorService
                                 DecorationByte = 1 // This originally would've defaulted to 0 so anything other than that suffices to see that something changed.
                             };
                         --lengthToDecorate;
-                    }*
-        
-                    /*if (__PartitionWalker.PartitionIndex >= __PartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                    }*/
+
+
+
+                    // TODO: ValueList the partition's RichCharacterList so you can avoid the marshaling.
+                    //Console.WriteLine($"rci:{__PartitionWalker.RelativeCharacterIndex}, takeActual:{takeActual}");
+                    var richCharacterSpan = System.Runtime.InteropServices.CollectionsMarshal
+                        .AsSpan(__PartitionWalker.PartitionCurrent.RichCharacterList)
+                        .Slice(__PartitionWalker.RelativeCharacterIndex, takeActual);
+
+                    var currentDecorationByte = richCharacterSpan[0].DecorationByte;
+
+                    foreach (var richCharacter in richCharacterSpan)
+                    {
+                        if (currentDecorationByte == richCharacter.DecorationByte)
+                        {
+                            // AppendTextEscaped(textEditorService.__StringBuilder, richCharacter, tabKeyOutput, spaceKeyOutput);
+                            switch (richCharacter.Value)
+                            {
+                                case '\t':
+                                    __StringBuilder.Append(tabKeyOutput);
+                                    break;
+                                case ' ':
+                                    __StringBuilder.Append(spaceKeyOutput);
+                                    break;
+                                case '\r':
+                                    break;
+                                case '\n':
+                                    break;
+                                case '<':
+                                    __StringBuilder.Append("&lt;");
+                                    break;
+                                case '>':
+                                    __StringBuilder.Append("&gt;");
+                                    break;
+                                case '"':
+                                    __StringBuilder.Append("&quot;");
+                                    break;
+                                case '\'':
+                                    __StringBuilder.Append("&#39;");
+                                    break;
+                                case '&':
+                                    __StringBuilder.Append("&amp;");
+                                    break;
+                                default:
+                                    __StringBuilder.Append(richCharacter.Value);
+                                    break;
+                            }
+                            // END OF INLINING AppendTextEscaped
+                        }
+                        else
+                        {
+                            viewModel.Virtualization.VirtualizationSpanList = viewModel.Virtualization.VirtualizationSpanList.C_Add(new TextEditorVirtualizationSpan(
+                                cssClass: modelModifier.PersistentState.DecorationMapper.Map(currentDecorationByte),
+                                text: __StringBuilder.ToString()));
+                            __StringBuilder.Clear();
+
+                            // AppendTextEscaped(textEditorService.__StringBuilder, richCharacter, tabKeyOutput, spaceKeyOutput);
+                            switch (richCharacter.Value)
+                            {
+                                case '\t':
+                                    __StringBuilder.Append(tabKeyOutput);
+                                    break;
+                                case ' ':
+                                    __StringBuilder.Append(spaceKeyOutput);
+                                    break;
+                                case '\r':
+                                    break;
+                                case '\n':
+                                    break;
+                                case '<':
+                                    __StringBuilder.Append("&lt;");
+                                    break;
+                                case '>':
+                                    __StringBuilder.Append("&gt;");
+                                    break;
+                                case '"':
+                                    __StringBuilder.Append("&quot;");
+                                    break;
+                                case '\'':
+                                    __StringBuilder.Append("&#39;");
+                                    break;
+                                case '&':
+                                    __StringBuilder.Append("&amp;");
+                                    break;
+                                default:
+                                    __StringBuilder.Append(richCharacter.Value);
+                                    break;
+                            }
+                            // END OF INLINING AppendTextEscaped
+
+                            currentDecorationByte = richCharacter.DecorationByte;
+                        }
+                    }
+
+                    /* Final grouping of contiguous characters */
+                    viewModel.Virtualization.VirtualizationSpanList = viewModel.Virtualization.VirtualizationSpanList.C_Add(new TextEditorVirtualizationSpan(
+                        cssClass: modelModifier.PersistentState.DecorationMapper.Map(currentDecorationByte),
+                        text: __StringBuilder.ToString()));
+                    __StringBuilder.Clear();
+
+                    virtualizationSpan_EndExclusiveIndex = viewModel.Virtualization.VirtualizationSpanList.Count;
+
+                    if (__PartitionWalker.PartitionIndex >= __PartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                        break;
+                    else if (lengthToDecorate <= 0)
                         break;
                     else
-                        __PartitionWalker.MoveToFirstCharacterOfTheNextPartition();*/
+                        __PartitionWalker.MoveToFirstCharacterOfTheNextPartition();
                 }
-
-                // TODO: ValueList the partition's RichCharacterList so you can avoid the marshaling.
-                //Console.WriteLine($"rci:{__PartitionWalker.RelativeCharacterIndex}, takeActual:{takeActual}");
-                var richCharacterSpan = System.Runtime.InteropServices.CollectionsMarshal
-                    .AsSpan(__PartitionWalker.PartitionCurrent.RichCharacterList)
-                    .Slice(__PartitionWalker.RelativeCharacterIndex, takeActual);
-
-                var currentDecorationByte = richCharacterSpan[0].DecorationByte;
-
-                foreach (var richCharacter in richCharacterSpan)
-                {
-                    if (currentDecorationByte == richCharacter.DecorationByte)
-                    {
-                        // AppendTextEscaped(textEditorService.__StringBuilder, richCharacter, tabKeyOutput, spaceKeyOutput);
-                        switch (richCharacter.Value)
-                        {
-                            case '\t':
-                                __StringBuilder.Append(tabKeyOutput);
-                                break;
-                            case ' ':
-                                __StringBuilder.Append(spaceKeyOutput);
-                                break;
-                            case '\r':
-                                break;
-                            case '\n':
-                                break;
-                            case '<':
-                                __StringBuilder.Append("&lt;");
-                                break;
-                            case '>':
-                                __StringBuilder.Append("&gt;");
-                                break;
-                            case '"':
-                                __StringBuilder.Append("&quot;");
-                                break;
-                            case '\'':
-                                __StringBuilder.Append("&#39;");
-                                break;
-                            case '&':
-                                __StringBuilder.Append("&amp;");
-                                break;
-                            default:
-                                __StringBuilder.Append(richCharacter.Value);
-                                break;
-                        }
-                        // END OF INLINING AppendTextEscaped
-                    }
-                    else
-                    {
-                        viewModel.Virtualization.VirtualizationSpanList = viewModel.Virtualization.VirtualizationSpanList.C_Add(new TextEditorVirtualizationSpan(
-                            cssClass: modelModifier.PersistentState.DecorationMapper.Map(currentDecorationByte),
-                            text: __StringBuilder.ToString()));
-                        __StringBuilder.Clear();
-
-                        // AppendTextEscaped(textEditorService.__StringBuilder, richCharacter, tabKeyOutput, spaceKeyOutput);
-                        switch (richCharacter.Value)
-                        {
-                            case '\t':
-                                __StringBuilder.Append(tabKeyOutput);
-                                break;
-                            case ' ':
-                                __StringBuilder.Append(spaceKeyOutput);
-                                break;
-                            case '\r':
-                                break;
-                            case '\n':
-                                break;
-                            case '<':
-                                __StringBuilder.Append("&lt;");
-                                break;
-                            case '>':
-                                __StringBuilder.Append("&gt;");
-                                break;
-                            case '"':
-                                __StringBuilder.Append("&quot;");
-                                break;
-                            case '\'':
-                                __StringBuilder.Append("&#39;");
-                                break;
-                            case '&':
-                                __StringBuilder.Append("&amp;");
-                                break;
-                            default:
-                                __StringBuilder.Append(richCharacter.Value);
-                                break;
-                        }
-                        // END OF INLINING AppendTextEscaped
-
-                        currentDecorationByte = richCharacter.DecorationByte;
-                    }
-                }
-
-                /* Final grouping of contiguous characters */
-                viewModel.Virtualization.VirtualizationSpanList = viewModel.Virtualization.VirtualizationSpanList.C_Add(new TextEditorVirtualizationSpan(
-                    cssClass: modelModifier.PersistentState.DecorationMapper.Map(currentDecorationByte),
-                    text: __StringBuilder.ToString()));
-                __StringBuilder.Clear();
-
-                virtualizationSpan_EndExclusiveIndex = viewModel.Virtualization.VirtualizationSpanList.Count;
             }
 
             virtualizedLineList[viewModel.Virtualization.Count++] = new TextEditorVirtualizationLine(

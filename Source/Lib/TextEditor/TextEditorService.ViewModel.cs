@@ -1089,10 +1089,7 @@ public partial class TextEditorService
                     takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
                     lengthToDecorate -= takeActual;
 
-                    // TODO: Slice the array itself? lots of code isn't building at the moment so I'm gonna revisit this.
-                    //Console.WriteLine($"rci:{__PartitionWalker.RelativeCharacterIndex}, takeActual:{takeActual}");
-                    var richCharacterSpan = new Span<RichCharacter>(ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items)
-                        .Slice(ec_PartitionWalker.RelativeCharacterIndex, takeActual);
+                    var richCharacterSpan = ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items.AsSpan(ec_PartitionWalker.RelativeCharacterIndex, takeActual);
 
                     var currentDecorationByte = richCharacterSpan[0].DecorationByte;
 

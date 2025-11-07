@@ -59,7 +59,7 @@ public sealed partial class TextEditorService
     
     // public const int PARTITION_EXCHANGE_SIZE = 4_096;
     
-    public TextEditorPartition _partition_Exchange = new TextEditorPartition(new List<RichCharacter>(capacity: 256));//= new TextEditorPartition(new List<RichCharacter>(capacity: PARTITION_EXCHANGE_SIZE));
+    public TextEditorPartition _partition_Exchange = new TextEditorPartition(new ValueList<RichCharacter>(capacity: 256));//= new TextEditorPartition(new List<RichCharacter>(capacity: PARTITION_EXCHANGE_SIZE));
     
     
     

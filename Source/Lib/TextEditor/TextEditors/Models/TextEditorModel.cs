@@ -1410,7 +1410,11 @@ public sealed class TextEditorModel
 
         var (calculatedPositionIndex, charCount) = tuple.Value;
 
-        var textRemoved = this.GetString(calculatedPositionIndex, charCount);
+        var textRemoved = GetString(
+            calculatedPositionIndex,
+            charCount,
+            PersistentState.__TextEditorViewModelLiason.PartitionWalker,
+            PersistentState.__TextEditorViewModelLiason.StringBuilder);
 
         DeleteValue(calculatedPositionIndex, charCount);
 
@@ -2078,7 +2082,7 @@ public sealed class TextEditorModel
     /// <summary>
     /// To receive a <see cref="char"/> value, one can use <see cref="GetCharacter"/> instead.
     /// </summary>
-    public string GetString(int positionIndex, int count)
+    public string GetString(int positionIndex, int count, PartitionWalker initializedPartitionWalker, StringBuilder sb)
     {
         /*
         // 2025-11-04 partition changes
@@ -2088,10 +2092,37 @@ public sealed class TextEditorModel
             .Select(x => x.Value)
             .ToArray());
         */
-        return string.Empty;
+
+        initializedPartitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+
+        var lengthToDecorate = count;
+        while (lengthToDecorate > 0)
+        {
+            var thisLoopAvailableCharacterCount = initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - initializedPartitionWalker.RelativeCharacterIndex;
+            if (thisLoopAvailableCharacterCount <= 0)
+                break;
+
+            int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
+            for (int i = 0; i < takeActual; i++)
+            {
+                sb.Append(initializedPartitionWalker.PartitionCurrent.RichCharacterList[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
+                --lengthToDecorate;
+            }
+
+            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                break;
+            else if (lengthToDecorate > 0)
+                break;
+            else
+                initializedPartitionWalker.MoveToFirstCharacterOfTheNextPartition();
+        }
+
+        var stringValue = sb.ToString();
+        sb.Clear();
+        return stringValue;
     }
 
-    public string GetLineTextRange(int lineIndex, int count)
+    public string GetLineTextRange(int lineIndex, int count, PartitionWalker partitionWalker, StringBuilder sb)
     {
         var startPositionIndexInclusive = GetPositionIndex(lineIndex, 0);
         var lastLineIndexExclusive = lineIndex + count;
@@ -2108,7 +2139,9 @@ public sealed class TextEditorModel
 
         return GetString(
             startPositionIndexInclusive,
-            endPositionIndexExclusive - startPositionIndexInclusive);
+            endPositionIndexExclusive - startPositionIndexInclusive,
+            partitionWalker,
+            sb);
     }
     
     /// <summary>
@@ -2399,6 +2432,7 @@ public sealed class TextEditorModel
         int lineIndex,
         int columnIndex,
         PartitionWalker partitionWalker,
+        StringBuilder stringBuilder,
         bool isRecursiveCall = false)
     {
         var wordPositionIndexEndExclusive = GetPositionIndex(lineIndex, columnIndex);
@@ -2415,7 +2449,7 @@ public sealed class TextEditorModel
             var anotherAttemptColumnIndex = columnIndex - 1;
 
             if (anotherAttemptColumnIndex >= 0)
-                return ReadPreviousWordOrDefault(lineIndex, anotherAttemptColumnIndex, partitionWalker, isRecursiveCall: true);
+                return ReadPreviousWordOrDefault(lineIndex, anotherAttemptColumnIndex, partitionWalker, stringBuilder, isRecursiveCall: true);
         }
 
         if (wordCharacterKind == CharacterKind.LetterOrDigit)
@@ -2432,7 +2466,7 @@ public sealed class TextEditorModel
             var wordLength = columnIndex - wordColumnIndexStartInclusive;
             var wordPositionIndexStartInclusive = wordPositionIndexEndExclusive - wordLength;
 
-            return GetString(wordPositionIndexStartInclusive, wordLength);
+            return GetString(wordPositionIndexStartInclusive, wordLength, partitionWalker, stringBuilder);
         }
 
         return null;
@@ -2442,7 +2476,7 @@ public sealed class TextEditorModel
     /// This method and <see cref="ReadPreviousWordOrDefault(TextEditorModel, int, int, bool)"/>
     /// are separate because of 'Ctrl + Space' bring up autocomplete when at a period.
     /// </summary>
-    public string? ReadNextWordOrDefault(int lineIndex, int columnIndex, PartitionWalker partitionWalker)
+    public string? ReadNextWordOrDefault(int lineIndex, int columnIndex, PartitionWalker partitionWalker, StringBuilder stringBuilder)
     {
         var wordPositionIndexStartInclusive = GetPositionIndex(lineIndex, columnIndex);
         var wordCharacterKind = GetCharacterKind(wordPositionIndexStartInclusive);
@@ -2460,7 +2494,7 @@ public sealed class TextEditorModel
 
             var wordLength = wordColumnIndexEndExclusive - columnIndex;
 
-            return GetString(wordPositionIndexStartInclusive, wordLength);
+            return GetString(wordPositionIndexStartInclusive, wordLength, partitionWalker, stringBuilder);
         }
 
         return null;
@@ -2472,20 +2506,20 @@ public sealed class TextEditorModel
     /// One uses this method most often to measure the position of the cursor when rendering the
     /// UI for a font-family which is proportional (i.e. not monospace).
     /// </summary>
-    public string GetTextOffsettingCursor(TextEditorViewModel viewModel)
+    public string GetTextOffsettingCursor(TextEditorViewModel viewModel, PartitionWalker partitionWalker, StringBuilder stringBuilder)
     {
         var cursorPositionIndex = GetPositionIndex(viewModel);
         var lineStartPositionIndexInclusive = GetLineInformation(viewModel.LineIndex).Position_StartInclusiveIndex;
 
-        return GetString(lineStartPositionIndexInclusive, cursorPositionIndex - lineStartPositionIndexInclusive);
+        return GetString(lineStartPositionIndexInclusive, cursorPositionIndex - lineStartPositionIndexInclusive, partitionWalker, stringBuilder);
     }
 
-    public string GetLineText(int lineIndex)
+    public string GetLineText(int lineIndex, PartitionWalker partitionWalker, StringBuilder stringBuilder)
     {
         var lineStartPositionIndexInclusive = GetLineInformation(lineIndex).Position_StartInclusiveIndex;
         var lengthOfLine = GetLineLength(lineIndex, true);
 
-        return GetString(lineStartPositionIndexInclusive, lengthOfLine);
+        return GetString(lineStartPositionIndexInclusive, lengthOfLine, partitionWalker, stringBuilder);
     }
     #endregion
     

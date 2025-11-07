@@ -285,7 +285,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     break;
                 case "Enter":
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
-                    editContext.TextEditorService.__PartitionWalker.ReInitialize(modelModifier);
+                    editContext.TextEditorService.ec_PartitionWalker.ReInitialize(modelModifier);
                     var valueToInsert = modelModifier.LineEndKindPreference.AsCharacters();
             
                     // Match indentation on newline keystroke
@@ -298,10 +298,10 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     
                     while (indentationPositionIndex < cursorPositionIndex)
                     {
-                        editContext.TextEditorService.__PartitionWalker.Seek(
+                        editContext.TextEditorService.ec_PartitionWalker.Seek(
                             targetGlobalCharacterIndex: indentationPositionIndex++);
-                        var possibleIndentationChar = editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
-                                editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex]
+                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                                editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                             .Value;
         
                         if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
@@ -546,7 +546,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     break;
                 case "Enter":
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
-                    editContext.TextEditorService.__PartitionWalker.ReInitialize(modelModifier);
+                    editContext.TextEditorService.ec_PartitionWalker.ReInitialize(modelModifier);
                     var valueToInsert = modelModifier.LineEndKindPreference.AsCharacters();
             
                     // Match indentation on newline keystroke
@@ -559,10 +559,10 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     
                     while (indentationPositionIndex < cursorPositionIndex)
                     {
-                        editContext.TextEditorService.__PartitionWalker.Seek(
+                        editContext.TextEditorService.ec_PartitionWalker.Seek(
                             targetGlobalCharacterIndex: indentationPositionIndex++);
-                        var possibleIndentationChar = editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
-                                editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex]
+                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                                editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                             .Value;
         
                         if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')

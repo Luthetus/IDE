@@ -515,6 +515,8 @@ public class Partitions
 
             if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
                 break;
+            else if (lengthToDecorate > 0)
+                break;
             else
                 partitionWalker.MoveToFirstCharacterOfTheNextPartition();
         }

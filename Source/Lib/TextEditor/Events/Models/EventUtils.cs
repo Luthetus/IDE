@@ -105,7 +105,7 @@ public static class EventUtils
         if (modelModifier is null || viewModel is null)
             return Task.FromResult((0, 0, (double)0, (double)0));
 
-        editContext.TextEditorService.__PartitionWalker.ReInitialize(modelModifier);
+        editContext.TextEditorService.ec_PartitionWalker.ReInitialize(modelModifier);
 
         var tabWidth = editContext.TextEditorService.Options_GetOptions().TabWidth;
     
@@ -179,10 +179,10 @@ public static class EventUtils
             literalLength += 1;
 
             // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
-            editContext.TextEditorService.__PartitionWalker.Seek(targetGlobalCharacterIndex: lineInformation.Position_StartInclusiveIndex + columnIndex);
+            editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: lineInformation.Position_StartInclusiveIndex + columnIndex);
             previousCharacterWidth = GetCharacterWidth(
-                editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
-                        editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex]
+                editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                        editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                     .Value);
             
             visualLength += previousCharacterWidth;

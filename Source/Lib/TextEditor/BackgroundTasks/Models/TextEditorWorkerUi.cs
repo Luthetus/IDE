@@ -89,7 +89,7 @@ public class TextEditorWorkerUi : IBackgroundTaskGroup
                     lineAndColumnIndex.LineIndex,
                     lineAndColumnIndex.ColumnIndex,
                     true,
-                    editContext.TextEditorService.__PartitionWalker);
+                    editContext.TextEditorService.ec_PartitionWalker);
         
                 lowerColumnIndexExpansion = lowerColumnIndexExpansion == -1
                     ? 0
@@ -99,7 +99,7 @@ public class TextEditorWorkerUi : IBackgroundTaskGroup
                     lineAndColumnIndex.LineIndex,
                     lineAndColumnIndex.ColumnIndex,
                     false,
-                    editContext.TextEditorService.__PartitionWalker);
+                    editContext.TextEditorService.ec_PartitionWalker);
         
                 higherColumnIndexExpansion = higherColumnIndexExpansion == -1
                     ? modelModifier.GetLineLength(lineAndColumnIndex.LineIndex)

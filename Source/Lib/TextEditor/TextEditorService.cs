@@ -106,8 +106,8 @@ public sealed partial class TextEditorService
         return viewModel;
     }
     
-    /// <summary>TextEditorEditContext only</summary>
-    public PartitionWalker __PartitionWalker = new();
+    /// <summary>TextEditorEditContext only (e for edit, c for context)</summary>
+    public PartitionWalker ec_PartitionWalker = new();
 
     public TextEditorService(
         IJSRuntime jsRuntime,
@@ -205,6 +205,11 @@ public sealed partial class TextEditorService
     /// Do not touch this property, it is used for the VirtualizationResult.
     /// </summary>
     public StringBuilder __StringBuilder { get; } = new StringBuilder();
+
+    /// <summary>
+    /// EditContext (TextEditorEditContext) only
+    /// </summary>
+    public StringBuilder ec_StringBuilder { get; } = new StringBuilder();
 
     /// <summary>
     /// Do not touch this property, it is used for the ICompilerService implementations.

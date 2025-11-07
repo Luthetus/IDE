@@ -1,5 +1,7 @@
 using Clair.TextEditor.RazorLib.Exceptions;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
+using Microsoft.AspNetCore.Components.Forms;
+using System.Text;
 
 namespace Clair.TextEditor.RazorLib.Cursors.Models;
 
@@ -29,28 +31,38 @@ public static class TextEditorSelectionHelper
 
     public static string? GetSelectedText(
         TextEditorSelection textEditorSelection,
-        TextEditorModel textEditorModel)
+        TextEditorModel textEditorModel,
+        PartitionWalker partitionWalker,
+        StringBuilder sb)
     {
         return GetSelectedText(
             textEditorSelection.AnchorPositionIndex,
             textEditorSelection.EndingPositionIndex,
-            textEditorModel);
+            textEditorModel,
+            partitionWalker,
+            sb);
     }
     
     public static string? GetSelectedText(
         TextEditorViewModel viewModel,
-        TextEditorModel textEditorModel)
+        TextEditorModel textEditorModel,
+        PartitionWalker partitionWalker,
+        StringBuilder sb)
     {
         return GetSelectedText(
             viewModel.SelectionAnchorPositionIndex,
             viewModel.SelectionEndingPositionIndex,
-            textEditorModel);
+            textEditorModel,
+            partitionWalker,
+            sb);
     }
 
     public static string? GetSelectedText(
         int anchorPositionIndex,
         int endingPositionIndex,
-        TextEditorModel textEditorModel)
+        TextEditorModel textEditorModel,
+        PartitionWalker partitionWalker,
+        StringBuilder sb)
     {
         if (HasSelectedText(anchorPositionIndex, endingPositionIndex))
         {
@@ -58,7 +70,9 @@ public static class TextEditorSelectionHelper
 
             var result = textEditorModel.GetString(
                 selectionBounds.Position_LowerInclusiveIndex,
-                selectionBounds.Position_UpperExclusiveIndex - selectionBounds.Position_LowerInclusiveIndex);
+                selectionBounds.Position_UpperExclusiveIndex - selectionBounds.Position_LowerInclusiveIndex,
+                partitionWalker,
+                sb);
 
             return result.Length != 0 ? result : null;
         }

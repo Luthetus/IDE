@@ -1080,19 +1080,7 @@ public partial class TextEditorService
 
                 while (lengthToDecorate > 0)
                 {
-                    /*
-                     * // 2025-11-04 partition changes
-                     * // TODO: Currently this works within same partition but doesn't read into the next one...
-                     * // ...so lines will stop short if they span two partitions.
-                     */
-
-
-
-                    
-                
-                
                     int takeActual = 0;
-                
                 
                     var thisLoopAvailableCharacterCount = __PartitionWalker.PartitionCurrent.RichCharacterList.Count - __PartitionWalker.RelativeCharacterIndex;
                     if (thisLoopAvailableCharacterCount <= 0)
@@ -1100,17 +1088,6 @@ public partial class TextEditorService
         
                     takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
                     lengthToDecorate -= takeActual;
-                    /*for (int i = 0; i < takeActual; i++)
-                    {
-                        __PartitionWalker.PartitionCurrent.RichCharacterList[__PartitionWalker.RelativeCharacterIndex + i] =
-                            __PartitionWalker.PartitionCurrent.RichCharacterList[__PartitionWalker.RelativeCharacterIndex + i] with
-                            {
-                                DecorationByte = 1 // This originally would've defaulted to 0 so anything other than that suffices to see that something changed.
-                            };
-                        --lengthToDecorate;
-                    }*/
-
-
 
                     // TODO: ValueList the partition's RichCharacterList so you can avoid the marshaling.
                     //Console.WriteLine($"rci:{__PartitionWalker.RelativeCharacterIndex}, takeActual:{takeActual}");

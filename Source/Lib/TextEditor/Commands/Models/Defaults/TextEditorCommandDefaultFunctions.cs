@@ -742,8 +742,8 @@ public class TextEditorCommandDefaultFunctions
             viewModel.SelectionAnchorPositionIndex = -1;
         }
 
-        var previousCharacter = modelModifier.GetCharacter(cursorPositionIndex - 1);
-        var currentCharacter = modelModifier.GetCharacter(cursorPositionIndex);
+        var previousCharacter = modelModifier.GetCharacter(cursorPositionIndex - 1, editContext.TextEditorService.__PartitionWalker);
+        var currentCharacter = modelModifier.GetCharacter(cursorPositionIndex, editContext.TextEditorService.__PartitionWalker);
 
         char? characterToMatch = null;
         char? match = null;
@@ -816,7 +816,7 @@ public class TextEditorCommandDefaultFunctions
                 viewModel);
 
             var positionIndex = modelModifier.GetPositionIndex(viewModel);
-            var characterAt = modelModifier.GetCharacter(positionIndex);
+            var characterAt = modelModifier.GetCharacter(positionIndex, editContext.TextEditorService.__PartitionWalker);
 
             if (characterAt == match)
                 unmatchedCharacters--;

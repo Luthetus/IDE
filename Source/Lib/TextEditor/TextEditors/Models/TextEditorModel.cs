@@ -2067,16 +2067,14 @@ public sealed class TextEditorModel
     /// <summary>
     /// To receive a <see cref="string"/> value, one can use <see cref="GetString"/> instead.
     /// </summary>
-    public char GetCharacter(int positionIndex)
+    public char GetCharacter(int positionIndex, PartitionWalker partitionWalker)
     {
-        /*
-        // 2025-11-04 partition changes
         if (positionIndex == CharCount)
             return '\0';
-
-        return RichCharacterList[positionIndex].Value;
-        */
-        return default;
+        partitionWalker.ReInitialize(this);
+        partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+        return partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex]
+            .Value;
     }
 
     /// <summary>
@@ -2123,8 +2121,8 @@ public sealed class TextEditorModel
     ///     -ELSE (GetWordTextSpanResultKind.None, default).</summary>
     public (GetWordTextSpanResultKind ResultKind, TextEditorTextSpan TextSpan) GetWordTextSpan(int positionIndex, PartitionWalker partitionWalker)
     {
-        var previousCharacter = GetCharacter(positionIndex - 1);
-        var currentCharacter = GetCharacter(positionIndex);
+        var previousCharacter = GetCharacter(positionIndex - 1, partitionWalker);
+        var currentCharacter = GetCharacter(positionIndex, partitionWalker);
 
         var previousCharacterKind = CharacterKindHelper.CharToCharacterKind(previousCharacter);
         var currentCharacterKind = CharacterKindHelper.CharToCharacterKind(currentCharacter);

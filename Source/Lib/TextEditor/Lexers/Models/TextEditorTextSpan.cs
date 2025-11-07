@@ -1,6 +1,4 @@
-using Clair.TextEditor.RazorLib.Characters.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
-using System.Reflection;
 using System.Text;
 
 namespace Clair.TextEditor.RazorLib.Lexers.Models;

@@ -1,8 +1,4 @@
-using Clair.Common.RazorLib.Keymaps.Models;
-using Clair.Common.RazorLib.Keys.Models;
-using Clair.TextEditor.RazorLib.Decorations.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
-using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 
 namespace Clair.TextEditor.RazorLib;

@@ -1,5 +1,3 @@
-using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
-
 namespace Clair.TextEditor.RazorLib.Autocompletes.Models;
 
 /// <summary>

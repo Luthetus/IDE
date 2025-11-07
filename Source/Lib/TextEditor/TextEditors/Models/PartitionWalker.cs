@@ -1,6 +1,4 @@
-using Clair.TextEditor.RazorLib.Characters.Models;
 using Clair.TextEditor.RazorLib.Exceptions;
-using Clair.TextEditor.RazorLib.TextEditors.Models;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
 

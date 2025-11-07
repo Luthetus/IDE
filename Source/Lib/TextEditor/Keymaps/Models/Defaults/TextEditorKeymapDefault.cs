@@ -5,7 +5,6 @@ using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.Cursors.Models;
 using Clair.TextEditor.RazorLib.Commands.Models.Defaults;
-using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
 
 namespace Clair.TextEditor.RazorLib.Keymaps.Models.Defaults;
 

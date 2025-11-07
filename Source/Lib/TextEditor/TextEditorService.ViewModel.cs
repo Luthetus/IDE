@@ -1,6 +1,5 @@
 using System.Text;
 using Clair.Common.RazorLib;
-using Clair.TextEditor.RazorLib.Characters.Models;
 using Clair.TextEditor.RazorLib.Cursors.Models;
 using Clair.TextEditor.RazorLib.Exceptions;
 using Clair.TextEditor.RazorLib.Lexers.Models;

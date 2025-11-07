@@ -10,7 +10,6 @@ using Clair.Extensions.CompilerServices;
 using Clair.Extensions.CompilerServices.Displays;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.Extensions.CompilerServices.Syntax.Interfaces;
-using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.TextEditor.RazorLib;
 using Clair.TextEditor.RazorLib.Autocompletes.Models;

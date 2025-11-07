@@ -100,13 +100,13 @@ public static class EventUtils
         TextEditorComponentData componentData,
         TextEditorEditContext editContext)
     {
-        /*
-        // 2025-11-04 partition changes
         var globalTextEditorOptions = editContext.TextEditorService.Options_GetTextEditorOptionsState().Options;
 
         if (modelModifier is null || viewModel is null)
             return Task.FromResult((0, 0, (double)0, (double)0));
-            
+
+        editContext.TextEditorService.__PartitionWalker.ReInitialize(modelModifier);
+
         var tabWidth = editContext.TextEditorService.Options_GetOptions().TabWidth;
     
         var positionX = clientX - viewModel.PersistentState.TextEditorDimensions.BoundingClientRectLeft;
@@ -177,11 +177,13 @@ public static class EventUtils
             }
             
             literalLength += 1;
-            
+
+            // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
+            editContext.TextEditorService.__PartitionWalker.Seek(targetGlobalCharacterIndex: lineInformation.Position_StartInclusiveIndex + columnIndex);
             previousCharacterWidth = GetCharacterWidth(
-                modelModifier.RichCharacterList[
-                    lineInformation.Position_StartInclusiveIndex + columnIndex]
-                .Value);
+                editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
+                        editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex]
+                    .Value);
             
             visualLength += previousCharacterWidth;
         }
@@ -199,7 +201,5 @@ public static class EventUtils
             : columnIndexInt;
         
         return Task.FromResult((lineIndex, literalLength, positionX, positionY));
-        */
-        return Task.FromResult((0, 0, 0d, 0d));
     }
 }

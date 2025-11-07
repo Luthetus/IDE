@@ -153,8 +153,8 @@ public sealed class TextEditorViewModelLiason
     public TextEditorPartition Exchange_Partition(TextEditorPartition original)
     {
         var partitionExchange = _textEditorService._partition_Exchange;
-    
-        partitionExchange.RichCharacterList.C_Clear();
+
+        partitionExchange.RichCharacterList = partitionExchange.RichCharacterList.C_Clear();
         partitionExchange.AddRange(original.RichCharacterList.u_Items);
         
         _textEditorService._partition_Exchange = original;

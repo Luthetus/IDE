@@ -1,21 +1,22 @@
-using System.Text;
-using Microsoft.AspNetCore.Components.Web;
 using Clair.Common.RazorLib;
-using Clair.Common.RazorLib.Keys.Models;
-using Clair.Common.RazorLib.JsRuntimes.Models;
 using Clair.Common.RazorLib.Dropdowns.Models;
-using Clair.Common.RazorLib.Menus.Models;
-using Clair.Common.RazorLib.Menus.Displays;
 using Clair.Common.RazorLib.FileSystems.Models;
+using Clair.Common.RazorLib.JsRuntimes.Models;
 using Clair.Common.RazorLib.Keymaps.Models;
+using Clair.Common.RazorLib.Keys.Models;
+using Clair.Common.RazorLib.Menus.Displays;
+using Clair.Common.RazorLib.Menus.Models;
+using Clair.TextEditor.RazorLib.Characters.Models;
+using Clair.TextEditor.RazorLib.Cursors.Models;
+using Clair.TextEditor.RazorLib.Events.Models;
 using Clair.TextEditor.RazorLib.Groups.Models;
 using Clair.TextEditor.RazorLib.JavaScriptObjects.Models;
-using Clair.TextEditor.RazorLib.Cursors.Models;
+using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
-using Clair.TextEditor.RazorLib.Characters.Models;
-using Clair.TextEditor.RazorLib.Lexers.Models;
-using Clair.TextEditor.RazorLib.Events.Models;
+using Microsoft.AspNetCore.Components.Web;
+using System.Text;
+using static Clair.TextEditor.RazorLib.TextEditors.Models.TextEditorModel;
 
 namespace Clair.TextEditor.RazorLib.Commands.Models.Defaults;
 
@@ -43,8 +44,6 @@ public class TextEditorCommandDefaultFunctions
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
-        /*
-        // 2025-11-04 partition changes
         if (!TextEditorSelectionHelper.HasSelectedText(viewModel))
         {
             var positionIndex = modelModifier.GetPositionIndex(viewModel);
@@ -59,10 +58,11 @@ public class TextEditorCommandDefaultFunctions
 
         await viewModel.FocusAsync().ConfigureAwait(false);
 
-        modelModifier.HandleKeyboardEvent(
-            new KeymapArgs { Key = CommonFacts.DELETE },
-            viewModel);
-        */
+        modelModifier.Delete(
+            viewModel,
+            1,
+            expandWord: false,
+            DeleteKind.Delete);
     }
 
     public static async ValueTask PasteAsync(

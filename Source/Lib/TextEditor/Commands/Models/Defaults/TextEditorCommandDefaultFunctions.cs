@@ -527,6 +527,9 @@ public class TextEditorCommandDefaultFunctions
         viewModel.SelectionAnchorPositionIndex = -1;
     }
 
+    /// <summary>
+    /// TODO: Is this used? A version in the TextEditorKeymapDefault exists.
+    /// </summary>
     public static void NewLineBelow(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,
@@ -575,6 +578,9 @@ public class TextEditorCommandDefaultFunctions
         modelModifier.Insert(valueToInsert, viewModel);
     }
 
+    /// <summary>
+    /// TODO: Is this used? A version in the TextEditorKeymapDefault exists.
+    /// </summary>
     public static void NewLineAbove(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,

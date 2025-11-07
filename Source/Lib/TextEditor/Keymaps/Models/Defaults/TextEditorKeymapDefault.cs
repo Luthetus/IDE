@@ -11,6 +11,13 @@ namespace Clair.TextEditor.RazorLib.Keymaps.Models.Defaults;
 
 public class TextEditorKeymapDefault : ITextEditorKeymap
 {
+    /// <summary>
+    /// The TextEditorKeymapDefault is currently a static readonly allocation.
+    /// If ServerSide or ??? where used then this'd be problematic.
+    /// 
+    /// Furthermore you might as well use the TextEditorService's pooled StringBuilder
+    /// since this is the TextEditorEditContext?
+    /// </summary>
     private readonly StringBuilder _indentationBuilder = new();
 
     public string DisplayName { get; } = nameof(TextEditorKeymapDefault);
@@ -278,9 +285,8 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     shouldRevealCursor = true;
                     break;
                 case "Enter":
-                    /*
-                    // 2025-11-04 partition changes
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
+                    editContext.TextEditorService.__PartitionWalker.ReInitialize(modelModifier);
                     var valueToInsert = modelModifier.LineEndKindPreference.AsCharacters();
             
                     // Match indentation on newline keystroke
@@ -293,7 +299,11 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     
                     while (indentationPositionIndex < cursorPositionIndex)
                     {
-                        var possibleIndentationChar = modelModifier.RichCharacterList[indentationPositionIndex++].Value;
+                        editContext.TextEditorService.__PartitionWalker.Seek(
+                            targetGlobalCharacterIndex: indentationPositionIndex++);
+                        var possibleIndentationChar = editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
+                                editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex]
+                            .Value;
         
                         if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
                             _indentationBuilder.Append(possibleIndentationChar);
@@ -320,7 +330,6 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                         
                     shouldRevealCursor = true;
                     shouldApplySyntaxHighlighting = true;
-                    */
                     break;
                 case "BracketRight":
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
@@ -537,9 +546,8 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     shouldClearTooltip = true;
                     break;
                 case "Enter":
-                    /*
-                    // 2025-11-04 partition changes
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
+                    editContext.TextEditorService.__PartitionWalker.ReInitialize(modelModifier);
                     var valueToInsert = modelModifier.LineEndKindPreference.AsCharacters();
             
                     // Match indentation on newline keystroke
@@ -552,7 +560,11 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     
                     while (indentationPositionIndex < cursorPositionIndex)
                     {
-                        var possibleIndentationChar = modelModifier.RichCharacterList[indentationPositionIndex++].Value;
+                        editContext.TextEditorService.__PartitionWalker.Seek(
+                            targetGlobalCharacterIndex: indentationPositionIndex++);
+                        var possibleIndentationChar = editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
+                                editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex]
+                            .Value;
         
                         if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
                             _indentationBuilder.Append(possibleIndentationChar);
@@ -577,7 +589,6 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     menuKind = MenuKind.None;
                     shouldClearTooltip = true;
                     shouldApplySyntaxHighlighting = true;
-                    */
                     break;
                 case "Tab":
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
@@ -720,26 +731,20 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                         componentData.TextEditorViewModelSlimDisplay.TextEditorService.CommonService);
                     break;
                 case MenuKind.ContextMenu:
-                    /*
-                    // 2025-11-04 partition changes
                     TextEditorCommandDefaultFunctions.ShowContextMenu(
                         editContext,
                         modelModifier,
                         viewModel,
                         componentData.TextEditorViewModelSlimDisplay.TextEditorService.CommonService,
                         componentData);
-                    */
                     break;
                 case MenuKind.AutoCompleteMenu:
-                    /*
-                    // 2025-11-04 partition changes
                     TextEditorCommandDefaultFunctions.ShowAutocompleteMenu(
                         editContext,
                         modelModifier,
                         viewModel,
                         componentData.TextEditorViewModelSlimDisplay.TextEditorService.CommonService,
                         componentData);
-                    */
                     break;
             }
         }

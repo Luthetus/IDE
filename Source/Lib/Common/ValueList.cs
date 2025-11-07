@@ -119,7 +119,7 @@ public struct ValueList<T>
         if (Count == Capacity)
         {
             output = new ValueList<T>(Capacity * 2);
-            
+
         }
         else
         {
@@ -132,7 +132,7 @@ public struct ValueList<T>
         output.u_Items[output.Count++] = item;
         return output;
     }
-    
+
     public ValueList<T> New_Insert(int indexToInsert, T item)
     {
         // There's some code in List to account for multithreading that creates local copies of things.
@@ -179,7 +179,7 @@ public struct ValueList<T>
         Array.Copy(u_Items, output.u_Items, length: index);
         Array.Copy(u_Items, index + 1, output.u_Items, index, Count - index);
         output.Count--;
-        
+
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
             output.u_Items[output.Count] = default!;
@@ -284,6 +284,21 @@ public struct ValueList<T>
     public ValueList<T> C_SetItem(int index, T item)
     {
         u_Items[index] = item;
+        return this;
+    }
+
+    public ValueList<T> C_Clear()
+    {
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                u_Items[i] = default!;
+            }
+        }
+
+        Count = 0;
+
         return this;
     }
 }

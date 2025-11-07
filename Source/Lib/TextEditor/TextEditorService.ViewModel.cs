@@ -719,9 +719,7 @@ public partial class TextEditorService
         TextEditorComponentData componentData)
     {
         __PartitionWalker.ReInitialize(modelModifier);
-    
-        /**/
-        // 2025-11-04 partition changes
+
         var tabWidth = editContext.TextEditorService.Options_GetOptions().TabWidth;
         viewModel.Virtualization.ShouldCalculateVirtualizationResult = false;
 
@@ -1073,6 +1071,12 @@ public partial class TextEditorService
             }
             else
             {
+                /*
+                 * // 2025-11-04 partition changes
+                 * // TODO: Currently this works within same partition but doesn't read into the next one...
+                 * // ...so lines will stop short if they span two partitions.
+                 */
+
                 virtualizationSpan_StartInclusiveIndex = viewModel.Virtualization.VirtualizationSpanList.Count;
                 
                 __PartitionWalker.Seek(targetGlobalCharacterIndex: position_StartInclusiveIndex);

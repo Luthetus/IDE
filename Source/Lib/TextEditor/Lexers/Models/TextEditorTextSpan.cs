@@ -1,5 +1,7 @@
-using System.Text;
 using Clair.TextEditor.RazorLib.Characters.Models;
+using Clair.TextEditor.RazorLib.TextEditors.Models;
+using System.Reflection;
+using System.Text;
 
 namespace Clair.TextEditor.RazorLib.Lexers.Models;
 
@@ -84,13 +86,30 @@ public record struct TextEditorTextSpan(
         return null;
     }
     
-    public string? GetText(RichCharacter[] richCharacterList, TextEditorService? textEditorService, StringBuilder builder)
+    public string? GetText(PartitionWalker initializedPartitionWalker, TextEditorService? textEditorService, StringBuilder builder)
     {
-        for (int i = StartInclusiveIndex; i < EndExclusiveIndex; i++)
+        initializedPartitionWalker.Seek(targetGlobalCharacterIndex: StartInclusiveIndex);
+
+        var lengthToDecorate = Length;
+        while (lengthToDecorate > 0)
         {
-            builder.Append(richCharacterList[i].Value);
+            var thisLoopAvailableCharacterCount = initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - initializedPartitionWalker.RelativeCharacterIndex;
+            if (thisLoopAvailableCharacterCount <= 0)
+                break;
+
+            int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
+            for (int i = 0; i < takeActual; i++)
+            {
+                builder.Append(initializedPartitionWalker.PartitionCurrent.RichCharacterList[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
+                --lengthToDecorate;
+            }
+
+            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                break;
+            else
+                initializedPartitionWalker.MoveToFirstCharacterOfTheNextPartition();
         }
-        
+
         var value = builder.ToString();
         builder.Clear();
         return value;

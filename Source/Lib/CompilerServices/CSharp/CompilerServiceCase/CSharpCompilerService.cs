@@ -1216,10 +1216,10 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 filteringWordEndExclusiveIndex,
                 DecorationByte: 0);
 
-            /*
-            // 2025-11-04 partition changes
-            // filteringWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService, _unsafeGetTextStringBuilder);
-            */
+            filteringWord = textSpan.GetText(
+                BAD_PartitionWalker,
+                _textEditorService,
+                _unsafeGetTextStringBuilder);
         }
 
         if (operatingWordEndExclusiveIndex != -1)
@@ -1229,10 +1229,10 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 operatingWordEndExclusiveIndex + 1,
                 DecorationByte: 0);
 
-            /*
-            // 2025-11-04 partition changes
-            operatingWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService, _unsafeGetTextStringBuilder);
-            */
+            operatingWord = textSpan.GetText(
+                BAD_PartitionWalker,
+                _textEditorService,
+                _unsafeGetTextStringBuilder);
         }
         
         CSharpAutocompleteContainer autocompleteContainer;

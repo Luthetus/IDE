@@ -580,8 +580,8 @@ public class TextEditorCommandDefaultFunctions
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
-        /*
-        // 2025-11-04 partition changes
+        editContext.TextEditorService.__PartitionWalker.ReInitialize(modelModifier);
+
         viewModel.SelectionAnchorPositionIndex = -1;
             
         var originalColumnIndex = viewModel.ColumnIndex;
@@ -606,7 +606,11 @@ public class TextEditorCommandDefaultFunctions
 
             while (indentationPositionIndex < cursorPositionIndex)
             {
-                var possibleIndentationChar = modelModifier.RichCharacterList[indentationPositionIndex++].Value;
+                editContext.TextEditorService.__PartitionWalker.Seek(
+                    targetGlobalCharacterIndex: indentationPositionIndex++);
+                var possibleIndentationChar = editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
+                        editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex]
+                    .Value;
 
                 if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
                     indentationBuilder.Append(possibleIndentationChar);
@@ -625,7 +629,6 @@ public class TextEditorCommandDefaultFunctions
             viewModel.LineIndex--;
             viewModel.ColumnIndex = indentationLength;
         }
-        */
     }
     
     public static void MoveLineDown(

@@ -390,7 +390,7 @@ public partial class TextEditorService
                                         {
                                             // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
                                             editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
-                                            var currentRichCharacter = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                                            var currentRichCharacter = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
                                                 editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex];
 
                                             if (Char.IsUpper(currentRichCharacter.Value) || currentRichCharacter.Value == '_')
@@ -522,7 +522,7 @@ public partial class TextEditorService
                                         {
                                             // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
                                             editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
-                                            var currentRichCharacter = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                                            var currentRichCharacter = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
                                                 editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex];
 
                                             if (Char.IsUpper(currentRichCharacter.Value) || currentRichCharacter.Value == '_')
@@ -576,7 +576,7 @@ public partial class TextEditorService
                     {
                         // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
                         editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: indentationPositionIndexExclusiveEnd);
-                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
                                 editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                             .Value;
 
@@ -1089,10 +1089,9 @@ public partial class TextEditorService
                     takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
                     lengthToDecorate -= takeActual;
 
-                    // TODO: ValueList the partition's RichCharacterList so you can avoid the marshaling.
+                    // TODO: Slice the array itself? lots of code isn't building at the moment so I'm gonna revisit this.
                     //Console.WriteLine($"rci:{__PartitionWalker.RelativeCharacterIndex}, takeActual:{takeActual}");
-                    var richCharacterSpan = System.Runtime.InteropServices.CollectionsMarshal
-                        .AsSpan(ec_PartitionWalker.PartitionCurrent.RichCharacterList)
+                    var richCharacterSpan = new Span<RichCharacter>(ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items)
                         .Slice(ec_PartitionWalker.RelativeCharacterIndex, takeActual);
 
                     var currentDecorationByte = richCharacterSpan[0].DecorationByte;

@@ -1,3 +1,4 @@
+using Clair.Common.RazorLib;
 using Clair.TextEditor.RazorLib.Characters.Models;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
@@ -7,12 +8,12 @@ namespace Clair.TextEditor.RazorLib.TextEditors.Models;
 /// </summary>
 public struct TextEditorPartition
 {
-    public TextEditorPartition(List<RichCharacter> richCharacterList)
+    public TextEditorPartition(ValueList<RichCharacter> richCharacterList)
     {
         RichCharacterList = richCharacterList;
     }
 
-    public List<RichCharacter> RichCharacterList { get; }
+    public ValueList<RichCharacter> RichCharacterList { get; }
 
     /// <summary>
     /// This is the count of rich characters in THIS particular partition, the <see cref="TextEditorModel.DocumentLength"/>

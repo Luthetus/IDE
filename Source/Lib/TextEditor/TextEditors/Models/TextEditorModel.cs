@@ -1613,7 +1613,7 @@ public sealed class TextEditorModel
 
                 PersistentState.__TextEditorViewModelLiason.PartitionWalker.Seek(
                     targetGlobalCharacterIndex: toDeletePositionIndex);
-                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList[
+                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
                         PersistentState.__TextEditorViewModelLiason.PartitionWalker.RelativeCharacterIndex];
 
                 if (CommonFacts.IsLineEndingCharacter(richCharacterToDelete.Value))
@@ -1708,7 +1708,7 @@ public sealed class TextEditorModel
 
                 PersistentState.__TextEditorViewModelLiason.PartitionWalker.Seek(
                     targetGlobalCharacterIndex: toDeletePositionIndex);
-                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList[
+                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
                     PersistentState.__TextEditorViewModelLiason.PartitionWalker.RelativeCharacterIndex];
 
                 if (CommonFacts.IsLineEndingCharacter(richCharacterToDelete.Value))
@@ -1908,8 +1908,8 @@ public sealed class TextEditorModel
             int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
             for (int i = 0; i < takeActual; i++)
             {
-                partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
-                    partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
+                partitionWalker.PartitionCurrent.RichCharacterList.u_Items[partitionWalker.RelativeCharacterIndex + i] =
+                    partitionWalker.PartitionCurrent.RichCharacterList.u_Items[partitionWalker.RelativeCharacterIndex + i] with
                     {
                         DecorationByte = textSpan.DecorationByte
                     };
@@ -2075,7 +2075,7 @@ public sealed class TextEditorModel
             return '\0';
         partitionWalker.ReInitialize(this);
         partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
-        return partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex]
+        return partitionWalker.PartitionCurrent.RichCharacterList.u_Items[partitionWalker.RelativeCharacterIndex]
             .Value;
     }
 
@@ -2105,7 +2105,7 @@ public sealed class TextEditorModel
             int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
             for (int i = 0; i < takeActual; i++)
             {
-                sb.Append(initializedPartitionWalker.PartitionCurrent.RichCharacterList[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
+                sb.Append(initializedPartitionWalker.PartitionCurrent.RichCharacterList.u_Items[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
                 --lengthToDecorate;
             }
 
@@ -2370,7 +2370,7 @@ public sealed class TextEditorModel
         // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
         partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
         var startCharacterKind = CharacterKindHelper.CharToCharacterKind(
-            partitionWalker.PartitionCurrent.RichCharacterList[
+            partitionWalker.PartitionCurrent.RichCharacterList.u_Items[
                 partitionWalker.RelativeCharacterIndex]
             .Value);
 
@@ -2386,7 +2386,7 @@ public sealed class TextEditorModel
             // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
             partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
             var currentCharacterKind = CharacterKindHelper.CharToCharacterKind(
-                partitionWalker.PartitionCurrent.RichCharacterList[
+                partitionWalker.PartitionCurrent.RichCharacterList.u_Items[
                     partitionWalker.RelativeCharacterIndex]
                 .Value);
 
@@ -2590,8 +2590,8 @@ public sealed class TextEditorModel
             int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
             for (int i = 0; i < takeActual; i++)
             {
-                partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
-                    partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
+                partitionWalker.PartitionCurrent.RichCharacterList.u_Items[partitionWalker.RelativeCharacterIndex + i] =
+                    partitionWalker.PartitionCurrent.RichCharacterList.u_Items[partitionWalker.RelativeCharacterIndex + i] with
                     {
                         DecorationByte = decorationByte
                     };
@@ -2702,9 +2702,9 @@ public sealed class TextEditorModel
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
         var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
-        var targetRichCharacter = inPartition.RichCharacterList[relativePositionIndex];
+        var targetRichCharacter = inPartition.RichCharacterList.u_Items[relativePositionIndex];
         
-        inPartition.RichCharacterList[relativePositionIndex] = new(
+        inPartition.RichCharacterList.u_Items[relativePositionIndex] = new(
             targetRichCharacter.Value,
             decorationByte);
         //_partitionListChanged = false;
@@ -2716,7 +2716,7 @@ public sealed class TextEditorModel
         {
             for (int i = 0; i < partition.RichCharacterList.Count; i++)
             {
-                partition.RichCharacterList[i] = partition.RichCharacterList[i] with
+                partition.RichCharacterList.u_Items[i] = partition.RichCharacterList.u_Items[i] with
                 {
                     DecorationByte = 0
                 };
@@ -2779,9 +2779,9 @@ public sealed class TextEditorModel
         // Validate multi-byte characters go on same partition (i.e.: '\r\n')
         {
             // firstUnevenSplit is a count so -1 to make it an index
-            if (originalPartition.RichCharacterList[firstUnevenSplit - 1].Value == '\r')
+            if (originalPartition.RichCharacterList.u_Items[firstUnevenSplit - 1].Value == '\r')
             {
-                if (originalPartition.RichCharacterList[(firstUnevenSplit - 1) + 1].Value == '\n')
+                if (originalPartition.RichCharacterList.u_Items[(firstUnevenSplit - 1) + 1].Value == '\n')
                 {
                     firstUnevenSplit += 1;
                     secondUnevenSplit -= 1;

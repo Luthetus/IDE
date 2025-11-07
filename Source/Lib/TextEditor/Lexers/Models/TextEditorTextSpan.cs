@@ -98,7 +98,7 @@ public record struct TextEditorTextSpan(
             int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
             for (int i = 0; i < takeActual; i++)
             {
-                builder.Append(initializedPartitionWalker.PartitionCurrent.RichCharacterList[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
+                builder.Append(initializedPartitionWalker.PartitionCurrent.RichCharacterList.u_Items[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
                 --lengthToDecorate;
             }
 

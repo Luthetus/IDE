@@ -569,7 +569,7 @@ public class TextEditorCommandDefaultFunctions
             {
                 editContext.TextEditorService.ec_PartitionWalker.Seek(
                     targetGlobalCharacterIndex: indentationPositionIndex++);
-                var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
                         editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                     .Value;
 
@@ -621,7 +621,7 @@ public class TextEditorCommandDefaultFunctions
             {
                 editContext.TextEditorService.ec_PartitionWalker.Seek(
                     targetGlobalCharacterIndex: indentationPositionIndex++);
-                var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
                         editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                     .Value;
 

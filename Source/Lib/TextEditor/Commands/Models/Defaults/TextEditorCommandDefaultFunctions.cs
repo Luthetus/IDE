@@ -12,6 +12,7 @@ using Clair.TextEditor.RazorLib.Events.Models;
 using Clair.TextEditor.RazorLib.Groups.Models;
 using Clair.TextEditor.RazorLib.JavaScriptObjects.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
+using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Microsoft.AspNetCore.Components.Web;
@@ -531,8 +532,8 @@ public class TextEditorCommandDefaultFunctions
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
-        /*
-        // 2025-11-04 partition changes
+        editContext.TextEditorService.__PartitionWalker.ReInitialize(modelModifier);
+
         viewModel.SelectionAnchorPositionIndex = -1;
 
         var lengthOfLine = modelModifier.GetLineLength(viewModel.LineIndex);
@@ -551,11 +552,16 @@ public class TextEditorCommandDefaultFunctions
             var cursorPositionIndex = line.Position_StartInclusiveIndex + viewModel.ColumnIndex;
             var indentationPositionIndex = line.Position_StartInclusiveIndex;
 
+            // TODO: Move this StringBuilder
             var indentationBuilder = new StringBuilder();
 
             while (indentationPositionIndex < cursorPositionIndex)
             {
-                var possibleIndentationChar = modelModifier.RichCharacterList[indentationPositionIndex++].Value;
+                editContext.TextEditorService.__PartitionWalker.Seek(
+                    targetGlobalCharacterIndex: indentationPositionIndex++);
+                var possibleIndentationChar = editContext.TextEditorService.__PartitionWalker.PartitionCurrent.RichCharacterList[
+                        editContext.TextEditorService.__PartitionWalker.RelativeCharacterIndex]
+                    .Value;
 
                 if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
                     indentationBuilder.Append(possibleIndentationChar);
@@ -567,7 +573,6 @@ public class TextEditorCommandDefaultFunctions
         }
 
         modelModifier.Insert(valueToInsert, viewModel);
-        */
     }
 
     public static void NewLineAbove(

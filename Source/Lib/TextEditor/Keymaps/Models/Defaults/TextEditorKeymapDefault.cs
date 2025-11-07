@@ -765,10 +765,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
         
         if (shouldApplySyntaxHighlighting)
         {
-            /*
-            // 2025-11-04 partition changes
             componentData.ThrottleApplySyntaxHighlighting(modelModifier);
-            */
         }
 
         // TODO: Do this code first so the user gets immediate UI feedback in the event that

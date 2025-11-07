@@ -2545,6 +2545,35 @@ public sealed class TextEditorModel
         int endExclusiveIndex,
         byte decorationByte)
     {
+        var partitionWalker = PersistentState.__TextEditorViewModelLiason.PartitionWalker;
+        partitionWalker.ReInitialize(this);
+
+        partitionWalker.Seek(targetGlobalCharacterIndex: startInclusiveIndex);
+
+        var lengthToDecorate = endExclusiveIndex - startInclusiveIndex;
+        while (lengthToDecorate > 0)
+        {
+            var thisLoopAvailableCharacterCount = partitionWalker.PartitionCurrent.RichCharacterList.Count - partitionWalker.RelativeCharacterIndex;
+            if (thisLoopAvailableCharacterCount <= 0)
+                break;
+
+            int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
+            for (int i = 0; i < takeActual; i++)
+            {
+                partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
+                    partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
+                    {
+                        DecorationByte = decorationByte
+                    };
+                --lengthToDecorate;
+            }
+
+            if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                break;
+            else
+                partitionWalker.MoveToFirstCharacterOfTheNextPartition();
+        }
+        /*
         //try
         //{
             var length = endExclusiveIndex - startInclusiveIndex;
@@ -2608,6 +2637,7 @@ public sealed class TextEditorModel
         //{
         //
         //}
+        */
     }
 
     public void __SetDecorationByte(

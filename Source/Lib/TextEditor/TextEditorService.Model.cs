@@ -1,8 +1,4 @@
-using Clair.Common.RazorLib.Keymaps.Models;
-using Clair.Common.RazorLib.Keys.Models;
-using Clair.TextEditor.RazorLib.Decorations.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
-using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 
 namespace Clair.TextEditor.RazorLib;
@@ -70,6 +66,8 @@ public partial class TextEditorService
         TextEditorModel modelModifier,
         IEnumerable<TextEditorTextSpan> textSpans)
     {
+        /*
+        // 2025-11-04 partition changes
         var localRichCharacterList = modelModifier.RichCharacterList;
 
         var positionsPainted = new HashSet<int>();
@@ -97,6 +95,7 @@ public partial class TextEditorService
 
         modelModifier.__SetPartitionListChanged(true);
         modelModifier.ShouldCalculateVirtualizationResult = true;
+        */
     }
 
     public void Model_ApplySyntaxHighlighting(

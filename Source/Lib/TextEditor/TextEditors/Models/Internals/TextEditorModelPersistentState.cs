@@ -26,7 +26,7 @@ public sealed class TextEditorModelPersistentState
         __LocalLineEndList = textEditorService.__LocalLineEndList;
         __LocalTabPositionList = textEditorService.__LocalTabPositionList;
         __TextEditorViewModelLiason = textEditorService.__TextEditorViewModelLiason;
-        
+
         ViewModelKeyList = viewModelKeyList;
         
         FileExtension = fileExtension;

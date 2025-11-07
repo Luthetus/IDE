@@ -1,6 +1,3 @@
-using Clair.Common.RazorLib.Dynamics.Models;
-using Clair.Common.RazorLib.Notifications.Models;
-using System;
 using System.Runtime.CompilerServices;
 
 // TODO: The namespace that was generated had '.csproj' on the end which is wrong and needs to be fixed.

@@ -10,7 +10,6 @@ using Clair.Extensions.CompilerServices;
 using Clair.Extensions.CompilerServices.Displays;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.Extensions.CompilerServices.Syntax.Interfaces;
-using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.TextEditor.RazorLib;
 using Clair.TextEditor.RazorLib.Autocompletes.Models;
@@ -980,12 +979,19 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     }
 
     /// <summary>
+    /// TODO: Don't use this PartitionWalker, find another way...
+    /// ...for one, this usage is in GetAutocompleteMenu and it isn't thread safe
+    /// </summary>
+    private PartitionWalker BAD_PartitionWalker = new();
+
+    /// <summary>
     /// Continuation token?
     /// If add more text then filter previous if something gets filtered
     /// go back to the previous end point and take more entries until MAX.
     /// </summary>
     public AutocompleteContainer? GetAutocompleteMenu(TextEditorVirtualizationResult virtualizationResult, AutocompleteMenu autocompleteMenu)
     {
+        BAD_PartitionWalker.ReInitialize(virtualizationResult.Model);
         var positionIndex = virtualizationResult.Model.GetPositionIndex(virtualizationResult.ViewModel);
     
         var character = '\0';
@@ -1017,7 +1023,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         // TODO: Write a reverse C# lexer so you can handle method invocation and still get the method name.
         for (; i >= 0; i--)
         {
-            character = virtualizationResult.Model.GetCharacter(i);
+            character = virtualizationResult.Model.GetCharacter(i, BAD_PartitionWalker);
             
             switch (character)
             {
@@ -1157,7 +1163,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                         
                         if (i > 0)
                         {
-                            var innerCharacter = virtualizationResult.Model.GetCharacter(i - 1);
+                            var innerCharacter = virtualizationResult.Model.GetCharacter(i - 1, BAD_PartitionWalker);
                             
                             if (innerCharacter == '?' || innerCharacter == '!')
                                 i--;
@@ -1208,18 +1214,24 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 filteringWordStartInclusiveIndex,
                 filteringWordEndExclusiveIndex,
                 DecorationByte: 0);
-                
-            filteringWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService, _unsafeGetTextStringBuilder);
+
+            filteringWord = textSpan.GetText(
+                BAD_PartitionWalker,
+                _textEditorService,
+                _unsafeGetTextStringBuilder);
         }
-        
+
         if (operatingWordEndExclusiveIndex != -1)
         {
             var textSpan = new TextEditorTextSpan(
                 i + 1,
                 operatingWordEndExclusiveIndex + 1,
                 DecorationByte: 0);
-                
-            operatingWord = textSpan.GetText(virtualizationResult.Model.RichCharacterList, _textEditorService, _unsafeGetTextStringBuilder);
+
+            operatingWord = textSpan.GetText(
+                BAD_PartitionWalker,
+                _textEditorService,
+                _unsafeGetTextStringBuilder);
         }
         
         CSharpAutocompleteContainer autocompleteContainer;
@@ -1321,7 +1333,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                             /*if (stringValue.Contains())
                             {
                             }*/
-                            
+
                             autocompleteContainer.AutocompleteMenuList[writeCount++] = new AutocompleteValue(
                                 displayName: stringValue,
                                 autocompleteEntryKind: AutocompleteEntryKind.Word);

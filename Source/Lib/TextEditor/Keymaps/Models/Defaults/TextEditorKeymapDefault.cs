@@ -5,12 +5,18 @@ using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.Cursors.Models;
 using Clair.TextEditor.RazorLib.Commands.Models.Defaults;
-using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
 
 namespace Clair.TextEditor.RazorLib.Keymaps.Models.Defaults;
 
 public class TextEditorKeymapDefault : ITextEditorKeymap
 {
+    /// <summary>
+    /// The TextEditorKeymapDefault is currently a static readonly allocation.
+    /// If ServerSide or ??? where used then this'd be problematic.
+    /// 
+    /// Furthermore you might as well use the TextEditorService's pooled StringBuilder
+    /// since this is the TextEditorEditContext?
+    /// </summary>
     private readonly StringBuilder _indentationBuilder = new();
 
     public string DisplayName { get; } = nameof(TextEditorKeymapDefault);
@@ -279,6 +285,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     break;
                 case "Enter":
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
+                    editContext.TextEditorService.ec_PartitionWalker.ReInitialize(modelModifier);
                     var valueToInsert = modelModifier.LineEndKindPreference.AsCharacters();
             
                     // Match indentation on newline keystroke
@@ -291,7 +298,11 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     
                     while (indentationPositionIndex < cursorPositionIndex)
                     {
-                        var possibleIndentationChar = modelModifier.RichCharacterList[indentationPositionIndex++].Value;
+                        editContext.TextEditorService.ec_PartitionWalker.Seek(
+                            targetGlobalCharacterIndex: indentationPositionIndex++);
+                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                                editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
+                            .Value;
         
                         if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
                             _indentationBuilder.Append(possibleIndentationChar);
@@ -535,6 +546,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     break;
                 case "Enter":
                     modelModifier = editContext.GetModelModifier(viewModel.PersistentState.ResourceUri);
+                    editContext.TextEditorService.ec_PartitionWalker.ReInitialize(modelModifier);
                     var valueToInsert = modelModifier.LineEndKindPreference.AsCharacters();
             
                     // Match indentation on newline keystroke
@@ -547,7 +559,11 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     
                     while (indentationPositionIndex < cursorPositionIndex)
                     {
-                        var possibleIndentationChar = modelModifier.RichCharacterList[indentationPositionIndex++].Value;
+                        editContext.TextEditorService.ec_PartitionWalker.Seek(
+                            targetGlobalCharacterIndex: indentationPositionIndex++);
+                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                                editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
+                            .Value;
         
                         if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
                             _indentationBuilder.Append(possibleIndentationChar);
@@ -750,7 +766,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
         {
             componentData.ThrottleApplySyntaxHighlighting(modelModifier);
         }
-        
+
         // TODO: Do this code first so the user gets immediate UI feedback in the event that
         //       their keydown code takes a long time?
         editContext.TextEditorService.ViewModel_StopCursorBlinking();

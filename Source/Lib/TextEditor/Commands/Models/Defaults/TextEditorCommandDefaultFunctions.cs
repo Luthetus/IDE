@@ -1,21 +1,22 @@
-using System.Text;
-using Microsoft.AspNetCore.Components.Web;
 using Clair.Common.RazorLib;
-using Clair.Common.RazorLib.Keys.Models;
-using Clair.Common.RazorLib.JsRuntimes.Models;
 using Clair.Common.RazorLib.Dropdowns.Models;
-using Clair.Common.RazorLib.Menus.Models;
-using Clair.Common.RazorLib.Menus.Displays;
 using Clair.Common.RazorLib.FileSystems.Models;
+using Clair.Common.RazorLib.JsRuntimes.Models;
 using Clair.Common.RazorLib.Keymaps.Models;
+using Clair.Common.RazorLib.Keys.Models;
+using Clair.Common.RazorLib.Menus.Displays;
+using Clair.Common.RazorLib.Menus.Models;
+using Clair.TextEditor.RazorLib.Characters.Models;
+using Clair.TextEditor.RazorLib.Cursors.Models;
+using Clair.TextEditor.RazorLib.Events.Models;
 using Clair.TextEditor.RazorLib.Groups.Models;
 using Clair.TextEditor.RazorLib.JavaScriptObjects.Models;
-using Clair.TextEditor.RazorLib.Cursors.Models;
+using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
-using Clair.TextEditor.RazorLib.Characters.Models;
-using Clair.TextEditor.RazorLib.Lexers.Models;
-using Clair.TextEditor.RazorLib.Events.Models;
+using Microsoft.AspNetCore.Components.Web;
+using System.Text;
+using static Clair.TextEditor.RazorLib.TextEditors.Models.TextEditorModel;
 
 namespace Clair.TextEditor.RazorLib.Commands.Models.Defaults;
 
@@ -31,8 +32,8 @@ public class TextEditorCommandDefaultFunctions
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
-        var selectedText = TextEditorSelectionHelper.GetSelectedText(viewModel, modelModifier);
-        selectedText ??= modelModifier.GetLineTextRange(viewModel.LineIndex, 1);
+        var selectedText = TextEditorSelectionHelper.GetSelectedText(viewModel, modelModifier, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder);
+        selectedText ??= modelModifier.GetLineTextRange(viewModel.LineIndex, 1, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder);
 
         await editContext.TextEditorService.CommonService.SetClipboard(selectedText).ConfigureAwait(false);
         await viewModel.FocusAsync().ConfigureAwait(false);
@@ -52,14 +53,18 @@ public class TextEditorCommandDefaultFunctions
             viewModel.SelectionEndingPositionIndex = lineInformation.Position_EndExclusiveIndex;
         }
 
-        var selectedText = TextEditorSelectionHelper.GetSelectedText(viewModel, modelModifier) ?? string.Empty;
+        var selectedText = TextEditorSelectionHelper.GetSelectedText(
+            viewModel, modelModifier, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder)
+            ?? string.Empty;
         await editContext.TextEditorService.CommonService.SetClipboard(selectedText).ConfigureAwait(false);
 
         await viewModel.FocusAsync().ConfigureAwait(false);
 
-        modelModifier.HandleKeyboardEvent(
-            new KeymapArgs { Key = CommonFacts.DELETE },
-            viewModel);
+        modelModifier.Delete(
+            viewModel,
+            1,
+            expandWord: false,
+            DeleteKind.Delete);
     }
 
     public static async ValueTask PasteAsync(
@@ -294,7 +299,8 @@ public class TextEditorCommandDefaultFunctions
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
-        var selectedText = TextEditorSelectionHelper.GetSelectedText(viewModel, modelModifier);
+        var selectedText = TextEditorSelectionHelper.GetSelectedText(
+            viewModel, modelModifier, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder);
         
         var before_LineIndex = viewModel.LineIndex;
         var before_ColumnIndex = viewModel.ColumnIndex;
@@ -308,7 +314,8 @@ public class TextEditorCommandDefaultFunctions
         if (selectedText is null)
         {
             // Select line
-            selectedText = modelModifier.GetLineTextRange(viewModel.LineIndex, 1);
+            selectedText = modelModifier.GetLineTextRange(
+                viewModel.LineIndex, 1, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder);
             viewModel.SetColumnIndexAndPreferred(0);
         }
 
@@ -449,7 +456,11 @@ public class TextEditorCommandDefaultFunctions
 
             characterReadCount = Math.Min(lengthOfLine, characterReadCount);
 
-            var readResult = modelModifier.GetString(rowPositionIndex, characterReadCount);
+            var readResult = modelModifier.GetString(
+                rowPositionIndex,
+                characterReadCount,
+                editContext.TextEditorService.ec_PartitionWalker,
+                editContext.TextEditorService.ec_StringBuilder);
             var removeCharacterCount = 0;
 
             if (readResult.StartsWith(CommonFacts.TAB))
@@ -523,11 +534,16 @@ public class TextEditorCommandDefaultFunctions
         viewModel.SelectionAnchorPositionIndex = -1;
     }
 
+    /// <summary>
+    /// TODO: Is this used? A version in the TextEditorKeymapDefault exists.
+    /// </summary>
     public static void NewLineBelow(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
+        editContext.TextEditorService.ec_PartitionWalker.ReInitialize(modelModifier);
+
         viewModel.SelectionAnchorPositionIndex = -1;
 
         var lengthOfLine = modelModifier.GetLineLength(viewModel.LineIndex);
@@ -546,11 +562,16 @@ public class TextEditorCommandDefaultFunctions
             var cursorPositionIndex = line.Position_StartInclusiveIndex + viewModel.ColumnIndex;
             var indentationPositionIndex = line.Position_StartInclusiveIndex;
 
+            // TODO: Move this StringBuilder
             var indentationBuilder = new StringBuilder();
 
             while (indentationPositionIndex < cursorPositionIndex)
             {
-                var possibleIndentationChar = modelModifier.RichCharacterList[indentationPositionIndex++].Value;
+                editContext.TextEditorService.ec_PartitionWalker.Seek(
+                    targetGlobalCharacterIndex: indentationPositionIndex++);
+                var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                        editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
+                    .Value;
 
                 if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
                     indentationBuilder.Append(possibleIndentationChar);
@@ -564,11 +585,16 @@ public class TextEditorCommandDefaultFunctions
         modelModifier.Insert(valueToInsert, viewModel);
     }
 
+    /// <summary>
+    /// TODO: Is this used? A version in the TextEditorKeymapDefault exists.
+    /// </summary>
     public static void NewLineAbove(
         TextEditorEditContext editContext,
         TextEditorModel modelModifier,
         TextEditorViewModel viewModel)
     {
+        editContext.TextEditorService.ec_PartitionWalker.ReInitialize(modelModifier);
+
         viewModel.SelectionAnchorPositionIndex = -1;
             
         var originalColumnIndex = viewModel.ColumnIndex;
@@ -593,7 +619,11 @@ public class TextEditorCommandDefaultFunctions
 
             while (indentationPositionIndex < cursorPositionIndex)
             {
-                var possibleIndentationChar = modelModifier.RichCharacterList[indentationPositionIndex++].Value;
+                editContext.TextEditorService.ec_PartitionWalker.Seek(
+                    targetGlobalCharacterIndex: indentationPositionIndex++);
+                var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
+                        editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
+                    .Value;
 
                 if (possibleIndentationChar == '\t' || possibleIndentationChar == ' ')
                     indentationBuilder.Append(possibleIndentationChar);
@@ -627,7 +657,8 @@ public class TextEditorCommandDefaultFunctions
 
         // Insert
         {
-            var currentLineContent = modelModifier.GetLineTextRange(lineIndexOriginal, 1);
+            var currentLineContent = modelModifier.GetLineTextRange(
+                lineIndexOriginal, 1, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder);
         
             viewModel.LineIndex = nextLineIndex + 1;
             viewModel.ColumnIndex = 0;
@@ -670,7 +701,8 @@ public class TextEditorCommandDefaultFunctions
 
         // Insert
         {
-            var currentLineContent = modelModifier.GetLineTextRange(lineIndexOriginal, 1);
+            var currentLineContent = modelModifier.GetLineTextRange(
+                lineIndexOriginal, 1, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder);
         
             viewModel.LineIndex = previousLineIndex;
             viewModel.ColumnIndex = 0;
@@ -719,8 +751,8 @@ public class TextEditorCommandDefaultFunctions
             viewModel.SelectionAnchorPositionIndex = -1;
         }
 
-        var previousCharacter = modelModifier.GetCharacter(cursorPositionIndex - 1);
-        var currentCharacter = modelModifier.GetCharacter(cursorPositionIndex);
+        var previousCharacter = modelModifier.GetCharacter(cursorPositionIndex - 1, editContext.TextEditorService.ec_PartitionWalker);
+        var currentCharacter = modelModifier.GetCharacter(cursorPositionIndex, editContext.TextEditorService.ec_PartitionWalker);
 
         char? characterToMatch = null;
         char? match = null;
@@ -793,7 +825,7 @@ public class TextEditorCommandDefaultFunctions
                 viewModel);
 
             var positionIndex = modelModifier.GetPositionIndex(viewModel);
-            var characterAt = modelModifier.GetCharacter(positionIndex);
+            var characterAt = modelModifier.GetCharacter(positionIndex, editContext.TextEditorService.ec_PartitionWalker);
 
             if (characterAt == match)
                 unmatchedCharacters--;
@@ -1319,7 +1351,8 @@ public class TextEditorCommandDefaultFunctions
         // If the user has an active text selection,
         // then populate the find overlay with their selection.
         
-        var selectedText = TextEditorSelectionHelper.GetSelectedText(viewModel, modelModifier);
+        var selectedText = TextEditorSelectionHelper.GetSelectedText(
+            viewModel, modelModifier, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder);
         if (selectedText is not null)
         {
             viewModel.PersistentState.FindOverlayValue = selectedText;
@@ -1353,7 +1386,8 @@ public class TextEditorCommandDefaultFunctions
         if (modelModifier is null || viewModel is null)
             return;
 
-        var selectedText = TextEditorSelectionHelper.GetSelectedText(viewModel, modelModifier);
+        var selectedText = TextEditorSelectionHelper.GetSelectedText(
+            viewModel, modelModifier, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder);
         if (selectedText is null)
             return;
             

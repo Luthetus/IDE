@@ -15,10 +15,11 @@ namespace Clair.Common.RazorLib.Panels.Models;
 public record PanelGroup(
         Key<PanelGroup> Key,
         Key<Panel> ActiveTabKey,
-        ElementDimensions ElementDimensions,
-        IReadOnlyList<IPanelTab> TabList)
+        ElementDimensions ElementDimensions)
     : ITabGroup
 {
+    public ValueList<IPanelTab> TabList { get; set; }
+
     /// <summary>
     /// TODO: Make this property immutable. Until then in a hack needs to be done where this gets set...
     ///       ...for Clair.Ide this is done in ClairIdeInitializer.razor.cs (2024-04-08)
@@ -75,8 +76,9 @@ public record PanelGroup(
     {
         var localTabList = TabList;
 
-        foreach (var tab in localTabList)
+        for (int i = 0; i < localTabList.Count; i++)
         {
+            var tab = localTabList.u_Items[i];
             await CloseAsync(tab).ConfigureAwait(false);
         }
     }
@@ -92,8 +94,9 @@ public record PanelGroup(
         // OnClickAsync does not currently use its mouse event args argument.
         await OnClickAsync(safeTab, null);
 
-        foreach (var tab in localTabList)
+        for (int i = 0; i < localTabList.Count; i++)
         {
+            var tab = localTabList.u_Items[i];
             var shouldClose = safePanelTab.Key != tab.Key;
 
             if (shouldClose)

@@ -1,16 +1,15 @@
-using System.Text;
 using Clair.Common.RazorLib;
 using Clair.Common.RazorLib.Keys.Models;
-using Clair.Common.RazorLib.Keymaps.Models;
 using Clair.TextEditor.RazorLib.Characters.Models;
+using Clair.TextEditor.RazorLib.CompilerServices;
 using Clair.TextEditor.RazorLib.Cursors.Models;
+using Clair.TextEditor.RazorLib.Decorations.Models;
 using Clair.TextEditor.RazorLib.Edits.Models;
 using Clair.TextEditor.RazorLib.Exceptions;
-using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.Lexers.Models;
-using Clair.TextEditor.RazorLib.Decorations.Models;
-using Clair.TextEditor.RazorLib.CompilerServices;
+using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
+using System.Text;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
 
@@ -50,7 +49,6 @@ public sealed class TextEditorModel
             editBlockIndex: 0);
     
         // Initialize
-        _richCharacterList = Array.Empty<RichCharacter>();
         PresentationModelList = new();
         OnlyLineEndKind = LineEndKind.Unset;
         LineEndKindPreference = LineEndKind.Unset;
@@ -84,7 +82,6 @@ public sealed class TextEditorModel
         PersistentState = other.PersistentState;
 
         _partitionList = other.PartitionList;
-        _richCharacterList = other.RichCharacterList;
         LineEndList = other.LineEndList;
         PresentationModelList = other.PresentationModelList;
         TabCharPositionIndexList = other.TabCharPositionIndexList;
@@ -128,38 +125,6 @@ public sealed class TextEditorModel
         {
             _partitionListChanged = true;
             _partitionList = value;
-        }
-    }
-    
-    public RichCharacter[] _richCharacterList;
-    public RichCharacter[] RichCharacterList
-    {
-        get
-        {
-            if (_partitionListChanged)
-            {
-                _partitionListChanged = false;
-                _allText = null;
-                _charCount = -1;
-                
-                var rcArr = new RichCharacter[CharCount];
-                var index = 0;
-                foreach (var partition in PartitionList)
-                {
-                    foreach (var rc in partition.RichCharacterList)
-                    {
-                        rcArr[index++] = rc;
-                    }
-                }
-                _richCharacterList = rcArr;
-            }
-            
-            return _richCharacterList;
-        }
-        set
-        {
-            _partitionListChanged = false;
-            _richCharacterList = value;
         }
     }
     
@@ -289,7 +254,7 @@ public sealed class TextEditorModel
     /// </summary>
     public bool ShouldCalculateVirtualizationResult { get; set; }
 
-    public int DocumentLength => RichCharacterList.Length;
+    public int DocumentLength => CharCount;
     
     public const int GUTTER_PADDING_LEFT_IN_PIXELS = 3;
     public const int GUTTER_PADDING_RIGHT_IN_PIXELS = 17;
@@ -334,7 +299,7 @@ public sealed class TextEditorModel
         SetIsDirtyTrue();
     }
 
-    public void HandleKeyboardEvent(KeymapArgs keymapArgs, TextEditorViewModel viewModel)
+    /*public void HandleKeyboardEvent(KeymapArgs keymapArgs, TextEditorViewModel viewModel)
     {
         if (CommonFacts.IsMetaKey(keymapArgs))
         {
@@ -392,7 +357,7 @@ public sealed class TextEditorModel
                 valueToInsert,
                 viewModel);
         }
-    }
+    }*/
 
     private void PerformInsert(TextEditorViewModel viewModel, int positionIndex, string content)
     {
@@ -611,9 +576,10 @@ public sealed class TextEditorModel
             Position_EndExclusiveIndex = richCharacterIndex,
         };
 
+        _charCount = richCharacterIndex;
         SetIsDirtyTrue();
         ShouldCalculateVirtualizationResult = true;
-        
+
         PersistentState.__TextEditorViewModelLiason.SetContent(PersistentState.ViewModelKeyList);
     }
 
@@ -1444,7 +1410,11 @@ public sealed class TextEditorModel
 
         var (calculatedPositionIndex, charCount) = tuple.Value;
 
-        var textRemoved = this.GetString(calculatedPositionIndex, charCount);
+        var textRemoved = GetString(
+            calculatedPositionIndex,
+            charCount,
+            PersistentState.__TextEditorViewModelLiason.PartitionWalker,
+            PersistentState.__TextEditorViewModelLiason.StringBuilder);
 
         DeleteValue(calculatedPositionIndex, charCount);
 
@@ -1569,6 +1539,9 @@ public sealed class TextEditorModel
         DeleteKind deleteKind,
         bool usePositionIndex)
     {
+        PersistentState.__TextEditorViewModelLiason.PartitionWalker.ReInitialize(this);
+
+        // TODO: DeleteMetadata should NOT be a nullable value tuple, heap allocation every non-null read.
         var initiallyHadSelection = TextEditorSelectionHelper.HasSelectedText(viewModel);
         var initialLineIndex = viewModel.LineIndex;
         var positionIndex = this.GetPositionIndex(viewModel);
@@ -1615,7 +1588,8 @@ public sealed class TextEditorModel
                 var columnIndexOfCharacterWithDifferingKind = this.GetColumnIndexOfCharacterWithDifferingKind(
                     viewModel.LineIndex,
                     viewModel.ColumnIndex,
-                    false);
+                    false,
+                    PersistentState.__TextEditorViewModelLiason.PartitionWalker);
 
                 // -1 implies that no differing kind was found on the current line.
                 if (columnIndexOfCharacterWithDifferingKind == -1)
@@ -1637,7 +1611,10 @@ public sealed class TextEditorModel
                 if (toDeletePositionIndex < 0 || toDeletePositionIndex >= CharCount)
                     break;
 
-                var richCharacterToDelete = RichCharacterList[toDeletePositionIndex];
+                PersistentState.__TextEditorViewModelLiason.PartitionWalker.Seek(
+                    targetGlobalCharacterIndex: toDeletePositionIndex);
+                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList[
+                        PersistentState.__TextEditorViewModelLiason.PartitionWalker.RelativeCharacterIndex];
 
                 if (CommonFacts.IsLineEndingCharacter(richCharacterToDelete.Value))
                 {
@@ -1708,7 +1685,8 @@ public sealed class TextEditorModel
                 var columnIndexOfCharacterWithDifferingKind = this.GetColumnIndexOfCharacterWithDifferingKind(
                     viewModel.LineIndex,
                     viewModel.ColumnIndex,
-                    true);
+                    true,
+                    PersistentState.__TextEditorViewModelLiason.PartitionWalker);
 
                 // -1 implies that no differing kind was found on the current line.
                 if (columnIndexOfCharacterWithDifferingKind == -1)
@@ -1728,7 +1706,10 @@ public sealed class TextEditorModel
                 if (toDeletePositionIndex < 0 || toDeletePositionIndex >= CharCount)
                     break;
 
-                var richCharacterToDelete = RichCharacterList[toDeletePositionIndex];
+                PersistentState.__TextEditorViewModelLiason.PartitionWalker.Seek(
+                    targetGlobalCharacterIndex: toDeletePositionIndex);
+                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList[
+                    PersistentState.__TextEditorViewModelLiason.PartitionWalker.RelativeCharacterIndex];
 
                 if (CommonFacts.IsLineEndingCharacter(richCharacterToDelete.Value))
                 {
@@ -1912,13 +1893,42 @@ public sealed class TextEditorModel
 
     public void xApplySyntaxHighlightingByTextSpan(TextEditorTextSpan textSpan)
     {
-        for (var i = textSpan.StartInclusiveIndex; i < textSpan.EndExclusiveIndex; i++)
+        var partitionWalker = PersistentState.__TextEditorViewModelLiason.PartitionWalker;
+        partitionWalker.ReInitialize(this);
+
+        partitionWalker.Seek(targetGlobalCharacterIndex: 8127);
+
+        var lengthToDecorate = textSpan.Length;
+        while (lengthToDecorate > 0)
+        {
+            var thisLoopAvailableCharacterCount = partitionWalker.PartitionCurrent.RichCharacterList.Count - partitionWalker.RelativeCharacterIndex;
+            if (thisLoopAvailableCharacterCount <= 0)
+                break;
+
+            int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
+            for (int i = 0; i < takeActual; i++)
+            {
+                partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
+                    partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
+                    {
+                        DecorationByte = textSpan.DecorationByte
+                    };
+                --lengthToDecorate;
+            }
+
+            if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                break;
+            else
+                partitionWalker.MoveToFirstCharacterOfTheNextPartition();
+        }
+
+        /*for (var i = textSpan.StartInclusiveIndex; i < textSpan.EndExclusiveIndex; i++)
         {
             if (i < 0 || i >= RichCharacterList.Length)
                 continue;
 
             __SetDecorationByte(i, textSpan.DecorationByte);
-        }
+        }*/
     }
     #endregion
 
@@ -1958,6 +1968,8 @@ public sealed class TextEditorModel
     /// </param>
     public RichCharacter[][] GetLineRichCharacterRange(int startingLineIndex, int count)
     {
+        /*
+        // 2025-11-04 partition changes
         var lineCountAvailable = LineEndList.Count - startingLineIndex;
 
         var lineCountToReturn = count < lineCountAvailable
@@ -1988,6 +2000,8 @@ public sealed class TextEditorModel
         }
 
         return lineList;
+        */
+        return null;
     }
 
     public int GetTabCountOnSameLineBeforeCursor(int lineIndex, int columnIndex)
@@ -2055,27 +2069,60 @@ public sealed class TextEditorModel
     /// <summary>
     /// To receive a <see cref="string"/> value, one can use <see cref="GetString"/> instead.
     /// </summary>
-    public char GetCharacter(int positionIndex)
+    public char GetCharacter(int positionIndex, PartitionWalker partitionWalker)
     {
         if (positionIndex == CharCount)
             return '\0';
-
-        return RichCharacterList[positionIndex].Value;
+        partitionWalker.ReInitialize(this);
+        partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+        return partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex]
+            .Value;
     }
 
     /// <summary>
     /// To receive a <see cref="char"/> value, one can use <see cref="GetCharacter"/> instead.
     /// </summary>
-    public string GetString(int positionIndex, int count)
+    public string GetString(int positionIndex, int count, PartitionWalker initializedPartitionWalker, StringBuilder sb)
     {
+        /*
+        // 2025-11-04 partition changes
         return new string(RichCharacterList
             .Skip(positionIndex)
             .Take(count)
             .Select(x => x.Value)
             .ToArray());
+        */
+
+        initializedPartitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+
+        var lengthToDecorate = count;
+        while (lengthToDecorate > 0)
+        {
+            var thisLoopAvailableCharacterCount = initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - initializedPartitionWalker.RelativeCharacterIndex;
+            if (thisLoopAvailableCharacterCount <= 0)
+                break;
+
+            int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
+            for (int i = 0; i < takeActual; i++)
+            {
+                sb.Append(initializedPartitionWalker.PartitionCurrent.RichCharacterList[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
+                --lengthToDecorate;
+            }
+
+            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                break;
+            else if (lengthToDecorate > 0)
+                break;
+            else
+                initializedPartitionWalker.MoveToFirstCharacterOfTheNextPartition();
+        }
+
+        var stringValue = sb.ToString();
+        sb.Clear();
+        return stringValue;
     }
 
-    public string GetLineTextRange(int lineIndex, int count)
+    public string GetLineTextRange(int lineIndex, int count, PartitionWalker partitionWalker, StringBuilder sb)
     {
         var startPositionIndexInclusive = GetPositionIndex(lineIndex, 0);
         var lastLineIndexExclusive = lineIndex + count;
@@ -2092,7 +2139,9 @@ public sealed class TextEditorModel
 
         return GetString(
             startPositionIndexInclusive,
-            endPositionIndexExclusive - startPositionIndexInclusive);
+            endPositionIndexExclusive - startPositionIndexInclusive,
+            partitionWalker,
+            sb);
     }
     
     /// <summary>
@@ -2101,10 +2150,10 @@ public sealed class TextEditorModel
     ///     -ELSE IF the start of a word is to the right of the cursor that word will be returned.<br/><br/>
     ///     -ELSE IF the end of a word is to the left of the cursor that word will be returned.<br/><br/>
     ///     -ELSE (GetWordTextSpanResultKind.None, default).</summary>
-    public (GetWordTextSpanResultKind ResultKind, TextEditorTextSpan TextSpan) GetWordTextSpan(int positionIndex)
+    public (GetWordTextSpanResultKind ResultKind, TextEditorTextSpan TextSpan) GetWordTextSpan(int positionIndex, PartitionWalker partitionWalker)
     {
-        var previousCharacter = GetCharacter(positionIndex - 1);
-        var currentCharacter = GetCharacter(positionIndex);
+        var previousCharacter = GetCharacter(positionIndex - 1, partitionWalker);
+        var currentCharacter = GetCharacter(positionIndex, partitionWalker);
 
         var previousCharacterKind = CharacterKindHelper.CharToCharacterKind(previousCharacter);
         var currentCharacterKind = CharacterKindHelper.CharToCharacterKind(currentCharacter);
@@ -2117,7 +2166,8 @@ public sealed class TextEditorModel
             var wordColumnIndexStartInclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineInformation.Index,
                 columnIndex,
-                true);
+                true,
+                partitionWalker);
 
             if (wordColumnIndexStartInclusive == -1)
                 wordColumnIndexStartInclusive = 0;
@@ -2125,7 +2175,8 @@ public sealed class TextEditorModel
             var wordColumnIndexEndExclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineInformation.Index,
                 columnIndex,
-                false);
+                false,
+                partitionWalker);
 
             if (wordColumnIndexEndExclusive == -1)
                 wordColumnIndexEndExclusive = GetLineLength(lineInformation.Index);
@@ -2140,7 +2191,8 @@ public sealed class TextEditorModel
             var wordColumnIndexEndExclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineInformation.Index,
                 columnIndex,
-                false);
+                false,
+                partitionWalker);
 
             if (wordColumnIndexEndExclusive == -1)
                 wordColumnIndexEndExclusive = GetLineLength(lineInformation.Index);
@@ -2155,7 +2207,8 @@ public sealed class TextEditorModel
             var wordColumnIndexStartInclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineInformation.Index,
                 columnIndex,
-                true);
+                true,
+                partitionWalker);
 
             if (wordColumnIndexStartInclusive == -1)
                 wordColumnIndexStartInclusive = 0;
@@ -2288,7 +2341,8 @@ public sealed class TextEditorModel
     public int GetColumnIndexOfCharacterWithDifferingKind(
         int lineIndex,
         int columnIndex,
-        bool moveBackwards)
+        bool moveBackwards,
+        PartitionWalker partitionWalker)
     {
         var iterateBy = moveBackwards
             ? -1
@@ -2310,21 +2364,31 @@ public sealed class TextEditorModel
             positionIndex -= 1;
         }
 
-        if (positionIndex < 0 || positionIndex >= RichCharacterList.Length)
+        if (positionIndex < 0 || positionIndex >= CharCount)
             return -1;
 
-        var startCharacterKind = CharacterKindHelper.CharToCharacterKind(RichCharacterList[positionIndex].Value);
+        // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
+        partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+        var startCharacterKind = CharacterKindHelper.CharToCharacterKind(
+            partitionWalker.PartitionCurrent.RichCharacterList[
+                partitionWalker.RelativeCharacterIndex]
+            .Value);
 
         while (true)
         {
-            if (positionIndex >= RichCharacterList.Length ||
+            if (positionIndex >= CharCount ||
                 positionIndex > lastPositionIndexOnLine ||
                 positionIndex < lineStartPositionIndex)
             {
                 return -1;
             }
 
-            var currentCharacterKind = CharacterKindHelper.CharToCharacterKind(RichCharacterList[positionIndex].Value);
+            // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
+            partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
+            var currentCharacterKind = CharacterKindHelper.CharToCharacterKind(
+                partitionWalker.PartitionCurrent.RichCharacterList[
+                    partitionWalker.RelativeCharacterIndex]
+                .Value);
 
             if (currentCharacterKind != startCharacterKind)
                 break;
@@ -2350,10 +2414,14 @@ public sealed class TextEditorModel
 
     public CharacterKind GetCharacterKind(int positionIndex)
     {
+        /*
+        // 2025-11-04 partition changes
         if (positionIndex == CharCount)
             return CharacterKind.Bad;
 
         return CharacterKindHelper.CharToCharacterKind(RichCharacterList[positionIndex].Value);
+        */
+        return default;
     }
 
     /// <summary>
@@ -2363,6 +2431,8 @@ public sealed class TextEditorModel
     public string? ReadPreviousWordOrDefault(
         int lineIndex,
         int columnIndex,
+        PartitionWalker partitionWalker,
+        StringBuilder stringBuilder,
         bool isRecursiveCall = false)
     {
         var wordPositionIndexEndExclusive = GetPositionIndex(lineIndex, columnIndex);
@@ -2379,7 +2449,7 @@ public sealed class TextEditorModel
             var anotherAttemptColumnIndex = columnIndex - 1;
 
             if (anotherAttemptColumnIndex >= 0)
-                return ReadPreviousWordOrDefault(lineIndex, anotherAttemptColumnIndex, true);
+                return ReadPreviousWordOrDefault(lineIndex, anotherAttemptColumnIndex, partitionWalker, stringBuilder, isRecursiveCall: true);
         }
 
         if (wordCharacterKind == CharacterKind.LetterOrDigit)
@@ -2387,7 +2457,8 @@ public sealed class TextEditorModel
             var wordColumnIndexStartInclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineIndex,
                 columnIndex,
-                true);
+                true,
+                partitionWalker);
 
             if (wordColumnIndexStartInclusive == -1)
                 wordColumnIndexStartInclusive = 0;
@@ -2395,7 +2466,7 @@ public sealed class TextEditorModel
             var wordLength = columnIndex - wordColumnIndexStartInclusive;
             var wordPositionIndexStartInclusive = wordPositionIndexEndExclusive - wordLength;
 
-            return GetString(wordPositionIndexStartInclusive, wordLength);
+            return GetString(wordPositionIndexStartInclusive, wordLength, partitionWalker, stringBuilder);
         }
 
         return null;
@@ -2405,7 +2476,7 @@ public sealed class TextEditorModel
     /// This method and <see cref="ReadPreviousWordOrDefault(TextEditorModel, int, int, bool)"/>
     /// are separate because of 'Ctrl + Space' bring up autocomplete when at a period.
     /// </summary>
-    public string? ReadNextWordOrDefault(int lineIndex, int columnIndex)
+    public string? ReadNextWordOrDefault(int lineIndex, int columnIndex, PartitionWalker partitionWalker, StringBuilder stringBuilder)
     {
         var wordPositionIndexStartInclusive = GetPositionIndex(lineIndex, columnIndex);
         var wordCharacterKind = GetCharacterKind(wordPositionIndexStartInclusive);
@@ -2415,14 +2486,15 @@ public sealed class TextEditorModel
             var wordColumnIndexEndExclusive = GetColumnIndexOfCharacterWithDifferingKind(
                 lineIndex,
                 columnIndex,
-                false);
+                false,
+                partitionWalker);
 
             if (wordColumnIndexEndExclusive == -1)
                 wordColumnIndexEndExclusive = GetLineLength(lineIndex);
 
             var wordLength = wordColumnIndexEndExclusive - columnIndex;
 
-            return GetString(wordPositionIndexStartInclusive, wordLength);
+            return GetString(wordPositionIndexStartInclusive, wordLength, partitionWalker, stringBuilder);
         }
 
         return null;
@@ -2434,20 +2506,20 @@ public sealed class TextEditorModel
     /// One uses this method most often to measure the position of the cursor when rendering the
     /// UI for a font-family which is proportional (i.e. not monospace).
     /// </summary>
-    public string GetTextOffsettingCursor(TextEditorViewModel viewModel)
+    public string GetTextOffsettingCursor(TextEditorViewModel viewModel, PartitionWalker partitionWalker, StringBuilder stringBuilder)
     {
         var cursorPositionIndex = GetPositionIndex(viewModel);
         var lineStartPositionIndexInclusive = GetLineInformation(viewModel.LineIndex).Position_StartInclusiveIndex;
 
-        return GetString(lineStartPositionIndexInclusive, cursorPositionIndex - lineStartPositionIndexInclusive);
+        return GetString(lineStartPositionIndexInclusive, cursorPositionIndex - lineStartPositionIndexInclusive, partitionWalker, stringBuilder);
     }
 
-    public string GetLineText(int lineIndex)
+    public string GetLineText(int lineIndex, PartitionWalker partitionWalker, StringBuilder stringBuilder)
     {
         var lineStartPositionIndexInclusive = GetLineInformation(lineIndex).Position_StartInclusiveIndex;
         var lengthOfLine = GetLineLength(lineIndex, true);
 
-        return GetString(lineStartPositionIndexInclusive, lengthOfLine);
+        return GetString(lineStartPositionIndexInclusive, lengthOfLine, partitionWalker, stringBuilder);
     }
     #endregion
     
@@ -2503,6 +2575,35 @@ public sealed class TextEditorModel
         int endExclusiveIndex,
         byte decorationByte)
     {
+        var partitionWalker = PersistentState.__TextEditorViewModelLiason.PartitionWalker;
+        partitionWalker.ReInitialize(this);
+
+        partitionWalker.Seek(targetGlobalCharacterIndex: startInclusiveIndex);
+
+        var lengthToDecorate = endExclusiveIndex - startInclusiveIndex;
+        while (lengthToDecorate > 0)
+        {
+            var thisLoopAvailableCharacterCount = partitionWalker.PartitionCurrent.RichCharacterList.Count - partitionWalker.RelativeCharacterIndex;
+            if (thisLoopAvailableCharacterCount <= 0)
+                break;
+
+            int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
+            for (int i = 0; i < takeActual; i++)
+            {
+                partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
+                    partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
+                    {
+                        DecorationByte = decorationByte
+                    };
+                --lengthToDecorate;
+            }
+
+            if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                break;
+            else
+                partitionWalker.MoveToFirstCharacterOfTheNextPartition();
+        }
+        /*
         //try
         //{
             var length = endExclusiveIndex - startInclusiveIndex;
@@ -2566,6 +2667,7 @@ public sealed class TextEditorModel
         //{
         //
         //}
+        */
     }
 
     public void __SetDecorationByte(

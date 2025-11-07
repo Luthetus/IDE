@@ -88,7 +88,8 @@ public class TextEditorWorkerUi : IBackgroundTaskGroup
                 var lowerColumnIndexExpansion = modelModifier.GetColumnIndexOfCharacterWithDifferingKind(
                     lineAndColumnIndex.LineIndex,
                     lineAndColumnIndex.ColumnIndex,
-                    true);
+                    true,
+                    editContext.TextEditorService.ec_PartitionWalker);
         
                 lowerColumnIndexExpansion = lowerColumnIndexExpansion == -1
                     ? 0
@@ -97,7 +98,8 @@ public class TextEditorWorkerUi : IBackgroundTaskGroup
                 var higherColumnIndexExpansion = modelModifier.GetColumnIndexOfCharacterWithDifferingKind(
                     lineAndColumnIndex.LineIndex,
                     lineAndColumnIndex.ColumnIndex,
-                    false);
+                    false,
+                    editContext.TextEditorService.ec_PartitionWalker);
         
                 higherColumnIndexExpansion = higherColumnIndexExpansion == -1
                     ? modelModifier.GetLineLength(lineAndColumnIndex.LineIndex)

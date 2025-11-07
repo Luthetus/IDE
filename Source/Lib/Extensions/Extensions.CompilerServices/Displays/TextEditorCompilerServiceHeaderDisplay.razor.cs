@@ -37,6 +37,7 @@ public partial class TextEditorCompilerServiceHeaderDisplay : ComponentBase, ITe
     private TextEditorComponentData? _componentData;
     
     private StringBuilder _builder = new();
+    private PartitionWalker _partitionWalker = new();
     
     protected override void OnInitialized()
     {
@@ -48,10 +49,11 @@ public partial class TextEditorCompilerServiceHeaderDisplay : ComponentBase, ITe
     {
         if (componentData?.Virtualization?.Model is null)
             return null;
-    
-        return textSpan.GetText(componentData.Virtualization.Model.RichCharacterList, TextEditorService, _builder);
+
+        _partitionWalker.ReInitialize(componentData.Virtualization.Model);
+        return textSpan.GetText(_partitionWalker, TextEditorService, _builder);
     }
-    
+
     private TextEditorVirtualizationResult GetVirtualizationResult()
     {
         return GetComponentData()?.Virtualization ?? TextEditorVirtualizationResult.Empty;

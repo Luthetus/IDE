@@ -456,7 +456,8 @@ public partial class IdeService
             if (modelModifier is null)
                 return;
 
-            var selectedText = TextEditorSelectionHelper.GetSelectedText(viewModelModifier, modelModifier);
+            var selectedText = TextEditorSelectionHelper.GetSelectedText(
+                viewModelModifier, modelModifier, editContext.TextEditorService.ec_PartitionWalker, editContext.TextEditorService.ec_StringBuilder);
             if (selectedText is null)
                 return;
 

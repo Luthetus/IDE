@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
 
 public sealed class TextEditorViewModelLiason
@@ -8,6 +10,9 @@ public sealed class TextEditorViewModelLiason
     {
         _textEditorService = textEditorService;
     }
+
+    public PartitionWalker PartitionWalker => _textEditorService.ec_PartitionWalker;
+    public StringBuilder StringBuilder => _textEditorService.ec_StringBuilder;
 
     /// <summary>
     /// 'TextEditorEditContext' is more-so just a way to indicate thread safety

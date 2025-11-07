@@ -503,20 +503,20 @@ public sealed class TextEditorModel
                 if (LineEndKindPreference == LineEndKind.CarriageReturnLineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 2, lineEndKind: LineEndKind.CarriageReturnLineFeed, lineEndKindOriginal: currentLineEndKind));
-                    partition.RichCharacterList.C_Add(new (character, default));
-                    partition.RichCharacterList.C_Add(new ('\n', default));
+                    partition.RichCharacterList = partition.RichCharacterList.C_Add(new (character, default));
+                    partition.RichCharacterList = partition.RichCharacterList.C_Add(new ('\n', default));
                     richCharacterIndex += 2;
                 }
                 else if (LineEndKindPreference == LineEndKind.CarriageReturn)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.CarriageReturn, lineEndKindOriginal: currentLineEndKind));
-                    partition.RichCharacterList.C_Add(new (character, default));
+                    partition.RichCharacterList = partition.RichCharacterList.C_Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else if (LineEndKindPreference == LineEndKind.LineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.LineFeed, lineEndKindOriginal: currentLineEndKind));
-                    partition.RichCharacterList.C_Add(new (character, default));
+                    partition.RichCharacterList = partition.RichCharacterList.C_Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else
@@ -530,12 +530,12 @@ public sealed class TextEditorModel
             else if (character == CommonFacts.TAB)
             {
                 TabCharPositionIndexList.Add(richCharacterIndex);
-                partition.RichCharacterList.C_Add(new (character, default));
+                partition.RichCharacterList = partition.RichCharacterList.C_Add(new (character, default));
                 richCharacterIndex++;
             }
             else
             {
-                partition.RichCharacterList.C_Add(new (character, default));
+                partition.RichCharacterList = partition.RichCharacterList.C_Add(new (character, default));
                 richCharacterIndex++;
             }
         }

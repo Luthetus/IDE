@@ -13,7 +13,7 @@ public struct TextEditorPartition
         RichCharacterList = richCharacterList;
     }
 
-    public ValueList<RichCharacter> RichCharacterList { get; }
+    public ValueList<RichCharacter> RichCharacterList { get; set; }
 
     /// <summary>
     /// This is the count of rich characters in THIS particular partition, the <see cref="TextEditorModel.DocumentLength"/>
@@ -25,32 +25,35 @@ public struct TextEditorPartition
         int relativePositionIndex,
         RichCharacter richCharacter)
     {
-        var copy = new List<RichCharacter>(RichCharacterList);
-        copy.Insert(relativePositionIndex, richCharacter);
-        return new(copy);
+        return new(RichCharacterList.New_Insert(relativePositionIndex, richCharacter));
     }
 
     public TextEditorPartition InsertRange(
         int relativePositionIndex,
         IEnumerable<RichCharacter> richCharacterList)
     {
-        var copy = new List<RichCharacter>(RichCharacterList);
-        copy.InsertRange(relativePositionIndex, richCharacterList);
-        return new(copy);
+        // TODO: Do a more optimized InsertRange
+        var n = RichCharacterList;
+        foreach (var rc in richCharacterList)
+        {
+            n = n.C_Insert(relativePositionIndex, rc);
+        }
+        return new(n);
     }
 
     public TextEditorPartition RemoveAt(int relativePositionIndex)
     {
-        var copy = new List<RichCharacter>(RichCharacterList);
-        copy.RemoveAt(relativePositionIndex);
-        return new(copy);
+        return new(RichCharacterList.C_RemoveAt(relativePositionIndex));
     }
 
     public TextEditorPartition RemoveRange(int relativePositionIndex, int count)
     {
-        var copy = new List<RichCharacter>(RichCharacterList);
-        copy.RemoveRange(relativePositionIndex, count);
-        return new(copy);
+        var n = RichCharacterList;
+        for (int i = relativePositionIndex + count - 1; i >= 0; i--)
+        {
+            n = n.C_RemoveAt(i);
+        }
+        return new(n);
     }
 
     public TextEditorPartition AddRange(IEnumerable<RichCharacter> richCharacterList)
@@ -69,8 +72,6 @@ public struct TextEditorPartition
         int relativePositionIndex,
         RichCharacter richCharacter)
     {
-        var copy = new List<RichCharacter>(RichCharacterList);
-        copy[relativePositionIndex] = richCharacter;
-        return new(copy);
+        return new(RichCharacterList.C_SetItem(relativePositionIndex, richCharacter));
     }
 }

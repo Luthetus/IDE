@@ -1891,16 +1891,42 @@ public sealed class TextEditorModel
 
     public void xApplySyntaxHighlightingByTextSpan(TextEditorTextSpan textSpan)
     {
-        /*
-        // 2025-11-04 partition changes
-        for (var i = textSpan.StartInclusiveIndex; i < textSpan.EndExclusiveIndex; i++)
+        var partitionWalker = PersistentState.__TextEditorViewModelLiason.PartitionWalker;
+        partitionWalker.ReInitialize(this);
+
+        partitionWalker.Seek(targetGlobalCharacterIndex: 8127);
+
+        var lengthToDecorate = textSpan.Length;
+        while (lengthToDecorate > 0)
+        {
+            var thisLoopAvailableCharacterCount = partitionWalker.PartitionCurrent.RichCharacterList.Count - partitionWalker.RelativeCharacterIndex;
+            if (thisLoopAvailableCharacterCount <= 0)
+                break;
+
+            int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
+            for (int i = 0; i < takeActual; i++)
+            {
+                partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
+                    partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
+                    {
+                        DecorationByte = textSpan.DecorationByte
+                    };
+                --lengthToDecorate;
+            }
+
+            if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                break;
+            else
+                partitionWalker.MoveToFirstCharacterOfTheNextPartition();
+        }
+
+        /*for (var i = textSpan.StartInclusiveIndex; i < textSpan.EndExclusiveIndex; i++)
         {
             if (i < 0 || i >= RichCharacterList.Length)
                 continue;
 
             __SetDecorationByte(i, textSpan.DecorationByte);
-        }
-        */
+        }*/
     }
     #endregion
 

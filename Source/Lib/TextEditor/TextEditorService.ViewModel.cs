@@ -1089,7 +1089,7 @@ public partial class TextEditorService
                         break;
         
                     takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
-                    for (int i = 0; i < takeActual; i++)
+                    /*for (int i = 0; i < takeActual; i++)
                     {
                         __PartitionWalker.PartitionCurrent.RichCharacterList[__PartitionWalker.RelativeCharacterIndex + i] =
                             __PartitionWalker.PartitionCurrent.RichCharacterList[__PartitionWalker.RelativeCharacterIndex + i] with
@@ -1097,7 +1097,7 @@ public partial class TextEditorService
                                 DecorationByte = 1 // This originally would've defaulted to 0 so anything other than that suffices to see that something changed.
                             };
                         --lengthToDecorate;
-                    }
+                    }*
         
                     /*if (__PartitionWalker.PartitionIndex >= __PartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
                         break;

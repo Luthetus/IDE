@@ -122,11 +122,29 @@ public class PartitionWalker
     /// 
     /// Else if the last partition, ??? RichCharacter is closest to the next desired globalIndex,
     /// then start there.
+    ///
+    /// TODO: Validate insertion at end of a partition...
+    ///       ...start of the first partition
+    ///       ...EOF marker (doc length)
     /// </remarks>
     public void Seek(int targetGlobalCharacterIndex)
     {
-        if (targetGlobalCharacterIndex < 0 || targetGlobalCharacterIndex >= _model.CharCount)
+        if (targetGlobalCharacterIndex == 0)
+        {
+            PartitionIndex = 0;
+            RelativeCharacterIndex = 0;
+            GlobalCharacterIndex = 0;
+        }
+        else if (targetGlobalCharacterIndex == _model.CharCount)
+        {
+            PartitionIndex = _model.PartitionList.Count - 1;
+            RelativeCharacterIndex = PartitionCurrent.Count;
+            GlobalCharacterIndex = _model.CharCount;
+        }
+        else if (targetGlobalCharacterIndex < 0 || targetGlobalCharacterIndex > _model.CharCount)
+        {
             throw new ClairTextEditorException($"if (targetGlobalCharacterIndex:{targetGlobalCharacterIndex} < 0 || targetGlobalCharacterIndex:{targetGlobalCharacterIndex} >= _model.CharCount:{_model.CharCount})");
+        }
 
         // First iteration will reset position to the first partition, first character.
         // Eventually support for seek origin should be added.

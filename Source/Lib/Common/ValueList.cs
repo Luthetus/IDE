@@ -131,6 +131,57 @@ public struct ValueList<T>
         output.u_Items[output.Count++] = item;
         return output;
     }
+    
+    /*
+    // Inserts the elements of the given collection at a given index. If
+    // required, the capacity of the list is increased to twice the previous
+    // capacity or the new size, whichever is larger.  Ranges may be added
+    // to the end of the list by setting index to the List's size.
+    //
+    public ValueList<T> InsertRange(int index, IEnumerable<T> collection)
+    {
+        if (collection is ICollection<T> c)
+        {
+            int count = c.Count;
+            if (count > 0)
+            {
+                if (_items.Length - _size < count)
+                {
+                    GrowForInsertion(index, count);
+                }
+                else if (index < _size)
+                {
+                    Array.Copy(_items, index, _items, index + count, _size - index);
+                }
+
+                // If we're inserting a List into itself, we want to be able to deal with that.
+                if (this == c)
+                {
+                    // Copy first part of _items to insert location
+                    Array.Copy(_items, 0, _items, index, index);
+                    // Copy last part of _items back to inserted location
+                    Array.Copy(_items, index + count, _items, index * 2, _size - index);
+                }
+                else
+                {
+                    c.CopyTo(_items, index);
+                }
+                _size += count;
+                _version++;
+            }
+        }
+        else
+        {
+            using (IEnumerator<T> en = collection.GetEnumerator())
+            {
+                while (en.MoveNext())
+                {
+                    Insert(index++, en.Current);
+                }
+            }
+        }
+    }
+    */
 
     public ValueList<T> New_InsertRange(int indexToInsert, List<T> itemList)
     {

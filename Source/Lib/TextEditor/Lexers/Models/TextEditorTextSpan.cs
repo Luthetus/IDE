@@ -104,6 +104,8 @@ public record struct TextEditorTextSpan(
 
             if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.Model.PartitionList.Count - 1)
                 break;
+            else if (lengthToDecorate <= 0)
+                break;
             else
                 initializedPartitionWalker.MoveToFirstCharacterOfTheNextPartition();
         }

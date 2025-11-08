@@ -9,6 +9,7 @@ using Clair.TextEditor.RazorLib.Exceptions;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
@@ -447,17 +448,17 @@ public sealed class TextEditorModel
         var rowIndex = 0;
         var charactersOnLine = 0;
         var richCharacterIndex = 0;
-        
-        var partition = PartitionList[0];
+
+        var i_partition = 0;
         
         PersistentState.IsMixedLineEndings = false;
 
         for (var contentIndex = 0; contentIndex < content.Length; contentIndex++)
         {
-            if (partition.Count >= (PersistentState.PartitionSize - 32))
+            if (PartitionList[i_partition].Count >= (PersistentState.PartitionSize - 32))
             {
-                partition = new ValueList<RichCharacter>(capacity: 4);
-                PartitionList.Add(partition);
+                ++i_partition;
+                PartitionList.Add(new ValueList<RichCharacter>(capacity: 4));
             }
         
             var character = content[contentIndex];
@@ -503,20 +504,20 @@ public sealed class TextEditorModel
                 if (LineEndKindPreference == LineEndKind.CarriageReturnLineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 2, lineEndKind: LineEndKind.CarriageReturnLineFeed, lineEndKindOriginal: currentLineEndKind));
-                    partition = partition.C_Add(new (character, default));
-                    partition = partition.C_Add(new ('\n', default));
+                    PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
+                    PartitionList[i_partition] = PartitionList[i_partition].C_Add(new ('\n', default));
                     richCharacterIndex += 2;
                 }
                 else if (LineEndKindPreference == LineEndKind.CarriageReturn)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.CarriageReturn, lineEndKindOriginal: currentLineEndKind));
-                    partition = partition.C_Add(new (character, default));
+                    PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else if (LineEndKindPreference == LineEndKind.LineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.LineFeed, lineEndKindOriginal: currentLineEndKind));
-                    partition = partition.C_Add(new (character, default));
+                    PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else
@@ -530,12 +531,12 @@ public sealed class TextEditorModel
             else if (character == CommonFacts.TAB)
             {
                 TabCharPositionIndexList.Add(richCharacterIndex);
-                partition = partition.C_Add(new (character, default));
+                PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
                 richCharacterIndex++;
             }
             else
             {
-                partition = partition.C_Add(new (character, default));
+                PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
                 richCharacterIndex++;
             }
         }

@@ -102,7 +102,7 @@ public record struct TextEditorTextSpan(
                 --lengthToDecorate;
             }
 
-            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.PartitionCurrent.Count - 1)
+            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.Model.PartitionList.Count - 1)
                 break;
             else
                 initializedPartitionWalker.MoveToFirstCharacterOfTheNextPartition();

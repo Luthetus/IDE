@@ -104,6 +104,7 @@ public class PartitionWalker
     /// </summary>
     public int GlobalCharacterIndex { get; set; }
     public ValueList<RichCharacter> PartitionCurrent => _model.PartitionList[PartitionIndex];
+    public TextEditorModel Model => _model;
 
     /// <summary>
     /// Updates the <see cref="PartitionIndex"/>, and <see cref="PartitionCurrent"/> properties

@@ -1925,7 +1925,7 @@ public sealed class TextEditorModel
                 --lengthToDecorate;
             }
 
-            if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.Count - 1)
+            if (partitionWalker.PartitionIndex >= partitionWalker.Model.PartitionList.Count - 1)
                 break;
             else
                 partitionWalker.MoveToFirstCharacterOfTheNextPartition();
@@ -2118,7 +2118,7 @@ public sealed class TextEditorModel
                 --lengthToDecorate;
             }
 
-            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.PartitionCurrent.Count - 1)
+            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.Model.PartitionList.Count - 1)
                 break;
             else if (lengthToDecorate > 0)
                 break;
@@ -2607,7 +2607,7 @@ public sealed class TextEditorModel
                 --lengthToDecorate;
             }
 
-            if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.Count - 1)
+            if (partitionWalker.PartitionIndex >= partitionWalker.Model.PartitionList.Count - 1)
                 break;
             else
                 partitionWalker.MoveToFirstCharacterOfTheNextPartition();

@@ -1184,7 +1184,7 @@ public partial class TextEditorService
 
                     virtualizationSpan_EndExclusiveIndex = viewModel.Virtualization.VirtualizationSpanList.Count;
 
-                    if (ec_PartitionWalker.PartitionIndex >= ec_PartitionWalker.PartitionCurrent.Count - 1)
+                    if (ec_PartitionWalker.PartitionIndex >= ec_PartitionWalker.Model.PartitionList.Count - 1)
                         break;
                     else if (lengthToDecorate <= 0)
                         break;

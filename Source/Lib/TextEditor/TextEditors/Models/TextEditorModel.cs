@@ -1927,6 +1927,8 @@ public sealed class TextEditorModel
 
             if (partitionWalker.PartitionIndex >= partitionWalker.Model.PartitionList.Count - 1)
                 break;
+            else if (lengthToDecorate <= 0)
+                break;
             else
                 partitionWalker.MoveToFirstCharacterOfTheNextPartition();
         }
@@ -2120,7 +2122,7 @@ public sealed class TextEditorModel
 
             if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.Model.PartitionList.Count - 1)
                 break;
-            else if (lengthToDecorate > 0)
+            else if (lengthToDecorate <= 0)
                 break;
             else
                 initializedPartitionWalker.MoveToFirstCharacterOfTheNextPartition();
@@ -2608,6 +2610,8 @@ public sealed class TextEditorModel
             }
 
             if (partitionWalker.PartitionIndex >= partitionWalker.Model.PartitionList.Count - 1)
+                break;
+            else if (lengthToDecorate <= 0)
                 break;
             else
                 partitionWalker.MoveToFirstCharacterOfTheNextPartition();

@@ -283,11 +283,11 @@ public sealed class TextEditorModel
     ///              Then, once organized I hope to make sense of what the "lean" solution is.
     /// </summary>
     
-    public void ClearContent()
+    public void ClearContent(int partitionInitialCapacity)
     {
         MostCharactersOnASingleLineTuple = (0, TextEditorModel.MOST_CHARACTERS_ON_A_SINGLE_ROW_MARGIN);
 
-        PartitionList = new List<ValueList<RichCharacter>> { new ValueList<RichCharacter>(capacity: 4) };
+        PartitionList = new List<ValueList<RichCharacter>> { new ValueList<RichCharacter>(capacity: partitionInitialCapacity) };
         _partitionListChanged = true;
 
         LineEndList = new List<LineEnd>
@@ -424,7 +424,12 @@ public sealed class TextEditorModel
     /// </summary>
     public void SetContent(string content)
     {
-        ClearAllStatesButKeepEditHistory();
+        var aaa = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)content.Length);
+        if (aaa < -1)
+            aaa = 4;
+        ClearAllStatesButKeepEditHistory(partitionInitialCapacity: content.Length > PersistentState.PartitionSize
+            ? PersistentState.PartitionSize
+            : aaa);
 
         if (PersistentState.EditBlockList.Count == 0 && PersistentState.EditBlockIndex == 0)
         {
@@ -458,7 +463,10 @@ public sealed class TextEditorModel
             if (PartitionList[i_partition].Count >= (PersistentState.PartitionSize - 32))
             {
                 ++i_partition;
-                PartitionList.Add(new ValueList<RichCharacter>(capacity: 4));
+                var bbb = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)(content.Length - contentIndex));
+                if (bbb < -1)
+                    bbb = 4;
+                PartitionList.Add(new ValueList<RichCharacter>(capacity: bbb));
             }
         
             var character = content[contentIndex];
@@ -900,9 +908,9 @@ public sealed class TextEditorModel
         PersistentState.CompilerService = compilerService;
     }
 
-    public void ClearAllStatesButKeepEditHistory()
+    public void ClearAllStatesButKeepEditHistory(int partitionInitialCapacity)
     {
-        ClearContent();
+        ClearContent(partitionInitialCapacity);
         ClearOnlyLineEndKind();
         SetLineEndKindPreference(LineEndKind.Unset);
     }     

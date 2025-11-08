@@ -78,8 +78,7 @@ public struct ValueList<T>
         if (capacity == 0)
             throw new NotImplementedException();
 #endif
-        Capacity = capacity;
-        u_Items = new T[Capacity];
+        u_Items = new T[capacity];
     }
 
     /// <summary>
@@ -89,7 +88,7 @@ public struct ValueList<T>
     /// </summary>
     public T[] u_Items { get; }
 
-    public int Capacity { get; set; }
+    public int Capacity => u_Items.Length;
     public int Count { get; set; }
 
     public ValueList<T> New_Clone()
@@ -181,12 +180,36 @@ public struct ValueList<T>
         return output;
     }
 
+    /*
+    // Removes a range of elements from this list.
+    public void New_RemoveRange(int index, int count)
+    {
+        if (_size - index < count)
+            ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
+
+        if (count > 0)
+        {
+            _size -= count;
+            if (index < _size)
+            {
+                Array.Copy(_items, index + count, _items, index, _size - index);
+            }
+
+            _version++;
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                Array.Clear(_items, _size, count);
+            }
+        }
+    }
+    */
+
     public ValueList<T> New_RemoveRange(int index, int length)
     {
         var output = new ValueList<T>(Capacity);
         output.Count = Count;
         Array.Copy(u_Items, output.u_Items, index);
-        Array.Copy(u_Items, index + length, output.u_Items, index, Count - index);
+        Array.Copy(u_Items, index + length, output.u_Items, index, Count - index); // - length
         
 
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())

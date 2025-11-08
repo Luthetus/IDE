@@ -390,7 +390,7 @@ public partial class TextEditorService
                                         {
                                             // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
                                             editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
-                                            var currentRichCharacter = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
+                                            var currentRichCharacter = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.u_Items[
                                                 editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex];
 
                                             if (Char.IsUpper(currentRichCharacter.Value) || currentRichCharacter.Value == '_')
@@ -522,7 +522,7 @@ public partial class TextEditorService
                                         {
                                             // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
                                             editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
-                                            var currentRichCharacter = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
+                                            var currentRichCharacter = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.u_Items[
                                                 editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex];
 
                                             if (Char.IsUpper(currentRichCharacter.Value) || currentRichCharacter.Value == '_')
@@ -576,7 +576,7 @@ public partial class TextEditorService
                     {
                         // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
                         editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: indentationPositionIndexExclusiveEnd);
-                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
+                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.u_Items[
                                 editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                             .Value;
 
@@ -1082,14 +1082,14 @@ public partial class TextEditorService
                 {
                     int takeActual = 0;
                 
-                    var thisLoopAvailableCharacterCount = ec_PartitionWalker.PartitionCurrent.RichCharacterList.Count - ec_PartitionWalker.RelativeCharacterIndex;
+                    var thisLoopAvailableCharacterCount = ec_PartitionWalker.PartitionCurrent.Count - ec_PartitionWalker.RelativeCharacterIndex;
                     if (thisLoopAvailableCharacterCount <= 0)
                         break;
         
                     takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
                     lengthToDecorate -= takeActual;
 
-                    var richCharacterSpan = ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items.AsSpan(ec_PartitionWalker.RelativeCharacterIndex, takeActual);
+                    var richCharacterSpan = ec_PartitionWalker.PartitionCurrent.u_Items.AsSpan(ec_PartitionWalker.RelativeCharacterIndex, takeActual);
 
                     var currentDecorationByte = richCharacterSpan[0].DecorationByte;
 
@@ -1184,7 +1184,7 @@ public partial class TextEditorService
 
                     virtualizationSpan_EndExclusiveIndex = viewModel.Virtualization.VirtualizationSpanList.Count;
 
-                    if (ec_PartitionWalker.PartitionIndex >= ec_PartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+                    if (ec_PartitionWalker.PartitionIndex >= ec_PartitionWalker.PartitionCurrent.Count - 1)
                         break;
                     else if (lengthToDecorate <= 0)
                         break;

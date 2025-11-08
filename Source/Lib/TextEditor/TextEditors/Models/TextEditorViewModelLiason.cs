@@ -1,3 +1,5 @@
+using Clair.Common.RazorLib;
+using Clair.TextEditor.RazorLib.Characters.Models;
 using System.Text;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
@@ -150,13 +152,17 @@ public sealed class TextEditorViewModelLiason
         }
     }
     
-    public TextEditorPartition Exchange_Partition(TextEditorPartition original)
+    public ValueList<RichCharacter> Exchange_Partition(ValueList<RichCharacter> original)
     {
         var partitionExchange = _textEditorService._partition_Exchange;
-
-        partitionExchange.RichCharacterList = partitionExchange.RichCharacterList.C_Clear();
-        partitionExchange.AddRange(original.RichCharacterList.u_Items);
         
+        if (partitionExchange.Capacity < original.Capacity)
+            partitionExchange = new(original.Capacity);
+        else
+            partitionExchange = partitionExchange.C_Clear();
+
+        Array.Copy(original.u_Items, partitionExchange.u_Items, original.Count);
+        partitionExchange.Count = original.Count;
         _textEditorService._partition_Exchange = original;
         return partitionExchange;
     }

@@ -133,6 +133,17 @@ public struct ValueList<T>
         return output;
     }
 
+    public ValueList<T> New_InsertRange(int indexToInsert, List<T> itemList)
+    {
+        var clone = New_Clone();
+        for (int i = 0; i < itemList.Count; i++)
+        {
+            var item = itemList[i];
+            clone = clone.C_Insert(indexToInsert + i, item);
+        }
+        return clone;
+    }
+
     public ValueList<T> New_Insert(int indexToInsert, T item)
     {
         // There's some code in List to account for multithreading that creates local copies of things.
@@ -167,6 +178,27 @@ public struct ValueList<T>
 
         output.u_Items[indexToInsert] = item;
         ++output.Count;
+        return output;
+    }
+
+    public ValueList<T> New_RemoveRange(int index, int length)
+    {
+        var output = new ValueList<T>(Capacity);
+        output.Count = Count;
+        Array.Copy(u_Items, output.u_Items, index);
+        Array.Copy(u_Items, index + length, output.u_Items, index, Count - index);
+        
+
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            for (int i = 1; i <= length; i++)
+            {
+                output.u_Items[output.Count - i] = default!;
+            }
+        }
+
+        output.Count -= length;
+
         return output;
     }
 

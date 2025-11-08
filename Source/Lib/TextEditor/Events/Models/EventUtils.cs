@@ -172,7 +172,7 @@ public static class EventUtils
                 break;
             }
             
-            literalLength += 1;            // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.            editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: lineInformation.Position_StartInclusiveIndex + columnIndex);            previousCharacterWidth = GetCharacterWidth(                editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[                        editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
+            literalLength += 1;            // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.            editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: lineInformation.Position_StartInclusiveIndex + columnIndex);            previousCharacterWidth = GetCharacterWidth(                editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.u_Items[                        editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                     .Value);
             
             visualLength += previousCharacterWidth;

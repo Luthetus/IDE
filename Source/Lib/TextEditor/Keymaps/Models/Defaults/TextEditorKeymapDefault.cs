@@ -300,7 +300,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     {
                         editContext.TextEditorService.ec_PartitionWalker.Seek(
                             targetGlobalCharacterIndex: indentationPositionIndex++);
-                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
+                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.u_Items[
                                 editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                             .Value;
         
@@ -561,7 +561,7 @@ public class TextEditorKeymapDefault : ITextEditorKeymap
                     {
                         editContext.TextEditorService.ec_PartitionWalker.Seek(
                             targetGlobalCharacterIndex: indentationPositionIndex++);
-                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList.u_Items[
+                        var possibleIndentationChar = editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.u_Items[
                                 editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                             .Value;
         

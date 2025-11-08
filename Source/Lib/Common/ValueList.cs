@@ -180,30 +180,29 @@ public struct ValueList<T>
         return output;
     }
 
-    /*
     // Removes a range of elements from this list.
-    public void New_RemoveRange(int index, int count)
+    public ValueList<T> New_RemoveRange(int index, int count)
     {
-        if (_size - index < count)
-            ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
+        var clone = New_Clone();
 
         if (count > 0)
         {
-            _size -= count;
-            if (index < _size)
+            clone.Count -= count;
+            if (index < clone.Count)
             {
-                Array.Copy(_items, index + count, _items, index, _size - index);
+                Array.Copy(clone.u_Items, index + count, clone.u_Items, index, clone.Count - index);
             }
-
-            _version++;
+            
             if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
-                Array.Clear(_items, _size, count);
+                Array.Clear(clone.u_Items, clone.Count, count);
             }
         }
+        
+        return clone;
     }
-    */
 
+    /*
     public ValueList<T> New_RemoveRange(int index, int length)
     {
         var output = new ValueList<T>(Capacity);
@@ -224,6 +223,7 @@ public struct ValueList<T>
 
         return output;
     }
+    */
 
     // Removes the element at the given index. The size of the list is
     // decreased by one.

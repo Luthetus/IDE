@@ -91,18 +91,18 @@ public record struct TextEditorTextSpan(
         var lengthToDecorate = Length;
         while (lengthToDecorate > 0)
         {
-            var thisLoopAvailableCharacterCount = initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - initializedPartitionWalker.RelativeCharacterIndex;
+            var thisLoopAvailableCharacterCount = initializedPartitionWalker.PartitionCurrent.Count - initializedPartitionWalker.RelativeCharacterIndex;
             if (thisLoopAvailableCharacterCount <= 0)
                 break;
 
             int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
             for (int i = 0; i < takeActual; i++)
             {
-                builder.Append(initializedPartitionWalker.PartitionCurrent.RichCharacterList[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
+                builder.Append(initializedPartitionWalker.PartitionCurrent.u_Items[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
                 --lengthToDecorate;
             }
 
-            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.Model.PartitionList.Count - 1)
                 break;
             else
                 initializedPartitionWalker.MoveToFirstCharacterOfTheNextPartition();

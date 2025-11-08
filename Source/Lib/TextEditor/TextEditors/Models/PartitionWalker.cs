@@ -1,3 +1,5 @@
+using Clair.Common.RazorLib;
+using Clair.TextEditor.RazorLib.Characters.Models;
 using Clair.TextEditor.RazorLib.Exceptions;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
@@ -101,7 +103,8 @@ public class PartitionWalker
     /// If the list of partitions were to be flattened
     /// </summary>
     public int GlobalCharacterIndex { get; set; }
-    public TextEditorPartition PartitionCurrent => _model.PartitionList[PartitionIndex];
+    public ValueList<RichCharacter> PartitionCurrent => _model.PartitionList[PartitionIndex];
+    public TextEditorModel Model => _model;
 
     /// <summary>
     /// Updates the <see cref="PartitionIndex"/>, and <see cref="PartitionCurrent"/> properties

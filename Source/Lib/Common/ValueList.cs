@@ -119,7 +119,7 @@ public struct ValueList<T>
         if (Count == Capacity)
         {
             output = new ValueList<T>(Capacity * 2);
-            
+
         }
         else
         {
@@ -132,7 +132,18 @@ public struct ValueList<T>
         output.u_Items[output.Count++] = item;
         return output;
     }
-    
+
+    public ValueList<T> New_InsertRange(int indexToInsert, List<T> itemList)
+    {
+        var clone = New_Clone();
+        for (int i = 0; i < itemList.Count; i++)
+        {
+            var item = itemList[i];
+            clone = clone.C_Insert(indexToInsert + i, item);
+        }
+        return clone;
+    }
+
     public ValueList<T> New_Insert(int indexToInsert, T item)
     {
         // There's some code in List to account for multithreading that creates local copies of things.
@@ -170,6 +181,27 @@ public struct ValueList<T>
         return output;
     }
 
+    public ValueList<T> New_RemoveRange(int index, int length)
+    {
+        var output = new ValueList<T>(Capacity);
+        output.Count = Count;
+        Array.Copy(u_Items, output.u_Items, index);
+        Array.Copy(u_Items, index + length, output.u_Items, index, Count - index);
+        
+
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            for (int i = 1; i <= length; i++)
+            {
+                output.u_Items[output.Count - i] = default!;
+            }
+        }
+
+        output.Count -= length;
+
+        return output;
+    }
+
     // Removes the element at the given index. The size of the list is
     // decreased by one.
     public ValueList<T> New_RemoveAt(int index)
@@ -179,7 +211,7 @@ public struct ValueList<T>
         Array.Copy(u_Items, output.u_Items, length: index);
         Array.Copy(u_Items, index + 1, output.u_Items, index, Count - index);
         output.Count--;
-        
+
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
             output.u_Items[output.Count] = default!;
@@ -284,6 +316,21 @@ public struct ValueList<T>
     public ValueList<T> C_SetItem(int index, T item)
     {
         u_Items[index] = item;
+        return this;
+    }
+
+    public ValueList<T> C_Clear()
+    {
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                u_Items[i] = default!;
+            }
+        }
+
+        Count = 0;
+
         return this;
     }
 }

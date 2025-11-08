@@ -103,11 +103,7 @@ public static class EventUtils
         var globalTextEditorOptions = editContext.TextEditorService.Options_GetTextEditorOptionsState().Options;
 
         if (modelModifier is null || viewModel is null)
-            return Task.FromResult((0, 0, (double)0, (double)0));
-
-        editContext.TextEditorService.ec_PartitionWalker.ReInitialize(modelModifier);
-
-        var tabWidth = editContext.TextEditorService.Options_GetOptions().TabWidth;
+            return Task.FromResult((0, 0, (double)0, (double)0));        editContext.TextEditorService.ec_PartitionWalker.ReInitialize(modelModifier);        var tabWidth = editContext.TextEditorService.Options_GetOptions().TabWidth;
     
         var positionX = clientX - viewModel.PersistentState.TextEditorDimensions.BoundingClientRectLeft;
         var positionY = clientY - viewModel.PersistentState.TextEditorDimensions.BoundingClientRectTop;
@@ -176,13 +172,7 @@ public static class EventUtils
                 break;
             }
             
-            literalLength += 1;
-
-            // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
-            editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: lineInformation.Position_StartInclusiveIndex + columnIndex);
-            previousCharacterWidth = GetCharacterWidth(
-                editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.RichCharacterList[
-                        editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
+            literalLength += 1;            // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.            editContext.TextEditorService.ec_PartitionWalker.Seek(targetGlobalCharacterIndex: lineInformation.Position_StartInclusiveIndex + columnIndex);            previousCharacterWidth = GetCharacterWidth(                editContext.TextEditorService.ec_PartitionWalker.PartitionCurrent.u_Items[                        editContext.TextEditorService.ec_PartitionWalker.RelativeCharacterIndex]
                     .Value);
             
             visualLength += previousCharacterWidth;

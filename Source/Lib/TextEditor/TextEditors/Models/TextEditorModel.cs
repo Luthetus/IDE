@@ -9,6 +9,7 @@ using Clair.TextEditor.RazorLib.Exceptions;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.Lines.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace Clair.TextEditor.RazorLib.TextEditors.Models;
@@ -114,8 +115,8 @@ public sealed class TextEditorModel
     private bool _partitionListChanged;
     private bool _partitionListIsShallowCopy;
     /// <summary>The initial constructor invocation sets this by invoking 'SetContent(...)'</summary>
-    public List<TextEditorPartition> _partitionList = null!;
-    public List<TextEditorPartition> PartitionList
+    public List<ValueList<RichCharacter>> _partitionList = null!;
+    public List<ValueList<RichCharacter>> PartitionList
     {
         get
         {
@@ -165,9 +166,9 @@ public sealed class TextEditorModel
                 var index = 0;
                 foreach (var partition in PartitionList)
                 {
-                    foreach (var rc in partition.RichCharacterList)
+                    for (int i = 0; i < partition.Count; i++)
                     {
-                        charArr[index++] = rc.Value;
+                        charArr[index++] = partition.u_Items[i].Value;
                     }
                 }
                 _allText = new string(charArr);
@@ -282,14 +283,14 @@ public sealed class TextEditorModel
     ///              Then, once organized I hope to make sense of what the "lean" solution is.
     /// </summary>
     
-    public void ClearContent()
+    public void ClearContent(int partitionInitialCapacity)
     {
         MostCharactersOnASingleLineTuple = (0, TextEditorModel.MOST_CHARACTERS_ON_A_SINGLE_ROW_MARGIN);
 
-        PartitionList = new List<TextEditorPartition> { new TextEditorPartition(new List<RichCharacter>()) };
+        PartitionList = new List<ValueList<RichCharacter>> { new ValueList<RichCharacter>(capacity: partitionInitialCapacity) };
         _partitionListChanged = true;
 
-        LineEndList = new List<LineEnd> 
+        LineEndList = new List<LineEnd>
         {
             new LineEnd(0, 0, LineEndKind.EndOfFile)
         };
@@ -423,7 +424,12 @@ public sealed class TextEditorModel
     /// </summary>
     public void SetContent(string content)
     {
-        ClearAllStatesButKeepEditHistory();
+        var aaa = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)content.Length);
+        if (aaa < -1)
+            aaa = 4;
+        ClearAllStatesButKeepEditHistory(partitionInitialCapacity: content.Length > PersistentState.PartitionSize
+            ? PersistentState.PartitionSize
+            : aaa);
 
         if (PersistentState.EditBlockList.Count == 0 && PersistentState.EditBlockIndex == 0)
         {
@@ -447,17 +453,20 @@ public sealed class TextEditorModel
         var rowIndex = 0;
         var charactersOnLine = 0;
         var richCharacterIndex = 0;
-        
-        var partition = PartitionList[0];
+
+        var i_partition = 0;
         
         PersistentState.IsMixedLineEndings = false;
 
         for (var contentIndex = 0; contentIndex < content.Length; contentIndex++)
         {
-            if (partition.Count >= (PersistentState.PartitionSize - 32))
+            if (PartitionList[i_partition].Count >= (PersistentState.PartitionSize - 32))
             {
-                partition = new TextEditorPartition(new List<RichCharacter>());
-                PartitionList.Add(partition);
+                ++i_partition;
+                var bbb = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)(content.Length - contentIndex));
+                if (bbb < -1)
+                    bbb = 4;
+                PartitionList.Add(new ValueList<RichCharacter>(capacity: bbb));
             }
         
             var character = content[contentIndex];
@@ -503,20 +512,20 @@ public sealed class TextEditorModel
                 if (LineEndKindPreference == LineEndKind.CarriageReturnLineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 2, lineEndKind: LineEndKind.CarriageReturnLineFeed, lineEndKindOriginal: currentLineEndKind));
-                    partition.RichCharacterList.Add(new (character, default));
-                    partition.RichCharacterList.Add(new ('\n', default));
+                    PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
+                    PartitionList[i_partition] = PartitionList[i_partition].C_Add(new ('\n', default));
                     richCharacterIndex += 2;
                 }
                 else if (LineEndKindPreference == LineEndKind.CarriageReturn)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.CarriageReturn, lineEndKindOriginal: currentLineEndKind));
-                    partition.RichCharacterList.Add(new (character, default));
+                    PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else if (LineEndKindPreference == LineEndKind.LineFeed)
                 {
                     LineEndList.Insert(rowIndex, new(richCharacterIndex, richCharacterIndex + 1, lineEndKind: LineEndKind.LineFeed, lineEndKindOriginal: currentLineEndKind));
-                    partition.RichCharacterList.Add(new (character, default));
+                    PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
                     richCharacterIndex++;
                 }
                 else
@@ -530,12 +539,12 @@ public sealed class TextEditorModel
             else if (character == CommonFacts.TAB)
             {
                 TabCharPositionIndexList.Add(richCharacterIndex);
-                partition.RichCharacterList.Add(new (character, default));
+                PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
                 richCharacterIndex++;
             }
             else
             {
-                partition.RichCharacterList.Add(new (character, default));
+                PartitionList[i_partition] = PartitionList[i_partition].C_Add(new (character, default));
                 richCharacterIndex++;
             }
         }
@@ -899,9 +908,9 @@ public sealed class TextEditorModel
         PersistentState.CompilerService = compilerService;
     }
 
-    public void ClearAllStatesButKeepEditHistory()
+    public void ClearAllStatesButKeepEditHistory(int partitionInitialCapacity)
     {
-        ClearContent();
+        ClearContent(partitionInitialCapacity);
         ClearOnlyLineEndKind();
         SetLineEndKindPreference(LineEndKind.Unset);
     }     
@@ -1613,7 +1622,7 @@ public sealed class TextEditorModel
 
                 PersistentState.__TextEditorViewModelLiason.PartitionWalker.Seek(
                     targetGlobalCharacterIndex: toDeletePositionIndex);
-                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList[
+                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.u_Items[
                         PersistentState.__TextEditorViewModelLiason.PartitionWalker.RelativeCharacterIndex];
 
                 if (CommonFacts.IsLineEndingCharacter(richCharacterToDelete.Value))
@@ -1708,7 +1717,7 @@ public sealed class TextEditorModel
 
                 PersistentState.__TextEditorViewModelLiason.PartitionWalker.Seek(
                     targetGlobalCharacterIndex: toDeletePositionIndex);
-                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.RichCharacterList[
+                var richCharacterToDelete = PersistentState.__TextEditorViewModelLiason.PartitionWalker.PartitionCurrent.u_Items[
                     PersistentState.__TextEditorViewModelLiason.PartitionWalker.RelativeCharacterIndex];
 
                 if (CommonFacts.IsLineEndingCharacter(richCharacterToDelete.Value))
@@ -1901,22 +1910,22 @@ public sealed class TextEditorModel
         var lengthToDecorate = textSpan.Length;
         while (lengthToDecorate > 0)
         {
-            var thisLoopAvailableCharacterCount = partitionWalker.PartitionCurrent.RichCharacterList.Count - partitionWalker.RelativeCharacterIndex;
+            var thisLoopAvailableCharacterCount = partitionWalker.PartitionCurrent.Count - partitionWalker.RelativeCharacterIndex;
             if (thisLoopAvailableCharacterCount <= 0)
                 break;
 
             int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
             for (int i = 0; i < takeActual; i++)
             {
-                partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
-                    partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
+                partitionWalker.PartitionCurrent.u_Items[partitionWalker.RelativeCharacterIndex + i] =
+                    partitionWalker.PartitionCurrent.u_Items[partitionWalker.RelativeCharacterIndex + i] with
                     {
                         DecorationByte = textSpan.DecorationByte
                     };
                 --lengthToDecorate;
             }
 
-            if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+            if (partitionWalker.PartitionIndex >= partitionWalker.Model.PartitionList.Count - 1)
                 break;
             else
                 partitionWalker.MoveToFirstCharacterOfTheNextPartition();
@@ -2075,7 +2084,7 @@ public sealed class TextEditorModel
             return '\0';
         partitionWalker.ReInitialize(this);
         partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
-        return partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex]
+        return partitionWalker.PartitionCurrent.u_Items[partitionWalker.RelativeCharacterIndex]
             .Value;
     }
 
@@ -2098,18 +2107,18 @@ public sealed class TextEditorModel
         var lengthToDecorate = count;
         while (lengthToDecorate > 0)
         {
-            var thisLoopAvailableCharacterCount = initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - initializedPartitionWalker.RelativeCharacterIndex;
+            var thisLoopAvailableCharacterCount = initializedPartitionWalker.PartitionCurrent.Count - initializedPartitionWalker.RelativeCharacterIndex;
             if (thisLoopAvailableCharacterCount <= 0)
                 break;
 
             int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
             for (int i = 0; i < takeActual; i++)
             {
-                sb.Append(initializedPartitionWalker.PartitionCurrent.RichCharacterList[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
+                sb.Append(initializedPartitionWalker.PartitionCurrent.u_Items[initializedPartitionWalker.RelativeCharacterIndex + i].Value);
                 --lengthToDecorate;
             }
 
-            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+            if (initializedPartitionWalker.PartitionIndex >= initializedPartitionWalker.Model.PartitionList.Count - 1)
                 break;
             else if (lengthToDecorate > 0)
                 break;
@@ -2370,7 +2379,7 @@ public sealed class TextEditorModel
         // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
         partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
         var startCharacterKind = CharacterKindHelper.CharToCharacterKind(
-            partitionWalker.PartitionCurrent.RichCharacterList[
+            partitionWalker.PartitionCurrent.u_Items[
                 partitionWalker.RelativeCharacterIndex]
             .Value);
 
@@ -2386,7 +2395,7 @@ public sealed class TextEditorModel
             // TODO: 2025-11-06 extremely expensive to seek like this in the while loop.
             partitionWalker.Seek(targetGlobalCharacterIndex: positionIndex);
             var currentCharacterKind = CharacterKindHelper.CharToCharacterKind(
-                partitionWalker.PartitionCurrent.RichCharacterList[
+                partitionWalker.PartitionCurrent.u_Items[
                     partitionWalker.RelativeCharacterIndex]
                 .Value);
 
@@ -2541,7 +2550,7 @@ public sealed class TextEditorModel
 
         for (int i = 0; i < PartitionList.Count; i++)
         {
-            TextEditorPartition partition = PartitionList[i];
+            ValueList<RichCharacter> partition = PartitionList[i];
 
             if (runningCount + partition.Count > globalPositionIndex)
             {
@@ -2563,7 +2572,7 @@ public sealed class TextEditorModel
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
         var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
-        var outPartition = inPartition.SetItem(relativePositionIndex, richCharacter);
+        var outPartition = inPartition.New_SetItem(relativePositionIndex, richCharacter);
 
         PartitionListSetItem(
             indexOfPartitionWithAvailableSpace,
@@ -2583,22 +2592,22 @@ public sealed class TextEditorModel
         var lengthToDecorate = endExclusiveIndex - startInclusiveIndex;
         while (lengthToDecorate > 0)
         {
-            var thisLoopAvailableCharacterCount = partitionWalker.PartitionCurrent.RichCharacterList.Count - partitionWalker.RelativeCharacterIndex;
+            var thisLoopAvailableCharacterCount = partitionWalker.PartitionCurrent.Count - partitionWalker.RelativeCharacterIndex;
             if (thisLoopAvailableCharacterCount <= 0)
                 break;
 
             int takeActual = lengthToDecorate < thisLoopAvailableCharacterCount ? lengthToDecorate : thisLoopAvailableCharacterCount;
             for (int i = 0; i < takeActual; i++)
             {
-                partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] =
-                    partitionWalker.PartitionCurrent.RichCharacterList[partitionWalker.RelativeCharacterIndex + i] with
+                partitionWalker.PartitionCurrent.u_Items[partitionWalker.RelativeCharacterIndex + i] =
+                    partitionWalker.PartitionCurrent.u_Items[partitionWalker.RelativeCharacterIndex + i] with
                     {
                         DecorationByte = decorationByte
                     };
                 --lengthToDecorate;
             }
 
-            if (partitionWalker.PartitionIndex >= partitionWalker.PartitionCurrent.RichCharacterList.Count - 1)
+            if (partitionWalker.PartitionIndex >= partitionWalker.Model.PartitionList.Count - 1)
                 break;
             else
                 partitionWalker.MoveToFirstCharacterOfTheNextPartition();
@@ -2680,7 +2689,7 @@ public sealed class TextEditorModel
 
         for (int i = 0; i < PartitionList.Count; i++)
         {
-            TextEditorPartition partition = PartitionList[i];
+            ValueList<RichCharacter> partition = PartitionList[i];
 
             if (runningCount + partition.Count > globalPositionIndex)
             {
@@ -2702,9 +2711,9 @@ public sealed class TextEditorModel
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
         var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
-        var targetRichCharacter = inPartition.RichCharacterList[relativePositionIndex];
+        var targetRichCharacter = inPartition.u_Items[relativePositionIndex];
         
-        inPartition.RichCharacterList[relativePositionIndex] = new(
+        inPartition.u_Items[relativePositionIndex] = new(
             targetRichCharacter.Value,
             decorationByte);
         //_partitionListChanged = false;
@@ -2714,9 +2723,9 @@ public sealed class TextEditorModel
     {
         foreach (var partition in PartitionList)
         {
-            for (int i = 0; i < partition.RichCharacterList.Count; i++)
+            for (int i = 0; i < partition.Count; i++)
             {
-                partition.RichCharacterList[i] = partition.RichCharacterList[i] with
+                partition.u_Items[i] = partition.u_Items[i] with
                 {
                     DecorationByte = 0
                 };
@@ -2740,7 +2749,7 @@ public sealed class TextEditorModel
 
         for (int i = 0; i < PartitionList.Count; i++)
         {
-            TextEditorPartition partition = PartitionList[i];
+            ValueList<RichCharacter> partition = PartitionList[i];
 
             if (runningCount + partition.Count > globalPositionIndex)
             {
@@ -2762,7 +2771,7 @@ public sealed class TextEditorModel
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
         var inPartition = PartitionList[indexOfPartitionWithContent];
-        var outPartition = inPartition.RemoveAt(relativePositionIndex);
+        var outPartition = inPartition.New_RemoveAt(relativePositionIndex);
 
         PartitionListSetItem(
             indexOfPartitionWithContent,
@@ -2779,9 +2788,9 @@ public sealed class TextEditorModel
         // Validate multi-byte characters go on same partition (i.e.: '\r\n')
         {
             // firstUnevenSplit is a count so -1 to make it an index
-            if (originalPartition.RichCharacterList[firstUnevenSplit - 1].Value == '\r')
+            if (originalPartition.u_Items[firstUnevenSplit - 1].Value == '\r')
             {
-                if (originalPartition.RichCharacterList[(firstUnevenSplit - 1) + 1].Value == '\n')
+                if (originalPartition.u_Items[(firstUnevenSplit - 1) + 1].Value == '\n')
                 {
                     firstUnevenSplit += 1;
                     secondUnevenSplit -= 1;
@@ -2808,10 +2817,11 @@ public sealed class TextEditorModel
 
         // Replace old
         {
-            var partition = new TextEditorPartition(originalPartition.RichCharacterList
-                .Skip(0)
-                .Take(firstUnevenSplit)
-                .ToList());
+            var partition = new ValueList<RichCharacter>(capacity: firstUnevenSplit);
+            Array.Copy(
+                originalPartition.u_Items,
+                partition.u_Items,
+                firstUnevenSplit);
 
             PartitionListSetItem(
                 partitionIndex,
@@ -2820,10 +2830,13 @@ public sealed class TextEditorModel
 
         // Insert new
         {
-            var partition = new TextEditorPartition(originalPartition.RichCharacterList
-                .Skip(firstUnevenSplit)
-                .Take(secondUnevenSplit)
-                .ToList());
+            var partition = new ValueList<RichCharacter>(capacity: secondUnevenSplit);
+            Array.Copy(
+                originalPartition.u_Items,
+                firstUnevenSplit,
+                partition.u_Items,
+                0,
+                secondUnevenSplit);
 
             PartitionListInsert(
                 partitionIndex + 1,
@@ -2840,7 +2853,7 @@ public sealed class TextEditorModel
             int indexOfPartitionWithAvailableSpace = -1;
             int relativePositionIndex = -1;
             var runningCount = 0;
-            TextEditorPartition partition;
+            ValueList<RichCharacter> partition;
 
             for (int i = 0; i < PartitionList.Count; i++)
             {
@@ -2882,7 +2895,7 @@ public sealed class TextEditorModel
             }
 
             var inPartition = PartitionList[indexOfPartitionWithAvailableSpace];
-            var outPartition = inPartition.InsertRange(relativePositionIndex, richCharacterBatchInsertList);
+            var outPartition = inPartition.New_InsertRange(relativePositionIndex, richCharacterBatchInsertList);
 
             PartitionListSetItem(
                 indexOfPartitionWithAvailableSpace,
@@ -3023,7 +3036,7 @@ public sealed class TextEditorModel
         int indexOfPartitionWithAvailableSpace = -1;
         int relativePositionIndex = -1;
         var runningCount = 0;
-        TextEditorPartition partition;
+        ValueList<RichCharacter> partition;
 
         for (int i = 0; i < PartitionList.Count; i++)
         {
@@ -3055,7 +3068,7 @@ public sealed class TextEditorModel
             throw new ClairTextEditorException("if (relativePositionIndex == -1)");
 
         partition = PersistentState.__TextEditorViewModelLiason.Exchange_Partition(PartitionList[indexOfPartitionWithAvailableSpace]);
-        partition.RichCharacterList.Insert(relativePositionIndex, richCharacter);
+        partition = partition.C_Insert(relativePositionIndex, richCharacter);
         PartitionListSetItem(indexOfPartitionWithAvailableSpace, partition);
     }
 
@@ -3098,13 +3111,9 @@ public sealed class TextEditorModel
                 ? availableDeletes
                 : remainingDeletes;
 
-            // WARNING: The code does not currently alter the _partitionList in any way other than this 'SetItem'...
-            //          ...invocation, with regards to this method.
-            //          If one adds other alterations to the _partitionList in this method,
-            //          check if this logic would break.
             PartitionListSetItem(
                 partitionIndex,
-                partition.RemoveRange(relativePositionIndex, deletes));
+                partition.New_RemoveRange(relativePositionIndex, deletes));
 
             runningDeleteCount += deletes;
 
@@ -3113,7 +3122,7 @@ public sealed class TextEditorModel
         }
     }
     
-    public void PartitionListSetItem(int index, TextEditorPartition partition)
+    public void PartitionListSetItem(int index, ValueList<RichCharacter> partition)
     {
         if (!_partitionListIsShallowCopy)
         {
@@ -3125,7 +3134,7 @@ public sealed class TextEditorModel
         _partitionListChanged = true;
     }
     
-    public void PartitionListInsert(int index, TextEditorPartition partition)
+    public void PartitionListInsert(int index, ValueList<RichCharacter> partition)
     {
         if (!_partitionListIsShallowCopy)
         {

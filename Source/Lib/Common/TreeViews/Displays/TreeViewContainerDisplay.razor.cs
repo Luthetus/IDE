@@ -59,6 +59,11 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     private Key<TreeViewContainer> _previousTreeViewContainerKey = Key<TreeViewContainer>.Empty;
     private int _previousContainerVersion;
     private bool _shouldValidateScrollbarOnAfterRender;
+    
+    /// <summary>
+    /// The amount of pixels of the 0th virtualized UI node that is "clipping" offscreen.
+    /// </summary>
+    private double _prehangInPixels;
 
     protected override void OnInitialized()
     {
@@ -345,7 +350,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         }
         else if (eventArgsMouseDown.Button == 2)
         {
-            var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop/* + eventArgsMouseDown.ScrollTop*/;
+            var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
             relativeY = Math.Max(0, relativeY);
             
             var indexLocal = (int)(relativeY / LineHeight);
@@ -379,7 +384,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             eventArgsMouseDown.ScrollLeft,
             eventArgsMouseDown.ScrollTop,
             eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop;// + eventArgsMouseDown.ScrollTop;
+            eventArgsMouseDown.ScrollHeight);
+        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels;// + eventArgsMouseDown.ScrollTop;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
@@ -413,7 +419,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             eventArgsMouseDown.ScrollWidth,
             eventArgsMouseDown.ScrollHeight);
     
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop/* + eventArgsMouseDown.ScrollTop*/;
+        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
@@ -454,7 +460,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             eventArgsMouseDown.ScrollWidth,
             eventArgsMouseDown.ScrollHeight);
     
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop/* + eventArgsMouseDown.ScrollTop*/;
+        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);

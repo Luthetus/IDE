@@ -102,6 +102,8 @@
                     }
                     else
                     {
+                        _prehangInPixels = _treeViewMeasurements.ScrollTop - preceedingEmptySpaceHeight;
+                        
                         isCalculatingPreceedingEmptySpace = false;
                         <div style="width: 1px; height: @(preceedingEmptySpaceHeight)px;"></div>
                     }

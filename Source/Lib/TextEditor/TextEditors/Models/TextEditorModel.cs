@@ -2817,26 +2817,46 @@ public sealed class TextEditorModel
 
         // Replace old
         {
-            var partition = new ValueList<RichCharacter>(capacity: firstUnevenSplit);
+            /*var partition = new ValueList<RichCharacter>(originalPartition.u_Items
+                .Skip(0)
+                .Take(firstUnevenSplit)
+                .ToList());
+
+            PartitionListSetItem(
+                partitionIndex,
+                partition);*/
+
+            var aaa = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)firstUnevenSplit);
+            if (aaa < -1)
+                aaa = PersistentState.PartitionSize;
+
+            var partition = new ValueList<RichCharacter>(capacity: aaa);
             Array.Copy(
                 originalPartition.u_Items,
                 partition.u_Items,
                 firstUnevenSplit);
+            partition.Count = firstUnevenSplit;
 
             PartitionListSetItem(
                 partitionIndex,
                 partition);
+            
         }
 
         // Insert new
         {
-            var partition = new ValueList<RichCharacter>(capacity: secondUnevenSplit);
+            var aaa = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)secondUnevenSplit);
+            if (aaa < -1)
+                aaa = PersistentState.PartitionSize;
+
+            var partition = new ValueList<RichCharacter>(capacity: aaa);
             Array.Copy(
                 originalPartition.u_Items,
                 firstUnevenSplit,
                 partition.u_Items,
                 0,
                 secondUnevenSplit);
+            partition.Count = secondUnevenSplit;
 
             PartitionListInsert(
                 partitionIndex + 1,

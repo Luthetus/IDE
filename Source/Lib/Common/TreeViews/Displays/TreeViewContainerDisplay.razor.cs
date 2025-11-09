@@ -339,6 +339,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 StateHasChanged();
             }
         }
+        else
+        {
+        }
     }
     
     [JSInvokable]

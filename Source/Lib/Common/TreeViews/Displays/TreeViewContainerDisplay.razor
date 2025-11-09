@@ -24,8 +24,6 @@
     _preceedingEmptySpaceHeight = 0;
     _contentHeight = 0;
     _endingEmptySpaceHeight = 0;
-    
-    Console.WriteLine(_treeViewMeasurements.ScrollTop);
 }
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
@@ -273,7 +271,7 @@
         @* position: absolute; top: @(_preceedingEmptySpaceHeight + _contentHeight)px; *@
         @*<div style="width: 1px; height: @(_endingEmptySpaceHeight)px;"></div>*@
 
-        <div style="width: 1px; height: @(_preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight + /*useful??? padding*/CommonService.Options_LineHeight)px; position: absolute; left: 0; top: 0;"></div>
+        <div style="width: 1px; height: @(_preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight)px; position: absolute; left: 0; top: 0;"></div>
     }
 </div>
 

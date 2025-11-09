@@ -118,6 +118,24 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                     /*preventScroll:*/ false);
             
                 didValidateScrollbar = true;
+                if (_activeNodeTop != -1)
+                {
+                    var top = _activeNodeTop;
+                    if (top <= _treeViewMeasurements.ScrollTop)
+                    {
+                        _treeViewMeasurements = _treeViewMeasurements with
+                        {
+                            ScrollTop = top//_treeViewMeasurements.ScrollTop - (top - eventArgsKeyDown.ScrollTop)
+                        };
+                    }
+                    else if (top + (2 * LineHeight) >= _treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight)
+                    {
+                        _treeViewMeasurements = _treeViewMeasurements with
+                        {
+                            ScrollTop = _treeViewMeasurements.ScrollTop + (top - (_treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight) + (2 * LineHeight))
+                        };
+                    }
+                }
                 ValidateScrollbar();
             }
         

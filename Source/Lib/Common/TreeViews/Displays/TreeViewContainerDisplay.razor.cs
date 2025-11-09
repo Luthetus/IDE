@@ -464,6 +464,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         {
             await InvokeAsync(StateHasChanged);
         }
+        else if (commonUiEventKind == CommonUiEventKind.Intra_AppDimensionStateChanged ||
+                 commonUiEventKind == CommonUiEventKind.UserAgent_AppDimensionStateChanged)
+        {
+            _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
+                "clairCommon.measureTreeView",
+                _htmlId,
+                /*preventScroll:*/ false);
+        }
     }
     
     /// <summary>

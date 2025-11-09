@@ -293,6 +293,19 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             ScrollWidth = eventArgsKeyDown.ScrollWidth
         };
         
+        if (eventArgsKeyDown.Key == "Home")
+        {
+            _treeViewMeasurements = _treeViewMeasurements with
+            {
+                ScrollTop = 0//_treeViewMeasurements.ScrollTop - (top - eventArgsKeyDown.ScrollTop)
+            };
+            StateHasChanged();
+            return;
+        }
+        else if (eventArgsKeyDown.Key == "End")
+        {
+        }
+        
         var top = _activeNodeTop;
         if (top < eventArgsKeyDown.ScrollTop)
         {

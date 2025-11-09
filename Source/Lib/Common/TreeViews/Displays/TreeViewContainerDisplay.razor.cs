@@ -354,23 +354,15 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public Task ReceiveContentOnMouseDown(TreeViewEventArgsMouseDown eventArgsMouseDown)
+    public Task ReceiveContentOnMouseDown(double x, double y)
     {
-        _treeViewMeasurements = new TreeViewMeasurements(
-            eventArgsMouseDown.ViewWidth,
-            eventArgsMouseDown.ViewHeight,
-            eventArgsMouseDown.BoundingClientRectLeft,
-            eventArgsMouseDown.BoundingClientRectTop,
-            eventArgsMouseDown.ScrollLeft,
-            eventArgsMouseDown.ScrollTop,
-            eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels;// + eventArgsMouseDown.ScrollTop;
+        var relativeY = y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels;// + eventArgsMouseDown.ScrollTop;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
         
         VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
-        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)            return Task.CompletedTask;        var relativeX = eventArgsMouseDown.X - _treeViewMeasurements.BoundingClientRectLeft + eventArgsMouseDown.ScrollLeft;
+        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)            return Task.CompletedTask;        var relativeX = x - _treeViewMeasurements.BoundingClientRectLeft + _treeViewMeasurements.ScrollLeft;
         relativeX = Math.Max(0, relativeX);
         
         if (relativeX >= (_virtualizedTupleList[VirtualIndexActiveNode].Depth * OffsetPerDepthInPixels) &&

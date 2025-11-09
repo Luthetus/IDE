@@ -60,17 +60,12 @@ window.clairCommon = {
             });
             
             element.addEventListener('wheel', (event) => {
-                dotNetHelper.invokeMethodAsync("ReceiveOnWheel",
+                /*dotNetHelper.invokeMethodAsync("ReceiveOnWheel",
                 {
-                    Y: event.deltaY,
-                    ShiftKey: event.shiftKey,
-                    ScrollLeft: element.scrollLeft,
-                    ScrollTop: element.scrollTop,
-                    ScrollWidth: element.scrollWidth,
-                    ScrollHeight: element.scrollHeight,
-                    ViewWidth: element.offsetWidth,
-                    ViewHeight: element.offsetHeight,
-                });
+                    deltaY: event.deltaY,
+                    shiftKey: event.shiftKey
+                });*/
+                dotNetHelper.invokeMethodAsync("ReceiveOnWheel", event.deltaY, event.shiftKey);
             });
         
             element.addEventListener('keydown', (event) => {
@@ -82,23 +77,14 @@ window.clairCommon = {
                         break;
                     default:
                         let boundingClientRect = element.getBoundingClientRect();
-                        dotNetHelper.invokeMethodAsync("ReceiveOnKeyDown",
-                        {
-                            Key: event.key,
-                            Code: event.code,
-                            CtrlKey: event.ctrlKey,
-                            ShiftKey: event.shiftKey,
-                            AltKey: event.altKey,
-                            MetaKey: event.metaKey,
-                            ScrollLeft: element.scrollLeft,
-                            ScrollTop: element.scrollTop,
-                            ScrollWidth: element.scrollWidth,
-                            ScrollHeight: element.scrollHeight,
-                            ViewWidth: element.offsetWidth,
-                            ViewHeight: element.offsetHeight,
-                            BoundingClientRectLeft: boundingClientRect.left,
-                            BoundingClientRectTop: boundingClientRect.top,
-                        });
+                        dotNetHelper.invokeMethodAsync(
+                            "ReceiveOnKeyDown",
+                            event.key,
+                            event.code,
+                            event.ctrlKey,
+                            event.shiftKey,
+                            event.altKey,
+                            event.metaKey);
                         break;
                 }
                 event.preventDefault();
@@ -107,82 +93,31 @@ window.clairCommon = {
             element.addEventListener('contextmenu', (event) => {
                 let boundingClientRect = element.getBoundingClientRect();
                 dotNetHelper.invokeMethodAsync("ReceiveOnContextMenu", 
-                {
-                    Buttons: event.buttons,
-                    Button: event.button,
-                    X: event.clientX,
-                    Y: event.clientY,
-                    ShiftKey: event.shiftKey,
-                    ScrollLeft: element.scrollLeft,
-                    ScrollTop: element.scrollTop,
-                    ScrollWidth: element.scrollWidth,
-                    ScrollHeight: element.scrollHeight,
-                    ViewWidth: element.offsetWidth,
-                    ViewHeight: element.offsetHeight,
-                    BoundingClientRectLeft: boundingClientRect.left,
-                    BoundingClientRectTop: boundingClientRect.top,
-                });
+                    event.clientX,
+                    event.clientY,
+                    event.button);
                 event.preventDefault();
             });
             
             element.addEventListener('mousedown', (event) => {
                 let boundingClientRect = element.getBoundingClientRect();
-                dotNetHelper.invokeMethodAsync("ReceiveContentOnMouseDown", 
-                {
-                    Buttons: event.buttons,
-                    Button: event.button,
-                    X: event.clientX,
-                    Y: event.clientY,
-                    ShiftKey: event.shiftKey,
-                    ScrollLeft: element.scrollLeft,
-                    ScrollTop: element.scrollTop,
-                    ScrollWidth: element.scrollWidth,
-                    ScrollHeight: element.scrollHeight,
-                    ViewWidth: element.offsetWidth,
-                    ViewHeight: element.offsetHeight,
-                    BoundingClientRectLeft: boundingClientRect.left,
-                    BoundingClientRectTop: boundingClientRect.top,
-                });
+                dotNetHelper.invokeMethodAsync("ReceiveContentOnMouseDown",
+                    event.clientX,
+                    event.clientY);
             });
             
             element.addEventListener('dblclick', (event) => {
                 let boundingClientRect = element.getBoundingClientRect();
                 dotNetHelper.invokeMethodAsync("ReceiveOnDoubleClick",
-                {
-                    Buttons: event.buttons,
-                    Button: event.button,
-                    X: event.clientX,
-                    Y: event.clientY,
-                    ShiftKey: event.shiftKey,
-                    ScrollLeft: element.scrollLeft,
-                    ScrollTop: element.scrollTop,
-                    ScrollWidth: element.scrollWidth,
-                    ScrollHeight: element.scrollHeight,
-                    ViewWidth: element.offsetWidth,
-                    ViewHeight: element.offsetHeight,
-                    BoundingClientRectLeft: boundingClientRect.left,
-                    BoundingClientRectTop: boundingClientRect.top,
-                });
+                    event.clientX,
+                    event.clientY);
             });
             
             element.addEventListener('click', (event) => {
                 let boundingClientRect = element.getBoundingClientRect();
                 dotNetHelper.invokeMethodAsync("ReceiveOnClick",
-                {
-                    Buttons: event.buttons,
-                    Button: event.button,
-                    X: event.clientX,
-                    Y: event.clientY,
-                    ShiftKey: event.shiftKey,
-                    ScrollLeft: element.scrollLeft,
-                    ScrollTop: element.scrollTop,
-                    ScrollWidth: element.scrollWidth,
-                    ScrollHeight: element.scrollHeight,
-                    ViewWidth: element.offsetWidth,
-                    ViewHeight: element.offsetHeight,
-                    BoundingClientRectLeft: boundingClientRect.left,
-                    BoundingClientRectTop: boundingClientRect.top,
-                });
+                    event.clientX,
+                    event.clientY);
             });
         }
         

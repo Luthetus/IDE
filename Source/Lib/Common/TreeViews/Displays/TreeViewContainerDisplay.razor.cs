@@ -104,6 +104,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                     "clairCommon.measureTreeView",
                     _htmlId,
                     /*preventScroll:*/ false);
+                _shouldValidateScrollbarOnAfterRender = true;
             }
         
             var didValidateScrollbar = false;

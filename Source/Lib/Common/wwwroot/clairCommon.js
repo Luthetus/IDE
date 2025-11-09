@@ -109,41 +109,15 @@ window.clairCommon = {
             element.addEventListener('dblclick', (event) => {
                 let boundingClientRect = element.getBoundingClientRect();
                 dotNetHelper.invokeMethodAsync("ReceiveOnDoubleClick",
-                {
-                    Buttons: event.buttons,
-                    Button: event.button,
-                    X: event.clientX,
-                    Y: event.clientY,
-                    ShiftKey: event.shiftKey,
-                    ScrollLeft: element.scrollLeft,
-                    ScrollTop: element.scrollTop,
-                    ScrollWidth: element.scrollWidth,
-                    ScrollHeight: element.scrollHeight,
-                    ViewWidth: element.offsetWidth,
-                    ViewHeight: element.offsetHeight,
-                    BoundingClientRectLeft: boundingClientRect.left,
-                    BoundingClientRectTop: boundingClientRect.top,
-                });
+                    event.clientX,
+                    event.clientY);
             });
             
             element.addEventListener('click', (event) => {
                 let boundingClientRect = element.getBoundingClientRect();
                 dotNetHelper.invokeMethodAsync("ReceiveOnClick",
-                {
-                    Buttons: event.buttons,
-                    Button: event.button,
-                    X: event.clientX,
-                    Y: event.clientY,
-                    ShiftKey: event.shiftKey,
-                    ScrollLeft: element.scrollLeft,
-                    ScrollTop: element.scrollTop,
-                    ScrollWidth: element.scrollWidth,
-                    ScrollHeight: element.scrollHeight,
-                    ViewWidth: element.offsetWidth,
-                    ViewHeight: element.offsetHeight,
-                    BoundingClientRectLeft: boundingClientRect.left,
-                    BoundingClientRectTop: boundingClientRect.top,
-                });
+                    event.clientX,
+                    event.clientY);
             });
         }
         

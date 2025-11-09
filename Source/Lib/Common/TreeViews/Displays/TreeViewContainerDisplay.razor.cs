@@ -310,10 +310,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public Task ReceiveOnContextMenu(
-        double x,
-        double y,
-        long button)
+    public Task ReceiveOnContextMenu(double x, double y, long button)
     {        if (_treeViewContainer is null)
             return Task.CompletedTask;
         
@@ -378,19 +375,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public async Task ReceiveOnClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
+    public async Task ReceiveOnClick(double x, double y)
     {
-        _treeViewMeasurements = new TreeViewMeasurements(
-            eventArgsMouseDown.ViewWidth,
-            eventArgsMouseDown.ViewHeight,
-            eventArgsMouseDown.BoundingClientRectLeft,
-            eventArgsMouseDown.BoundingClientRectTop,
-            eventArgsMouseDown.ScrollLeft,
-            eventArgsMouseDown.ScrollTop,
-            eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);
-    
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
+        var relativeY = y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
@@ -411,27 +398,17 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 contextMenuFixedPosition: null,
                 new MouseEventArgs
                 {
-                    ClientX = eventArgsMouseDown.X,
-                    ClientY = eventArgsMouseDown.Y,
+                    ClientX = x,
+                    ClientY = y,
                 },
                 keyboardEventArgs: null),
             _virtualizedTupleList[VirtualIndexActiveNode].Index);
     }
     
     [JSInvokable]
-    public async Task ReceiveOnDoubleClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
+    public async Task ReceiveOnDoubleClick(double x, double y)
     {
-        _treeViewMeasurements = new TreeViewMeasurements(
-            eventArgsMouseDown.ViewWidth,
-            eventArgsMouseDown.ViewHeight,
-            eventArgsMouseDown.BoundingClientRectLeft,
-            eventArgsMouseDown.BoundingClientRectTop,
-            eventArgsMouseDown.ScrollLeft,
-            eventArgsMouseDown.ScrollTop,
-            eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);
-    
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
+        var relativeY = y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
@@ -452,8 +429,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 contextMenuFixedPosition: null,
                 new MouseEventArgs
                 {
-                    ClientX = eventArgsMouseDown.X,
-                    ClientY = eventArgsMouseDown.Y,
+                    ClientX = x,
+                    ClientY = y,
                 },
                 keyboardEventArgs: null),
             _virtualizedTupleList[VirtualIndexActiveNode].Index);

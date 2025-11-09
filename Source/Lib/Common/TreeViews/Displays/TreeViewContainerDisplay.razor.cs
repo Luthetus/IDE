@@ -35,6 +35,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// All usage of this is expected to be on UI thread for that reason.
     /// If doing async work, be sure to NOT use '.ConfigureAwait(false)'
     /// if you intend to use this property after the task finishes.
+    ///
+    /// TODO: double check the safety of this index because it isn't cleared between renders,...
+    /// ...it can hold the previous render's value and yet this index be out of bounds for the new result.
+    /// (I think)
+    ///
+    /// TODO: Why does the root node not (visually) collapse / I think other weird things go on.
     /// </summary>
     private int VirtualIndexActiveNode { get; set; }
 

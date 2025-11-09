@@ -60,17 +60,12 @@ window.clairCommon = {
             });
             
             element.addEventListener('wheel', (event) => {
-                dotNetHelper.invokeMethodAsync("ReceiveOnWheel",
+                /*dotNetHelper.invokeMethodAsync("ReceiveOnWheel",
                 {
-                    Y: event.deltaY,
-                    ShiftKey: event.shiftKey,
-                    ScrollLeft: element.scrollLeft,
-                    ScrollTop: element.scrollTop,
-                    ScrollWidth: element.scrollWidth,
-                    ScrollHeight: element.scrollHeight,
-                    ViewWidth: element.offsetWidth,
-                    ViewHeight: element.offsetHeight,
-                });
+                    deltaY: event.deltaY,
+                    shiftKey: event.shiftKey
+                });*/
+                dotNetHelper.invokeMethodAsync("ReceiveOnWheel", event.deltaY, event.shiftKey);
             });
         
             element.addEventListener('keydown', (event) => {

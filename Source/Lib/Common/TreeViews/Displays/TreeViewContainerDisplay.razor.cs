@@ -174,16 +174,12 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public async Task ReceiveOnWheel(TreeViewEventArgsMouseDown eventArgsKeyDown)
+    public async Task ReceiveOnWheel(double deltaY, bool shiftKey)
     {
         if (_treeViewContainer is null)
             return;        _treeViewMeasurements = _treeViewMeasurements with
         {
-            ScrollTop = eventArgsKeyDown.ScrollTop + eventArgsKeyDown.Y,
-            ViewWidth = eventArgsKeyDown.ViewWidth,
-            ViewHeight = eventArgsKeyDown.ViewHeight,
-            ScrollWidth = eventArgsKeyDown.ScrollWidth,
-            ScrollHeight = eventArgsKeyDown.ScrollHeight,
+            ScrollTop = _treeViewMeasurements.ScrollTop + deltaY
         };
         
         ValidateScrollbar();

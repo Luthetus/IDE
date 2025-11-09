@@ -64,7 +64,13 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// The amount of pixels of the 0th virtualized UI node that is "clipping" offscreen.
     /// </summary>
     private double _prehangInPixels;
-    private double _activeNodeTop;
+    private int _activeNodeTop;
+    
+    private int _preceedingEmptySpaceHeight = 0;
+    private int _contentHeight = 0;
+    private int _endingEmptySpaceHeight = 0;
+    
+    private int _totalHeight = 0;
 
     protected override void OnInitialized()
     {
@@ -91,6 +97,16 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         if (_treeViewContainer is not null)
         {
+            if (_totalHeight != (_preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight))
+            {
+                _totalHeight = (_preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight);
+                _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
+                    "clairCommon.measureTreeView",
+                    _htmlId,
+                    /*preventScroll:*/ false);
+                _shouldValidateScrollbarOnAfterRender = true;
+            }
+        
             var didValidateScrollbar = false;
             if (_shouldValidateScrollbarOnAfterRender)
             {
@@ -102,6 +118,24 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                     /*preventScroll:*/ false);
             
                 didValidateScrollbar = true;
+                if (_activeNodeTop != -1)
+                {
+                    var top = _activeNodeTop;
+                    if (top <= _treeViewMeasurements.ScrollTop)
+                    {
+                        _treeViewMeasurements = _treeViewMeasurements with
+                        {
+                            ScrollTop = top//_treeViewMeasurements.ScrollTop - (top - eventArgsKeyDown.ScrollTop)
+                        };
+                    }
+                    else if (top + (2 * LineHeight) >= _treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight)
+                    {
+                        _treeViewMeasurements = _treeViewMeasurements with
+                        {
+                            ScrollTop = _treeViewMeasurements.ScrollTop + (top - (_treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight) + (2 * LineHeight))
+                        };
+                    }
+                }
                 ValidateScrollbar();
             }
         
@@ -170,16 +204,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public async Task ReceiveOnWheel(TreeViewEventArgsMouseDown eventArgsKeyDown)
+    public async Task ReceiveOnWheel(double deltaY, bool shiftKey)
     {
+        // TODO: will JS interop accepting C# primitives be translated from JavaScript...
+        // ...with less overhead than a struct which contains the primitive types?
         if (_treeViewContainer is null)
             return;        _treeViewMeasurements = _treeViewMeasurements with
         {
-            ScrollTop = eventArgsKeyDown.ScrollTop + eventArgsKeyDown.Y,
-            ViewWidth = eventArgsKeyDown.ViewWidth,
-            ViewHeight = eventArgsKeyDown.ViewHeight,
-            ScrollWidth = eventArgsKeyDown.ScrollWidth,
-            ScrollHeight = eventArgsKeyDown.ScrollHeight,
+            ScrollTop = _treeViewMeasurements.ScrollTop + deltaY
         };
         
         ValidateScrollbar();
@@ -187,75 +219,48 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public async Task ReceiveOnKeyDown(TreeViewEventArgsKeyDown eventArgsKeyDown)
+    public async Task ReceiveOnKeyDown(
+        string key,
+        string code,
+        bool ctrlKey,
+        bool shiftKey,
+        bool altKey,
+        bool metaKey)
     {
         if (_treeViewContainer is null)
             return;
 
-        switch (eventArgsKeyDown.Key)
+        switch (key)
         {
             case "ContextMenu":
             {
                 var mouseEventArgs = new MouseEventArgs { Button = -1 };
                 
                 await ReceiveOnContextMenu(
-                    new TreeViewEventArgsMouseDown(
-                        Buttons: 0,
-                        Button: -1,
-                        X: 0,
-                        Y: 0,
-                        ShiftKey: false,
-                        eventArgsKeyDown.ScrollLeft,
-                        eventArgsKeyDown.ScrollTop,
-                        eventArgsKeyDown.ScrollWidth,
-                        eventArgsKeyDown.ScrollHeight,
-                        eventArgsKeyDown.ViewWidth,
-                        eventArgsKeyDown.ViewHeight,
-                        eventArgsKeyDown.BoundingClientRectLeft,
-                        eventArgsKeyDown.BoundingClientRectTop));
+                    x: 0,
+                    y: 0,
+                    button: -1);
                 return;
             }
             case ".":
             {
-                if (eventArgsKeyDown.CtrlKey)
+                if (ctrlKey)
                 {
                     await ReceiveOnContextMenu(
-                        new TreeViewEventArgsMouseDown(
-                            Buttons: 0,
-                            Button: -1,
-                            X: 0,
-                            Y: 0,
-                            ShiftKey: false,
-                            eventArgsKeyDown.ScrollLeft,
-                            eventArgsKeyDown.ScrollTop,
-                            eventArgsKeyDown.ScrollWidth,
-                            eventArgsKeyDown.ScrollHeight,
-                            eventArgsKeyDown.ViewWidth,
-                            eventArgsKeyDown.ViewHeight,
-                            eventArgsKeyDown.BoundingClientRectLeft,
-                            eventArgsKeyDown.BoundingClientRectTop));
+                        x: 0,
+                        y: 0,
+                        button: -1);
                 }
                 return;
             }
             case "F10":
             {
-                if (eventArgsKeyDown.ShiftKey)
+                if (shiftKey)
                 {
                     await ReceiveOnContextMenu(
-                        new TreeViewEventArgsMouseDown(
-                            Buttons: 0,
-                            Button: -1,
-                            X: 0,
-                            Y: 0,
-                            ShiftKey: false,
-                            eventArgsKeyDown.ScrollLeft,
-                            eventArgsKeyDown.ScrollTop,
-                            eventArgsKeyDown.ScrollWidth,
-                            eventArgsKeyDown.ScrollHeight,
-                            eventArgsKeyDown.ViewWidth,
-                            eventArgsKeyDown.ViewHeight,
-                            eventArgsKeyDown.BoundingClientRectLeft,
-                            eventArgsKeyDown.BoundingClientRectTop));
+                        x: 0,
+                        y: 0,
+                        button: -1);
                 }
                 return;
             }
@@ -275,8 +280,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             null,
             new KeyboardEventArgs
             {
-                Key = eventArgsKeyDown.Key,
-                Code = eventArgsKeyDown.Code,
+                Key = key,
+                Code = code,
             });
 
         // Do not ConfigureAwait(false) here, the _flatNodeList is made on the UI thread
@@ -287,61 +292,72 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         if (treeViewContainerLocal is null)
             return;
         
-        _treeViewMeasurements = _treeViewMeasurements with
-        {
-            ScrollHeight = eventArgsKeyDown.ScrollHeight,
-            ScrollWidth = eventArgsKeyDown.ScrollWidth
-        };
-        
-        var top = _activeNodeTop;
-        if (top < eventArgsKeyDown.ScrollTop)
+        if (key == "Home")
         {
             _treeViewMeasurements = _treeViewMeasurements with
             {
-                ScrollTop = top//_treeViewMeasurements.ScrollTop - (top - eventArgsKeyDown.ScrollTop)
+                ScrollTop = 0//_treeViewMeasurements.ScrollTop - (top - eventArgsKeyDown.ScrollTop)
             };
-            ValidateScrollbar();
             StateHasChanged();
+            return;
         }
-        else if (top + (2 * LineHeight) > eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight)
+        else if (key == "End")
         {
             _treeViewMeasurements = _treeViewMeasurements with
             {
-                ScrollTop = _treeViewMeasurements.ScrollTop + (top - (eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight) + (2 * LineHeight))
+                //ScrollTop = _preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight
+                ScrollTop = _treeViewMeasurements.ScrollHeight - _treeViewMeasurements.ViewHeight
             };
-            ValidateScrollbar();
+            //_shouldValidateScrollbarOnAfterRender = true;
             StateHasChanged();
+            return;
+        }
+        else if (_activeNodeTop != -1)
+        {
+            var top = _activeNodeTop;
+            if (top <= _treeViewMeasurements.ScrollTop)
+            {
+                _treeViewMeasurements = _treeViewMeasurements with
+                {
+                    ScrollTop = top//_treeViewMeasurements.ScrollTop - (top - eventArgsKeyDown.ScrollTop)
+                };
+                ValidateScrollbar();
+                StateHasChanged();
+            }
+            else if (top + (2 * LineHeight) >= _treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight)
+            {
+                _treeViewMeasurements = _treeViewMeasurements with
+                {
+                    ScrollTop = _treeViewMeasurements.ScrollTop + (top - (_treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight) + (2 * LineHeight))
+                };
+                ValidateScrollbar();
+                StateHasChanged();
+            }
+        }
+        else
+        {
         }
     }
     
     [JSInvokable]
-    public Task ReceiveOnContextMenu(TreeViewEventArgsMouseDown eventArgsMouseDown)
-    {
-        _treeViewMeasurements = new TreeViewMeasurements(
-            eventArgsMouseDown.ViewWidth,
-            eventArgsMouseDown.ViewHeight,
-            eventArgsMouseDown.BoundingClientRectLeft,
-            eventArgsMouseDown.BoundingClientRectTop,
-            eventArgsMouseDown.ScrollLeft,
-            eventArgsMouseDown.ScrollTop,
-            eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);        if (_treeViewContainer is null)
+    public Task ReceiveOnContextMenu(double x, double y, long button)
+    {        if (_treeViewContainer is null)
             return Task.CompletedTask;
         
         ContextMenuFixedPosition contextMenuFixedPosition;
         
-        if (eventArgsMouseDown.Button == -1)
+        if (button == -1)
         {
             var contextMenuTarget = _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index];
             
             contextMenuFixedPosition = new ContextMenuFixedPosition(
                 OccurredDueToMouseEvent: false,
-                LeftPositionInPixels: eventArgsMouseDown.BoundingClientRectLeft,
-                TopPositionInPixels: eventArgsMouseDown.BoundingClientRectTop + LineHeight + (VirtualIndexActiveNode * LineHeight)/* - eventArgsMouseDown.ScrollTop*/);
+                LeftPositionInPixels: _treeViewMeasurements.BoundingClientRectLeft,
+                TopPositionInPixels: _treeViewMeasurements.BoundingClientRectTop + LineHeight + (VirtualIndexActiveNode * LineHeight)/* - eventArgsMouseDown.ScrollTop*/);
         }
-        else if (eventArgsMouseDown.Button == 2)
+        else if (button == 2)
         {
-            var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
+            var relativeY = y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
             relativeY = Math.Max(0, relativeY);
             
             var indexLocal = (int)(relativeY / LineHeight);
@@ -351,8 +367,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             _treeViewContainer.ActiveNodeValueIndex = _virtualizedTupleList[VirtualIndexActiveNode].Index;
             StateHasChanged();            contextMenuFixedPosition = new ContextMenuFixedPosition(
                 OccurredDueToMouseEvent: true,
-                LeftPositionInPixels: eventArgsMouseDown.X,
-                TopPositionInPixels: eventArgsMouseDown.Y);
+                LeftPositionInPixels: x,
+                TopPositionInPixels: y);
         }
         else
         {
@@ -365,23 +381,15 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public Task ReceiveContentOnMouseDown(TreeViewEventArgsMouseDown eventArgsMouseDown)
+    public Task ReceiveContentOnMouseDown(double x, double y)
     {
-        _treeViewMeasurements = new TreeViewMeasurements(
-            eventArgsMouseDown.ViewWidth,
-            eventArgsMouseDown.ViewHeight,
-            eventArgsMouseDown.BoundingClientRectLeft,
-            eventArgsMouseDown.BoundingClientRectTop,
-            eventArgsMouseDown.ScrollLeft,
-            eventArgsMouseDown.ScrollTop,
-            eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels;// + eventArgsMouseDown.ScrollTop;
+        var relativeY = y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels;// + eventArgsMouseDown.ScrollTop;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
         
         VirtualIndexActiveNode = VirtualIndexBasicValidation(indexLocal);
-        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)            return Task.CompletedTask;        var relativeX = eventArgsMouseDown.X - _treeViewMeasurements.BoundingClientRectLeft + eventArgsMouseDown.ScrollLeft;
+        if (_virtualizedTupleList[VirtualIndexActiveNode].Index >= _treeViewContainer.NodeValueList.Count)            return Task.CompletedTask;        var relativeX = x - _treeViewMeasurements.BoundingClientRectLeft + _treeViewMeasurements.ScrollLeft;
         relativeX = Math.Max(0, relativeX);
         
         if (relativeX >= (_virtualizedTupleList[VirtualIndexActiveNode].Depth * OffsetPerDepthInPixels) &&
@@ -397,19 +405,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public async Task ReceiveOnClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
+    public async Task ReceiveOnClick(double x, double y)
     {
-        _treeViewMeasurements = new TreeViewMeasurements(
-            eventArgsMouseDown.ViewWidth,
-            eventArgsMouseDown.ViewHeight,
-            eventArgsMouseDown.BoundingClientRectLeft,
-            eventArgsMouseDown.BoundingClientRectTop,
-            eventArgsMouseDown.ScrollLeft,
-            eventArgsMouseDown.ScrollTop,
-            eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);
-    
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
+        var relativeY = y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
@@ -430,27 +428,17 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 contextMenuFixedPosition: null,
                 new MouseEventArgs
                 {
-                    ClientX = eventArgsMouseDown.X,
-                    ClientY = eventArgsMouseDown.Y,
+                    ClientX = x,
+                    ClientY = y,
                 },
                 keyboardEventArgs: null),
             _virtualizedTupleList[VirtualIndexActiveNode].Index);
     }
     
     [JSInvokable]
-    public async Task ReceiveOnDoubleClick(TreeViewEventArgsMouseDown eventArgsMouseDown)
+    public async Task ReceiveOnDoubleClick(double x, double y)
     {
-        _treeViewMeasurements = new TreeViewMeasurements(
-            eventArgsMouseDown.ViewWidth,
-            eventArgsMouseDown.ViewHeight,
-            eventArgsMouseDown.BoundingClientRectLeft,
-            eventArgsMouseDown.BoundingClientRectTop,
-            eventArgsMouseDown.ScrollLeft,
-            eventArgsMouseDown.ScrollTop,
-            eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);
-    
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
+        var relativeY = y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);
@@ -471,8 +459,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 contextMenuFixedPosition: null,
                 new MouseEventArgs
                 {
-                    ClientX = eventArgsMouseDown.X,
-                    ClientY = eventArgsMouseDown.Y,
+                    ClientX = x,
+                    ClientY = y,
                 },
                 keyboardEventArgs: null),
             _virtualizedTupleList[VirtualIndexActiveNode].Index);
@@ -505,6 +493,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         if (commonUiEventKind == CommonUiEventKind.TreeViewStateChanged)
         {
             await InvokeAsync(StateHasChanged);
+        }
+        else if (commonUiEventKind == CommonUiEventKind.Intra_AppDimensionStateChanged ||
+                 commonUiEventKind == CommonUiEventKind.UserAgent_AppDimensionStateChanged)
+        {
+            _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
+                "clairCommon.measureTreeView",
+                _htmlId,
+                /*preventScroll:*/ false);
         }
     }
     

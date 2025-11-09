@@ -77,23 +77,14 @@ window.clairCommon = {
                         break;
                     default:
                         let boundingClientRect = element.getBoundingClientRect();
-                        dotNetHelper.invokeMethodAsync("ReceiveOnKeyDown",
-                        {
-                            Key: event.key,
-                            Code: event.code,
-                            CtrlKey: event.ctrlKey,
-                            ShiftKey: event.shiftKey,
-                            AltKey: event.altKey,
-                            MetaKey: event.metaKey,
-                            ScrollLeft: element.scrollLeft,
-                            ScrollTop: element.scrollTop,
-                            ScrollWidth: element.scrollWidth,
-                            ScrollHeight: element.scrollHeight,
-                            ViewWidth: element.offsetWidth,
-                            ViewHeight: element.offsetHeight,
-                            BoundingClientRectLeft: boundingClientRect.left,
-                            BoundingClientRectTop: boundingClientRect.top,
-                        });
+                        dotNetHelper.invokeMethodAsync(
+                            "ReceiveOnKeyDown",
+                            event.key,
+                            event.code,
+                            event.ctrlKey,
+                            event.shiftKey,
+                            event.altKey,
+                            event.metaKey);
                         break;
                 }
                 event.preventDefault();

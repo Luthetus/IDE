@@ -189,12 +189,18 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public async Task ReceiveOnKeyDown(TreeViewEventArgsKeyDown eventArgsKeyDown)
+    public async Task ReceiveOnKeyDown(
+        string key,
+        string code,
+        bool ctrlKey,
+        bool shiftKey,
+        bool altKey,
+        bool metaKey)
     {
         if (_treeViewContainer is null)
             return;
 
-        switch (eventArgsKeyDown.Key)
+        switch (key)
         {
             case "ContextMenu":
             {
@@ -207,19 +213,19 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                         X: 0,
                         Y: 0,
                         ShiftKey: false,
-                        eventArgsKeyDown.ScrollLeft,
-                        eventArgsKeyDown.ScrollTop,
-                        eventArgsKeyDown.ScrollWidth,
-                        eventArgsKeyDown.ScrollHeight,
-                        eventArgsKeyDown.ViewWidth,
-                        eventArgsKeyDown.ViewHeight,
-                        eventArgsKeyDown.BoundingClientRectLeft,
-                        eventArgsKeyDown.BoundingClientRectTop));
+                        _treeViewMeasurements.ScrollLeft,
+                        _treeViewMeasurements.ScrollTop,
+                        _treeViewMeasurements.ScrollWidth,
+                        _treeViewMeasurements.ScrollHeight,
+                        _treeViewMeasurements.ViewWidth,
+                        _treeViewMeasurements.ViewHeight,
+                        _treeViewMeasurements.BoundingClientRectLeft,
+                        _treeViewMeasurements.BoundingClientRectTop));
                 return;
             }
             case ".":
             {
-                if (eventArgsKeyDown.CtrlKey)
+                if (ctrlKey)
                 {
                     await ReceiveOnContextMenu(
                         new TreeViewEventArgsMouseDown(
@@ -228,20 +234,20 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                             X: 0,
                             Y: 0,
                             ShiftKey: false,
-                            eventArgsKeyDown.ScrollLeft,
-                            eventArgsKeyDown.ScrollTop,
-                            eventArgsKeyDown.ScrollWidth,
-                            eventArgsKeyDown.ScrollHeight,
-                            eventArgsKeyDown.ViewWidth,
-                            eventArgsKeyDown.ViewHeight,
-                            eventArgsKeyDown.BoundingClientRectLeft,
-                            eventArgsKeyDown.BoundingClientRectTop));
+                            _treeViewMeasurements.ScrollLeft,
+                            _treeViewMeasurements.ScrollTop,
+                            _treeViewMeasurements.ScrollWidth,
+                            _treeViewMeasurements.ScrollHeight,
+                            _treeViewMeasurements.ViewWidth,
+                            _treeViewMeasurements.ViewHeight,
+                            _treeViewMeasurements.BoundingClientRectLeft,
+                            _treeViewMeasurements.BoundingClientRectTop));
                 }
                 return;
             }
             case "F10":
             {
-                if (eventArgsKeyDown.ShiftKey)
+                if (shiftKey)
                 {
                     await ReceiveOnContextMenu(
                         new TreeViewEventArgsMouseDown(
@@ -250,14 +256,14 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                             X: 0,
                             Y: 0,
                             ShiftKey: false,
-                            eventArgsKeyDown.ScrollLeft,
-                            eventArgsKeyDown.ScrollTop,
-                            eventArgsKeyDown.ScrollWidth,
-                            eventArgsKeyDown.ScrollHeight,
-                            eventArgsKeyDown.ViewWidth,
-                            eventArgsKeyDown.ViewHeight,
-                            eventArgsKeyDown.BoundingClientRectLeft,
-                            eventArgsKeyDown.BoundingClientRectTop));
+                            _treeViewMeasurements.ScrollLeft,
+                            _treeViewMeasurements.ScrollTop,
+                            _treeViewMeasurements.ScrollWidth,
+                            _treeViewMeasurements.ScrollHeight,
+                            _treeViewMeasurements.ViewWidth,
+                            _treeViewMeasurements.ViewHeight,
+                            _treeViewMeasurements.BoundingClientRectLeft,
+                            _treeViewMeasurements.BoundingClientRectTop));
                 }
                 return;
             }
@@ -277,8 +283,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             null,
             new KeyboardEventArgs
             {
-                Key = eventArgsKeyDown.Key,
-                Code = eventArgsKeyDown.Code,
+                Key = key,
+                Code = code,
             });
 
         // Do not ConfigureAwait(false) here, the _flatNodeList is made on the UI thread
@@ -289,13 +295,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         if (treeViewContainerLocal is null)
             return;
         
-        _treeViewMeasurements = _treeViewMeasurements with
-        {
-            ScrollHeight = eventArgsKeyDown.ScrollHeight,
-            ScrollWidth = eventArgsKeyDown.ScrollWidth
-        };
-        
-        if (eventArgsKeyDown.Key == "Home")
+        if (key == "Home")
         {
             _treeViewMeasurements = _treeViewMeasurements with
             {
@@ -304,7 +304,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             StateHasChanged();
             return;
         }
-        else if (eventArgsKeyDown.Key == "End")
+        else if (key == "End")
         {
             _treeViewMeasurements = _treeViewMeasurements with
             {
@@ -318,7 +318,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         else if (_activeNodeTop != -1)
         {
             var top = _activeNodeTop;
-            if (top < eventArgsKeyDown.ScrollTop)
+            if (top < _treeViewMeasurements.ScrollTop)
             {
                 _treeViewMeasurements = _treeViewMeasurements with
                 {
@@ -327,11 +327,11 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 ValidateScrollbar();
                 StateHasChanged();
             }
-            else if (top + (2 * LineHeight) > eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight)
+            else if (top + (2 * LineHeight) > _treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight)
             {
                 _treeViewMeasurements = _treeViewMeasurements with
                 {
-                    ScrollTop = _treeViewMeasurements.ScrollTop + (top - (eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight) + (2 * LineHeight))
+                    ScrollTop = _treeViewMeasurements.ScrollTop + (top - (_treeViewMeasurements.ScrollTop + _treeViewMeasurements.ViewHeight) + (2 * LineHeight))
                 };
                 ValidateScrollbar();
                 StateHasChanged();

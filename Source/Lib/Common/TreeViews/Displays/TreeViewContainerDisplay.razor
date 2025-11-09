@@ -270,6 +270,8 @@
                 {
                     forceFirstNodeToRender = false;
                     depth++;
+                    if (!childNode.IsExpanded || childNode.ChildListLength <= 0)
+                        break;
                 }
                 else if (childNode.IsExpanded && childNode.ChildListLength > 0)
                 {

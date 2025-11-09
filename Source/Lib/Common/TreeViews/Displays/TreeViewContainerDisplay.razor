@@ -46,9 +46,17 @@
         var childIndex = 0;
         bool forceFirstNodeToRender;
         if (_treeViewMeasurements.ScrollTop > CommonService.Options_LineHeight)
+        {
             forceFirstNodeToRender = false;
+            // TODO: I have no idea why this is needed but without it when you scroll out of view of the root node...
+            // ...the _totalHeight changes by the 'CommonService.Options_LineHeight'
+            _endingEmptySpaceHeight += CommonService.Options_LineHeight;
+        }
         else
+        {
             forceFirstNodeToRender = true;
+            
+        }
         @*<div>*@
             @*
                 TODO: Rewrite the comment below this.

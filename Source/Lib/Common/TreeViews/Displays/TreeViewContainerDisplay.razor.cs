@@ -71,6 +71,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     private int _endingEmptySpaceHeight = 0;
     
     private int _totalHeight = 0;
+    private int _heightChangeConsecutiveCounter = 0;
 
     protected override void OnInitialized()
     {
@@ -97,8 +98,10 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         
         if (_treeViewContainer is not null)
         {
-            if (_totalHeight != (_preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight))
+            if ((_totalHeight != (_preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight)) &&
+                ++_heightChangeConsecutiveCounter >= 2)
             {
+                _heightChangeConsecutiveCounter = 0;
                 _totalHeight = (_preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight);
                 _treeViewMeasurements = await CommonService.JsRuntimeCommonApi.JsRuntime.InvokeAsync<TreeViewMeasurements>(
                     "clairCommon.measureTreeView",

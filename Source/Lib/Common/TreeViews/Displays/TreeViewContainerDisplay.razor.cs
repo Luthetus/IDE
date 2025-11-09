@@ -64,11 +64,11 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// The amount of pixels of the 0th virtualized UI node that is "clipping" offscreen.
     /// </summary>
     private double _prehangInPixels;
-    private double _activeNodeTop;
+    private int _activeNodeTop;
     
-    private double _preceedingEmptySpaceHeight = 0;
-    private double _contentHeight = 0;
-    private double _endingEmptySpaceHeight = 0;
+    private int _preceedingEmptySpaceHeight = 0;
+    private int _contentHeight = 0;
+    private int _endingEmptySpaceHeight = 0;
 
     protected override void OnInitialized()
     {

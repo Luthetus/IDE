@@ -176,6 +176,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     [JSInvokable]
     public async Task ReceiveOnWheel(double deltaY, bool shiftKey)
     {
+        // TODO: will JS interop accepting C# primitives be translated from JavaScript...
+        // ...with less overhead than a struct which contains the primitive types?
         if (_treeViewContainer is null)
             return;        _treeViewMeasurements = _treeViewMeasurements with
         {

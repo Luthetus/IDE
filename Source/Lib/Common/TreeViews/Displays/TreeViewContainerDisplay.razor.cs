@@ -64,6 +64,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// The amount of pixels of the 0th virtualized UI node that is "clipping" offscreen.
     /// </summary>
     private double _prehangInPixels;
+    private double _activeNodeTop;
 
     protected override void OnInitialized()
     {
@@ -292,35 +293,25 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             ScrollWidth = eventArgsKeyDown.ScrollWidth
         };
         
-        /*
-        for (int i = 0; i < _flatNodeList.Count; i++)
+        var top = _activeNodeTop;
+        if (top < eventArgsKeyDown.ScrollTop)
         {
-            var node = _flatNodeList[i];
-            if (node == treeViewContainerLocal.ActiveNode)
+            _treeViewMeasurements = _treeViewMeasurements with
             {
-                var top = LineHeight * i;
-                
-                if (top < eventArgsKeyDown.ScrollTop)
-                {
-                    _treeViewMeasurements = _treeViewMeasurements with
-                    {
-                        ScrollTop = _treeViewMeasurements.ScrollTop + (top - eventArgsKeyDown.ScrollTop)
-                    };
-                }
-                else if (top + (2 * LineHeight) > eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight)
-                {
-                    _treeViewMeasurements = _treeViewMeasurements with
-                    {
-                        ScrollTop = _treeViewMeasurements.ScrollTop + (top - (eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight) + (2 * LineHeight))
-                    };
-                }
-                
-                ValidateScrollbar();
-                StateHasChanged();
-                break;
-            }
+                ScrollTop = top//_treeViewMeasurements.ScrollTop - (top - eventArgsKeyDown.ScrollTop)
+            };
+            ValidateScrollbar();
+            StateHasChanged();
         }
-        */
+        else if (top + (2 * LineHeight) > eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight)
+        {
+            _treeViewMeasurements = _treeViewMeasurements with
+            {
+                ScrollTop = _treeViewMeasurements.ScrollTop + (top - (eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight) + (2 * LineHeight))
+            };
+            ValidateScrollbar();
+            StateHasChanged();
+        }
     }
     
     [JSInvokable]
@@ -384,8 +375,7 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             eventArgsMouseDown.ScrollLeft,
             eventArgsMouseDown.ScrollTop,
             eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);
-        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels;// + eventArgsMouseDown.ScrollTop;
+            eventArgsMouseDown.ScrollHeight);        var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels;// + eventArgsMouseDown.ScrollTop;
         relativeY = Math.Max(0, relativeY);
         
         var indexLocal = (int)(relativeY / LineHeight);

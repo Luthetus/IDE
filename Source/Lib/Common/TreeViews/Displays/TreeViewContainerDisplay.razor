@@ -20,6 +20,12 @@
     int depth = 0;
     int indexRootNode = _treeViewContainer?.IndexRootNode ?? -1;
     var nodeValueList = _treeViewContainer?.NodeValueList;
+    _activeNodeTop = -1;
+    _preceedingEmptySpaceHeight = 0;
+    _contentHeight = 0;
+    _endingEmptySpaceHeight = 0;
+    
+    Console.WriteLine(_treeViewMeasurements.ScrollTop);
 }
 
 @* class="@GetContainerElementCssClass(_treeViewContainer)" *@
@@ -34,10 +40,7 @@
     else if (indexRootNode >= 0 && indexRootNode < nodeValueList.Count)
     {
         var isCalculatingPreceedingEmptySpace = true;
-        var preceedingEmptySpaceHeight = 0;
-        var contentHeight = 0;
         var isCalculatingEndingEmptySpace = false;
-        var endingEmptySpaceHeight = 0;
 
         var targetNodeIndex = indexRootNode;
         var targetNode = nodeValueList[indexRootNode];
@@ -95,23 +98,23 @@
 
                 if (isCalculatingPreceedingEmptySpace)
                 {
-                    if (preceedingEmptySpaceHeight + CommonService.Options_LineHeight < _treeViewMeasurements.ScrollTop)
+                    if (_preceedingEmptySpaceHeight + CommonService.Options_LineHeight < _treeViewMeasurements.ScrollTop)
                     {
-                        preceedingEmptySpaceHeight += CommonService.Options_LineHeight;
+                        _preceedingEmptySpaceHeight += CommonService.Options_LineHeight;
                         skipNodeUi = true;
                     }
                     else
                     {
-                        _prehangInPixels = _treeViewMeasurements.ScrollTop - preceedingEmptySpaceHeight;
+                        _prehangInPixels = _treeViewMeasurements.ScrollTop - _preceedingEmptySpaceHeight;
                         
                         isCalculatingPreceedingEmptySpace = false;
-                        <div style="width: 1px; height: @(preceedingEmptySpaceHeight)px;"></div>
+                        <div style="width: 1px; height: @(_preceedingEmptySpaceHeight)px;"></div>
                     }
                 }
 
                 if (!skipNodeUi)
                 {
-                    if (contentHeight > _treeViewMeasurements.ViewHeight)
+                    if (_contentHeight > _treeViewMeasurements.ViewHeight)
                     {
                         isCalculatingEndingEmptySpace = true;
                     }
@@ -119,14 +122,14 @@
                     if (!isCalculatingEndingEmptySpace)
                     {
                         _virtualizedTupleList.Add((literalIndex, depth));
-                        contentHeight += CommonService.Options_LineHeight;
+                        _contentHeight += CommonService.Options_LineHeight;
 
                         var cssClass = string.Empty;
                         if (literalIndex == activeNodeValueIndex)
                         {
                             cssClass = "ci_active ci_selected";
                             VirtualIndexActiveNode = _virtualizedTupleList.Count - 1;
-                            _activeNodeTop = contentHeight - CommonService.Options_LineHeight + preceedingEmptySpaceHeight;
+                            _activeNodeTop = _contentHeight - CommonService.Options_LineHeight + _preceedingEmptySpaceHeight;
                         }
                         // class="@cssClass"
                         // style="@GetNodeElementCssStyle(node, i)"
@@ -248,7 +251,7 @@
                     }
                     else
                     {
-                        endingEmptySpaceHeight += CommonService.Options_LineHeight;
+                        _endingEmptySpaceHeight += CommonService.Options_LineHeight;
                     }
                 }
 
@@ -267,10 +270,10 @@
             }
         @*</div>*@
 
-        @* position: absolute; top: @(preceedingEmptySpaceHeight + contentHeight)px; *@
-        @*<div style="width: 1px; height: @(endingEmptySpaceHeight)px;"></div>*@
+        @* position: absolute; top: @(_preceedingEmptySpaceHeight + _contentHeight)px; *@
+        @*<div style="width: 1px; height: @(_endingEmptySpaceHeight)px;"></div>*@
 
-        <div style="width: 1px; height: @(preceedingEmptySpaceHeight + contentHeight + endingEmptySpaceHeight + /*useful??? padding*/CommonService.Options_LineHeight)px; position: absolute;"></div>
+        <div style="width: 1px; height: @(_preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight + /*useful??? padding*/CommonService.Options_LineHeight)px; position: absolute; left: 0; top: 0;"></div>
     }
 </div>
 

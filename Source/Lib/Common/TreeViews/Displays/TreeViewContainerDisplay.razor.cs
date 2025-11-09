@@ -65,6 +65,10 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     /// </summary>
     private double _prehangInPixels;
     private double _activeNodeTop;
+    
+    private double _preceedingEmptySpaceHeight = 0;
+    private double _contentHeight = 0;
+    private double _endingEmptySpaceHeight = 0;
 
     protected override void OnInitialized()
     {
@@ -304,26 +308,36 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
         }
         else if (eventArgsKeyDown.Key == "End")
         {
-        }
-        
-        var top = _activeNodeTop;
-        if (top < eventArgsKeyDown.ScrollTop)
-        {
             _treeViewMeasurements = _treeViewMeasurements with
             {
-                ScrollTop = top//_treeViewMeasurements.ScrollTop - (top - eventArgsKeyDown.ScrollTop)
+                //ScrollTop = _preceedingEmptySpaceHeight + _contentHeight + _endingEmptySpaceHeight
+                ScrollTop = _treeViewMeasurements.ScrollHeight - _treeViewMeasurements.ViewHeight
             };
-            ValidateScrollbar();
+            //_shouldValidateScrollbarOnAfterRender = true;
             StateHasChanged();
+            return;
         }
-        else if (top + (2 * LineHeight) > eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight)
+        else if (_activeNodeTop != -1)
         {
-            _treeViewMeasurements = _treeViewMeasurements with
+            var top = _activeNodeTop;
+            if (top < eventArgsKeyDown.ScrollTop)
             {
-                ScrollTop = _treeViewMeasurements.ScrollTop + (top - (eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight) + (2 * LineHeight))
-            };
-            ValidateScrollbar();
-            StateHasChanged();
+                _treeViewMeasurements = _treeViewMeasurements with
+                {
+                    ScrollTop = top//_treeViewMeasurements.ScrollTop - (top - eventArgsKeyDown.ScrollTop)
+                };
+                ValidateScrollbar();
+                StateHasChanged();
+            }
+            else if (top + (2 * LineHeight) > eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight)
+            {
+                _treeViewMeasurements = _treeViewMeasurements with
+                {
+                    ScrollTop = _treeViewMeasurements.ScrollTop + (top - (eventArgsKeyDown.ScrollTop + eventArgsKeyDown.ViewHeight) + (2 * LineHeight))
+                };
+                ValidateScrollbar();
+                StateHasChanged();
+            }
         }
     }
     

@@ -207,20 +207,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 var mouseEventArgs = new MouseEventArgs { Button = -1 };
                 
                 await ReceiveOnContextMenu(
-                    new TreeViewEventArgsMouseDown(
-                        Buttons: 0,
-                        Button: -1,
-                        X: 0,
-                        Y: 0,
-                        ShiftKey: false,
-                        _treeViewMeasurements.ScrollLeft,
-                        _treeViewMeasurements.ScrollTop,
-                        _treeViewMeasurements.ScrollWidth,
-                        _treeViewMeasurements.ScrollHeight,
-                        _treeViewMeasurements.ViewWidth,
-                        _treeViewMeasurements.ViewHeight,
-                        _treeViewMeasurements.BoundingClientRectLeft,
-                        _treeViewMeasurements.BoundingClientRectTop));
+                    x: 0,
+                    y: 0,
+                    button: -1);
                 return;
             }
             case ".":
@@ -228,20 +217,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 if (ctrlKey)
                 {
                     await ReceiveOnContextMenu(
-                        new TreeViewEventArgsMouseDown(
-                            Buttons: 0,
-                            Button: -1,
-                            X: 0,
-                            Y: 0,
-                            ShiftKey: false,
-                            _treeViewMeasurements.ScrollLeft,
-                            _treeViewMeasurements.ScrollTop,
-                            _treeViewMeasurements.ScrollWidth,
-                            _treeViewMeasurements.ScrollHeight,
-                            _treeViewMeasurements.ViewWidth,
-                            _treeViewMeasurements.ViewHeight,
-                            _treeViewMeasurements.BoundingClientRectLeft,
-                            _treeViewMeasurements.BoundingClientRectTop));
+                        x: 0,
+                        y: 0,
+                        button: -1);
                 }
                 return;
             }
@@ -250,20 +228,9 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
                 if (shiftKey)
                 {
                     await ReceiveOnContextMenu(
-                        new TreeViewEventArgsMouseDown(
-                            Buttons: 0,
-                            Button: -1,
-                            X: 0,
-                            Y: 0,
-                            ShiftKey: false,
-                            _treeViewMeasurements.ScrollLeft,
-                            _treeViewMeasurements.ScrollTop,
-                            _treeViewMeasurements.ScrollWidth,
-                            _treeViewMeasurements.ScrollHeight,
-                            _treeViewMeasurements.ViewWidth,
-                            _treeViewMeasurements.ViewHeight,
-                            _treeViewMeasurements.BoundingClientRectLeft,
-                            _treeViewMeasurements.BoundingClientRectTop));
+                        x: 0,
+                        y: 0,
+                        button: -1);
                 }
                 return;
             }
@@ -343,33 +310,27 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
     }
     
     [JSInvokable]
-    public Task ReceiveOnContextMenu(TreeViewEventArgsMouseDown eventArgsMouseDown)
-    {
-        _treeViewMeasurements = new TreeViewMeasurements(
-            eventArgsMouseDown.ViewWidth,
-            eventArgsMouseDown.ViewHeight,
-            eventArgsMouseDown.BoundingClientRectLeft,
-            eventArgsMouseDown.BoundingClientRectTop,
-            eventArgsMouseDown.ScrollLeft,
-            eventArgsMouseDown.ScrollTop,
-            eventArgsMouseDown.ScrollWidth,
-            eventArgsMouseDown.ScrollHeight);        if (_treeViewContainer is null)
+    public Task ReceiveOnContextMenu(
+        double x,
+        double y,
+        long button)
+    {        if (_treeViewContainer is null)
             return Task.CompletedTask;
         
         ContextMenuFixedPosition contextMenuFixedPosition;
         
-        if (eventArgsMouseDown.Button == -1)
+        if (button == -1)
         {
             var contextMenuTarget = _treeViewContainer.NodeValueList[_virtualizedTupleList[VirtualIndexActiveNode].Index];
             
             contextMenuFixedPosition = new ContextMenuFixedPosition(
                 OccurredDueToMouseEvent: false,
-                LeftPositionInPixels: eventArgsMouseDown.BoundingClientRectLeft,
-                TopPositionInPixels: eventArgsMouseDown.BoundingClientRectTop + LineHeight + (VirtualIndexActiveNode * LineHeight)/* - eventArgsMouseDown.ScrollTop*/);
+                LeftPositionInPixels: _treeViewMeasurements.BoundingClientRectLeft,
+                TopPositionInPixels: _treeViewMeasurements.BoundingClientRectTop + LineHeight + (VirtualIndexActiveNode * LineHeight)/* - eventArgsMouseDown.ScrollTop*/);
         }
-        else if (eventArgsMouseDown.Button == 2)
+        else if (button == 2)
         {
-            var relativeY = eventArgsMouseDown.Y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
+            var relativeY = y - _treeViewMeasurements.BoundingClientRectTop + _prehangInPixels/* + eventArgsMouseDown.ScrollTop*/;
             relativeY = Math.Max(0, relativeY);
             
             var indexLocal = (int)(relativeY / LineHeight);
@@ -379,8 +340,8 @@ public sealed partial class TreeViewContainerDisplay : ComponentBase, IDisposabl
             _treeViewContainer.ActiveNodeValueIndex = _virtualizedTupleList[VirtualIndexActiveNode].Index;
             StateHasChanged();            contextMenuFixedPosition = new ContextMenuFixedPosition(
                 OccurredDueToMouseEvent: true,
-                LeftPositionInPixels: eventArgsMouseDown.X,
-                TopPositionInPixels: eventArgsMouseDown.Y);
+                LeftPositionInPixels: x,
+                TopPositionInPixels: y);
         }
         else
         {

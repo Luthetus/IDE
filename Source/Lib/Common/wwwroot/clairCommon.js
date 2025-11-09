@@ -93,21 +93,9 @@ window.clairCommon = {
             element.addEventListener('contextmenu', (event) => {
                 let boundingClientRect = element.getBoundingClientRect();
                 dotNetHelper.invokeMethodAsync("ReceiveOnContextMenu", 
-                {
-                    Buttons: event.buttons,
-                    Button: event.button,
-                    X: event.clientX,
-                    Y: event.clientY,
-                    ShiftKey: event.shiftKey,
-                    ScrollLeft: element.scrollLeft,
-                    ScrollTop: element.scrollTop,
-                    ScrollWidth: element.scrollWidth,
-                    ScrollHeight: element.scrollHeight,
-                    ViewWidth: element.offsetWidth,
-                    ViewHeight: element.offsetHeight,
-                    BoundingClientRectLeft: boundingClientRect.left,
-                    BoundingClientRectTop: boundingClientRect.top,
-                });
+                    event.clientX,
+                    event.clientY,
+                    event.button);
                 event.preventDefault();
             });
             

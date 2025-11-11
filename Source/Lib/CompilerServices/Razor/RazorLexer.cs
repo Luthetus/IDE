@@ -248,7 +248,7 @@ public static class RazorLexer
                                     var wordStartPosition = streamReaderWrap.PositionIndex;
                                     var wordStartByte = streamReaderWrap.ByteIndex;
                                     
-                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(keywordCheckBuffer, streamReaderWrap, output, ref cSharpPermitted);
+                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(keywordCheckBuffer, streamReaderWrap, output, elsePermitted: false);
                                     if (!everythingWasHandledForMe)
                                     {
                                         output.ModelModifier.__SetDecorationByteRange(
@@ -817,7 +817,7 @@ public static class RazorLexer
         char[] keywordCheckBuffer,
         StreamReaderWrap streamReaderWrap,
         RazorLexerOutput output,
-        ref bool cSharpPermitted)
+        bool elsePermitted)
     {
         // To detect whether a word is an identifier or a keyword:
         // -------------------------------------------------------
@@ -1078,20 +1078,17 @@ public static class RazorLexer
                 if (lengthCharacter != 4)
                     goto default;
                 
-                if (keywordCheckBuffer[0] ==  'e' &&
+                if (elsePermitted &&
+                    keywordCheckBuffer[0] ==  'e' &&
                     keywordCheckBuffer[1] ==  'l' &&
                     keywordCheckBuffer[2] ==  's' &&
                     keywordCheckBuffer[3] ==  'e')
                 {
-                    Console.WriteLine("else");
-                    
                     // else
                     output.ModelModifier.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    
-                    cSharpPermitted = true;
                     
                     // Move to start of else-if "if" text,
                     // or to start of 'else' codeblock
@@ -1103,7 +1100,7 @@ public static class RazorLexer
                                 keywordCheckBuffer,
                                 streamReaderWrap,
                                 output,
-                                ref cSharpPermitted);
+                                elsePermitted: false);
                         }
                         if (streamReaderWrap.CurrentCharacter == '{')
                             break;
@@ -1131,9 +1128,9 @@ public static class RazorLexer
                     break;
                 }
                 else if (keywordCheckBuffer[0] ==  'l' &&
-                    keywordCheckBuffer[1] ==  'o' &&
-                    keywordCheckBuffer[2] ==  'c' &&
-                    keywordCheckBuffer[3] ==  'k')
+                         keywordCheckBuffer[1] ==  'o' &&
+                         keywordCheckBuffer[2] ==  'c' &&
+                         keywordCheckBuffer[3] ==  'k')
                 {
                     // lock
                     output.ModelModifier.__SetDecorationByteRange(
@@ -1214,8 +1211,6 @@ public static class RazorLexer
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
-                    cSharpPermitted = true;
-                    
                     // Move to start of if statement condition.
                     while (!streamReaderWrap.IsEof)
                     {
@@ -1255,6 +1250,22 @@ public static class RazorLexer
                     if (streamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(streamReaderWrap, output);
+                        
+                        // Skip whitespace
+                        while (!streamReaderWrap.IsEof)
+                        {
+                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                                break;
+                            _ = streamReaderWrap.ReadCharacter();
+                        }
+                        
+                        Console.WriteLine(streamReaderWrap.CurrentCharacter);
+                        SkipCSharpdentifierOrKeyword(
+                            keywordCheckBuffer,
+                            streamReaderWrap,
+                            output,
+                            elsePermitted: true);
+                        
                         return true;
                     }
                     else

@@ -136,7 +136,33 @@ public static class RazorLexer
                             var atCharStartPosition = streamReaderWrap.PositionIndex;
                             var atCharStartByte = streamReaderWrap.ByteIndex;
                             _ = streamReaderWrap.ReadCharacter();
-                            SkipCSharpdentifier(streamReaderWrap);
+                            
+                            if (streamReaderWrap.CurrentCharacter == '(')
+                            {
+                                var matchParenthesis = 0;
+                                while (!streamReaderWrap.IsEof)
+                                {
+                                    if (streamReaderWrap.CurrentCharacter == '(')
+                                    {
+                                        ++matchParenthesis;
+                                    }
+                                    else if (streamReaderWrap.CurrentCharacter == ')')
+                                    {
+                                        --matchParenthesis;
+                                        if (matchParenthesis == 0)
+                                        {
+                                            _ = streamReaderWrap.ReadCharacter();
+                                            break;
+                                        }
+                                    }
+                                    _ = streamReaderWrap.ReadCharacter();
+                                }
+                            }
+                            else
+                            {
+                                SkipCSharpdentifier(streamReaderWrap);
+                            }
+                            
                             output.ModelModifier.__SetDecorationByteRange(
                                 atCharStartPosition,
                                 streamReaderWrap.PositionIndex,

@@ -32,7 +32,7 @@ public partial class CSharpBinder
     /// <summary>
     /// Used by lexer
     /// </summary>
-    public char[] KeywordCheckBuffer { get; } = new char[10];
+    public char[] KeywordCheckBuffer { get; } = new char[18];
 
     /// <summary>This is only safe to use while parsing</summary>
     public NamespaceStatementNode? Pool_NamespaceStatementNode_Instance { get; set; } = new NamespaceStatementNode(

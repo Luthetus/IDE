@@ -150,7 +150,7 @@ public sealed class RazorCompilerService : ICompilerService
             editContext,
             modelModifier);
 
-        var lexerOutput = RazorLexer.Lex(new StreamReaderWrap(sr), modelModifier);
+        var lexerOutput = RazorLexer.Lex(_cSharpCompilerService.__CSharpBinder.KeywordCheckBuffer, new StreamReaderWrap(sr), modelModifier);
     
         lock (_resourceMapLock)
         {

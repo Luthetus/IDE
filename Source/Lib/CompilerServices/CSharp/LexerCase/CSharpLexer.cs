@@ -904,7 +904,6 @@ public static class CSharpLexer
         //
         // The check is only performed for the length of the word, so the indices are always initialized in time.
         // 
-        
     
         var entryPositionIndex = streamReaderWrap.PositionIndex;
         var byteEntryIndex = streamReaderWrap.ByteIndex;

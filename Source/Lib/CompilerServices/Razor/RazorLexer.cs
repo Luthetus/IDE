@@ -14,7 +14,7 @@ public static class RazorLexer
         Expect_AttributeValue,
     }
 
-    public static RazorLexerOutput Lex(StreamReaderWrap streamReaderWrap, TextEditorModel modelModifier)
+    public static RazorLexerOutput Lex(char[] keywordCheckBuffer, StreamReaderWrap streamReaderWrap, TextEditorModel modelModifier)
     {
         var context = RazorLexerContextKind.Expect_TagOrText;
         var output = new RazorLexerOutput(modelModifier);
@@ -136,7 +136,33 @@ public static class RazorLexer
                             var atCharStartPosition = streamReaderWrap.PositionIndex;
                             var atCharStartByte = streamReaderWrap.ByteIndex;
                             _ = streamReaderWrap.ReadCharacter();
-                            SkipCSharpdentifier(streamReaderWrap);
+                            
+                            if (streamReaderWrap.CurrentCharacter == '(')
+                            {
+                                var matchParenthesis = 0;
+                                while (!streamReaderWrap.IsEof)
+                                {
+                                    if (streamReaderWrap.CurrentCharacter == '(')
+                                    {
+                                        ++matchParenthesis;
+                                    }
+                                    else if (streamReaderWrap.CurrentCharacter == ')')
+                                    {
+                                        --matchParenthesis;
+                                        if (matchParenthesis == 0)
+                                        {
+                                            _ = streamReaderWrap.ReadCharacter();
+                                            break;
+                                        }
+                                    }
+                                    _ = streamReaderWrap.ReadCharacter();
+                                }
+                            }
+                            else
+                            {
+                                SkipCSharpdentifier(streamReaderWrap);
+                            }
+                            
                             output.ModelModifier.__SetDecorationByteRange(
                                 atCharStartPosition,
                                 streamReaderWrap.PositionIndex,
@@ -246,7 +272,7 @@ public static class RazorLexer
                                     var wordStartPosition = streamReaderWrap.PositionIndex;
                                     var wordStartByte = streamReaderWrap.ByteIndex;
                                     
-                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(streamReaderWrap, output);
+                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(keywordCheckBuffer, streamReaderWrap, output);
                                     if (!everythingWasHandledForMe)
                                     {
                                         output.ModelModifier.__SetDecorationByteRange(
@@ -351,7 +377,33 @@ public static class RazorLexer
                                 var interpolationStartPosition = streamReaderWrap.PositionIndex;
                                 var interpolationStartByte = streamReaderWrap.ByteIndex;
                                 _ = streamReaderWrap.ReadCharacter();
-                                SkipCSharpdentifier(streamReaderWrap);
+                                
+                                if (streamReaderWrap.CurrentCharacter == '(')
+                                {
+                                    var matchParenthesis = 0;
+                                    while (!streamReaderWrap.IsEof)
+                                    {
+                                        if (streamReaderWrap.CurrentCharacter == '(')
+                                        {
+                                            ++matchParenthesis;
+                                        }
+                                        else if (streamReaderWrap.CurrentCharacter == ')')
+                                        {
+                                            --matchParenthesis;
+                                            if (matchParenthesis == 0)
+                                            {
+                                                _ = streamReaderWrap.ReadCharacter();
+                                                break;
+                                            }
+                                        }
+                                        _ = streamReaderWrap.ReadCharacter();
+                                    }
+                                }
+                                else
+                                {
+                                    SkipCSharpdentifier(streamReaderWrap);
+                                }
+                                
                                 output.ModelModifier.__SetDecorationByteRange(
                                     interpolationStartPosition,
                                     streamReaderWrap.PositionIndex,
@@ -439,7 +491,33 @@ public static class RazorLexer
                                 var interpolationStartPosition = streamReaderWrap.PositionIndex;
                                 var interpolationStartByte = streamReaderWrap.ByteIndex;
                                 _ = streamReaderWrap.ReadCharacter();
-                                SkipCSharpdentifier(streamReaderWrap);
+                                
+                                if (streamReaderWrap.CurrentCharacter == '(')
+                                {
+                                    var matchParenthesis = 0;
+                                    while (!streamReaderWrap.IsEof)
+                                    {
+                                        if (streamReaderWrap.CurrentCharacter == '(')
+                                        {
+                                            ++matchParenthesis;
+                                        }
+                                        else if (streamReaderWrap.CurrentCharacter == ')')
+                                        {
+                                            --matchParenthesis;
+                                            if (matchParenthesis == 0)
+                                            {
+                                                _ = streamReaderWrap.ReadCharacter();
+                                                break;
+                                            }
+                                        }
+                                        _ = streamReaderWrap.ReadCharacter();
+                                    }
+                                }
+                                else
+                                {
+                                    SkipCSharpdentifier(streamReaderWrap);
+                                }
+                                
                                 output.ModelModifier.__SetDecorationByteRange(
                                     interpolationStartPosition,
                                     streamReaderWrap.PositionIndex,
@@ -660,7 +738,8 @@ public static class RazorLexer
                             if (!char.IsLetterOrDigit(streamReaderWrap.CurrentCharacter) &&
                                 streamReaderWrap.CurrentCharacter != '_' &&
                                 streamReaderWrap.CurrentCharacter != '-' &&
-                                streamReaderWrap.CurrentCharacter != ':')
+                                streamReaderWrap.CurrentCharacter != ':' &&
+                                streamReaderWrap.CurrentCharacter != '.')
                             {
                                 break;
                             }
@@ -806,17 +885,56 @@ public static class RazorLexer
     }
     
     /// <summary>
+    /// Some keywords are only available if the preceeding markup is an if statement / etc...
+    /// </summary>
+    public enum SyntaxContinuationKind
+    {
+        None,
+        // @if, else if, else
+        IfStatement,
+        // @try, catch, finally
+        TryStatement,
+    }
+    
+    /// <summary>
     /// When this returns true, then the state of the lexer has entirely changed
     /// and the invoker should disregard any of their previous state and reset it.
     ///
     /// This method when finding a brace deliminated code blocked keyword will entirely lex to the close brace.
     /// </summary>
-    private static bool SkipCSharpdentifierOrKeyword(StreamReaderWrap streamReaderWrap, RazorLexerOutput output)
+    private static bool SkipCSharpdentifierOrKeyword(
+        char[] keywordCheckBuffer,
+        StreamReaderWrap streamReaderWrap,
+        RazorLexerOutput output,
+        SyntaxContinuationKind syntaxContinuationKind = SyntaxContinuationKind.None)
     {
+        // To detect whether a word is an identifier or a keyword:
+        // -------------------------------------------------------
+        // A buffer of CSharpBinder.KeywordCheckBufferSize characters is used as the word is read ('stackalloc' is the longest keyword at 10 characters).
+        // And every character in the word is casted as an int and summed.
+        //
+        // The sum of each char is used as a heuristic for whether the word might be a keyword.
+        // The value isn't unique, but the collisions are minimal enough for this step to be useful.
+        // A switch statement checks whether the word's char sum is equal to that of a known keyword.
+        // 
+        // If the char sum is equal to a keyword, then:
+        // the word's length and the keyword's length are compared.
+        //
+        // If they both have the same length:
+        // a for loop over the buffer is performed to determine
+        // whether every character in the word is truly equal
+        // to the keyword.
+        //
+        // The check is only performed for the length of the word, so the indices are always initialized in time.
+        // 
+    
         var wordStartPosition = streamReaderWrap.PositionIndex;
         var wordStartByte = streamReaderWrap.ByteIndex;
         
+        var lengthCharacter = 0;
         var characterIntSum = 0;
+        
+        int bufferIndex = 0;
     
         while (!streamReaderWrap.IsEof)
         {
@@ -827,21 +945,120 @@ public static class RazorLexer
             }
             
             characterIntSum += (int)streamReaderWrap.CurrentCharacter;
+            ++lengthCharacter;
+            if (bufferIndex < Clair.CompilerServices.CSharp.BinderCase.CSharpBinder.KeywordCheckBufferSize)
+                keywordCheckBuffer[bufferIndex++] = streamReaderWrap.CurrentCharacter;
+                
             _ = streamReaderWrap.ReadCharacter();
         }
         
         switch (characterIntSum)
         {
             case 1189: // addTagHelper
-                break;
+                if (lengthCharacter == 8 &&
+                    keywordCheckBuffer[0] ==  'a' &&
+                    keywordCheckBuffer[1] ==  'd' &&
+                    keywordCheckBuffer[2] ==  'd' &&
+                    keywordCheckBuffer[3] ==  'T' &&
+                    keywordCheckBuffer[4] ==  'a' &&
+                    keywordCheckBuffer[5] ==  'g' &&
+                    keywordCheckBuffer[6] ==  'H' &&
+                    keywordCheckBuffer[7] ==  'e' &&
+                    keywordCheckBuffer[8] ==  'l' &&
+                    keywordCheckBuffer[9] ==  'p' &&
+                    keywordCheckBuffer[10] == 'e' &&
+                    keywordCheckBuffer[11] == 'r')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
             case 980: // attribute
-                break;
+                if (lengthCharacter == 9 &&
+                    keywordCheckBuffer[0] ==  'a' &&
+                    keywordCheckBuffer[1] ==  't' &&
+                    keywordCheckBuffer[2] ==  't' &&
+                    keywordCheckBuffer[3] ==  'r' &&
+                    keywordCheckBuffer[4] ==  'i' &&
+                    keywordCheckBuffer[5] ==  'b' &&
+                    keywordCheckBuffer[6] ==  'u' &&
+                    keywordCheckBuffer[7] ==  't' &&
+                    keywordCheckBuffer[8] ==  'e')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
             case 412: // case
-                break;
+                if (lengthCharacter == 4 &&
+                    keywordCheckBuffer[0] ==  'c' &&
+                    keywordCheckBuffer[1] ==  'a' &&
+                    keywordCheckBuffer[2] ==  's' &&
+                    keywordCheckBuffer[3] ==  'e')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
             case 534: // class
-                break;
+                if (lengthCharacter == 5 &&
+                    keywordCheckBuffer[0] ==  'c' &&
+                    keywordCheckBuffer[1] ==  'l' &&
+                    keywordCheckBuffer[2] ==  'a' &&
+                    keywordCheckBuffer[3] ==  's' &&
+                    keywordCheckBuffer[4] ==  's')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
             case 411: // code
             case 985: // functions
+                var isCode = false;
+                if (lengthCharacter == 4 &&
+                    keywordCheckBuffer[0] ==  'c' &&
+                    keywordCheckBuffer[1] ==  'o' &&
+                    keywordCheckBuffer[2] ==  'd' &&
+                    keywordCheckBuffer[3] ==  'e')
+                {
+                    isCode = true;
+                }
+                
+                var isFunctions = false;
+                if (!isCode &&
+                    lengthCharacter == 9 &&
+                    keywordCheckBuffer[0] ==  'f' &&
+                    keywordCheckBuffer[1] ==  'u' &&
+                    keywordCheckBuffer[2] ==  'n' &&
+                    keywordCheckBuffer[3] ==  'c' &&
+                    keywordCheckBuffer[4] ==  't' &&
+                    keywordCheckBuffer[5] ==  'i' &&
+                    keywordCheckBuffer[6] ==  'o' &&
+                    keywordCheckBuffer[7] ==  'n' &&
+                    keywordCheckBuffer[8] ==  's')
+                {
+                    isFunctions = true;
+                }
+                
+                if (!isCode && !isFunctions)
+                    goto default;
+            
                 output.ModelModifier.__SetDecorationByteRange(
                     wordStartPosition,
                     streamReaderWrap.PositionIndex,
@@ -867,52 +1084,1023 @@ public static class RazorLexer
                     return true;
                 }
             case 741: // default
-                break;
-            case 211: // do
-                break;
-            case 327: // for
-                break;
-            case 728: // foreach
-                break;
-            case 670: // layout
-                break;
-            case 425: // lock
-                break;
-            case 529: // model
-                break;
-            case 413: // page
-                break;
-            case 1945: // preservewhitespace
-                break;
-            case 207: // if
-                break;
-            case 1086: // implements
-                break;
-            case 870: // inherits
-                break;
-            case 637: // inject
-                break;
-            case 941: // namespace
-                break;
-            // !DUPLICATE!:1546
-                case 1546:
-                    // removeTagHelper
-                    // tagHelperPrefix
+                if (lengthCharacter == 7 &&
+                    keywordCheckBuffer[0] ==  'd' &&
+                    keywordCheckBuffer[1] ==  'e' &&
+                    keywordCheckBuffer[2] ==  'f' &&
+                    keywordCheckBuffer[3] ==  'a' &&
+                    keywordCheckBuffer[4] ==  'u' &&
+                    keywordCheckBuffer[5] ==  'l' &&
+                    keywordCheckBuffer[6] ==  't')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
+                }
+                
+                goto default;
+            case 211: // do
+                if (lengthCharacter == 2 &&
+                    keywordCheckBuffer[0] ==  'd' &&
+                    keywordCheckBuffer[1] ==  'o')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of do statement code block.
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    LexCSharpCodeBlock(streamReaderWrap, output);
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    return SkipCSharpdentifierOrKeyword(
+                        keywordCheckBuffer,
+                        streamReaderWrap,
+                        output);
+                    
+                    break;
+                }
+                
+                goto default;
+            case 327: // for
+                if (lengthCharacter == 3 &&
+                    keywordCheckBuffer[0] ==  'f' &&
+                    keywordCheckBuffer[1] ==  'o' &&
+                    keywordCheckBuffer[2] ==  'r')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of for statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of for statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
+            case 728: // foreach
+                if (lengthCharacter == 7 &&
+                    keywordCheckBuffer[0] ==  'f' &&
+                    keywordCheckBuffer[1] ==  'o' &&
+                    keywordCheckBuffer[2] ==  'r' &&
+                    keywordCheckBuffer[3] ==  'e' &&
+                    keywordCheckBuffer[4] ==  'a' &&
+                    keywordCheckBuffer[5] ==  'c' &&
+                    keywordCheckBuffer[6] ==  'h')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of foreach statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of foreach statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
+            case 670: // layout
+                if (lengthCharacter == 6 &&
+                    keywordCheckBuffer[0] ==  'l' &&
+                    keywordCheckBuffer[1] ==  'a' &&
+                    keywordCheckBuffer[2] ==  'y' &&
+                    keywordCheckBuffer[3] ==  'o' &&
+                    keywordCheckBuffer[4] ==  'u' &&
+                    keywordCheckBuffer[5] ==  't')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
+            case 425: // !! DUPLICATES !!
+                if (lengthCharacter != 4)
+                    goto default;
+                
+                if (syntaxContinuationKind == SyntaxContinuationKind.IfStatement &&
+                    keywordCheckBuffer[0] ==  'e' &&
+                    keywordCheckBuffer[1] ==  'l' &&
+                    keywordCheckBuffer[2] ==  's' &&
+                    keywordCheckBuffer[3] ==  'e')
+                {
+                    // else
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of else-if "if" text,
+                    // or to start of 'else' codeblock
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == 'i')
+                        {
+                            return SkipCSharpdentifierOrKeyword(
+                                keywordCheckBuffer,
+                                streamReaderWrap,
+                                output);
+                        }
+                        if (streamReaderWrap.CurrentCharacter == '{')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                else if (keywordCheckBuffer[0] ==  'l' &&
+                         keywordCheckBuffer[1] ==  'o' &&
+                         keywordCheckBuffer[2] ==  'c' &&
+                         keywordCheckBuffer[3] ==  'k')
+                {
+                    // lock
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of lock statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of lock statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        
+                        // Skip whitespace
+                        while (!streamReaderWrap.IsEof)
+                        {
+                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                                break;
+                            _ = streamReaderWrap.ReadCharacter();
+                        }
+                        
+                        SkipCSharpdentifierOrKeyword(
+                            keywordCheckBuffer,
+                            streamReaderWrap,
+                            output,
+                            SyntaxContinuationKind.IfStatement);
+                        
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
+            case 529: // model
+                if (lengthCharacter == 5 &&
+                    keywordCheckBuffer[0] ==  'm' &&
+                    keywordCheckBuffer[1] ==  'o' &&
+                    keywordCheckBuffer[2] ==  'd' &&
+                    keywordCheckBuffer[3] ==  'e' &&
+                    keywordCheckBuffer[4] ==  'l')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
+            case 413: // page
+                if (lengthCharacter == 4 &&
+                    keywordCheckBuffer[0] ==  'p' &&
+                    keywordCheckBuffer[1] ==  'a' &&
+                    keywordCheckBuffer[2] ==  'g' &&
+                    keywordCheckBuffer[3] ==  'e')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
+            case 1945: // preservewhitespace
+                if (lengthCharacter == 18 &&
+                    keywordCheckBuffer[0] ==  'p' &&
+                    keywordCheckBuffer[1] ==  'r' &&
+                    keywordCheckBuffer[2] ==  'e' &&
+                    keywordCheckBuffer[3] ==  's' &&
+                    keywordCheckBuffer[4] ==  'e' &&
+                    keywordCheckBuffer[5] ==  'r' &&
+                    keywordCheckBuffer[6] ==  'v' &&
+                    keywordCheckBuffer[7] ==  'e' &&
+                    keywordCheckBuffer[8] ==  'w' &&
+                    keywordCheckBuffer[9] ==  'h' &&
+                    keywordCheckBuffer[10] ==  'i' &&
+                    keywordCheckBuffer[11] ==  't' &&
+                    keywordCheckBuffer[12] ==  'e' &&
+                    keywordCheckBuffer[13] ==  's' &&
+                    keywordCheckBuffer[14] ==  'p' &&
+                    keywordCheckBuffer[15] ==  'a' &&
+                    keywordCheckBuffer[16] ==  'c' &&
+                    keywordCheckBuffer[17] ==  'e')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
+            case 207: // if
+                if (lengthCharacter == 2 &&
+                    keywordCheckBuffer[0] ==  'i' &&
+                    keywordCheckBuffer[1] ==  'f')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of if statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of if statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        
+                        // Skip whitespace
+                        while (!streamReaderWrap.IsEof)
+                        {
+                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                                break;
+                            _ = streamReaderWrap.ReadCharacter();
+                        }
+                        
+                        SkipCSharpdentifierOrKeyword(
+                            keywordCheckBuffer,
+                            streamReaderWrap,
+                            output,
+                            SyntaxContinuationKind.IfStatement);
+                        
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
+            case 1086: // implements
+                if (lengthCharacter == 10 &&
+                    keywordCheckBuffer[0] ==  'i' &&
+                    keywordCheckBuffer[1] ==  'm' &&
+                    keywordCheckBuffer[2] ==  'p' &&
+                    keywordCheckBuffer[3] ==  'l' &&
+                    keywordCheckBuffer[4] ==  'e' &&
+                    keywordCheckBuffer[5] ==  'm' &&
+                    keywordCheckBuffer[6] ==  'e' &&
+                    keywordCheckBuffer[7] ==  'n' &&
+                    keywordCheckBuffer[8] ==  't' &&
+                    keywordCheckBuffer[9] ==  's')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
+            case 870: // inherits
+                if (lengthCharacter == 8 &&
+                    keywordCheckBuffer[0] ==  'i' &&
+                    keywordCheckBuffer[1] ==  'n' &&
+                    keywordCheckBuffer[2] ==  'h' &&
+                    keywordCheckBuffer[3] ==  'e' &&
+                    keywordCheckBuffer[4] ==  'r' &&
+                    keywordCheckBuffer[5] ==  'i' &&
+                    keywordCheckBuffer[6] ==  't' &&
+                    keywordCheckBuffer[7] ==  's')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
+            case 637: // inject
+                if (lengthCharacter == 6 &&
+                    keywordCheckBuffer[0] ==  'i' &&
+                    keywordCheckBuffer[1] ==  'n' &&
+                    keywordCheckBuffer[2] ==  'j' &&
+                    keywordCheckBuffer[3] ==  'e' &&
+                    keywordCheckBuffer[4] ==  'c' &&
+                    keywordCheckBuffer[5] ==  't')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
+            case 941: // namespace
+                if (lengthCharacter == 9 &&
+                    keywordCheckBuffer[0] ==  'n' &&
+                    keywordCheckBuffer[1] ==  'a' &&
+                    keywordCheckBuffer[2] ==  'm' &&
+                    keywordCheckBuffer[3] ==  'e' &&
+                    keywordCheckBuffer[4] ==  's' &&
+                    keywordCheckBuffer[5] ==  'p' &&
+                    keywordCheckBuffer[6] ==  'a' &&
+                    keywordCheckBuffer[7] ==  'c' &&
+                    keywordCheckBuffer[8] ==  'e')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
+            case 1546: // !! DUPLICATES !!
+                if (lengthCharacter != 15)
+                    goto default;
+                    
+                if (keywordCheckBuffer[0] ==  'r' &&
+                    keywordCheckBuffer[1] ==  'e' &&
+                    keywordCheckBuffer[2] ==  'm' &&
+                    keywordCheckBuffer[3] ==  'o' &&
+                    keywordCheckBuffer[4] ==  'v' &&
+                    keywordCheckBuffer[5] ==  'e' &&
+                    keywordCheckBuffer[6] ==  't' &&
+                    keywordCheckBuffer[7] ==  'a' &&
+                    keywordCheckBuffer[8] ==  'g' &&
+                    keywordCheckBuffer[9] ==  'h' &&
+                    keywordCheckBuffer[10] ==  'e' &&
+                    keywordCheckBuffer[11] ==  'l' &&
+                    keywordCheckBuffer[12] ==  'p' &&
+                    keywordCheckBuffer[13] ==  'e' &&
+                    keywordCheckBuffer[14] ==  'r')
+                {
+                    // removeTagHelper
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                else if (keywordCheckBuffer[0] ==  't' &&
+                         keywordCheckBuffer[1] ==  'a' &&
+                         keywordCheckBuffer[2] ==  'g' &&
+                         keywordCheckBuffer[3] ==  'h' &&
+                         keywordCheckBuffer[4] ==  'e' &&
+                         keywordCheckBuffer[5] ==  'l' &&
+                         keywordCheckBuffer[6] ==  'p' &&
+                         keywordCheckBuffer[7] ==  'e' &&
+                         keywordCheckBuffer[8] ==  'r' &&
+                         keywordCheckBuffer[9] ==  'p' &&
+                         keywordCheckBuffer[10] ==  'r' &&
+                         keywordCheckBuffer[11] ==  'e' &&
+                         keywordCheckBuffer[12] ==  'f' &&
+                         keywordCheckBuffer[13] ==  'i' &&
+                         keywordCheckBuffer[14] ==  'x')
+                {
+                    // tagHelperPrefix
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
             case 1061: // rendermode
-                break;
+                if (lengthCharacter == 10 &&
+                    keywordCheckBuffer[0] ==  'r' &&
+                    keywordCheckBuffer[1] ==  'e' &&
+                    keywordCheckBuffer[2] ==  'n' &&
+                    keywordCheckBuffer[3] ==  'd' &&
+                    keywordCheckBuffer[4] ==  'e' &&
+                    keywordCheckBuffer[5] ==  'r' &&
+                    keywordCheckBuffer[6] ==  'm' &&
+                    keywordCheckBuffer[7] ==  'o' &&
+                    keywordCheckBuffer[8] ==  'd' &&
+                    keywordCheckBuffer[9] ==  'e')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
             case 757: // section
-                break;
+                if (lengthCharacter == 7 &&
+                    keywordCheckBuffer[0] ==  's' &&
+                    keywordCheckBuffer[1] ==  'e' &&
+                    keywordCheckBuffer[2] ==  'c' &&
+                    keywordCheckBuffer[3] ==  't' &&
+                    keywordCheckBuffer[4] ==  'i' &&
+                    keywordCheckBuffer[5] ==  'o' &&
+                    keywordCheckBuffer[6] ==  'n')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
             case 658: // switch
-                break;
+                if (lengthCharacter == 6 &&
+                    keywordCheckBuffer[0] ==  's' &&
+                    keywordCheckBuffer[1] ==  'w' &&
+                    keywordCheckBuffer[2] ==  'i' &&
+                    keywordCheckBuffer[3] ==  't' &&
+                    keywordCheckBuffer[4] ==  'c' &&
+                    keywordCheckBuffer[5] ==  'h')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                        
+                    // Move to start of switch statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of switch statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
             case 351: // try
-                break;
+                if (lengthCharacter == 3 &&
+                    keywordCheckBuffer[0] ==  't' &&
+                    keywordCheckBuffer[1] ==  'r' &&
+                    keywordCheckBuffer[2] ==  'y')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        
+                        // Skip whitespace
+                        while (!streamReaderWrap.IsEof)
+                        {
+                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                                break;
+                            _ = streamReaderWrap.ReadCharacter();
+                        }
+                        
+                        SkipCSharpdentifierOrKeyword(
+                            keywordCheckBuffer,
+                            streamReaderWrap,
+                            output,
+                            SyntaxContinuationKind.TryStatement);
+                        
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
+            case 515: // catch
+                if (syntaxContinuationKind == SyntaxContinuationKind.TryStatement &&
+                    lengthCharacter == 5 &&
+                    keywordCheckBuffer[0] ==  'c' &&
+                    keywordCheckBuffer[1] ==  'a' &&
+                    keywordCheckBuffer[2] ==  't' &&
+                    keywordCheckBuffer[3] ==  'c' &&
+                    keywordCheckBuffer[4] ==  'h')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of catch statement variable declaration.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of if statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        
+                        // Skip whitespace
+                        while (!streamReaderWrap.IsEof)
+                        {
+                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                                break;
+                            _ = streamReaderWrap.ReadCharacter();
+                        }
+                        
+                        SkipCSharpdentifierOrKeyword(
+                            keywordCheckBuffer,
+                            streamReaderWrap,
+                            output,
+                            SyntaxContinuationKind.TryStatement);
+                        
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
+            case 751: // finally
+                if (syntaxContinuationKind == SyntaxContinuationKind.TryStatement &&
+                    lengthCharacter == 7 &&
+                    keywordCheckBuffer[0] ==  'f' &&
+                    keywordCheckBuffer[1] ==  'i' &&
+                    keywordCheckBuffer[2] ==  'n' &&
+                    keywordCheckBuffer[3] ==  'a' &&
+                    keywordCheckBuffer[4] ==  'l' &&
+                    keywordCheckBuffer[5] ==  'l' &&
+                    keywordCheckBuffer[6] ==  'y')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
             case 979: // typeparam
-                break;
+                if (lengthCharacter == 9 &&
+                    keywordCheckBuffer[0] ==  't' &&
+                    keywordCheckBuffer[1] ==  'y' &&
+                    keywordCheckBuffer[2] ==  'p' &&
+                    keywordCheckBuffer[3] ==  'e' &&
+                    keywordCheckBuffer[4] ==  'p' &&
+                    keywordCheckBuffer[5] ==  'a' &&
+                    keywordCheckBuffer[6] ==  'r' &&
+                    keywordCheckBuffer[7] ==  'a' &&
+                    keywordCheckBuffer[8] ==  'm')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    break;
+                }
+                
+                goto default;
             case 550: // using
-                break;
+                if (lengthCharacter == 5 &&
+                    keywordCheckBuffer[0] ==  'u' &&
+                    keywordCheckBuffer[1] ==  's' &&
+                    keywordCheckBuffer[2] ==  'i' &&
+                    keywordCheckBuffer[3] ==  'n' &&
+                    keywordCheckBuffer[4] ==  'g')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                        
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter != '(')
+                        return true;
+                    
+                    // Move one beyond the end of using statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
             case 537: // while
-                break;
+                if (lengthCharacter == 5 &&
+                    keywordCheckBuffer[0] ==  'w' &&
+                    keywordCheckBuffer[1] ==  'h' &&
+                    keywordCheckBuffer[2] ==  'i' &&
+                    keywordCheckBuffer[3] ==  'l' &&
+                    keywordCheckBuffer[4] ==  'e')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of while statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of while statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else if (streamReaderWrap.CurrentCharacter == ';')
+                    {
+                        // This is convenient for the 'do-while' case.
+                        // Albeit probably invalid when it is the 'while' case.
+                        output.ModelModifier.__SetDecorationByteRange(
+                            streamReaderWrap.PositionIndex,
+                            streamReaderWrap.PositionIndex + 1,
+                            (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                        _ = streamReaderWrap.ReadCharacter();
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
             default:
                 break;
         }

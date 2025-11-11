@@ -1021,6 +1021,31 @@ public static class RazorLexer
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of do statement code block.
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    LexCSharpCodeBlock(streamReaderWrap, output);
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    return SkipCSharpdentifierOrKeyword(
+                        keywordCheckBuffer,
+                        streamReaderWrap,
+                        output,
+                        elsePermitted: false);
+                    
                     break;
                 }
                 
@@ -1035,6 +1060,53 @@ public static class RazorLexer
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of for statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of for statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
                     break;
                 }
                 
@@ -1053,6 +1125,53 @@ public static class RazorLexer
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of foreach statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of foreach statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
                     break;
                 }
                 
@@ -1570,6 +1689,64 @@ public static class RazorLexer
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of while statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of while statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else if (streamReaderWrap.CurrentCharacter == ';')
+                    {
+                        // This is convenient for the 'do-while' case.
+                        // Albeit probably invalid when it is the 'while' case.
+                        output.ModelModifier.__SetDecorationByteRange(
+                            streamReaderWrap.PositionIndex,
+                            streamReaderWrap.PositionIndex + 1,
+                            (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                        _ = streamReaderWrap.ReadCharacter();
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
                     break;
                 }
                 

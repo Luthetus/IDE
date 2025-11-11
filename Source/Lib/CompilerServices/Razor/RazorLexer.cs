@@ -1259,7 +1259,6 @@ public static class RazorLexer
                             _ = streamReaderWrap.ReadCharacter();
                         }
                         
-                        Console.WriteLine(streamReaderWrap.CurrentCharacter);
                         SkipCSharpdentifierOrKeyword(
                             keywordCheckBuffer,
                             streamReaderWrap,
@@ -1458,6 +1457,53 @@ public static class RazorLexer
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                        
+                    // Move to start of switch statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of switch statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
                     break;
                 }
                 

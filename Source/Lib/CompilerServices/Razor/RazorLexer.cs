@@ -660,7 +660,8 @@ public static class RazorLexer
                             if (!char.IsLetterOrDigit(streamReaderWrap.CurrentCharacter) &&
                                 streamReaderWrap.CurrentCharacter != '_' &&
                                 streamReaderWrap.CurrentCharacter != '-' &&
-                                streamReaderWrap.CurrentCharacter != ':')
+                                streamReaderWrap.CurrentCharacter != ':' &&
+                                streamReaderWrap.CurrentCharacter != '.')
                             {
                                 break;
                             }
@@ -1894,14 +1895,17 @@ public static class RazorLexer
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    
-                    // Move to start of using statement condition.
+                        
+                    // Skip whitespace
                     while (!streamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
                             break;
                         _ = streamReaderWrap.ReadCharacter();
                     }
+                    
+                    if (streamReaderWrap.CurrentCharacter != '(')
+                        return true;
                     
                     // Move one beyond the end of using statement condition
                     var matchParenthesis = 0;

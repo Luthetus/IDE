@@ -887,7 +887,7 @@ public static class CSharpLexer
     {
         // To detect whether a word is an identifier or a keyword:
         // -------------------------------------------------------
-        // A buffer of 10 characters is used as the word is read ('stackalloc' is the longest keyword at 10 characters).
+        // A buffer of CSharpBinder.KeywordCheckBufferSize characters is used as the word is read ('stackalloc' is the longest keyword at 10 characters).
         // And every character in the word is casted as an int and summed.
         //
         // The sum of each char is used as a heuristic for whether the word might be a keyword.
@@ -921,7 +921,7 @@ public static class CSharpLexer
             }
 
             characterIntSum += (int)streamReaderWrap.CurrentCharacter;
-            if (bufferIndex < 10)
+            if (bufferIndex < CSharpBinder.KeywordCheckBufferSize)
                 binder.KeywordCheckBuffer[bufferIndex++] = streamReaderWrap.CurrentCharacter;
             
             _ = streamReaderWrap.ReadCharacter();

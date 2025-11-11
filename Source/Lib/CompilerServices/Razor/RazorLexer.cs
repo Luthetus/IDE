@@ -25,6 +25,8 @@ public static class RazorLexer
         
         TextEditorTextSpan textSpanOfMostRecentTagOpen = default;
         
+        bool cSharpPermitted = false;
+        
         while (!streamReaderWrap.IsEof)
         {
             switch (streamReaderWrap.CurrentCharacter)
@@ -246,7 +248,7 @@ public static class RazorLexer
                                     var wordStartPosition = streamReaderWrap.PositionIndex;
                                     var wordStartByte = streamReaderWrap.ByteIndex;
                                     
-                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(keywordCheckBuffer, streamReaderWrap, output);
+                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(keywordCheckBuffer, streamReaderWrap, output, ref cSharpPermitted);
                                     if (!everythingWasHandledForMe)
                                     {
                                         output.ModelModifier.__SetDecorationByteRange(
@@ -811,11 +813,15 @@ public static class RazorLexer
     ///
     /// This method when finding a brace deliminated code blocked keyword will entirely lex to the close brace.
     /// </summary>
-    private static bool SkipCSharpdentifierOrKeyword(char[] keywordCheckBuffer, StreamReaderWrap streamReaderWrap, RazorLexerOutput output)
+    private static bool SkipCSharpdentifierOrKeyword(
+        char[] keywordCheckBuffer,
+        StreamReaderWrap streamReaderWrap,
+        RazorLexerOutput output,
+        ref bool cSharpPermitted)
     {
         // To detect whether a word is an identifier or a keyword:
         // -------------------------------------------------------
-        // A buffer of 10 characters is used as the word is read ('stackalloc' is the longest keyword at 10 characters).
+        // A buffer of CSharpBinder.KeywordCheckBufferSize characters is used as the word is read ('stackalloc' is the longest keyword at 10 characters).
         // And every character in the word is casted as an int and summed.
         //
         // The sum of each char is used as a heuristic for whether the word might be a keyword.
@@ -851,7 +857,7 @@ public static class RazorLexer
             
             characterIntSum += (int)streamReaderWrap.CurrentCharacter;
             ++lengthCharacter;
-            if (bufferIndex < 10)
+            if (bufferIndex < Clair.CompilerServices.CSharp.BinderCase.CSharpBinder.KeywordCheckBufferSize)
                 keywordCheckBuffer[bufferIndex++] = streamReaderWrap.CurrentCharacter;
                 
             _ = streamReaderWrap.ReadCharacter();
@@ -1068,13 +1074,68 @@ public static class RazorLexer
                 }
                 
                 goto default;
-            case 425: // lock
-                if (lengthCharacter == 4 &&
-                    keywordCheckBuffer[0] ==  'l' &&
+            case 425: // !! DUPLICATES !!
+                if (lengthCharacter != 4)
+                    goto default;
+                
+                if (keywordCheckBuffer[0] ==  'e' &&
+                    keywordCheckBuffer[1] ==  'l' &&
+                    keywordCheckBuffer[2] ==  's' &&
+                    keywordCheckBuffer[3] ==  'e')
+                {
+                    Console.WriteLine("else");
+                    
+                    // else
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    cSharpPermitted = true;
+                    
+                    // Move to start of else-if "if" text,
+                    // or to start of 'else' codeblock
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == 'i')
+                        {
+                            return SkipCSharpdentifierOrKeyword(
+                                keywordCheckBuffer,
+                                streamReaderWrap,
+                                output,
+                                ref cSharpPermitted);
+                        }
+                        if (streamReaderWrap.CurrentCharacter == '{')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                else if (keywordCheckBuffer[0] ==  'l' &&
                     keywordCheckBuffer[1] ==  'o' &&
                     keywordCheckBuffer[2] ==  'c' &&
                     keywordCheckBuffer[3] ==  'k')
                 {
+                    // lock
                     output.ModelModifier.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
@@ -1152,6 +1213,55 @@ public static class RazorLexer
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    cSharpPermitted = true;
+                    
+                    // Move to start of if statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of if statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
                     break;
                 }
                 

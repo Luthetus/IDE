@@ -285,6 +285,9 @@ public sealed class TextEditorModel
     
     public void ClearContent(int partitionInitialCapacity)
     {
+        if (partitionInitialCapacity <= 0)
+            partitionInitialCapacity = 4;
+        
         MostCharactersOnASingleLineTuple = (0, TextEditorModel.MOST_CHARACTERS_ON_A_SINGLE_ROW_MARGIN);
 
         PartitionList = new List<ValueList<RichCharacter>> { new ValueList<RichCharacter>(capacity: partitionInitialCapacity) };

@@ -32,7 +32,8 @@ public partial class CSharpBinder
     /// <summary>
     /// Used by lexer
     /// </summary>
-    public char[] KeywordCheckBuffer { get; } = new char[18];
+    public const int KeywordCheckBufferSize = 18;
+    public char[] KeywordCheckBuffer { get; } = new char[KeywordCheckBufferSize];
 
     /// <summary>This is only safe to use while parsing</summary>
     public NamespaceStatementNode? Pool_NamespaceStatementNode_Instance { get; set; } = new NamespaceStatementNode(

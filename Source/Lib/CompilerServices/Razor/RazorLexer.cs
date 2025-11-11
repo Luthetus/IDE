@@ -25,8 +25,6 @@ public static class RazorLexer
         
         TextEditorTextSpan textSpanOfMostRecentTagOpen = default;
         
-        bool cSharpPermitted = false;
-        
         while (!streamReaderWrap.IsEof)
         {
             switch (streamReaderWrap.CurrentCharacter)
@@ -248,7 +246,7 @@ public static class RazorLexer
                                     var wordStartPosition = streamReaderWrap.PositionIndex;
                                     var wordStartByte = streamReaderWrap.ByteIndex;
                                     
-                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(keywordCheckBuffer, streamReaderWrap, output, elsePermitted: false);
+                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(keywordCheckBuffer, streamReaderWrap, output);
                                     if (!everythingWasHandledForMe)
                                     {
                                         output.ModelModifier.__SetDecorationByteRange(
@@ -808,6 +806,18 @@ public static class RazorLexer
     }
     
     /// <summary>
+    /// Some keywords are only available if the preceeding markup is an if statement / etc...
+    /// </summary>
+    public enum SyntaxContinuationKind
+    {
+        None,
+        // @if, else if, else
+        IfStatement,
+        // @try, catch, finally
+        TryStatement,
+    }
+    
+    /// <summary>
     /// When this returns true, then the state of the lexer has entirely changed
     /// and the invoker should disregard any of their previous state and reset it.
     ///
@@ -817,7 +827,7 @@ public static class RazorLexer
         char[] keywordCheckBuffer,
         StreamReaderWrap streamReaderWrap,
         RazorLexerOutput output,
-        bool elsePermitted)
+        SyntaxContinuationKind syntaxContinuationKind = SyntaxContinuationKind.None)
     {
         // To detect whether a word is an identifier or a keyword:
         // -------------------------------------------------------
@@ -1043,8 +1053,7 @@ public static class RazorLexer
                     return SkipCSharpdentifierOrKeyword(
                         keywordCheckBuffer,
                         streamReaderWrap,
-                        output,
-                        elsePermitted: false);
+                        output);
                     
                     break;
                 }
@@ -1197,7 +1206,7 @@ public static class RazorLexer
                 if (lengthCharacter != 4)
                     goto default;
                 
-                if (elsePermitted &&
+                if (syntaxContinuationKind == SyntaxContinuationKind.IfStatement &&
                     keywordCheckBuffer[0] ==  'e' &&
                     keywordCheckBuffer[1] ==  'l' &&
                     keywordCheckBuffer[2] ==  's' &&
@@ -1218,8 +1227,7 @@ public static class RazorLexer
                             return SkipCSharpdentifierOrKeyword(
                                 keywordCheckBuffer,
                                 streamReaderWrap,
-                                output,
-                                elsePermitted: false);
+                                output);
                         }
                         if (streamReaderWrap.CurrentCharacter == '{')
                             break;
@@ -1382,7 +1390,7 @@ public static class RazorLexer
                             keywordCheckBuffer,
                             streamReaderWrap,
                             output,
-                            elsePermitted: true);
+                            SyntaxContinuationKind.IfStatement);
                         
                         return true;
                     }
@@ -1637,6 +1645,157 @@ public static class RazorLexer
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        
+                        // Skip whitespace
+                        while (!streamReaderWrap.IsEof)
+                        {
+                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                                break;
+                            _ = streamReaderWrap.ReadCharacter();
+                        }
+                        
+                        SkipCSharpdentifierOrKeyword(
+                            keywordCheckBuffer,
+                            streamReaderWrap,
+                            output,
+                            SyntaxContinuationKind.TryStatement);
+                        
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
+            case 515: // catch
+                if (syntaxContinuationKind == SyntaxContinuationKind.TryStatement &&
+                    lengthCharacter == 5 &&
+                    keywordCheckBuffer[0] ==  'c' &&
+                    keywordCheckBuffer[1] ==  'a' &&
+                    keywordCheckBuffer[2] ==  't' &&
+                    keywordCheckBuffer[3] ==  'c' &&
+                    keywordCheckBuffer[4] ==  'h')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of catch statement variable declaration.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of if statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        
+                        // Skip whitespace
+                        while (!streamReaderWrap.IsEof)
+                        {
+                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                                break;
+                            _ = streamReaderWrap.ReadCharacter();
+                        }
+                        
+                        SkipCSharpdentifierOrKeyword(
+                            keywordCheckBuffer,
+                            streamReaderWrap,
+                            output,
+                            SyntaxContinuationKind.TryStatement);
+                        
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+                
+                goto default;
+            case 751: // finally
+                if (syntaxContinuationKind == SyntaxContinuationKind.TryStatement &&
+                    lengthCharacter == 7 &&
+                    keywordCheckBuffer[0] ==  'f' &&
+                    keywordCheckBuffer[1] ==  'i' &&
+                    keywordCheckBuffer[2] ==  'n' &&
+                    keywordCheckBuffer[3] ==  'a' &&
+                    keywordCheckBuffer[4] ==  'l' &&
+                    keywordCheckBuffer[5] ==  'l' &&
+                    keywordCheckBuffer[6] ==  'y')
+                {
+                    output.ModelModifier.__SetDecorationByteRange(
+                        wordStartPosition,
+                        streamReaderWrap.PositionIndex,
+                        (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
                     break;
                 }
                 
@@ -1673,6 +1832,53 @@ public static class RazorLexer
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+                    
+                    // Move to start of using statement condition.
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Move one beyond the end of using statement condition
+                    var matchParenthesis = 0;
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (streamReaderWrap.CurrentCharacter == '(')
+                        {
+                            ++matchParenthesis;
+                        }
+                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        {
+                            --matchParenthesis;
+                            if (matchParenthesis == 0)
+                            {
+                                _ = streamReaderWrap.ReadCharacter();
+                                break;
+                            }
+                        }
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    // Skip whitespace
+                    while (!streamReaderWrap.IsEof)
+                    {
+                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            break;
+                        _ = streamReaderWrap.ReadCharacter();
+                    }
+                    
+                    if (streamReaderWrap.CurrentCharacter == '{')
+                    {
+                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
                     break;
                 }
                 

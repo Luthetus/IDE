@@ -2182,6 +2182,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return absolutePath.Name;
     }
     
+    private string? textEditorContext_previousParentDirectory_GetRazorNamespace = null;
+    private string? textEditorContext_previousNamespace_GetRazorNamespace = null;
+    
     /// <summary>
     /// TODO: Permit getting the name and the namespace in one invocation?
     /// TODO: Don't copy and paste the namespace calculation code from the .NET solution explorer.
@@ -2190,13 +2193,15 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// TODO: don't StringBuilder allocate inside this
     /// TODO: Root namespace in .csproj
     /// </summary>
-    public string? GetRazorNamespace(int absolutePathId)
+    public string? GetRazorNamespace(int absolutePathId, bool isTextEditorContext)
     {
         if (_absolutePathIdToImplicitNamespaceStringMap.TryGetValue(absolutePathId, out var namespaceString))
             return namespaceString;
         var absolutePathString = TryGetIntToFileAbsolutePathMap(absolutePathId);
         if (absolutePathString is null)
             return null;
+        
+        
         var absolutePath = new AbsolutePath(
             absolutePathString,
             isDirectory: false,
@@ -2206,12 +2211,18 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             AbsolutePathNameKind.NameNoExtension,
             ancestorDirectoryList: _razorGetRazorNamespaceAncestorDirectoryList);
         
+        if (_razorGetRazorNamespaceAncestorDirectoryList.Count > 0 &&
+            _razorGetRazorNamespaceAncestorDirectoryList[^1] == textEditorContext_previousNamespace_GetRazorNamespace)
+        {
+            namespaceString = textEditorContext_previousNamespace_GetRazorNamespace;
+            goto finalize;
+        }
         // Razor ! in sln? => ???
         
         // Track csproj and files in it?
         
         // TODO: GC bad: This will blow up the GC btw
-        _razorNamespaceBuilder.Clear();
+        
         var foundCsproj = false;
         for (int i = _razorGetRazorNamespaceAncestorDirectoryList.Count - 1; i >= 0; i--)
         {
@@ -2258,10 +2269,20 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     .Name);
             }
         }
-        // bathroom
         
         namespaceString = _razorNamespaceBuilder.ToString();
         _absolutePathIdToImplicitNamespaceStringMap.Add(absolutePathId, namespaceString);
+        
+        if (isTextEditorContext && _razorGetRazorNamespaceAncestorDirectoryList.Count > 0)
+        {
+            textEditorContext_previousParentDirectory_GetRazorNamespace = _razorGetRazorNamespaceAncestorDirectoryList[^1];
+            textEditorContext_previousNamespace_GetRazorNamespace = namespaceString;
+        }
+        
+        finalize:
+        _razorNamespaceBuilder.Clear();
+        _razorGetRazorNamespaceAncestorDirectoryList.Clear();
+        
         return namespaceString;
     }
 }

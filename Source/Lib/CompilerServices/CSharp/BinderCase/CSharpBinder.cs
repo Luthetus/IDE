@@ -490,10 +490,13 @@ public sealed partial class CSharpBinder
     /// <summary><see cref="FinalizeCompilationUnit"/></summary>
     public void StartCompilationUnit(int absolutePathId)
     {
+        Console.WriteLine("SCU_Aaa");
         if (TryGetCompilationUnitByAbsolutePathId(absolutePathId, out var previousCompilationUnit))
         {
+            Console.WriteLine($"SCU_Bbb | o{previousCompilationUnit.NamespaceContributionOffset} l{previousCompilationUnit.NamespaceContributionLength}");
             for (int i = previousCompilationUnit.NamespaceContributionOffset + previousCompilationUnit.NamespaceContributionLength - 1; i >= previousCompilationUnit.NamespaceContributionOffset; i--)
             {
+                Console.WriteLine("SCU_Ccc");
                 var namespaceContributionEntry = NamespaceContributionList[i];
                 
                 var tuple = FindNamespaceGroup_Reversed_WithMatchedIndex(
@@ -503,6 +506,7 @@ public sealed partial class CSharpBinder
                 
                 if (tuple.TargetGroup.ConstructorWasInvoked)
                 {
+                    Console.WriteLine("\t\t\tif (tuple.TargetGroup.ConstructorWasInvoked)");
                     for (int removeIndex = tuple.TargetGroup.NamespaceStatementValueList.Count - 1; removeIndex >= 0; removeIndex--)
                     {
                         if (tuple.TargetGroup.NamespaceStatementValueList[removeIndex].AbsolutePathId == absolutePathId)
@@ -515,6 +519,10 @@ public sealed partial class CSharpBinder
                             break;
                         }
                     }
+                }
+                else
+                {
+                    Console.WriteLine("\t\t\telse");
                 }
             }
         }

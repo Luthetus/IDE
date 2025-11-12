@@ -1284,7 +1284,7 @@ public static partial class Parser
         {
             charIntSum += (int)c;
         }
-        
+        // bathroom then compare if implicit vs explicit
         var namespaceIdentifier = new SyntaxToken(
             SyntaxKind.IdentifierToken,
             new TextEditorTextSpan(

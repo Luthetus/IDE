@@ -269,16 +269,23 @@ public sealed partial class CSharpBinder
         TextEditorTextSpan referenceTextSpan,
         TextSourceKind referenceTextSourceKind)
     {
+        var findTuple = NamespaceGroup_FindRange(referenceTextSpan);
+        
         if (referenceTextSpan.Length == "BlazorCrudApp.ServerSide.Pages".Length)
         {
             Console.WriteLine(nameof(FindNamespaceGroup_Reversed_WithMatchedIndex));
-            Console.WriteLine($"\trAPI:{referenceAbsolutePathId} rTS:{referenceTextSpan} rTSK:{referenceTextSourceKind}");
+            Console.WriteLine($"\trAPI:{referenceAbsolutePathId}");
+            Console.WriteLine($"\trTS:{referenceTextSpan}");
+            Console.WriteLine($"\trTSK:{referenceTextSourceKind}");
+            
+            Console.WriteLine($"\tSI:{findTuple.StartIndex}");
+            Console.WriteLine($"\tEI:{findTuple.EndIndex}");
+            Console.WriteLine($"\tII:{findTuple.InsertionIndex}");
         }
-    
-        var findTuple = NamespaceGroup_FindRange(referenceTextSpan);
     
         for (int groupIndex = findTuple.EndIndex - 1; groupIndex >= findTuple.StartIndex; groupIndex--)
         {
+            Console.WriteLine("\t\tloop");
             var targetGroup = _namespaceGroupList[groupIndex];
             if (targetGroup.NamespaceStatementValueList.Count != 0)
             {
@@ -299,10 +306,12 @@ public sealed partial class CSharpBinder
                         referenceTextSpan,
                         referenceTextSourceKind))
                 {
+                    Console.WriteLine("\t\tsuccess");
                     return (targetGroup, groupIndex);
                 }
             }
         }
+        Console.WriteLine("\t\tfin");
         
         return (default, -1);
     }

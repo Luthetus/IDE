@@ -1,4 +1,5 @@
 using Clair.Extensions.CompilerServices.Syntax;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
 using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
 using Clair.TextEditor.RazorLib.CompilerServices;
 using Clair.TextEditor.RazorLib.Lexers.Models;
@@ -88,7 +89,7 @@ public static partial class Parser
                 
                     if (isNamespaceStatement)
                     {
-                        parserModel.AddNamespaceToCurrentScope(textSpan);
+                        parserModel.AddNamespaceToCurrentScope(textSpan, TextSourceKind.Explicit);
                     }
                 //}
                 

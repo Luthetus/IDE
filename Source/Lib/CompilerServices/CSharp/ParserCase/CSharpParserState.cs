@@ -209,9 +209,9 @@ public ref partial struct CSharpParserState
             (byte)GenericDecorationKind.Function);
     }
     
-    public readonly void BindNamespaceStatementNode(NamespaceStatementNode namespaceStatementNode)
+    public readonly void BindNamespaceStatementNode(NamespaceStatementNode namespaceStatementNode, TextSourceKind textSourceKind)
     {
-        var namespaceContributionEntry = new NamespaceContribution(namespaceStatementNode.IdentifierToken.TextSpan);
+        var namespaceContributionEntry = new NamespaceContribution(namespaceStatementNode.IdentifierToken.TextSpan, textSourceKind);
         Binder.NamespaceContributionList.Add(namespaceContributionEntry);
         ++Compilation.NamespaceContributionLength;
 
@@ -459,7 +459,7 @@ public ref partial struct CSharpParserState
 
     public readonly void BindUsingStatementTuple(SyntaxToken usingKeywordToken, SyntaxToken namespaceIdentifierToken)
     {
-        AddNamespaceToCurrentScope(namespaceIdentifierToken.TextSpan);
+        AddNamespaceToCurrentScope(namespaceIdentifierToken.TextSpan, TextSourceKind.Explicit);
     }
     
     public readonly void BindTypeDefinitionNode(TypeDefinitionNode typeDefinitionNode, bool shouldOverwrite = false)
@@ -565,8 +565,9 @@ public ref partial struct CSharpParserState
             {
                 case SyntaxKind.NamespaceStatementNode:
                     var namespaceStatementNode = (NamespaceStatementNode)codeBlockOwner;
-                    AddNamespaceToCurrentScope(namespaceStatementNode.IdentifierToken.TextSpan);
-                    BindNamespaceStatementNode((NamespaceStatementNode)codeBlockOwner);
+                    // TODO: Add vs Bind? Both touch a namespace contribution?
+                    AddNamespaceToCurrentScope(namespaceStatementNode.IdentifierToken.TextSpan, namespaceStatementNode.TextSourceKind);
+                    BindNamespaceStatementNode(namespaceStatementNode, namespaceStatementNode.TextSourceKind);
                     break;
                 case SyntaxKind.TypeDefinitionNode:
                     var typeDefinitionNode = (TypeDefinitionNode)codeBlockOwner;
@@ -604,9 +605,9 @@ public ref partial struct CSharpParserState
         }
     }
 
-    public readonly void AddNamespaceToCurrentScope(TextEditorTextSpan textSpan)
+    public readonly void AddNamespaceToCurrentScope(TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
     {
-        var namespaceContribution = new NamespaceContribution(textSpan);
+        var namespaceContribution = new NamespaceContribution(textSpan, textSourceKind);
 
         if (Binder.CheckAlreadyAddedNamespace(
                 AbsolutePathId,

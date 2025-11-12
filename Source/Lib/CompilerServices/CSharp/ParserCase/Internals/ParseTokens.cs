@@ -636,7 +636,7 @@ public static partial class Parser
                 parserModel.ScopeCurrent.NodeSubIndex];
                 
             parserModel.SetCurrentScope_CodeBlock_EndExclusiveIndex(statementDelimiterToken.TextSpan.EndExclusiveIndex);
-            parserModel.AddNamespaceToCurrentScope(namespaceStatementNode.IdentifierToken.TextSpan);
+            parserModel.AddNamespaceToCurrentScope(namespaceStatementNode.IdentifierToken.TextSpan, TextSourceKind.Explicit);
         }
         else 
         {

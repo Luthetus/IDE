@@ -71,7 +71,8 @@ public sealed partial class CSharpBinder
         TopLevelNamespaceStatementNode = new NamespaceStatementNode(
             new(SyntaxKind.UnrecognizedTokenKeyword, new(0, 0, 0)),
             new(SyntaxKind.IdentifierToken, new(0, 0, 0)),
-            ResourceUri.EmptyAbsolutePathId);
+            ResourceUri.EmptyAbsolutePathId,
+            TextSourceKind.Explicit);
 
         _namespaceGroupList.Add(
             new NamespaceGroup(

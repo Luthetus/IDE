@@ -1298,6 +1298,7 @@ public static partial class Parser
         namespaceStatementNode.KeywordToken = default;
         namespaceStatementNode.IdentifierToken = namespaceIdentifier;
         namespaceStatementNode.AbsolutePathId = parserModel.AbsolutePathId;
+        namespaceStatementNode.TextSourceKind = TextSourceKind.Implicit;
 
         parserModel.SetCurrentNamespaceStatementValue(new NamespaceStatementValue(namespaceStatementNode));
         

@@ -39,7 +39,8 @@ public partial class CSharpBinder
     public NamespaceStatementNode? Pool_NamespaceStatementNode_Instance { get; set; } = new NamespaceStatementNode(
         keywordToken: default,
         identifierToken: default,
-        absolutePathId: default);
+        absolutePathId: default,
+        TextSourceKind.Explicit);
     
     /// <summary>This is only safe to use while parsing</summary>
     public FunctionDefinitionNode? Pool_FunctionDefinitionNode_Instance { get; set; } = new FunctionDefinitionNode(

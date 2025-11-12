@@ -384,7 +384,8 @@ public ref partial struct CSharpParserState
         return new NamespaceStatementNode(
             keywordToken: default,
             identifierToken: default,
-            absolutePathId: AbsolutePathId);
+            absolutePathId: AbsolutePathId,
+            TextSourceKind.Explicit);
     }
 
     /// <summary>

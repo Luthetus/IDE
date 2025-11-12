@@ -2208,6 +2208,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// TODO: Why is csproj ending in .csproj
     /// TODO: @namespace directive
     /// TODO: don't StringBuilder allocate inside this
+    /// TODO: Root namespace in .csproj
     /// </summary>
     public string? GetRazorNamespace(int absolutePathId)
     {

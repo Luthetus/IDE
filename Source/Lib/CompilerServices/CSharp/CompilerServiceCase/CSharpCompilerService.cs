@@ -2234,7 +2234,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 break;
         
             var ancestorDirectory = _razorGetRazorNamespaceAncestorDirectoryList[i];
-            var files = Directory.GetFiles(ancestorDirectory);
+            var files = Directory.EnumerateFiles(ancestorDirectory);
             
             if (i != _razorGetRazorNamespaceAncestorDirectoryList.Count - 1)
                 _razorNamespaceBuilder.Insert(0, '.');

@@ -72,6 +72,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     public readonly List<string> _razorGetRazorNamespaceAncestorDirectoryList = new();
     /// <summary>
     /// If RootNamespace or @namespace directive need to overwrite this.
+    /// As well the 'NamespaceContribution' for the previous compilation's RootNamespace/@namespace directive needs to be cleared.
     /// </summary>
     public readonly Dictionary<int, string> _absolutePathIdToImplicitNamespaceStringMap = new();
 

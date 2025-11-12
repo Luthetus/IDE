@@ -227,15 +227,13 @@ public static class RazorParser
     public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
     {
         var componentName = razorCompilerService._cSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId);
+        Console.WriteLine(componentName);
         
         var charIntSum = 0;
         foreach (var c in componentName)
         {
             charIntSum += (int)c;
         }
-    
-        var hasPartialModifier = true;
-        var accessModifierKind = AccessModifierKind.Public;
     
         var identifierToken = new SyntaxToken(
             SyntaxKind.IdentifierToken,
@@ -247,8 +245,8 @@ public static class RazorParser
                 charIntSum));
         var typeDefinitionNode = parserModel.Rent_TypeDefinitionNode();
         
-        typeDefinitionNode.AccessModifierKind = accessModifierKind;
-        typeDefinitionNode.HasPartialModifier = hasPartialModifier;
+        typeDefinitionNode.AccessModifierKind = AccessModifierKind.Public;
+        typeDefinitionNode.HasPartialModifier = true;
         typeDefinitionNode.StorageModifierKind = StorageModifierKind.Class;
         typeDefinitionNode.TypeIdentifierToken = identifierToken;
         typeDefinitionNode.OpenAngleBracketToken = default;
@@ -268,11 +266,16 @@ public static class RazorParser
                     parserModel.ScopeCurrentSubIndex,
                     parserModel.AbsolutePathId,
                     identifierToken.TextSpan,
-                    TextSourceKind.Explicit,
+                    TextSourceKind.Implicit,
                     out SyntaxNodeValue previousTypeDefinitionNode))
             {
+                Console.WriteLine("success");
                 var typeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];
                 typeDefinitionNode.IndexPartialTypeDefinition = typeDefinitionMetadata.IndexPartialTypeDefinition;
+            }
+            else
+            {
+                Console.WriteLine("fail");
             }
         }
         

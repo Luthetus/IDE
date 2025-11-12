@@ -820,6 +820,7 @@ public ref partial struct CSharpParserState
                 {
                     continue;
                 }
+
                 if (CompareTypeNames(
                         definitionAbsolutePathId,
                         definitionValue,
@@ -845,6 +846,7 @@ public ref partial struct CSharpParserState
                     {
                         continue;
                     }
+
                     if (CompareTypeNames(
                             externalDefinitionNode.AbsolutePathId,
                             externalDefinitionNode,
@@ -893,9 +895,11 @@ public ref partial struct CSharpParserState
         if (Binder.TypeDefinitionTraitsList[definitionValue.TraitsIndex].TextSourceKind == TextSourceKind.Implicit)
         {
             var definitionName = Binder.CSharpCompilerService.GetRazorComponentName(definitionAbsolutePathId);
+            Console.WriteLine($"dn:{definitionName}");
             if (referenceTextSourceKind == TextSourceKind.Implicit)
             {
                 var referenceName = Binder.CSharpCompilerService.GetRazorComponentName(referenceAbsolutePathId);
+                Console.WriteLine($"rn:{referenceName}");
                 if (definitionName == referenceName)
                     return true;
             }
@@ -908,6 +912,7 @@ public ref partial struct CSharpParserState
         else if (referenceTextSourceKind == TextSourceKind.Implicit)
         {
             var referenceName = Binder.CSharpCompilerService.GetRazorComponentName(referenceAbsolutePathId);
+            Console.WriteLine($"rn:{referenceName}");
             if (Binder.CSharpCompilerService.SafeCompareText(definitionAbsolutePathId, referenceName, definitionValue.IdentifierToken.TextSpan))
                 return true;
         }

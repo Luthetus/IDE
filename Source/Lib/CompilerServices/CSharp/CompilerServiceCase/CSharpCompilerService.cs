@@ -2258,6 +2258,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                     .Name);
             }
         }
+        // bathroom
         
         namespaceString = _razorNamespaceBuilder.ToString();
         _absolutePathIdToImplicitNamespaceStringMap.Add(absolutePathId, namespaceString);

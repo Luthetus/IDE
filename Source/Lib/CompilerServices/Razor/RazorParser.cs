@@ -294,19 +294,25 @@ public static class RazorParser
         
         Console.WriteLine(GetRazorComponentName(ref parserModel, razorCompilerService));
         
+        Console.WriteLine("a");
         if (typeDefinitionNode.HasPartialModifier)
         {
+            Console.WriteLine("b");
             if (typeDefinitionNode.IndexPartialTypeDefinition == -1)
             {
+                Console.WriteLine("c");
                 if (parserModel.Binder.__CompilationUnitMap.TryGetValue(parserModel.AbsolutePathId, out var previousCompilationUnit))
                 {
+                    Console.WriteLine("d");
                     if (typeDefinitionNode.ParentScopeSubIndex < previousCompilationUnit.ScopeLength)
                     {
+                        Console.WriteLine("e");
                         var previousParent = parserModel.Binder.ScopeList[previousCompilationUnit.ScopeOffset + typeDefinitionNode.ParentScopeSubIndex];
                         var currentParent = parserModel.GetParent(typeDefinitionNode.ParentScopeSubIndex, parserModel.Compilation);
                         
                         if (currentParent.OwnerSyntaxKind == previousParent.OwnerSyntaxKind)
                         {
+                            Console.WriteLine("f");
                             var currentParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
                                 parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].AbsolutePathId,
                                 parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].IdentifierToken.TextSpan);

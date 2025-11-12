@@ -70,6 +70,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     public readonly StringBuilder _razorComponentNameFormattedBuilder = new();
     public readonly StringBuilder _razorNamespaceBuilder = new();
     public readonly List<string> _razorGetRazorNamespaceAncestorDirectoryList = new();
+    public readonly Dictionary<int, string> _absolutePathIdToImplicitNamespaceStringMap = new();
 
     /// <summary>
     /// unsafe vs safe are duplicates of the same code
@@ -2191,6 +2192,8 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// </summary>
     public string? GetRazorNamespace(int absolutePathId)
     {
+        if (_absolutePathIdToImplicitNamespaceStringMap.TryGetValue(absolutePathId, out var namespaceString))
+            return namespaceString;
         var absolutePathString = TryGetIntToFileAbsolutePathMap(absolutePathId);
         if (absolutePathString is null)
             return null;
@@ -2256,7 +2259,8 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             }
         }
         
-        var namespaceString = _razorNamespaceBuilder.ToString();
+        namespaceString = _razorNamespaceBuilder.ToString();
+        _absolutePathIdToImplicitNamespaceStringMap.Add(absolutePathId, namespaceString);
         return namespaceString;
     }
 }

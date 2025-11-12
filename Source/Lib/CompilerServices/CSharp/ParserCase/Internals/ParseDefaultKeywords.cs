@@ -1099,7 +1099,7 @@ public static partial class Parser
                     _ = parserModel.TokenWalker.Consume(); // Consume the CommaToken
                 
                     var consumeCounter = parserModel.TokenWalker.ConsumeCounter;
-                    
+                    //bathroom/food
                     _ = Parser.MatchTypeClause(ref parserModel);
                     // parserModel.BindTypeClauseNode();
                     

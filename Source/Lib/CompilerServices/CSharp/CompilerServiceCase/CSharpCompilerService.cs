@@ -66,6 +66,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     
     public TextEditorService TextEditorService => _textEditorService;
 
+    public readonly StringBuilder _razorComponentNameTokenBuilder = new();
+    public readonly StringBuilder _razorComponentNameFormattedBuilder = new();
+
     /// <summary>
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
@@ -2156,5 +2159,20 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             return __CSharpBinder.GetIdentifierText(node, absolutePathId, compilationUnit) ?? string.Empty;
     
         return string.Empty;
+    }
+    
+    public string? GetRazorComponentName(int absolutePathId)
+    {
+        var absolutePathString = TryGetIntToFileAbsolutePathMap(absolutePathId);
+        if (absolutePathString is null)
+            return null;
+        var absolutePath = new AbsolutePath(
+            absolutePathString,
+            isDirectory: false,
+            _textEditorService.CommonService.FileSystemProvider,
+            _razorComponentNameTokenBuilder,
+            _razorComponentNameFormattedBuilder,
+            AbsolutePathNameKind.NameNoExtension);
+        return absolutePath.Name;
     }
 }

@@ -224,7 +224,7 @@ public static class RazorParser
     
     public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
     {
-        var componentName = GetRazorComponentName(ref parserModel, razorCompilerService);
+        var componentName = razorCompilerService._cSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId);
         
         var charIntSum = 0;
         foreach (var c in componentName)
@@ -339,7 +339,7 @@ public static class RazorParser
                                         binder.CSharpCompilerService.SafeGetText(
                                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].AbsolutePathId,
                                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].IdentifierToken.TextSpan) ==
-                                            GetRazorComponentName(ref parserModel, razorCompilerService))
+                                            razorCompilerService._cSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId))
                                     {
                                         previousNode = parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex];
                                         break;
@@ -400,20 +400,6 @@ public static class RazorParser
         }
         
         parserModel.Return_TypeDefinitionNode(typeDefinitionNode);
-    }
-    
-    public static string GetRazorComponentName(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
-    {
-        var absolutePathString = parserModel.Binder.CSharpCompilerService.TryGetIntToFileAbsolutePathMap(parserModel.AbsolutePathId);
-        
-        var absolutePath = new AbsolutePath(
-            absolutePathString,
-            isDirectory: false,
-            razorCompilerService._textEditorService.CommonService.FileSystemProvider,
-            razorCompilerService._razorComponentNameTokenBuilder,
-            razorCompilerService._razorComponentNameFormattedBuilder,
-            AbsolutePathNameKind.NameNoExtension);
-        return absolutePath.Name;
     }
 }
 

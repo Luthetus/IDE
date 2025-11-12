@@ -18,15 +18,12 @@ namespace Clair.CompilerServices.Razor;
 public sealed class RazorCompilerService : ICompilerService
 {
     public readonly TextEditorService _textEditorService;
-    private readonly CSharpCompilerService _cSharpCompilerService;
+    public readonly CSharpCompilerService _cSharpCompilerService;
     
     /// <summary>
     /// Cannot use shared for both the razor and the C#.
     /// </summary>
     private readonly StringWalker _htmlStringWalker = new();
-    
-    public readonly StringBuilder _razorComponentNameTokenBuilder = new();
-    public readonly StringBuilder _razorComponentNameFormattedBuilder = new();
 
     public RazorCompilerService(
         TextEditorService textEditorService,

@@ -46,6 +46,8 @@ public static class RazorParser
             tokenWalkerBuffer,
             absolutePathId,
             ref compilationUnit);
+            
+        CreateRazorPartialClass(ref parserModel);
         
         while (true)
         {
@@ -214,6 +216,11 @@ public static class RazorParser
         parserModel.Binder.FinalizeCompilationUnit(parserModel.AbsolutePathId, compilationUnit);
         
         // Console.WriteLine("========\n");
+    }
+    
+    public void CreateRazorPartialClass(ref CSharpParserState parserModel)
+    {
+        
     }
 }
 

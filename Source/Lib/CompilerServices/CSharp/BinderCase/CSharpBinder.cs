@@ -542,6 +542,25 @@ public sealed partial class CSharpBinder
         {
             _  = Pool_ConstructorInvocationExpressionNode_Queue.Dequeue();
         }
+        
+        Console.WriteLine("\n\n=================");
+        Console.WriteLine($"_namespaceGroupList.Count:{_namespaceGroupList.Count}");
+        foreach (var namespaceGroup in _namespaceGroupList)
+        {
+            Console.WriteLine($"\tcis:{namespaceGroup.CharIntSum} NStatementValueList.Count:{namespaceGroup.NamespaceStatementValueList.Count}");
+            foreach (var statement in namespaceGroup.NamespaceStatementValueList)
+            {
+                //Console.WriteLine($"\t\tKT:{statement.KeywordToken}");
+                
+                Console.WriteLine($"\t\tIT:{statement.IdentifierToken}");
+                Console.WriteLine($"\t\t\tIT_TS_CIS:{statement.IdentifierToken.TextSpan.CharIntSum}");
+                
+                Console.WriteLine($"\t\tKT:{statement.AbsolutePathId}");
+                Console.WriteLine($"\t\tKT:{statement.ParentScopeSubIndex}");
+                Console.WriteLine($"\t\tKT:{statement.SelfScopeSubIndex}");
+            }
+        }
+        Console.WriteLine("=================\n");
     }
     
     /// <summary>This also clears any pooled lists.</summary>

@@ -17,13 +17,16 @@ namespace Clair.CompilerServices.Razor;
 
 public sealed class RazorCompilerService : ICompilerService
 {
-    private readonly TextEditorService _textEditorService;
+    public readonly TextEditorService _textEditorService;
     private readonly CSharpCompilerService _cSharpCompilerService;
     
     /// <summary>
     /// Cannot use shared for both the razor and the C#.
     /// </summary>
     private readonly StringWalker _htmlStringWalker = new();
+    
+    public readonly StringBuilder _razorComponentNameTokenBuilder = new();
+    public readonly StringBuilder _razorComponentNameFormattedBuilder = new();
 
     public RazorCompilerService(
         TextEditorService textEditorService,
@@ -158,7 +161,7 @@ public sealed class RazorCompilerService : ICompilerService
                 shouldUseSharedStringWalker: true);
             
             _cSharpCompilerService.__CSharpBinder.StartCompilationUnit(absolutePathId);
-            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder);
+            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
         }
         finally
         {
@@ -224,7 +227,7 @@ public sealed class RazorCompilerService : ICompilerService
 
             _cSharpCompilerService.FastParseTuple = (absolutePathId, parser_sr);
             _cSharpCompilerService.__CSharpBinder.StartCompilationUnit(absolutePathId);
-            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder);
+            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
         }
         finally
         {

@@ -1,3 +1,4 @@
+using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.TextEditor.RazorLib.Exceptions;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.Extensions.CompilerServices.Syntax;
@@ -12,7 +13,12 @@ namespace Clair.CompilerServices.Razor;
 
 public static class RazorParser
 {
-    public static void Parse(int absolutePathId, TokenWalkerBuffer tokenWalkerBuffer, ref CSharpCompilationUnit compilationUnit, CSharpBinder binder)
+    public static void Parse(
+        int absolutePathId,
+        TokenWalkerBuffer tokenWalkerBuffer,
+        ref CSharpCompilationUnit compilationUnit,
+        CSharpBinder binder,
+        RazorCompilerService razorCompilerService)
     {
         /*
         Any state that is "pooled" and cleared at the start of every Parse(...) invocation
@@ -49,7 +55,7 @@ public static class RazorParser
             absolutePathId,
             ref compilationUnit);
             
-        CreateRazorPartialClass(ref parserModel);
+        CreateRazorPartialClass(ref parserModel, razorCompilerService);
         
         while (true)
         {
@@ -220,8 +226,10 @@ public static class RazorParser
         // Console.WriteLine("========\n");
     }
     
-    public static void CreateRazorPartialClass(ref CSharpParserState parserModel)
+    public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
     {
+        Console.WriteLine(nameof(CreateRazorPartialClass));
+        
         var hasPartialModifier = true;
         var accessModifierKind = AccessModifierKind.Public;
     
@@ -284,6 +292,8 @@ public static class RazorParser
         
         parserModel.SetCurrentScope_IsImplicitOpenCodeBlockTextSpan(false);
         
+        Console.WriteLine(GetRazorComponentName(ref parserModel, razorCompilerService));
+        
         if (typeDefinitionNode.HasPartialModifier)
         {
             if (typeDefinitionNode.IndexPartialTypeDefinition == -1)
@@ -329,7 +339,7 @@ public static class RazorParser
                                         binder.CSharpCompilerService.SafeGetText(
                                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].AbsolutePathId,
                                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].IdentifierToken.TextSpan) ==
-                                            binder.GetIdentifierText(typeDefinitionNode, parserModel.AbsolutePathId, compilation))
+                                            GetRazorComponentName(ref parserModel, razorCompilerService))
                                     {
                                         previousNode = parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex];
                                         break;
@@ -385,9 +395,29 @@ public static class RazorParser
         }
     
         if (typeDefinitionNode.HasPartialModifier)
+        {
+            Console.WriteLine(nameof(Parser.HandlePartialTypeDefinition));
             Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel);
-    
+            
+            Console.WriteLine(typeDefinitionNode.IndexPartialTypeDefinition);
+        }
+        
         parserModel.Return_TypeDefinitionNode(typeDefinitionNode);
+    }
+    
+    public static string GetRazorComponentName(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
+    {
+        var absolutePathString = parserModel.Binder.CSharpCompilerService.TryGetIntToFileAbsolutePathMap(parserModel.AbsolutePathId);
+        
+        var absolutePath = new AbsolutePath(
+            absolutePathString,
+            isDirectory: false,
+            razorCompilerService._textEditorService.CommonService.FileSystemProvider,
+            razorCompilerService._razorComponentNameTokenBuilder,
+            razorCompilerService._razorComponentNameFormattedBuilder,
+            AbsolutePathNameKind.NameNoExtension);
+        Console.WriteLine(absolutePath.Name);
+        return absolutePath.Name;
     }
 }
 

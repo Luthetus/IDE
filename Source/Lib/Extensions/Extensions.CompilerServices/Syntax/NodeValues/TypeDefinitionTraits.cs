@@ -22,6 +22,8 @@ public struct TypeDefinitionTraits
         OffsetFunctionArgumentEntryList = typeDefinitionNode.OffsetFunctionArgumentEntryList;
         LengthFunctionArgumentEntryList = typeDefinitionNode.LengthFunctionArgumentEntryList;
         CloseParenthesisToken = typeDefinitionNode.CloseParenthesisToken;
+        
+        TextSourceKind = typeDefinitionNode.TextSourceKind;
     }
 
     public TypeDefinitionTraits(
@@ -37,7 +39,8 @@ public struct TypeDefinitionTraits
         SyntaxToken openParenthesisToken,
         int offsetFunctionArgumentEntryList,
         int lengthFunctionArgumentEntryList,
-        SyntaxToken closeParenthesisToken)
+        SyntaxToken closeParenthesisToken,
+        TextSourceKind textSourceKind)
     {
         IndexPartialTypeDefinition = indexPartialTypeDefinition;
         InheritedTypeReference = inheritedTypeReference;
@@ -54,6 +57,8 @@ public struct TypeDefinitionTraits
         OffsetFunctionArgumentEntryList = offsetFunctionArgumentEntryList;
         LengthFunctionArgumentEntryList = lengthFunctionArgumentEntryList;
         CloseParenthesisToken = closeParenthesisToken;
+    
+        TextSourceKind = textSourceKind;
     }
 
     public int IndexPartialTypeDefinition { get; set; } = -1;
@@ -71,4 +76,6 @@ public struct TypeDefinitionTraits
     public int OffsetFunctionArgumentEntryList { get; set; }
     public int LengthFunctionArgumentEntryList { get; set; }
     public SyntaxToken CloseParenthesisToken { get; set; }
+    
+    public TextSourceKind TextSourceKind { get; set; }
 }

@@ -1086,6 +1086,7 @@ public static partial class Parser
                 parserModel.ScopeCurrentSubIndex,
                 parserModel.AbsolutePathId,
                 token.TextSpan,
+                TextSourceKind.Explicit,
                 out var typeDefinitionNode);
         
         var typeClauseNode = UtilityApi.ConvertTokenToTypeClauseNode(ref token, ref parserModel);
@@ -1202,6 +1203,7 @@ public static partial class Parser
                     parserModel.ScopeCurrentSubIndex,
                     parserModel.AbsolutePathId,
                     ambiguousIdentifierNode.Token.TextSpan,
+                    TextSourceKind.Explicit,
                     out var typeDefinitionNode))
             {
                 var token = ambiguousIdentifierNode.Token;
@@ -3567,6 +3569,7 @@ public static partial class Parser
                                 scope.SelfScopeSubIndex,
                                 innerAbsolutePathId,
                                 typeReference.ExplicitDefinitionTextSpan,
+                                TextSourceKind.Explicit,
                                 out var innerTypeDefinitionNode))
                         {
                             typeDefinitionNode = innerTypeDefinitionNode;
@@ -3608,6 +3611,7 @@ public static partial class Parser
                             scope.SelfScopeSubIndex,
                             parserModel.AbsolutePathId,
                             typeReference.TypeIdentifierToken.TextSpan,
+                            TextSourceKind.Explicit,
                             out var innerTypeDefinitionNode))
                     {
                         typeDefinitionNode = innerTypeDefinitionNode;

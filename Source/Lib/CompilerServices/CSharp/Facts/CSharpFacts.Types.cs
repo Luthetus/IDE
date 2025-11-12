@@ -46,7 +46,8 @@ public partial class CSharpFacts
                 openParenthesisToken: default,
                 offsetFunctionArgumentEntryList: -1,
                 lengthFunctionArgumentEntryList: 0,
-                closeParenthesisToken: default);            VoidTypeReferenceValue = new TypeReferenceValue(                VoidValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
+                closeParenthesisToken: default,
+                TextSourceKind.Explicit);            VoidTypeReferenceValue = new TypeReferenceValue(                VoidValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
             {
                 ExplicitDefinitionTextSpan = VoidValue.IdentifierToken.TextSpan,
                 ExplicitDefinitionAbsolutePathId = VoidValue.AbsolutePathId
@@ -60,7 +61,8 @@ public partial class CSharpFacts
                 openParenthesisToken: default,
                 offsetFunctionArgumentEntryList: -1,
                 lengthFunctionArgumentEntryList: 0,
-                closeParenthesisToken: default);            IntTypeReferenceValue = new TypeReferenceValue(                IntValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
+                closeParenthesisToken: default,
+                TextSourceKind.Explicit);            IntTypeReferenceValue = new TypeReferenceValue(                IntValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
             {
                 ExplicitDefinitionTextSpan = IntValue.IdentifierToken.TextSpan,
                 ExplicitDefinitionAbsolutePathId = IntValue.AbsolutePathId
@@ -74,7 +76,8 @@ public partial class CSharpFacts
                 openParenthesisToken: default,
                 offsetFunctionArgumentEntryList: -1,
                 lengthFunctionArgumentEntryList: 0,
-                closeParenthesisToken: default);            CharTypeReferenceValue = new TypeReferenceValue(                CharValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
+                closeParenthesisToken: default,
+                TextSourceKind.Explicit);            CharTypeReferenceValue = new TypeReferenceValue(                CharValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
             {
                 ExplicitDefinitionTextSpan = CharValue.IdentifierToken.TextSpan,
                 ExplicitDefinitionAbsolutePathId = CharValue.AbsolutePathId
@@ -88,7 +91,8 @@ public partial class CSharpFacts
                 openParenthesisToken: default,
                 offsetFunctionArgumentEntryList: -1,
                 lengthFunctionArgumentEntryList: 0,
-                closeParenthesisToken: default);            StringTypeReferenceValue = new TypeReferenceValue(                StringValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
+                closeParenthesisToken: default,
+                TextSourceKind.Explicit);            StringTypeReferenceValue = new TypeReferenceValue(                StringValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
             {
                 ExplicitDefinitionTextSpan = StringValue.IdentifierToken.TextSpan,
                 ExplicitDefinitionAbsolutePathId = StringValue.AbsolutePathId
@@ -103,7 +107,8 @@ public partial class CSharpFacts
                 openParenthesisToken: default,
                 offsetFunctionArgumentEntryList: -1,
                 lengthFunctionArgumentEntryList: 0,
-                closeParenthesisToken: default);            BoolTypeReferenceValue = new TypeReferenceValue(                BoolValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
+                closeParenthesisToken: default,
+                TextSourceKind.Explicit);            BoolTypeReferenceValue = new TypeReferenceValue(                BoolValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
             {
                 ExplicitDefinitionTextSpan = BoolValue.IdentifierToken.TextSpan,
                 ExplicitDefinitionAbsolutePathId = BoolValue.AbsolutePathId
@@ -116,7 +121,8 @@ public partial class CSharpFacts
                 openParenthesisToken: default,
                 offsetFunctionArgumentEntryList: -1,
                 lengthFunctionArgumentEntryList: 0,
-                closeParenthesisToken: default);            VarTypeReferenceValue = new TypeReferenceValue(                VarValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
+                closeParenthesisToken: default,
+                TextSourceKind.Explicit);            VarTypeReferenceValue = new TypeReferenceValue(                VarValue.IdentifierToken,                openAngleBracketToken: default,                offsetGenericParameterEntryList: -1,                lengthGenericParameterEntryList: 0,                closeAngleBracketToken: default,                isKeywordType: true,                TypeKind.None,                hasQuestionMark: false,                arrayRank: 0,                isFabricated: false)
             {
                 ExplicitDefinitionTextSpan = VarValue.IdentifierToken.TextSpan,
                 ExplicitDefinitionAbsolutePathId = VarValue.AbsolutePathId

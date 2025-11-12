@@ -810,6 +810,12 @@ public ref partial struct CSharpParserState
             if (definitionValue.ParentScopeSubIndex == definitionScopeSubIndex &&
                 definitionValue.SyntaxKind == SyntaxKind.TypeDefinitionNode)
             {
+                // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+                if (definitionValue.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+                    definitionValue.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+                {
+                    continue;
+                }
                 if (CompareTypeNames(
                         definitionAbsolutePathId,
                         definitionValue,
@@ -829,6 +835,12 @@ public ref partial struct CSharpParserState
             {
                 foreach (var externalDefinitionNode in ExternalTypeDefinitionList)
                 {
+                    // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+                    if (externalDefinitionNode.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+                        externalDefinitionNode.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+                    {
+                        continue;
+                    }
                     if (CompareTypeNames(
                             externalDefinitionNode.AbsolutePathId,
                             externalDefinitionNode,
@@ -854,6 +866,19 @@ public ref partial struct CSharpParserState
         }
     }
     
+    /// <summary>
+    /// You need to put:
+    /// ```csharp
+    /// // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+    /// if (definitionValue.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+    ///     definitionValue.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+    /// {
+    ///     continue;
+    /// }
+    /// ```
+    ///
+    /// Prior to the invocation because the method cannot continue the invoker's loop.
+    /// </summary>
     private bool CompareTypeNames(
         int definitionAbsolutePathId,
         SyntaxNodeValue definitionValue,
@@ -861,13 +886,6 @@ public ref partial struct CSharpParserState
         TextEditorTextSpan referenceTextSpan,
         TextSourceKind referenceTextSourceKind)
     {
-        // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
-        if (definitionValue.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
-            definitionValue.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
-        {
-            continue;
-        }
-        
         if (Binder.TypeDefinitionTraitsList[definitionValue.TraitsIndex].TextSourceKind == TextSourceKind.Implicit)
         {
             var definitionName = Binder.CSharpCompilerService.GetRazorComponentName(definitionAbsolutePathId);
@@ -1183,6 +1201,7 @@ public ref partial struct CSharpParserState
                                 typeDefinitionScopeIndexKey.SelfScopeSubIndex,
                                 typeDefinitionAbsolutePathId,
                                 typeDefinitionTextSpan,
+                                TextSourceKind.Explicit,
                                 out var inheritedTypeDefinitionValue))
                         {
                             if (!inheritedTypeDefinitionValue.IsDefault())

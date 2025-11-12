@@ -941,6 +941,7 @@ public static partial class Parser
                     parserModel.ScopeCurrentSubIndex,
                     parserModel.AbsolutePathId,
                     identifierToken.TextSpan,
+                    TextSourceKind.Explicit,
                     out SyntaxNodeValue previousTypeDefinitionNode))
             {
                 var typeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];

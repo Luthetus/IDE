@@ -1279,7 +1279,6 @@ public static partial class Parser
     
     public static void implicit_HandleNamespaceTokenKeyword(ref CSharpParserState parserModel, string namespaceString)
     {
-        //Console.WriteLine(namespaceString);
         var charIntSum = 0;
         foreach (var c in namespaceString)
         {

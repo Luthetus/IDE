@@ -211,14 +211,9 @@ public ref partial struct CSharpParserState
     
     public readonly void BindNamespaceStatementNode(NamespaceStatementNode namespaceStatementNode)
     {
-        //Console.WriteLine($"{AbsolutePathId} | {Binder.CSharpCompilerService.SafeGetText(AbsolutePathId, namespaceStatementNode.IdentifierToken.TextSpan)}");
-        //Console.WriteLine($"\t{namespaceStatementNode.IdentifierToken.TextSpan.CharIntSum}");
-        //Console.WriteLine($"\t{namespaceStatementNode.TextSourceKind}");
-    
         var namespaceContributionEntry = new NamespaceContribution(namespaceStatementNode.IdentifierToken.TextSpan, namespaceStatementNode.TextSourceKind);
         Binder.NamespaceContributionList.Add(namespaceContributionEntry);
         ++Compilation.NamespaceContributionLength;
-        //Console.WriteLine($"ncl:{Compilation.NamespaceContributionLength}");
 
         var tuple = Binder.FindNamespaceGroup_Reversed_WithMatchedIndex(
             AbsolutePathId,

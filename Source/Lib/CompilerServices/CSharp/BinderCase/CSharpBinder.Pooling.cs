@@ -72,7 +72,7 @@ public partial class CSharpBinder
         closeParenthesisToken: default,
         inheritedTypeReference: Clair.Extensions.CompilerServices.TypeFacts.NotApplicable.ToTypeReference(),
         absolutePathId: default,
-        isCSharpFile: true);
+        TextSourceKind.Explicit);
 
     /// <summary>This is only safe to use while parsing</summary>
     public ConstructorDefinitionNode? Pool_ConstructorDefinitionNode_Instance { get; set; } = new ConstructorDefinitionNode(

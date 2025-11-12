@@ -68,7 +68,7 @@ public static class TypeFacts
         closeParenthesisToken: default,
         inheritedTypeReference: _notApplicableTypeReference,
         ResourceUri.EmptyAbsolutePathId,
-        isCSharpFile: true
+        TextSourceKind.Explicit
         // FindAllReferences
         // , referenceHashSet: new()
         );
@@ -96,7 +96,7 @@ public static class TypeFacts
         closeParenthesisToken: default,
         inheritedTypeReference: _notApplicableTypeReference,
         ResourceUri.EmptyAbsolutePathId,
-        isCSharpFile: true
+        TextSourceKind.Explicit
         // FindAllReferences
         // , referenceHashSet: new()
         );
@@ -141,7 +141,7 @@ public static class TypeFacts
         closeParenthesisToken: default,
         inheritedTypeReference: _notApplicableTypeReference,
         ResourceUri.EmptyAbsolutePathId,
-        isCSharpFile: true
+        TextSourceKind.Explicit
         // FindAllReferences
         // , referenceHashSet: new()
         );

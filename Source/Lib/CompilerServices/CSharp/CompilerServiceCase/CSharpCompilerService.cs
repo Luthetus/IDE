@@ -2201,7 +2201,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         if (absolutePathString is null)
             return null;
         
-        
         var absolutePath = new AbsolutePath(
             absolutePathString,
             isDirectory: false,

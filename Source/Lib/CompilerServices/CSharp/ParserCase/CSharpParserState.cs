@@ -611,12 +611,13 @@ public ref partial struct CSharpParserState
 
         if (Binder.CheckAlreadyAddedNamespace(
                 AbsolutePathId,
-                textSpan))
+                textSpan,
+                textSourceKind))
         {
             return;
         }
         
-        Binder.CSharpParserModel_AddedNamespaceList.Add(textSpan);
+        Binder.CSharpParserModel_AddedNamespaceList.Add(new AddedNamespace(textSpan, textSourceKind));
         
         var tuple = Binder.FindNamespaceGroup_Reversed_WithMatchedIndex(
             AbsolutePathId,

@@ -21,7 +21,7 @@ public partial class CSharpBinder
     /// <summary>
     /// This is cleared at the start of a new parse, inside the CSharpParserModel constructor.
     /// </summary>
-    public List<TextEditorTextSpan> CSharpParserModel_AddedNamespaceList { get; } = new();
+    public List<AddedNamespace> CSharpParserModel_AddedNamespaceList { get; } = new();
 
     public List<ISyntaxNode> AmbiguousParenthesizedNodeChildList { get; } = new();
     /// <summary>

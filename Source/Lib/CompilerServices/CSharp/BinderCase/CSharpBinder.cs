@@ -359,9 +359,7 @@ public sealed partial class CSharpBinder
 
         for (int i = 0; i < CSharpParserModel_AddedNamespaceList.Count; i++)
         {
-            var node = CSharpParserModel_AddedNamespaceList[i];
-
-            if (node.CharIntSum == textSpan.CharIntSum)
+            if (CSharpParserModel_AddedNamespaceList[i].TextSpan.CharIntSum == textSpan.CharIntSum)
             {
                 if (startIndex == -1)
                     startIndex = i;
@@ -382,21 +380,82 @@ public sealed partial class CSharpBinder
     
     public bool CheckAlreadyAddedNamespace(
         int filePathInt,
-        TextEditorTextSpan textSpan)
+        TextEditorTextSpan referenceTextSpan,
+        TextSourceKind referenceTextSourceKind)
     {
-        var findTuple = AddedNamespaceList_FindRange(textSpan);
+        var findTuple = AddedNamespaceList_FindRange(referenceTextSpan);
 
         for (int i = findTuple.StartIndex; i < findTuple.EndIndex; i++)
         {
-            var target = CSharpParserModel_AddedNamespaceList[i];
-            if (CSharpCompilerService.SafeCompareTextSpans(
+            var definitionNamespace = CSharpParserModel_AddedNamespaceList[i];
+            
+            // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+            if (definitionNamespace.TextSpan.Length != referenceTextSpan.Length ||
+                definitionNamespace.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+            {
+                continue;
+            }
+            if (CompareNamespaceNames(
                     filePathInt,
-                    textSpan,
+                    definitionNamespace.TextSpan,
+                    definitionNamespace.TextSourceKind,
                     filePathInt,
-                    target))
+                    referenceTextSpan,
+                    referenceTextSourceKind))
             {
                 return true;
             }
+        }
+        
+        return false;
+    }
+    
+    /// <summary>
+    /// You need to put:
+    /// ```csharp
+    /// // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+    /// if (definitionValue.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+    ///     definitionValue.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+    /// {
+    ///     continue;
+    /// }
+    /// ```
+    ///
+    /// Prior to the invocation because the method cannot continue the invoker's loop.
+    /// </summary>
+    private bool CompareNamespaceNames(
+        int definitionAbsolutePathId,
+        TextEditorTextSpan definitionTextSpan,
+        TextSourceKind definitionTextSourceKind,
+        int referenceAbsolutePathId,
+        TextEditorTextSpan referenceTextSpan,
+        TextSourceKind referenceTextSourceKind)
+    {
+        if (definitionTextSourceKind == TextSourceKind.Implicit)
+        {
+            var definitionName = CSharpCompilerService.GetRazorNamespace(definitionAbsolutePathId, isTextEditorContext: false);
+            if (referenceTextSourceKind == TextSourceKind.Implicit)
+            {
+                var referenceName = CSharpCompilerService.GetRazorNamespace(referenceAbsolutePathId, isTextEditorContext: false);
+                if (definitionName == referenceName)
+                    return true;
+            }
+            else
+            {
+                if (CSharpCompilerService.SafeCompareText(referenceAbsolutePathId, definitionName, referenceTextSpan))
+                    return true;
+            }
+        }
+        else if (referenceTextSourceKind == TextSourceKind.Implicit)
+        {
+            var referenceName = CSharpCompilerService.GetRazorNamespace(referenceAbsolutePathId, isTextEditorContext: false);
+            if (CSharpCompilerService.SafeCompareText(definitionAbsolutePathId, referenceName, definitionTextSpan))
+                return true;
+        }
+        else if (CSharpCompilerService.SafeCompareTextSpans(
+                referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, definitionTextSpan))
+        {
+            return true;
         }
         
         return false;

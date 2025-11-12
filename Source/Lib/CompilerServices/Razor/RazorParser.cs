@@ -30,6 +30,8 @@ public static class RazorParser
         
         compilationUnit.ScopeOffset = binder.ScopeList.Count;
         compilationUnit.NamespaceContributionOffset = binder.NamespaceContributionList.Count;
+        
+        //Console.WriteLine($"nco:{compilationUnit.NamespaceContributionOffset}");
 
         binder.ScopeList.Insert(
             compilationUnit.ScopeOffset + compilationUnit.ScopeLength,

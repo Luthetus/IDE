@@ -200,6 +200,7 @@ public sealed partial class CSharpBinder
 
     public bool TryGetCompilationUnitByAbsolutePathId(int absolutePathId, out CSharpCompilationUnit compilationUnit)
     {
+        //Console.WriteLine(absolutePathId);
         return __CompilationUnitMap.TryGetValue(
             absolutePathId,
             out compilationUnit);
@@ -271,6 +272,7 @@ public sealed partial class CSharpBinder
     {
         var findTuple = NamespaceGroup_FindRange(referenceTextSpan);
         
+        /*
         if (referenceTextSpan.Length == "BlazorCrudApp.ServerSide.Pages".Length)
         {
             Console.WriteLine(nameof(FindNamespaceGroup_Reversed_WithMatchedIndex));
@@ -282,10 +284,11 @@ public sealed partial class CSharpBinder
             Console.WriteLine($"\tEI:{findTuple.EndIndex}");
             Console.WriteLine($"\tII:{findTuple.InsertionIndex}");
         }
+        */
     
         for (int groupIndex = findTuple.EndIndex - 1; groupIndex >= findTuple.StartIndex; groupIndex--)
         {
-            Console.WriteLine("\t\tloop");
+            //Console.WriteLine("\t\tloop");
             var targetGroup = _namespaceGroupList[groupIndex];
             if (targetGroup.NamespaceStatementValueList.Count != 0)
             {
@@ -306,12 +309,12 @@ public sealed partial class CSharpBinder
                         referenceTextSpan,
                         referenceTextSourceKind))
                 {
-                    Console.WriteLine("\t\tsuccess");
+                    //Console.WriteLine("\t\tsuccess");
                     return (targetGroup, groupIndex);
                 }
             }
         }
-        Console.WriteLine("\t\tfin");
+        //Console.WriteLine("\t\tfin");
         
         return (default, -1);
     }
@@ -490,13 +493,13 @@ public sealed partial class CSharpBinder
     /// <summary><see cref="FinalizeCompilationUnit"/></summary>
     public void StartCompilationUnit(int absolutePathId)
     {
-        Console.WriteLine("SCU_Aaa");
+        //Console.WriteLine("SCU_Aaa");
         if (TryGetCompilationUnitByAbsolutePathId(absolutePathId, out var previousCompilationUnit))
         {
-            Console.WriteLine($"SCU_Bbb | o{previousCompilationUnit.NamespaceContributionOffset} l{previousCompilationUnit.NamespaceContributionLength}");
+            Console.WriteLine($"{nameof(StartCompilationUnit)}({absolutePathId})");
+            Console.WriteLine($"\to{previousCompilationUnit.NamespaceContributionOffset} l{previousCompilationUnit.NamespaceContributionLength}");
             for (int i = previousCompilationUnit.NamespaceContributionOffset + previousCompilationUnit.NamespaceContributionLength - 1; i >= previousCompilationUnit.NamespaceContributionOffset; i--)
             {
-                Console.WriteLine("SCU_Ccc");
                 var namespaceContributionEntry = NamespaceContributionList[i];
                 
                 var tuple = FindNamespaceGroup_Reversed_WithMatchedIndex(
@@ -578,6 +581,7 @@ public sealed partial class CSharpBinder
             _  = Pool_ConstructorInvocationExpressionNode_Queue.Dequeue();
         }
         
+        /*
         Console.WriteLine("\n\n=================");
         Console.WriteLine($"_namespaceGroupList.Count:{_namespaceGroupList.Count}");
         foreach (var namespaceGroup in _namespaceGroupList)
@@ -597,6 +601,7 @@ public sealed partial class CSharpBinder
             }
         }
         Console.WriteLine("=================\n");
+        */
     }
     
     /// <summary>This also clears any pooled lists.</summary>
@@ -615,9 +620,16 @@ public sealed partial class CSharpBinder
     public void UpsertCompilationUnit(int absolutePathId, CSharpCompilationUnit compilationUnit)
     {
         if (__CompilationUnitMap.ContainsKey(absolutePathId))
+        {
             __CompilationUnitMap[absolutePathId] = compilationUnit;
+            Console.WriteLine($"{nameof(UpsertCompilationUnit)}({absolutePathId})");
+            Console.WriteLine($"\tid:o{compilationUnit.NamespaceContributionOffset}");
+            Console.WriteLine($"\tid{absolutePathId}:l{compilationUnit.NamespaceContributionLength}");
+        }
         else
+        {
             __CompilationUnitMap.Add(absolutePathId, compilationUnit);
+        }
     }
     
     /// <summary>TextEditorEditContext is required for thread safety.</summary>

@@ -764,6 +764,7 @@ public ref partial struct CSharpParserState
         int definitionInitialScopeSubIndex,
         int referenceAbsolutePathId,
         TextEditorTextSpan referenceTextSpan,
+        TextSourceKind referenceTextSourceKind,
         out SyntaxNodeValue typeDefinitionValue)
     {
         var localScope = Binder.GetScopeByOffset(definitionCompilationUnit, definitionInitialScopeSubIndex);
@@ -776,6 +777,7 @@ public ref partial struct CSharpParserState
                     localScope.SelfScopeSubIndex,
                     referenceAbsolutePathId,
                     referenceTextSpan,
+                    referenceTextSourceKind,
                     out typeDefinitionValue))
             {
                 return true;
@@ -797,6 +799,7 @@ public ref partial struct CSharpParserState
         int definitionScopeSubIndex,
         int referenceAbsolutePathId,
         TextEditorTextSpan referenceTextSpan,
+        TextSourceKind referenceTextSourceKind,
         out SyntaxNodeValue typeDefinitionValue)
     {
         typeDefinitionValue = default;

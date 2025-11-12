@@ -886,9 +886,15 @@ public ref partial struct CSharpParserState
         TextEditorTextSpan referenceTextSpan,
         TextSourceKind referenceTextSourceKind)
     {
+        if (referenceTextSpan.CharIntSum == 736)
+        {
+            Console.WriteLine(nameof(CompareTypeNames));
+        }
         if (Binder.TypeDefinitionTraitsList[definitionValue.TraitsIndex].TextSourceKind == TextSourceKind.Implicit)
         {
             var definitionName = Binder.CSharpCompilerService.GetRazorComponentName(definitionAbsolutePathId);
+            if (definitionName == "Counter")
+                    Console.WriteLine(definitionName + ' ' + definitionValue.IdentifierToken.TextSpan.CharIntSum);
             if (referenceTextSourceKind == TextSourceKind.Implicit)
             {
                 var referenceName = Binder.CSharpCompilerService.GetRazorComponentName(referenceAbsolutePathId);
@@ -898,7 +904,16 @@ public ref partial struct CSharpParserState
             else
             {
                 if (Binder.CSharpCompilerService.SafeCompareText(referenceAbsolutePathId, definitionName, referenceTextSpan))
+                {
+                    if (definitionName == "Counter")
+                        Console.WriteLine("true");
                     return true;
+                }
+                else
+                {
+                    if (definitionName == "Counter")
+                        Console.WriteLine("false");
+                }
             }
         }
         else if (referenceTextSourceKind == TextSourceKind.Implicit)

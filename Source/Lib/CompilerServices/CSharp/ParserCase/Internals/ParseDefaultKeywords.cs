@@ -933,6 +933,7 @@ public static partial class Parser
         
         if (typeDefinitionNode.HasPartialModifier)
         {
+            
             // NOTE: You do indeed use the current compilation unit here...
             // ...there is a different step that checks the previous.
             if (parserModel.TryGetTypeDefinitionHierarchically(
@@ -944,8 +945,19 @@ public static partial class Parser
                     TextSourceKind.Explicit,
                     out SyntaxNodeValue previousTypeDefinitionNode))
             {
+                if (identifierToken.TextSpan.CharIntSum == 736)
+                {
+                    Console.WriteLine("success");
+                }
                 var typeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];
                 typeDefinitionNode.IndexPartialTypeDefinition = typeDefinitionMetadata.IndexPartialTypeDefinition;
+            }
+            else
+            {
+                if (identifierToken.TextSpan.CharIntSum == 736)
+                {
+                    Console.WriteLine("fail");
+                }
             }
         }
         

@@ -1,3 +1,4 @@
+using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.Extensions.CompilerServices.Syntax.Enums;
 using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
@@ -1289,19 +1290,23 @@ public static partial class Parser
     
     public static void implicit_HandleNamespaceTokenKeyword(ref CSharpParserState parserModel, string namespaceString)
     {
-        /*
-        var namespaceKeywordToken = parserModel.TokenWalker.Consume();
-        
-        var namespaceIdentifier = Parser.HandleNamespaceIdentifier(ref parserModel, isNamespaceStatement: true);
-
-        if (!namespaceIdentifier.ConstructorWasInvoked)
+        var charIntSum = 0;
+        foreach (var c in namespaceString)
         {
-            // parserModel.Compilation.DiagnosticBag.ReportTodoException(namespaceKeywordToken.TextSpan, "Expected a namespace identifier.");
-            return;
+            charIntSum += (int)c;
         }
-
+        
+        var namespaceIdentifier = new SyntaxToken(
+            SyntaxKind.IdentifierToken,
+            new TextEditorTextSpan(
+                startInclusiveIndex: 0,
+                endExclusiveIndex: namespaceString.Length,
+                decorationByte: 0,
+                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
+                charIntSum));
+        
         var namespaceStatementNode = parserModel.Rent_NamespaceStatementNode();
-        namespaceStatementNode.KeywordToken = namespaceKeywordToken;
+        namespaceStatementNode.KeywordToken = default;
         namespaceStatementNode.IdentifierToken = namespaceIdentifier;
         namespaceStatementNode.AbsolutePathId = parserModel.AbsolutePathId;
 
@@ -1325,7 +1330,6 @@ public static partial class Parser
         parserModel.Return_NamespaceStatementNode(namespaceStatementNode);
 
         // Do not set 'IsImplicitOpenCodeBlockTextSpan' for namespace file scoped.
-        */
     }
 
     public static void HandleReturnTokenKeyword(ref CSharpParserState parserModel)

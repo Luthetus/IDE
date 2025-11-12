@@ -1,3 +1,5 @@
+using Clair.Extensions.CompilerServices.Syntax.Enums;
+
 namespace Clair.Extensions.CompilerServices.Syntax.NodeValues;
 
 public struct PartialTypeDefinitionValue
@@ -6,16 +8,16 @@ public struct PartialTypeDefinitionValue
         int absolutePathId,
         int indexStartGroup,
         int scopeOffset,
-        bool isCSharpFile)
+        TextSourceKind textSourceKind)
     {
         AbsolutePathId = absolutePathId;
         IndexStartGroup = indexStartGroup;
         ScopeSubIndex = scopeOffset;
-        IsCSharpFile = isCSharpFile;
+        TextSourceKind = textSourceKind;
     }
 
     public int AbsolutePathId { get; set; }
     public int IndexStartGroup { get; set; }
     public int ScopeSubIndex { get; set; }
-    public bool IsCSharpFile { get; set; }
+    public TextSourceKind TextSourceKind { get; set; }
 }

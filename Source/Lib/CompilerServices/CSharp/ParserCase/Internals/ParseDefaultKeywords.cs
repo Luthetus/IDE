@@ -1128,12 +1128,12 @@ public static partial class Parser
             parserModel.SetCurrentScope_IsImplicitOpenCodeBlockTextSpan(true);
     
         if (typeDefinitionNode.HasPartialModifier)
-            HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel, isCSharpFile: false);
+            HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel);
     
         parserModel.Return_TypeDefinitionNode(typeDefinitionNode);
     }
     
-    public static void HandlePartialTypeDefinition(TypeDefinitionNode typeDefinitionNode, ref CSharpParserState parserModel, bool isCSharpFile)
+    public static void HandlePartialTypeDefinition(TypeDefinitionNode typeDefinitionNode, ref CSharpParserState parserModel)
     {
         Console.WriteLine(nameof(HandlePartialTypeDefinition));
         var wroteToExistingSlot = false;
@@ -1203,7 +1203,7 @@ public static partial class Parser
                     typeDefinitionNode.AbsolutePathId,
                     typeDefinitionNode.IndexPartialTypeDefinition,
                     typeDefinitionNode.SelfScopeSubIndex,
-                    isCSharpFile));
+                    typeDefinitionNode.TextSourceKind));
         
             int positionExclusive = indexForInsertion + 1;
             int lastSeenIndexStartGroup = typeDefinitionNode.IndexPartialTypeDefinition;

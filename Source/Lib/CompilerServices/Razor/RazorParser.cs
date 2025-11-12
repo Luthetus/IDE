@@ -252,6 +252,7 @@ public static class RazorParser
         typeDefinitionNode.LengthGenericParameterEntryList = 0;
         typeDefinitionNode.CloseAngleBracketToken = default;
         typeDefinitionNode.AbsolutePathId = parserModel.AbsolutePathId;
+        typeDefinitionNode.TextSourceKind = TextSourceKind.Implicit;
         
         if (typeDefinitionNode.HasPartialModifier)
         {
@@ -401,7 +402,7 @@ public static class RazorParser
         if (typeDefinitionNode.HasPartialModifier)
         {
             Console.WriteLine(nameof(Parser.HandlePartialTypeDefinition));
-            Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel, isCSharpFile: false);
+            Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel);
             
             Console.WriteLine(typeDefinitionNode.IndexPartialTypeDefinition);
         }

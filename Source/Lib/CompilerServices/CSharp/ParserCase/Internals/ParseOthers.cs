@@ -89,7 +89,12 @@ public static partial class Parser
                 
                     if (isNamespaceStatement)
                     {
-                        parserModel.AddNamespaceToCurrentScope(textSpan, TextSourceKind.Explicit);
+                        parserModel.AddNamespaceToCurrentScope(
+                            textSpan with
+                            {
+                                CharIntSum = charIntSum
+                            },
+                            TextSourceKind.Explicit);
                     }
                 //}
                 
@@ -124,7 +129,12 @@ public static partial class Parser
                 textSpan.ByteIndex));
         ++parserModel.Compilation.SymbolLength;
 
-        return new SyntaxToken(SyntaxKind.IdentifierToken, textSpan);
+        return new SyntaxToken(
+            SyntaxKind.IdentifierToken,
+            textSpan with
+            {
+                CharIntSum = charIntSum
+            });
     }
     
     /// <summary>

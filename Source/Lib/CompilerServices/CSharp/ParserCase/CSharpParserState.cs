@@ -802,11 +802,6 @@ public ref partial struct CSharpParserState
         TextSourceKind referenceTextSourceKind,
         out SyntaxNodeValue typeDefinitionValue)
     {
-        if (referenceTextSpan.CharIntSum == 736)
-        {
-            Console.WriteLine("ssss");
-        }
-    
         typeDefinitionValue = default;
         
         for (int i = definitionCompilationUnit.NodeOffset; i < definitionCompilationUnit.NodeOffset + definitionCompilationUnit.NodeLength; i++)
@@ -815,12 +810,6 @@ public ref partial struct CSharpParserState
             if (definitionValue.ParentScopeSubIndex == definitionScopeSubIndex &&
                 definitionValue.SyntaxKind == SyntaxKind.TypeDefinitionNode)
             {
-                if (referenceTextSpan.CharIntSum == 736)
-                {
-                    Console.WriteLine($"\tdLength:{definitionValue.IdentifierToken.TextSpan.Length}");
-                    Console.WriteLine($"\trLength:{referenceTextSpan.Length}");
-                }
-                
                 // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
                 if (definitionValue.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
                     definitionValue.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
@@ -846,12 +835,6 @@ public ref partial struct CSharpParserState
             {
                 foreach (var externalDefinitionNode in ExternalTypeDefinitionList)
                 {
-                    if (referenceTextSpan.CharIntSum == 736)
-                    {
-                        Console.WriteLine($"\tdLength:{externalDefinitionNode.IdentifierToken.TextSpan.Length}");
-                        Console.WriteLine($"\trLength:{referenceTextSpan.Length}");
-                    }
-                
                     // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
                     if (externalDefinitionNode.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
                         externalDefinitionNode.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
@@ -903,15 +886,9 @@ public ref partial struct CSharpParserState
         TextEditorTextSpan referenceTextSpan,
         TextSourceKind referenceTextSourceKind)
     {
-        if (referenceTextSpan.CharIntSum == 736)
-        {
-            Console.WriteLine(nameof(CompareTypeNames));
-        }
         if (Binder.TypeDefinitionTraitsList[definitionValue.TraitsIndex].TextSourceKind == TextSourceKind.Implicit)
         {
             var definitionName = Binder.CSharpCompilerService.GetRazorComponentName(definitionAbsolutePathId);
-            if (definitionName == "Counter")
-                    Console.WriteLine(definitionName + ' ' + definitionValue.IdentifierToken.TextSpan.CharIntSum);
             if (referenceTextSourceKind == TextSourceKind.Implicit)
             {
                 var referenceName = Binder.CSharpCompilerService.GetRazorComponentName(referenceAbsolutePathId);
@@ -921,16 +898,7 @@ public ref partial struct CSharpParserState
             else
             {
                 if (Binder.CSharpCompilerService.SafeCompareText(referenceAbsolutePathId, definitionName, referenceTextSpan))
-                {
-                    if (definitionName == "Counter")
-                        Console.WriteLine("true");
                     return true;
-                }
-                else
-                {
-                    if (definitionName == "Counter")
-                        Console.WriteLine("false");
-                }
             }
         }
         else if (referenceTextSourceKind == TextSourceKind.Implicit)

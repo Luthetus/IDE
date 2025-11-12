@@ -525,25 +525,13 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     
     public bool SafeCompareText(int absolutePathId, string value, TextEditorTextSpan textSpan)
     {
-        if (value == "Counter")
-                Console.WriteLine(nameof(SafeCompareText));
-    
         if (value.Length != textSpan.Length)
-        {
-            if (value == "Counter")
-            {
-                Console.WriteLine("if (value.Length != textSpan.Length)");
-                Console.WriteLine($"\tif ({value.Length} != {textSpan.Length})");
-            }
             return false;
-        }
 
         StreamReaderPooledBuffer sr;
 
         if (absolutePathId == 1)
         {
-            if (value == "Counter")
-                Console.WriteLine("if (absolutePathId == 1)");
             if (textSpan.EndExclusiveIndex > EmptyFileHackForLanguagePrimitiveText.Length)
                 return false;
             return value == textSpan.GetText(EmptyFileHackForLanguagePrimitiveText, _textEditorService);
@@ -565,8 +553,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         }
         else if (absolutePathId == _currentFileBeingParsedTuple.AbsolutePathId)
         {
-            if (value == "Counter")
-                Console.WriteLine("else if (absolutePathId == _currentFileBeingParsedTuple.AbsolutePathId)");
             if (textSpan.EndExclusiveIndex > _currentFileBeingParsedTuple.Content.Length)
                 return false;
             return value == textSpan.GetText(_currentFileBeingParsedTuple.Content, _textEditorService);
@@ -589,8 +575,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         }
         else if (absolutePathId == FastParseTuple.AbsolutePathId)
         {
-            if (value == "Counter")
-                Console.WriteLine("else if (absolutePathId == FastParseTuple.AbsolutePathId)");
             // TODO: What happens if I split a multibyte word?
             FastParseTuple.Sr.BaseStream.Seek(textSpan.ByteIndex, SeekOrigin.Begin);
             FastParseTuple.Sr.DiscardBufferedData();
@@ -626,8 +610,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         
         if (!StreamReaderTupleCache.TryGetValue(absolutePathId, out sr))
         {
-            if (value == "Counter")
-                Console.WriteLine("if (!StreamReaderTupleCache.TryGetValue(absolutePathId, out sr))");
             var absolutePathString = TryGetIntToFileAbsolutePathMap(absolutePathId);
             if (absolutePathString is null)
                 return false;
@@ -664,9 +646,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             // I presume this is needed so the StreamReader can get the encoding.
             sr.Read();
         }
-        
-        if (value == "Counter")
-                Console.WriteLine("abcdefg");
 
         // TODO: What happens if I split a multibyte word?
         sr.BaseStream.Seek(textSpan.ByteIndex, SeekOrigin.Begin);
@@ -2278,7 +2257,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         }
         
         var namespaceString = _razorNamespaceBuilder.ToString();
-        Console.WriteLine(namespaceString);
         return namespaceString;
     }
 }

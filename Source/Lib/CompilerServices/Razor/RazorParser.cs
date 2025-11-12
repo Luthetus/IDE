@@ -233,7 +233,6 @@ public static class RazorParser
         {
             charIntSum += (int)c;
         }
-        Console.WriteLine($"!!!!{charIntSum}");
     
         var hasPartialModifier = true;
         var accessModifierKind = AccessModifierKind.Public;
@@ -246,7 +245,6 @@ public static class RazorParser
                 decorationByte: 0,
                 byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
                 charIntSum));
-        Console.WriteLine($"!!!!cis{identifierToken.TextSpan.CharIntSum}");        
         var typeDefinitionNode = parserModel.Rent_TypeDefinitionNode();
         
         typeDefinitionNode.AccessModifierKind = accessModifierKind;

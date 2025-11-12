@@ -28,14 +28,14 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
 {
     // <summary>Public because the RazorCompilerService uses it.</summary>
     public readonly CSharpBinder __CSharpBinder;
-    private readonly StreamReaderPooledBufferWrap _streamReaderWrap = new();
+    public readonly StreamReaderPooledBufferWrap _streamReaderWrap = new();
     // Where do I want the state...
-    private readonly TokenWalkerBuffer _tokenWalkerBuffer = new();
+    public readonly TokenWalkerBuffer _tokenWalkerBuffer = new();
     
     // Service dependencies
-    private readonly TextEditorService _textEditorService;
+    public readonly TextEditorService _textEditorService;
     
-    private const string EmptyFileHackForLanguagePrimitiveText = "NotApplicable empty" + " void int char string bool var";
+    public const string EmptyFileHackForLanguagePrimitiveText = "NotApplicable empty" + " void int char string bool var";
     
     public const int GET_TEXT_BUFFER_SIZE = 32;
     

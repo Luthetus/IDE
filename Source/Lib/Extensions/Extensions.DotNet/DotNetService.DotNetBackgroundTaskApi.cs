@@ -7,6 +7,7 @@ using Clair.Common.RazorLib.Keys.Models;
 using Clair.Common.RazorLib.Reactives.Models;
 using Clair.Common.RazorLib.TreeViews.Models;
 using Clair.CompilerServices.CSharp.CompilerServiceCase;
+using Clair.CompilerServices.Razor;
 using Clair.CompilerServices.DotNetSolution;
 using Clair.CompilerServices.DotNetSolution.Models;
 using Clair.CompilerServices.DotNetSolution.Models.Project;
@@ -872,9 +873,10 @@ public partial class DotNetService
         if (parentDirectory is null)
             return;
 
-        var compilerService = (CSharpCompilerService)IdeService.TextEditorService.GetCompilerService("cs");
+        var cSharpCompilerService = (CSharpCompilerService)IdeService.TextEditorService.GetCompilerService("cs");
+        var razorCompilerService = (RazorCompilerService)IdeService.TextEditorService.GetCompilerService("razor");
 
-        ParseFilesRecursive(parentDirectory, compilerService, editContext, compilationUnitKind);
+        ParseFilesRecursive(parentDirectory, cSharpCompilerService, razorCompilerService, editContext, compilationUnitKind);
     }
 
     /// <summary>
@@ -885,7 +887,8 @@ public partial class DotNetService
     /// </summary>
     private void ParseFilesRecursive(
         string currentDirectory,
-        CSharpCompilerService compilerService,
+        CSharpCompilerService cSharpCompilerService,
+        RazorCompilerService razorCompilerService,
         TextEditorEditContext editContext,
         CompilationUnitKind compilationUnitKind)
     {
@@ -895,13 +898,24 @@ public partial class DotNetService
             if (file.EndsWith(".cs"))
             {
                 var resourceUri = new ResourceUri(file);
-                compilerService.TryAddFileAbsolutePath(file);
+                cSharpCompilerService.TryAddFileAbsolutePath(file);
 
-                compilerService.RegisterResource(
+                cSharpCompilerService.RegisterResource(
                     resourceUri,
                     shouldTriggerResourceWasModified: false);
 
-                compilerService.FastParse(editContext, resourceUri, IdeService.TextEditorService.CommonService.FileSystemProvider, compilationUnitKind);
+                cSharpCompilerService.FastParse(editContext, resourceUri, IdeService.TextEditorService.CommonService.FileSystemProvider, compilationUnitKind);
+            }
+            else if (file.EndsWith(".razor"))
+            {
+                var resourceUri = new ResourceUri(file);
+                cSharpCompilerService.TryAddFileAbsolutePath(file);
+
+                razorCompilerService.RegisterResource(
+                    resourceUri,
+                    shouldTriggerResourceWasModified: false);
+
+                razorCompilerService.FastParse(editContext, resourceUri, IdeService.TextEditorService.CommonService.FileSystemProvider, compilationUnitKind);
             }
         }
 
@@ -912,7 +926,7 @@ public partial class DotNetService
             if (!IFileSystemProvider.IsDirectoryIgnored(subDirectory))
             {
                 // Recursively call for non-excluded subdirectories
-                ParseFilesRecursive(subDirectory, compilerService, editContext, compilationUnitKind);
+                ParseFilesRecursive(subDirectory, cSharpCompilerService, razorCompilerService, editContext, compilationUnitKind);
             }
         }
     }

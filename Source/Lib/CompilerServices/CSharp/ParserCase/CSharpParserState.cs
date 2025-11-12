@@ -211,6 +211,9 @@ public ref partial struct CSharpParserState
     
     public readonly void BindNamespaceStatementNode(NamespaceStatementNode namespaceStatementNode, TextSourceKind textSourceKind)
     {
+        Console.WriteLine($"{AbsolutePathId} | {Binder.CSharpCompilerService.SafeGetText(AbsolutePathId, namespaceStatementNode.IdentifierToken.TextSpan)}");
+        Console.WriteLine($"\t{namespaceStatementNode.IdentifierToken.TextSpan.CharIntSum}");
+    
         var namespaceContributionEntry = new NamespaceContribution(namespaceStatementNode.IdentifierToken.TextSpan, textSourceKind);
         Binder.NamespaceContributionList.Add(namespaceContributionEntry);
         ++Compilation.NamespaceContributionLength;

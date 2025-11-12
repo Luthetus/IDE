@@ -68,6 +68,8 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
 
     public readonly StringBuilder _razorComponentNameTokenBuilder = new();
     public readonly StringBuilder _razorComponentNameFormattedBuilder = new();
+    public readonly StringBuilder _razorNamespaceBuilder = new();
+    public readonly List<string> _razorGetRazorNamespaceAncestorDirectoryList = new();
 
     /// <summary>
     /// unsafe vs safe are duplicates of the same code
@@ -2205,6 +2207,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// TODO: Don't copy and paste the namespace calculation code from the .NET solution explorer.
     /// TODO: Why is csproj ending in .csproj
     /// TODO: @namespace directive
+    /// TODO: don't StringBuilder allocate inside this
     /// </summary>
     public string? GetRazorNamespace(int absolutePathId)
     {
@@ -2217,17 +2220,25 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             _textEditorService.CommonService.FileSystemProvider,
             _razorComponentNameTokenBuilder,
             _razorComponentNameFormattedBuilder,
+            AbsolutePathNameKind.NameNoExtension,
+            ancestorDirectoryList: _razorGetRazorNamespaceAncestorDirectoryList);
+            
+        var csproj = ;
+            
+        var target = absolutePath.CreateSubstringParentDirectory();
+        
+        _razorNamespaceBuilder;
+            
+        absolutePath = new AbsolutePath(
+            absolutePath.CreateSubstringParentDirectory(),
+            isDirectory: true,
+            _textEditorService.CommonService.FileSystemProvider,
+            _razorComponentNameTokenBuilder,
+            _razorComponentNameFormattedBuilder,
             AbsolutePathNameKind.NameNoExtension);
-        return absolutePath.Name;
         
         var targetNode = treeViewModel;
     
-        if (targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Csproj &&
-            targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Dir)
-        {
-            return string.Empty;
-        }
-        
         // The upcoming algorithm has a lot of "shifting" due to 0 index insertions and likely is NOT the most optimal solution.
         StringBuilder namespaceBuilder;
         if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Csproj)

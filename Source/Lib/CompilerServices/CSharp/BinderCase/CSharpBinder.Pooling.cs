@@ -71,7 +71,8 @@ public partial class CSharpBinder
         lengthFunctionArgumentEntryList: 0,
         closeParenthesisToken: default,
         inheritedTypeReference: Clair.Extensions.CompilerServices.TypeFacts.NotApplicable.ToTypeReference(),
-        absolutePathId: default);
+        absolutePathId: default,
+        isCSharpFile: true);
 
     /// <summary>This is only safe to use while parsing</summary>
     public ConstructorDefinitionNode? Pool_ConstructorDefinitionNode_Instance { get; set; } = new ConstructorDefinitionNode(

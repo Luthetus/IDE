@@ -312,7 +312,8 @@ public ref partial struct CSharpParserState
             lengthFunctionArgumentEntryList: 0,
             closeParenthesisToken: default,
             inheritedTypeReference: TypeFacts.NotApplicable.ToTypeReference(),
-            absolutePathId: AbsolutePathId);
+            absolutePathId: AbsolutePathId,
+            isCSharpFile: true);
     }
 
     /// <summary>

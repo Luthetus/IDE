@@ -943,8 +943,13 @@ public static partial class Parser
                     identifierToken.TextSpan,
                     out SyntaxNodeValue previousTypeDefinitionNode))
             {
+                Console.WriteLine("out SyntaxNodeValue previousTypeDefinitionNode");
                 var typeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];
                 typeDefinitionNode.IndexPartialTypeDefinition = typeDefinitionMetadata.IndexPartialTypeDefinition;
+            }
+            else
+            {
+                Console.WriteLine("asdfg");
             }
         }
         

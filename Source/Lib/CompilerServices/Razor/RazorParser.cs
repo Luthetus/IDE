@@ -5,6 +5,7 @@ using Clair.CompilerServices.CSharp.ParserCase.Internals;
 using Clair.CompilerServices.CSharp.BinderCase;
 using Clair.CompilerServices.CSharp.CompilerServiceCase;
 using Clair.Extensions.CompilerServices.Syntax.Enums;
+using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 
 namespace Clair.CompilerServices.Razor;
 
@@ -218,9 +219,309 @@ public static class RazorParser
         // Console.WriteLine("========\n");
     }
     
-    public void CreateRazorPartialClass(ref CSharpParserState parserModel)
+    public static void CreateRazorPartialClass(ref CSharpParserState parserModel)
     {
+        var storageModifierToken = parserModel.TokenWalker.Consume();
         
+        // Given: public partial class MyClass { }
+        // Then: partial
+        var hasPartialModifier = false;
+        if (parserModel.StatementBuilder.TryPeek(out var token))
+        {
+            if (token.SyntaxKind == SyntaxKind.PartialTokenContextualKeyword)
+            {
+                _ = parserModel.StatementBuilder.Pop();
+                hasPartialModifier = true;
+            }
+        }
+    
+        // TODO: Fix; the code that parses the accessModifierKind is a mess
+        //
+        // Given: public class MyClass { }
+        // Then: public
+        var accessModifierKind = AccessModifierKind.Public;
+        if (parserModel.StatementBuilder.TryPeek(out var firstSyntaxToken))
+        {
+            var firstOutput = UtilityApi.GetAccessModifierKindFromToken(firstSyntaxToken);
+
+            if (firstOutput != AccessModifierKind.None)
+            {
+                _ = parserModel.StatementBuilder.Pop();
+                accessModifierKind = firstOutput;
+
+                // Given: protected internal class MyClass { }
+                // Then: protected internal
+                if (parserModel.StatementBuilder.TryPeek(out var secondSyntaxToken))
+                {
+                    var secondOutput = UtilityApi.GetAccessModifierKindFromToken(secondSyntaxToken);
+
+                    if (secondOutput != AccessModifierKind.None)
+                    {
+                        _ = parserModel.StatementBuilder.Pop();
+
+                        if ((firstOutput == AccessModifierKind.Protected && secondOutput == AccessModifierKind.Internal) ||
+                            (firstOutput == AccessModifierKind.Internal && secondOutput == AccessModifierKind.Protected))
+                        {
+                            accessModifierKind = AccessModifierKind.ProtectedInternal;
+                        }
+                        else if ((firstOutput == AccessModifierKind.Private && secondOutput == AccessModifierKind.Protected) ||
+                                (firstOutput == AccessModifierKind.Protected && secondOutput == AccessModifierKind.Private))
+                        {
+                            accessModifierKind = AccessModifierKind.PrivateProtected;
+                        }
+                        // else use the firstOutput.
+                    }
+                }
+            }
+        }
+    
+        // TODO: Fix nullability spaghetti code
+        var storageModifierKind = UtilityApi.GetStorageModifierKindFromToken(storageModifierToken);
+        if (storageModifierKind == StorageModifierKind.None)
+            return;
+        if (storageModifierKind == StorageModifierKind.Record)
+        {
+            if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.ClassTokenKeyword)
+            {
+                _ = parserModel.TokenWalker.Consume(); // classKeywordToken
+                storageModifierKind = StorageModifierKind.RecordClass;
+            }
+            else if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.StructTokenKeyword)
+            {
+                _ = parserModel.TokenWalker.Consume(); // structKeywordToken
+                storageModifierKind = StorageModifierKind.RecordStruct;
+            }
+        }
+
+        // Given: public class MyClass<T> { }
+        // Then: MyClass
+        SyntaxToken identifierToken;
+        // Retrospective: What is the purpose of this 'if (contextualKeyword) logic'?
+        // Response: maybe it is because 'var' contextual keyword is allowed to be a class name?
+        if (UtilityApi.IsContextualKeywordSyntaxKind(parserModel.TokenWalker.Current.SyntaxKind))
+        {
+            var contextualKeywordToken = parserModel.TokenWalker.Consume();
+            // Take the contextual keyword as an identifier
+            identifierToken = new SyntaxToken(SyntaxKind.IdentifierToken, contextualKeywordToken.TextSpan);
+        }
+        else
+        {
+            identifierToken = parserModel.TokenWalker.Match(SyntaxKind.IdentifierToken);
+        }
+
+        // Given: public class MyClass<T> { }
+        // Then: <T>
+        (SyntaxToken OpenAngleBracketToken, int IndexGenericParameterEntryList, int CountGenericParameterEntryList, SyntaxToken CloseAngleBracketToken) genericParameterListing = default;
+        if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.OpenAngleBracketToken)
+            genericParameterListing = Parser.HandleGenericParameters(ref parserModel);
+
+        var typeDefinitionNode = parserModel.Rent_TypeDefinitionNode();
+        
+        typeDefinitionNode.AccessModifierKind = accessModifierKind;
+        typeDefinitionNode.HasPartialModifier = hasPartialModifier;
+        typeDefinitionNode.StorageModifierKind = storageModifierKind;
+        typeDefinitionNode.TypeIdentifierToken = identifierToken;
+        typeDefinitionNode.OpenAngleBracketToken = genericParameterListing.OpenAngleBracketToken;
+        typeDefinitionNode.OffsetGenericParameterEntryList = genericParameterListing.IndexGenericParameterEntryList;
+        typeDefinitionNode.LengthGenericParameterEntryList = genericParameterListing.CountGenericParameterEntryList;
+        typeDefinitionNode.CloseAngleBracketToken = genericParameterListing.CloseAngleBracketToken;
+        typeDefinitionNode.AbsolutePathId = parserModel.AbsolutePathId;
+        
+        if (typeDefinitionNode.HasPartialModifier)
+        {
+            // NOTE: You do indeed use the current compilation unit here...
+            // ...there is a different step that checks the previous.
+            if (parserModel.TryGetTypeDefinitionHierarchically(
+                    parserModel.AbsolutePathId,
+                    parserModel.Compilation,
+                    parserModel.ScopeCurrentSubIndex,
+                    parserModel.AbsolutePathId,
+                    identifierToken.TextSpan,
+                    out SyntaxNodeValue previousTypeDefinitionNode))
+            {
+                var typeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];
+                typeDefinitionNode.IndexPartialTypeDefinition = typeDefinitionMetadata.IndexPartialTypeDefinition;
+            }
+        }
+        
+        parserModel.BindTypeDefinitionNode(typeDefinitionNode);
+        parserModel.BindTypeIdentifier(identifierToken);
+        
+        parserModel.StatementBuilder.MostRecentNode = typeDefinitionNode;
+            
+        parserModel.RegisterScope(
+        	new Scope(
+        		ScopeDirectionKind.Both,
+        		scope_StartInclusiveIndex: parserModel.TokenWalker.Current.TextSpan.StartInclusiveIndex,
+        		scope_EndExclusiveIndex: -1,
+        		codeBlock_StartInclusiveIndex: -1,
+        		codeBlock_EndExclusiveIndex: -1,
+        		parentScopeSubIndex: parserModel.ScopeCurrentSubIndex,
+        		selfScopeSubIndex: parserModel.Compilation.ScopeLength,
+        		nodeSubIndex: parserModel.Compilation.NodeLength,
+        		permitCodeBlockParsing: true,
+        		isImplicitOpenCodeBlockTextSpan: false,
+        		ownerSyntaxKind: typeDefinitionNode.SyntaxKind),
+    	    typeDefinitionNode);
+        
+        parserModel.SetCurrentScope_IsImplicitOpenCodeBlockTextSpan(false);
+        
+        if (typeDefinitionNode.HasPartialModifier)
+        {
+            if (typeDefinitionNode.IndexPartialTypeDefinition == -1)
+            {
+                if (parserModel.Binder.__CompilationUnitMap.TryGetValue(parserModel.AbsolutePathId, out var previousCompilationUnit))
+                {
+                    if (typeDefinitionNode.ParentScopeSubIndex < previousCompilationUnit.ScopeLength)
+                    {
+                        var previousParent = parserModel.Binder.ScopeList[previousCompilationUnit.ScopeOffset + typeDefinitionNode.ParentScopeSubIndex];
+                        var currentParent = parserModel.GetParent(typeDefinitionNode.ParentScopeSubIndex, parserModel.Compilation);
+                        
+                        if (currentParent.OwnerSyntaxKind == previousParent.OwnerSyntaxKind)
+                        {
+                            var currentParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
+                                parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].AbsolutePathId,
+                                parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].IdentifierToken.TextSpan);
+                            
+                            var previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
+                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].AbsolutePathId,
+                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan);
+                            
+                            if (currentParentIdentifierText is not null &&
+                                currentParentIdentifierText == previousParentIdentifierText)
+                            {
+                                // All the existing entires will be "emptied"
+                                // so don't both with checking whether the arguments are the same here.
+                                //
+                                // All that matters is that they're put in the same "group".
+                                //
+                                var binder = parserModel.Binder;
+                                
+                                // TODO: Cannot use ref, out, or in...
+                                var compilation = parserModel.Compilation;
+                                
+                                SyntaxNodeValue previousNode = default;
+                                
+                                for (int i = previousCompilationUnit.ScopeOffset; i < previousCompilationUnit.ScopeOffset + previousCompilationUnit.ScopeLength; i++)
+                                {
+                                    var scope = parserModel.Binder.ScopeList[i];
+                                    
+                                    if (scope.ParentScopeSubIndex == previousParent.SelfScopeSubIndex &&
+                                        scope.OwnerSyntaxKind == SyntaxKind.TypeDefinitionNode &&
+                                        binder.CSharpCompilerService.SafeGetText(
+                                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].AbsolutePathId,
+                                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].IdentifierToken.TextSpan) ==
+                                            binder.GetIdentifierText(typeDefinitionNode, parserModel.AbsolutePathId, compilation))
+                                    {
+                                        previousNode = parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex];
+                                        break;
+                                    }
+                                }
+                                
+                                if (!previousNode.IsDefault())
+                                {
+                                    var previousTypeDefinitionNode = previousNode;
+                                    var previousTypeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];
+                                    typeDefinitionNode.IndexPartialTypeDefinition = previousTypeDefinitionMetadata.IndexPartialTypeDefinition;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (parserModel.ClearedPartialDefinitionHashSet.Add(parserModel.GetTextSpanText(identifierToken.TextSpan)) &&
+                typeDefinitionNode.IndexPartialTypeDefinition != -1)
+            {
+                // Partial definitions of the same type from the same ResourceUri are made contiguous.
+                var seenResourceUri = false;
+                
+                int positionExclusive = typeDefinitionNode.IndexPartialTypeDefinition;
+                while (positionExclusive < parserModel.Binder.PartialTypeDefinitionList.Count)
+                {
+                    if (parserModel.Binder.PartialTypeDefinitionList[positionExclusive].IndexStartGroup == typeDefinitionNode.IndexPartialTypeDefinition)
+                    {
+                        if (parserModel.Binder.PartialTypeDefinitionList[positionExclusive].AbsolutePathId == parserModel.AbsolutePathId)
+                        {
+                            seenResourceUri = true;
+                        
+                            var partialTypeDefinitionEntry = parserModel.Binder.PartialTypeDefinitionList[positionExclusive];
+                            partialTypeDefinitionEntry.ScopeSubIndex = -1;
+                            parserModel.Binder.PartialTypeDefinitionList[positionExclusive] = partialTypeDefinitionEntry;
+                            
+                            positionExclusive++;
+                        }
+                        else
+                        {
+                            if (seenResourceUri)
+                                break;
+                            positionExclusive++;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (storageModifierKind == StorageModifierKind.Enum)
+        {
+            Parser.HandleEnumDefinitionNode(typeDefinitionNode, ref parserModel);
+            parserModel.Return_TypeDefinitionNode(typeDefinitionNode);
+            return;
+        }
+    
+        if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.OpenParenthesisToken)
+        {
+            Parser.HandlePrimaryConstructorDefinition(
+                typeDefinitionNode,
+                ref parserModel);
+        }
+        
+        if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.ColonToken)
+        {
+            _ = parserModel.TokenWalker.Consume(); // Consume the ColonToken
+            var inheritedTypeClauseNode = Parser.MatchTypeClause(ref parserModel);
+            // parserModel.BindTypeClauseNode(inheritedTypeClauseNode);
+            typeDefinitionNode.SetInheritedTypeReference(new TypeReferenceValue(inheritedTypeClauseNode));
+            parserModel.Return_TypeClauseNode(inheritedTypeClauseNode);
+            
+            while (!parserModel.TokenWalker.IsEof)
+            {
+                if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.CommaToken)
+                {
+                    _ = parserModel.TokenWalker.Consume(); // Consume the CommaToken
+                
+                    var consumeCounter = parserModel.TokenWalker.ConsumeCounter;
+                    
+                    _ = Parser.MatchTypeClause(ref parserModel);
+                    // parserModel.BindTypeClauseNode();
+                    
+                    if (consumeCounter == parserModel.TokenWalker.ConsumeCounter)
+                        break;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        
+        if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.WhereTokenContextualKeyword)
+        {
+            parserModel.ExpressionList.Add((SyntaxKind.OpenBraceToken, null));
+            _ = Parser.ParseExpression(ref parserModel);
+        }
+        
+        if (parserModel.TokenWalker.Current.SyntaxKind != SyntaxKind.OpenBraceToken)
+            parserModel.SetCurrentScope_IsImplicitOpenCodeBlockTextSpan(true);
+    
+        if (typeDefinitionNode.HasPartialModifier)
+            Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel);
+    
+        parserModel.Return_TypeDefinitionNode(typeDefinitionNode);
     }
 }
 

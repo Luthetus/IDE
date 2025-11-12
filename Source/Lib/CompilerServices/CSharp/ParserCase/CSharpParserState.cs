@@ -209,12 +209,13 @@ public ref partial struct CSharpParserState
             (byte)GenericDecorationKind.Function);
     }
     
-    public readonly void BindNamespaceStatementNode(NamespaceStatementNode namespaceStatementNode, TextSourceKind textSourceKind)
+    public readonly void BindNamespaceStatementNode(NamespaceStatementNode namespaceStatementNode)
     {
         Console.WriteLine($"{AbsolutePathId} | {Binder.CSharpCompilerService.SafeGetText(AbsolutePathId, namespaceStatementNode.IdentifierToken.TextSpan)}");
         Console.WriteLine($"\t{namespaceStatementNode.IdentifierToken.TextSpan.CharIntSum}");
+        Console.WriteLine($"\t{namespaceStatementNode.TextSourceKind}");
     
-        var namespaceContributionEntry = new NamespaceContribution(namespaceStatementNode.IdentifierToken.TextSpan, textSourceKind);
+        var namespaceContributionEntry = new NamespaceContribution(namespaceStatementNode.IdentifierToken.TextSpan, namespaceStatementNode.TextSourceKind);
         Binder.NamespaceContributionList.Add(namespaceContributionEntry);
         ++Compilation.NamespaceContributionLength;
 
@@ -571,7 +572,7 @@ public ref partial struct CSharpParserState
                     var namespaceStatementNode = (NamespaceStatementNode)codeBlockOwner;
                     // TODO: Add vs Bind? Both touch a namespace contribution?
                     AddNamespaceToCurrentScope(namespaceStatementNode.IdentifierToken.TextSpan, namespaceStatementNode.TextSourceKind);
-                    BindNamespaceStatementNode(namespaceStatementNode, namespaceStatementNode.TextSourceKind);
+                    BindNamespaceStatementNode(namespaceStatementNode);
                     break;
                 case SyntaxKind.TypeDefinitionNode:
                     var typeDefinitionNode = (TypeDefinitionNode)codeBlockOwner;

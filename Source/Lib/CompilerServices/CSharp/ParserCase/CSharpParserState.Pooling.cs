@@ -359,6 +359,8 @@ public ref partial struct CSharpParserState
         
         typeDefinitionNode.IsParsingGenericParameters = false;
         
+        typeDefinitionNode.TextSourceKind = TextSourceKind.Explicit;
+        
         Binder.Pool_TypeDefinitionNode_Instance = typeDefinitionNode;
     }
 
@@ -405,6 +407,7 @@ public ref partial struct CSharpParserState
         namespaceStatementNode.SelfScopeSubIndex = 0;
 
         namespaceStatementNode._isFabricated = false;
+        namespaceStatementNode.TextSourceKind = TextSourceKind.Explicit;
 
         Binder.Pool_NamespaceStatementNode_Instance = namespaceStatementNode;
     }

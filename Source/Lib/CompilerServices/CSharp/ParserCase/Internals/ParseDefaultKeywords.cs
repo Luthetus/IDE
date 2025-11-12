@@ -1284,7 +1284,16 @@ public static partial class Parser
         {
             charIntSum += (int)c;
         }
+        
         // bathroom then compare if implicit vs explicit
+        // then
+        // search for @code section first (can there be more than 1?)
+        // then for @functions (can there be more than 1?)
+        // can you have @code and @functions?
+        //
+        // Parse those first,
+        // then open a method scope and reset the seek position.
+        
         var namespaceIdentifier = new SyntaxToken(
             SyntaxKind.IdentifierToken,
             new TextEditorTextSpan(

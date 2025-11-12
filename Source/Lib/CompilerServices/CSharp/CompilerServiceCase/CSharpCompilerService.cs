@@ -2230,16 +2230,22 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         
         // TODO: GC bad: This will blow up the GC btw
         _razorNamespaceBuilder.Clear();
+        var foundCsproj = false;
         for (int i = _razorGetRazorNamespaceAncestorDirectoryList.Count - 1; i >= 0; i--)
         {
+            if (foundCsproj)
+                break;
+        
             var ancestorDirectory = _razorGetRazorNamespaceAncestorDirectoryList[i];
             var files = Directory.GetFiles(ancestorDirectory);
-            var foundCsproj = false;
+            
+            if (i != _razorGetRazorNamespaceAncestorDirectoryList.Count - 1)
+                _razorNamespaceBuilder.Insert(0, '.');
+            
             foreach (var file in files)
             {
                 if (file.EndsWith(".csproj"))
                 {
-                    _razorNamespaceBuilder.Insert(0, '.');
                     _razorNamespaceBuilder.Insert(
                         0,
                         new AbsolutePath(
@@ -2257,7 +2263,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             }
             if (!foundCsproj)
             {
-                _razorNamespaceBuilder.Insert(0, '.');
                 _razorNamespaceBuilder.Insert(
                     0,
                     new AbsolutePath(

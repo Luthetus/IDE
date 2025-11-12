@@ -2223,80 +2223,54 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             _razorComponentNameFormattedBuilder,
             AbsolutePathNameKind.NameNoExtension,
             ancestorDirectoryList: _razorGetRazorNamespaceAncestorDirectoryList);
-            
-        var csproj = ;
-            
-        var target = absolutePath.CreateSubstringParentDirectory();
         
-        _razorNamespaceBuilder;
-            
-        absolutePath = new AbsolutePath(
-            absolutePath.CreateSubstringParentDirectory(),
-            isDirectory: true,
-            _textEditorService.CommonService.FileSystemProvider,
-            _razorComponentNameTokenBuilder,
-            _razorComponentNameFormattedBuilder,
-            AbsolutePathNameKind.NameNoExtension);
+        // Razor ! in sln? => ???
         
-        var targetNode = treeViewModel;
-    
-        // The upcoming algorithm has a lot of "shifting" due to 0 index insertions and likely is NOT the most optimal solution.
-        StringBuilder namespaceBuilder;
-        if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Csproj)
-        {
-            namespaceBuilder = new StringBuilder(container.DotNetSolutionModel.DotNetProjectList[targetNode.TraitsIndex].AbsolutePath.Name);
-        }
-        else if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Dir)
-        {
-            namespaceBuilder = new StringBuilder(container.DirectoryTraitsList[targetNode.TraitsIndex].Name);
-        }
-        else
-        {
-            throw new NotImplementedException($"{nameof(TreeViewNodeValue.ByteKind)} of {targetNode.ByteKind} is not supported. Check {nameof(SolutionExplorerTreeViewContainer)} for the supported 'ByteKind_...' values.");
-        }
+        // Track csproj and files in it?
         
-        // for loop is an arbitrary "while-loop limit" until I prove to myself this won't infinite loop.
-        for (int i = 0; i < 256; i++)
+        // TODO: GC bad: This will blow up the GC btw
+        _razorNamespaceBuilder.Clear();
+        for (int i = _razorGetRazorNamespaceAncestorDirectoryList.Count - 1; i >= 0; i--)
         {
-            if (targetNode.IsDefault())
-                break;
-
-            // EndsWith check includes the period to ensure a direct match on the extension rather than a substring.
-            if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Csproj)
+            var ancestorDirectory = _razorGetRazorNamespaceAncestorDirectoryList[i];
+            var files = Directory.GetFiles(ancestorDirectory);
+            var foundCsproj = false;
+            foreach (var file in files)
             {
-                if (i != 0)
+                if (file.EndsWith(".csproj"))
                 {
-                    namespaceBuilder.Insert(0, '.');
-                    // This insertion is duplicated when invoking the StringBuilder constructor for initial capacity.
-                    namespaceBuilder.Insert(0, container.DotNetSolutionModel.DotNetProjectList[targetNode.TraitsIndex].AbsolutePath.Name.Replace(".csproj", string.Empty));
-                }
-                break;
-            }
-            else
-            {
-                if (i != 0)
-                {
-                    namespaceBuilder.Insert(0, '.');
-                    // This insertion is duplicated when invoking the StringBuilder constructor for initial capacity.
-                    namespaceBuilder.Insert(0, container.DirectoryTraitsList[targetNode.TraitsIndex].Name);
-                }
-                
-                if (targetNode.ParentIndex == -1)
-                {
-                    break;
-                }
-                else
-                {
-                    targetNode = container.NodeValueList[targetNode.ParentIndex];
-                    if (targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Csproj &&
-                        targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Dir)
-                    {
-                        break;
-                    }
+                    _razorNamespaceBuilder.Insert(
+                        0,
+                        new AbsolutePath(
+                            file,
+                            isDirectory: false,
+                            _textEditorService.CommonService.FileSystemProvider,
+                            _razorComponentNameTokenBuilder,
+                            _razorComponentNameFormattedBuilder,
+                            AbsolutePathNameKind.NameNoExtension,
+                            ancestorDirectoryList: _razorGetRazorNamespaceAncestorDirectoryList)
+                        .Name);
+                    foundCsproj = true;
                 }
             }
+            if (!foundCsproj)
+            {
+                _razorNamespaceBuilder.Insert(
+                    0,
+                    new AbsolutePath(
+                        ancestorDirectory,
+                        isDirectory: true,
+                        _textEditorService.CommonService.FileSystemProvider,
+                        _razorComponentNameTokenBuilder,
+                        _razorComponentNameFormattedBuilder,
+                        AbsolutePathNameKind.NameNoExtension,
+                        ancestorDirectoryList: _razorGetRazorNamespaceAncestorDirectoryList)
+                    .Name);
+            }
         }
-
-        return namespaceBuilder.ToString();
+        
+        var namespaceString = _razorNamespaceBuilder.ToString();
+        Console.WriteLine(namespaceString);
+        return namespaceString;
     }
 }

@@ -1287,8 +1287,9 @@ public static partial class Parser
         // Do not set 'IsImplicitOpenCodeBlockTextSpan' for namespace file scoped.
     }
     
-    public static void implicit_HandleNamespaceTokenKeyword(ref CSharpParserState parserModel)
+    public static void implicit_HandleNamespaceTokenKeyword(ref CSharpParserState parserModel, string namespaceString)
     {
+        /*
         var namespaceKeywordToken = parserModel.TokenWalker.Consume();
         
         var namespaceIdentifier = Parser.HandleNamespaceIdentifier(ref parserModel, isNamespaceStatement: true);
@@ -1324,6 +1325,7 @@ public static partial class Parser
         parserModel.Return_NamespaceStatementNode(namespaceStatementNode);
 
         // Do not set 'IsImplicitOpenCodeBlockTextSpan' for namespace file scoped.
+        */
     }
 
     public static void HandleReturnTokenKeyword(ref CSharpParserState parserModel)

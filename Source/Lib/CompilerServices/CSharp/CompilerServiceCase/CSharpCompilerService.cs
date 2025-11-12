@@ -70,6 +70,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     public readonly StringBuilder _razorComponentNameFormattedBuilder = new();
     public readonly StringBuilder _razorNamespaceBuilder = new();
     public readonly List<string> _razorGetRazorNamespaceAncestorDirectoryList = new();
+    /// <summary>
+    /// If RootNamespace or @namespace directive need to overwrite this.
+    /// </summary>
     public readonly Dictionary<int, string> _absolutePathIdToImplicitNamespaceStringMap = new();
 
     /// <summary>

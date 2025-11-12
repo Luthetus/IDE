@@ -239,7 +239,7 @@ public static class RazorParser
             SyntaxKind.IdentifierToken,
             new TextEditorTextSpan(
                 startInclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex,
-                endExclusiveIndex: componentName.Length,
+                endExclusiveIndex: componentName.Length + 1,
                 decorationByte: 0,
                 byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
                 charIntSum));

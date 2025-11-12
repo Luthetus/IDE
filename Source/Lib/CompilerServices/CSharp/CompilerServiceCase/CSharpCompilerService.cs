@@ -288,7 +288,8 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         if (absolutePathId == 0)
             absolutePathId = TryAddFileAbsolutePath(resourceUri.Value);
 
-        __CSharpBinder.UpsertCompilationUnit(absolutePathId, new CSharpCompilationUnit(CompilationUnitKind.IndividualFile_AllData));
+        if (!__CSharpBinder.__CompilationUnitMap.ContainsKey(absolutePathId))
+            _ = __CSharpBinder.__CompilationUnitMap.TryAdd(absolutePathId, new CSharpCompilationUnit(CompilationUnitKind.IndividualFile_AllData));
             
         if (shouldTriggerResourceWasModified)
             ResourceWasModified(resourceUri, Array.Empty<TextEditorTextSpan>());

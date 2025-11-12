@@ -534,6 +534,7 @@ public sealed partial class CSharpBinder
     /// <summary><see cref="StartCompilationUnit"/></summary>
     public void FinalizeCompilationUnit(int absolutePathId, CSharpCompilationUnit compilationUnit)
     {
+        Console.WriteLine($"{nameof(FinalizeCompilationUnit)}({absolutePathId})");
         UpsertCompilationUnit(absolutePathId, compilationUnit);
         
         while (Pool_VariableDeclarationNode_Queue.Count > POOL_VARIABLE_DECLARATION_NODE_MAX_COUNT)
@@ -622,9 +623,9 @@ public sealed partial class CSharpBinder
         if (__CompilationUnitMap.ContainsKey(absolutePathId))
         {
             __CompilationUnitMap[absolutePathId] = compilationUnit;
-            Console.WriteLine($"{nameof(UpsertCompilationUnit)}({absolutePathId})");
-            Console.WriteLine($"\tid:o{compilationUnit.NamespaceContributionOffset}");
-            Console.WriteLine($"\tid{absolutePathId}:l{compilationUnit.NamespaceContributionLength}");
+            Console.WriteLine($"\t{nameof(UpsertCompilationUnit)}({absolutePathId})");
+            Console.WriteLine($"\t\tid:o{compilationUnit.NamespaceContributionOffset}");
+            Console.WriteLine($"\t\tid{absolutePathId}:l{compilationUnit.NamespaceContributionLength}");
         }
         else
         {

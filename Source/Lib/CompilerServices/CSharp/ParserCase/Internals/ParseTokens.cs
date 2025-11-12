@@ -874,7 +874,7 @@ public static partial class Parser
                 Parser.HandleReturnTokenKeyword(ref parserModel);
                 break;
             case SyntaxKind.NamespaceTokenKeyword:
-                Parser.HandleNamespaceTokenKeyword(ref parserModel);
+                Parser.explicit_HandleNamespaceTokenKeyword(ref parserModel);
                 break;
             case SyntaxKind.ClassTokenKeyword:
                 Parser.HandleClassTokenKeyword(ref parserModel);

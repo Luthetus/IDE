@@ -1248,7 +1248,46 @@ public static partial class Parser
         HandleStorageModifierTokenKeyword(ref parserModel);
     }
 
-    public static void HandleNamespaceTokenKeyword(ref CSharpParserState parserModel)
+    public static void explicit_HandleNamespaceTokenKeyword(ref CSharpParserState parserModel)
+    {
+        var namespaceKeywordToken = parserModel.TokenWalker.Consume();
+        
+        var namespaceIdentifier = Parser.HandleNamespaceIdentifier(ref parserModel, isNamespaceStatement: true);
+
+        if (!namespaceIdentifier.ConstructorWasInvoked)
+        {
+            // parserModel.Compilation.DiagnosticBag.ReportTodoException(namespaceKeywordToken.TextSpan, "Expected a namespace identifier.");
+            return;
+        }
+
+        var namespaceStatementNode = parserModel.Rent_NamespaceStatementNode();
+        namespaceStatementNode.KeywordToken = namespaceKeywordToken;
+        namespaceStatementNode.IdentifierToken = namespaceIdentifier;
+        namespaceStatementNode.AbsolutePathId = parserModel.AbsolutePathId;
+
+        parserModel.SetCurrentNamespaceStatementValue(new NamespaceStatementValue(namespaceStatementNode));
+        
+        parserModel.RegisterScope(
+        	new Scope(
+        		ScopeDirectionKind.Both,
+        		scope_StartInclusiveIndex: parserModel.TokenWalker.Current.TextSpan.StartInclusiveIndex,
+        		scope_EndExclusiveIndex: -1,
+        		codeBlock_StartInclusiveIndex: -1,
+        		codeBlock_EndExclusiveIndex: -1,
+        		parentScopeSubIndex: parserModel.ScopeCurrentSubIndex,
+        		selfScopeSubIndex: parserModel.Compilation.ScopeLength,
+        		nodeSubIndex: parserModel.Compilation.NodeLength,
+        		permitCodeBlockParsing: true,
+        		isImplicitOpenCodeBlockTextSpan: false,
+        		ownerSyntaxKind: namespaceStatementNode.SyntaxKind),
+    	    namespaceStatementNode);
+
+        parserModel.Return_NamespaceStatementNode(namespaceStatementNode);
+
+        // Do not set 'IsImplicitOpenCodeBlockTextSpan' for namespace file scoped.
+    }
+    
+    public static void implicit_HandleNamespaceTokenKeyword(ref CSharpParserState parserModel)
     {
         var namespaceKeywordToken = parserModel.TokenWalker.Consume();
         

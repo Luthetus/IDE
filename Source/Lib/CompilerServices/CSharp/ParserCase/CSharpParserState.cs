@@ -217,7 +217,8 @@ public ref partial struct CSharpParserState
 
         var tuple = Binder.FindNamespaceGroup_Reversed_WithMatchedIndex(
             AbsolutePathId,
-            namespaceStatementNode.IdentifierToken.TextSpan);
+            namespaceStatementNode.IdentifierToken.TextSpan,
+            namespaceStatementNode.TextSourceKind);
             
         if (tuple.TargetGroup.ConstructorWasInvoked)
         {
@@ -621,7 +622,8 @@ public ref partial struct CSharpParserState
         
         var tuple = Binder.FindNamespaceGroup_Reversed_WithMatchedIndex(
             AbsolutePathId,
-            namespaceContribution.TextSpan);
+            namespaceContribution.TextSpan,
+            textSourceKind);
 
         if (tuple.TargetGroup.ConstructorWasInvoked)
         {

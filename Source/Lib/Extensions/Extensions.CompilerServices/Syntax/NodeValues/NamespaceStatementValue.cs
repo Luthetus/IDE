@@ -1,4 +1,5 @@
-﻿using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
+using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
 
 namespace Clair.Extensions.CompilerServices.Syntax.NodeValues;
 
@@ -11,6 +12,7 @@ public struct NamespaceStatementValue
         AbsolutePathId = namespaceStatementNode.AbsolutePathId;
         ParentScopeSubIndex = namespaceStatementNode.ParentScopeSubIndex;
         SelfScopeSubIndex = namespaceStatementNode.SelfScopeSubIndex;
+        TextSourceKind = namespaceStatementNode.TextSourceKind;
     }
 
     public SyntaxToken KeywordToken { get; set; }
@@ -18,4 +20,5 @@ public struct NamespaceStatementValue
     public int AbsolutePathId { get; set; }
     public int ParentScopeSubIndex { get; set; } = -1;
     public int SelfScopeSubIndex { get; set; } = -1;
+    public TextSourceKind TextSourceKind { get; set; }
 }

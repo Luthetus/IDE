@@ -265,22 +265,33 @@ public sealed partial class CSharpBinder
     }*/
     
     public (NamespaceGroup TargetGroup, int GroupIndex) FindNamespaceGroup_Reversed_WithMatchedIndex(
-        int absolutePathId,
-        TextEditorTextSpan textSpan)
+        int referenceAbsolutePathId,
+        TextEditorTextSpan referenceTextSpan,
+        TextSourceKind referenceTextSourceKind)
     {
-        var findTuple = NamespaceGroup_FindRange(textSpan);
+        var findTuple = NamespaceGroup_FindRange(referenceTextSpan);
     
         for (int groupIndex = findTuple.EndIndex - 1; groupIndex >= findTuple.StartIndex; groupIndex--)
         {
             var targetGroup = _namespaceGroupList[groupIndex];
             if (targetGroup.NamespaceStatementValueList.Count != 0)
             {
-                var sampleNamespaceStatementNode = targetGroup.NamespaceStatementValueList[0];
-                if (CSharpCompilerService.SafeCompareTextSpans(
-                    absolutePathId,
-                    textSpan,
-                    sampleNamespaceStatementNode.AbsolutePathId,
-                    sampleNamespaceStatementNode.IdentifierToken.TextSpan))
+                // Arbitrary sample
+                var definitionNamespace = targetGroup.NamespaceStatementValueList[0];
+                
+                // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+                if (definitionNamespace.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+                    definitionNamespace.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+                {
+                    continue;
+                }
+                if (CompareNamespaceNames(
+                        definitionNamespace.AbsolutePathId,
+                        definitionNamespace.IdentifierToken.TextSpan,
+                        definitionNamespace.TextSourceKind,
+                        referenceAbsolutePathId,
+                        referenceTextSpan,
+                        referenceTextSourceKind))
                 {
                     return (targetGroup, groupIndex);
                 }
@@ -472,7 +483,8 @@ public sealed partial class CSharpBinder
                 
                 var tuple = FindNamespaceGroup_Reversed_WithMatchedIndex(
                     absolutePathId,
-                    namespaceContributionEntry.TextSpan);
+                    namespaceContributionEntry.TextSpan,
+                    namespaceContributionEntry.TextSourceKind);
                 
                 if (tuple.TargetGroup.ConstructorWasInvoked)
                 {

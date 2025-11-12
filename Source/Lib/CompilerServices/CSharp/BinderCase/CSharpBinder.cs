@@ -555,6 +555,7 @@ public sealed partial class CSharpBinder
             _  = Pool_ConstructorInvocationExpressionNode_Queue.Dequeue();
         }
         
+        /*
         Console.WriteLine(nameof(PartialTypeDefinitionList));
         for (int i = 0; i < PartialTypeDefinitionList.Count; i++)
         {
@@ -566,6 +567,7 @@ public sealed partial class CSharpBinder
             Console.WriteLine($"\t\tSSI_{partial.ScopeSubIndex}");
             Console.WriteLine($"\t\tTSK_{partial.TextSourceKind}");
         }
+        */
         
         /*
         Console.WriteLine("\n\n=================");

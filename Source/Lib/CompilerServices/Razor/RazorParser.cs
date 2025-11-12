@@ -227,7 +227,6 @@ public static class RazorParser
     public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
     {
         var componentName = razorCompilerService._cSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId);
-        Console.WriteLine(componentName);
         
         var charIntSum = 0;
         foreach (var c in componentName)
@@ -269,13 +268,8 @@ public static class RazorParser
                     TextSourceKind.Implicit,
                     out SyntaxNodeValue previousTypeDefinitionNode))
             {
-                Console.WriteLine("success");
                 var typeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];
                 typeDefinitionNode.IndexPartialTypeDefinition = typeDefinitionMetadata.IndexPartialTypeDefinition;
-            }
-            else
-            {
-                Console.WriteLine("fail");
             }
         }
         

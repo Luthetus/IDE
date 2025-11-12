@@ -2184,8 +2184,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             _razorComponentNameTokenBuilder,
             _razorComponentNameFormattedBuilder,
             AbsolutePathNameKind.NameNoExtension);
-        Console.WriteLine($"{absolutePathId} => {absolutePathString}");
-        Console.WriteLine($"absolutePath.Name:{absolutePath.Name}");
         return absolutePath.Name;
     }
     

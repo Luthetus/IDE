@@ -1,4 +1,5 @@
 using Clair.TextEditor.RazorLib.Exceptions;
+using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.CompilerServices.CSharp.ParserCase;
 using Clair.CompilerServices.CSharp.ParserCase.Internals;
@@ -221,110 +222,27 @@ public static class RazorParser
     
     public static void CreateRazorPartialClass(ref CSharpParserState parserModel)
     {
-        var storageModifierToken = parserModel.TokenWalker.Consume();
-        
-        // Given: public partial class MyClass { }
-        // Then: partial
-        var hasPartialModifier = false;
-        if (parserModel.StatementBuilder.TryPeek(out var token))
-        {
-            if (token.SyntaxKind == SyntaxKind.PartialTokenContextualKeyword)
-            {
-                _ = parserModel.StatementBuilder.Pop();
-                hasPartialModifier = true;
-            }
-        }
-    
-        // TODO: Fix; the code that parses the accessModifierKind is a mess
-        //
-        // Given: public class MyClass { }
-        // Then: public
+        var hasPartialModifier = true;
         var accessModifierKind = AccessModifierKind.Public;
-        if (parserModel.StatementBuilder.TryPeek(out var firstSyntaxToken))
-        {
-            var firstOutput = UtilityApi.GetAccessModifierKindFromToken(firstSyntaxToken);
-
-            if (firstOutput != AccessModifierKind.None)
-            {
-                _ = parserModel.StatementBuilder.Pop();
-                accessModifierKind = firstOutput;
-
-                // Given: protected internal class MyClass { }
-                // Then: protected internal
-                if (parserModel.StatementBuilder.TryPeek(out var secondSyntaxToken))
-                {
-                    var secondOutput = UtilityApi.GetAccessModifierKindFromToken(secondSyntaxToken);
-
-                    if (secondOutput != AccessModifierKind.None)
-                    {
-                        _ = parserModel.StatementBuilder.Pop();
-
-                        if ((firstOutput == AccessModifierKind.Protected && secondOutput == AccessModifierKind.Internal) ||
-                            (firstOutput == AccessModifierKind.Internal && secondOutput == AccessModifierKind.Protected))
-                        {
-                            accessModifierKind = AccessModifierKind.ProtectedInternal;
-                        }
-                        else if ((firstOutput == AccessModifierKind.Private && secondOutput == AccessModifierKind.Protected) ||
-                                (firstOutput == AccessModifierKind.Protected && secondOutput == AccessModifierKind.Private))
-                        {
-                            accessModifierKind = AccessModifierKind.PrivateProtected;
-                        }
-                        // else use the firstOutput.
-                    }
-                }
-            }
-        }
     
-        // TODO: Fix nullability spaghetti code
-        var storageModifierKind = UtilityApi.GetStorageModifierKindFromToken(storageModifierToken);
-        if (storageModifierKind == StorageModifierKind.None)
-            return;
-        if (storageModifierKind == StorageModifierKind.Record)
-        {
-            if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.ClassTokenKeyword)
-            {
-                _ = parserModel.TokenWalker.Consume(); // classKeywordToken
-                storageModifierKind = StorageModifierKind.RecordClass;
-            }
-            else if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.StructTokenKeyword)
-            {
-                _ = parserModel.TokenWalker.Consume(); // structKeywordToken
-                storageModifierKind = StorageModifierKind.RecordStruct;
-            }
-        }
-
-        // Given: public class MyClass<T> { }
-        // Then: MyClass
-        SyntaxToken identifierToken;
-        // Retrospective: What is the purpose of this 'if (contextualKeyword) logic'?
-        // Response: maybe it is because 'var' contextual keyword is allowed to be a class name?
-        if (UtilityApi.IsContextualKeywordSyntaxKind(parserModel.TokenWalker.Current.SyntaxKind))
-        {
-            var contextualKeywordToken = parserModel.TokenWalker.Consume();
-            // Take the contextual keyword as an identifier
-            identifierToken = new SyntaxToken(SyntaxKind.IdentifierToken, contextualKeywordToken.TextSpan);
-        }
-        else
-        {
-            identifierToken = parserModel.TokenWalker.Match(SyntaxKind.IdentifierToken);
-        }
-
-        // Given: public class MyClass<T> { }
-        // Then: <T>
-        (SyntaxToken OpenAngleBracketToken, int IndexGenericParameterEntryList, int CountGenericParameterEntryList, SyntaxToken CloseAngleBracketToken) genericParameterListing = default;
-        if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.OpenAngleBracketToken)
-            genericParameterListing = Parser.HandleGenericParameters(ref parserModel);
+        var identifierToken = new SyntaxToken(
+            SyntaxKind.IdentifierToken,
+            new TextEditorTextSpan(
+                startInclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex,
+                endExclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex,
+                decorationByte: 0,
+                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex));
 
         var typeDefinitionNode = parserModel.Rent_TypeDefinitionNode();
         
         typeDefinitionNode.AccessModifierKind = accessModifierKind;
         typeDefinitionNode.HasPartialModifier = hasPartialModifier;
-        typeDefinitionNode.StorageModifierKind = storageModifierKind;
+        typeDefinitionNode.StorageModifierKind = StorageModifierKind.Class;
         typeDefinitionNode.TypeIdentifierToken = identifierToken;
-        typeDefinitionNode.OpenAngleBracketToken = genericParameterListing.OpenAngleBracketToken;
-        typeDefinitionNode.OffsetGenericParameterEntryList = genericParameterListing.IndexGenericParameterEntryList;
-        typeDefinitionNode.LengthGenericParameterEntryList = genericParameterListing.CountGenericParameterEntryList;
-        typeDefinitionNode.CloseAngleBracketToken = genericParameterListing.CloseAngleBracketToken;
+        typeDefinitionNode.OpenAngleBracketToken = default;
+        typeDefinitionNode.OffsetGenericParameterEntryList = -1;
+        typeDefinitionNode.LengthGenericParameterEntryList = 0;
+        typeDefinitionNode.CloseAngleBracketToken = default;
         typeDefinitionNode.AbsolutePathId = parserModel.AbsolutePathId;
         
         if (typeDefinitionNode.HasPartialModifier)
@@ -465,58 +383,6 @@ public static class RazorParser
                 }
             }
         }
-        
-        if (storageModifierKind == StorageModifierKind.Enum)
-        {
-            Parser.HandleEnumDefinitionNode(typeDefinitionNode, ref parserModel);
-            parserModel.Return_TypeDefinitionNode(typeDefinitionNode);
-            return;
-        }
-    
-        if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.OpenParenthesisToken)
-        {
-            Parser.HandlePrimaryConstructorDefinition(
-                typeDefinitionNode,
-                ref parserModel);
-        }
-        
-        if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.ColonToken)
-        {
-            _ = parserModel.TokenWalker.Consume(); // Consume the ColonToken
-            var inheritedTypeClauseNode = Parser.MatchTypeClause(ref parserModel);
-            // parserModel.BindTypeClauseNode(inheritedTypeClauseNode);
-            typeDefinitionNode.SetInheritedTypeReference(new TypeReferenceValue(inheritedTypeClauseNode));
-            parserModel.Return_TypeClauseNode(inheritedTypeClauseNode);
-            
-            while (!parserModel.TokenWalker.IsEof)
-            {
-                if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.CommaToken)
-                {
-                    _ = parserModel.TokenWalker.Consume(); // Consume the CommaToken
-                
-                    var consumeCounter = parserModel.TokenWalker.ConsumeCounter;
-                    
-                    _ = Parser.MatchTypeClause(ref parserModel);
-                    // parserModel.BindTypeClauseNode();
-                    
-                    if (consumeCounter == parserModel.TokenWalker.ConsumeCounter)
-                        break;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        
-        if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.WhereTokenContextualKeyword)
-        {
-            parserModel.ExpressionList.Add((SyntaxKind.OpenBraceToken, null));
-            _ = Parser.ParseExpression(ref parserModel);
-        }
-        
-        if (parserModel.TokenWalker.Current.SyntaxKind != SyntaxKind.OpenBraceToken)
-            parserModel.SetCurrentScope_IsImplicitOpenCodeBlockTextSpan(true);
     
         if (typeDefinitionNode.HasPartialModifier)
             Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel);

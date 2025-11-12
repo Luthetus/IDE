@@ -561,10 +561,10 @@ public sealed partial class CSharpBinder
             Console.WriteLine($"\t{i}");
             var partial = PartialTypeDefinitionList[i];
             
-            Console.WriteLine($"\t\tAPI{partial.AbsolutePathId}");
-            Console.WriteLine($"\t\tISG{partial.IndexStartGroup}");
-            Console.WriteLine($"\t\tSSI{partial.ScopeSubIndex}");
-            Console.WriteLine($"\t\tTSK{partial.TextSourceKind}");
+            Console.WriteLine($"\t\tAPI_{partial.AbsolutePathId}");
+            Console.WriteLine($"\t\tISG_{partial.IndexStartGroup}");
+            Console.WriteLine($"\t\tSSI_{partial.ScopeSubIndex}");
+            Console.WriteLine($"\t\tTSK_{partial.TextSourceKind}");
         }
         
         /*

@@ -224,6 +224,14 @@ public static class RazorParser
     
     public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
     {
+        var componentName = GetRazorComponentName(ref parserModel, razorCompilerService);
+        
+        var charIntSum = 0;
+        foreach (var c in componentName)
+        {
+            charIntSum += (int)c;
+        }
+    
         var hasPartialModifier = true;
         var accessModifierKind = AccessModifierKind.Public;
     
@@ -231,10 +239,11 @@ public static class RazorParser
             SyntaxKind.IdentifierToken,
             new TextEditorTextSpan(
                 startInclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex,
-                endExclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex,
+                endExclusiveIndex: componentName.Length,
                 decorationByte: 0,
-                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex));
-
+                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
+                charIntSum));
+                
         var typeDefinitionNode = parserModel.Rent_TypeDefinitionNode();
         
         typeDefinitionNode.AccessModifierKind = accessModifierKind;

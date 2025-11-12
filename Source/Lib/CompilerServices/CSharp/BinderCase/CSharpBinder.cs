@@ -555,6 +555,19 @@ public sealed partial class CSharpBinder
             _  = Pool_ConstructorInvocationExpressionNode_Queue.Dequeue();
         }
         
+        Console.WriteLine(nameof(PartialTypeDefinitionList));
+        for (int i = 0; i < PartialTypeDefinitionList.Count; i++)
+        {
+            Console.WriteLine($"\t{i}");
+            var partial = PartialTypeDefinitionList[i];
+            
+            Console.WriteLine($"\t\tAPI{partial.AbsolutePathId}");
+            Console.WriteLine($"\t\tISG{partial.IndexStartGroup}");
+            Console.WriteLine($"\t\tSSI{partial.ScopeSubIndex}");
+            Console.WriteLine($"\t\tTSK{partial.TextSourceKind}");
+        }
+        
+        /*
         Console.WriteLine("\n\n=================");
         Console.WriteLine($"_namespaceGroupList.Count:{_namespaceGroupList.Count}");
         foreach (var namespaceGroup in _namespaceGroupList)
@@ -574,6 +587,7 @@ public sealed partial class CSharpBinder
             }
         }
         Console.WriteLine("=================\n");
+        */
     }
     
     /// <summary>This also clears any pooled lists.</summary>

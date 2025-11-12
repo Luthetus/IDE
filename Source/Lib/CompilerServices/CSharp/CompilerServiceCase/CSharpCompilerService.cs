@@ -2239,6 +2239,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             {
                 if (file.EndsWith(".csproj"))
                 {
+                    _razorNamespaceBuilder.Insert(0, '.');
                     _razorNamespaceBuilder.Insert(
                         0,
                         new AbsolutePath(
@@ -2251,10 +2252,12 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                             ancestorDirectoryList: _razorGetRazorNamespaceAncestorDirectoryList)
                         .Name);
                     foundCsproj = true;
+                    break;
                 }
             }
             if (!foundCsproj)
             {
+                _razorNamespaceBuilder.Insert(0, '.');
                 _razorNamespaceBuilder.Insert(
                     0,
                     new AbsolutePath(

@@ -248,8 +248,6 @@ public sealed class TokenWalkerBuffer
 
     public SyntaxToken Consume()
     {
-        // Console.WriteLine($"c:{Index}-{Current.SyntaxKind} | {Index} == {_deferredParsingTuple.closeTokenIndex}");
-    
         if (IsCloseTokenIndex)
             return HandleDeferredParsingCloseTokenIndex();
     
@@ -505,8 +503,6 @@ public sealed class TokenWalkerBuffer
             restoreTokenIndex,
             restoreToken);
         _deferredParsingTupleStack.Push(_deferredParsingTuple);
-        
-        // Console.WriteLine(_deferredParsingTuple);
     }
 
     public void SetNullDeferredParsingTuple()
@@ -527,8 +523,6 @@ public sealed class TokenWalkerBuffer
     
     public void DeferParsingOfChildScope(SyntaxToken openToken, ref CSharpParserState parserModel)
     {
-        // Console.WriteLine(">>>>>>>>>>>>");
-    
         // Pop off the 'TypeDefinitionNode', then push it back on when later dequeued.
         var deferredScope = parserModel.ScopeCurrent;
 
@@ -582,8 +576,6 @@ public sealed class TokenWalkerBuffer
             closeToken = Current;
             _ = Match(SyntaxKind.CloseBraceToken);
         }
-        
-        // Console.WriteLine("<<<<<<<<<<<<");
 
         if (parserModel.Compilation.CompilationUnitKind == CompilationUnitKind.SolutionWide_DefinitionsOnly &&
             (deferredScope.OwnerSyntaxKind == SyntaxKind.FunctionDefinitionNode ||

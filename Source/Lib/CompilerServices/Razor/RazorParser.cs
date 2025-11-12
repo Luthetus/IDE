@@ -28,8 +28,6 @@ public static class RazorParser
         in between Parse(...) invocations.
         */
         
-        // Console.WriteLine("\n========");
-        
         compilationUnit.ScopeOffset = binder.ScopeList.Count;
         compilationUnit.NamespaceContributionOffset = binder.NamespaceContributionList.Count;
 
@@ -222,14 +220,10 @@ public static class RazorParser
             parserModel.CloseScope(parserModel.TokenWalker.Current.TextSpan); // The current token here would be the EOF token.
 
         parserModel.Binder.FinalizeCompilationUnit(parserModel.AbsolutePathId, compilationUnit);
-        
-        // Console.WriteLine("========\n");
     }
     
     public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
     {
-        Console.WriteLine(nameof(CreateRazorPartialClass));
-        
         var hasPartialModifier = true;
         var accessModifierKind = AccessModifierKind.Public;
     
@@ -292,28 +286,20 @@ public static class RazorParser
     	    typeDefinitionNode);
         
         parserModel.SetCurrentScope_IsImplicitOpenCodeBlockTextSpan(false);
-        
-        Console.WriteLine(GetRazorComponentName(ref parserModel, razorCompilerService));
-        
-        Console.WriteLine("a");
+
         if (typeDefinitionNode.HasPartialModifier)
         {
-            Console.WriteLine("b");
             if (typeDefinitionNode.IndexPartialTypeDefinition == -1)
             {
-                Console.WriteLine("c");
                 if (parserModel.Binder.__CompilationUnitMap.TryGetValue(parserModel.AbsolutePathId, out var previousCompilationUnit))
                 {
-                    Console.WriteLine("d");
                     if (typeDefinitionNode.ParentScopeSubIndex < previousCompilationUnit.ScopeLength)
                     {
-                        Console.WriteLine("e");
                         var previousParent = parserModel.Binder.ScopeList[previousCompilationUnit.ScopeOffset + typeDefinitionNode.ParentScopeSubIndex];
                         var currentParent = parserModel.GetParent(typeDefinitionNode.ParentScopeSubIndex, parserModel.Compilation);
                         
                         if (currentParent.OwnerSyntaxKind == previousParent.OwnerSyntaxKind)
                         {
-                            Console.WriteLine("f");
                             var currentParentIdentifierText = string.Empty;
                             
                             var previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
@@ -401,10 +387,7 @@ public static class RazorParser
     
         if (typeDefinitionNode.HasPartialModifier)
         {
-            Console.WriteLine(nameof(Parser.HandlePartialTypeDefinition));
             Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel);
-            
-            Console.WriteLine(typeDefinitionNode.IndexPartialTypeDefinition);
         }
         
         parserModel.Return_TypeDefinitionNode(typeDefinitionNode);
@@ -421,7 +404,6 @@ public static class RazorParser
             razorCompilerService._razorComponentNameTokenBuilder,
             razorCompilerService._razorComponentNameFormattedBuilder,
             AbsolutePathNameKind.NameNoExtension);
-        Console.WriteLine(absolutePath.Name);
         return absolutePath.Name;
     }
 }

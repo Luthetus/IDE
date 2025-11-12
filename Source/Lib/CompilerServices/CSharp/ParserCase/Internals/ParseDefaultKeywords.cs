@@ -943,13 +943,8 @@ public static partial class Parser
                     identifierToken.TextSpan,
                     out SyntaxNodeValue previousTypeDefinitionNode))
             {
-                Console.WriteLine("out SyntaxNodeValue previousTypeDefinitionNode");
                 var typeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];
                 typeDefinitionNode.IndexPartialTypeDefinition = typeDefinitionMetadata.IndexPartialTypeDefinition;
-            }
-            else
-            {
-                Console.WriteLine("asdfg");
             }
         }
         
@@ -1135,7 +1130,6 @@ public static partial class Parser
     
     public static void HandlePartialTypeDefinition(TypeDefinitionNode typeDefinitionNode, ref CSharpParserState parserModel)
     {
-        Console.WriteLine(nameof(HandlePartialTypeDefinition));
         var wroteToExistingSlot = false;
     
         int indexForInsertion;

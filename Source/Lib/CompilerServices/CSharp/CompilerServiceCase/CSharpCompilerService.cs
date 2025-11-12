@@ -1822,7 +1822,6 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
                 if (__CSharpBinder.PartialTypeDefinitionList[positionExclusive].IndexStartGroup == indexPartialTypeDefinition)
                 {
                     var absolutePathString = TryGetIntToFileAbsolutePathMap(__CSharpBinder.PartialTypeDefinitionList[positionExclusive].AbsolutePathId);
-                    Console.WriteLine(absolutePathString);
                     if (absolutePathString is not null)
                     {
                         siblingFileStringList.Add(

@@ -313,9 +313,7 @@ public static class RazorParser
                         if (currentParent.OwnerSyntaxKind == previousParent.OwnerSyntaxKind)
                         {
                             Console.WriteLine("f");
-                            var currentParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
-                                parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].AbsolutePathId,
-                                parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].IdentifierToken.TextSpan);
+                            var currentParentIdentifierText = string.Empty;
                             
                             var previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].AbsolutePathId,
@@ -403,7 +401,7 @@ public static class RazorParser
         if (typeDefinitionNode.HasPartialModifier)
         {
             Console.WriteLine(nameof(Parser.HandlePartialTypeDefinition));
-            Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel);
+            Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel, isCSharpFile: false);
             
             Console.WriteLine(typeDefinitionNode.IndexPartialTypeDefinition);
         }

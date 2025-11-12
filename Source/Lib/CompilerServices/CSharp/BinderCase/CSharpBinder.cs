@@ -555,9 +555,10 @@ public sealed partial class CSharpBinder
                 Console.WriteLine($"\t\tIT:{statement.IdentifierToken}");
                 Console.WriteLine($"\t\t\tIT_TS_CIS:{statement.IdentifierToken.TextSpan.CharIntSum}");
                 
-                Console.WriteLine($"\t\tKT:{statement.AbsolutePathId}");
-                Console.WriteLine($"\t\tKT:{statement.ParentScopeSubIndex}");
-                Console.WriteLine($"\t\tKT:{statement.SelfScopeSubIndex}");
+                var aaa = CSharpCompilerService.TryGetIntToFileAbsolutePathMap(statement.AbsolutePathId);
+                Console.WriteLine($"\t\tABI:{statement.AbsolutePathId}|{aaa ?? "null"}");
+                Console.WriteLine($"\t\tPSI:{statement.ParentScopeSubIndex}");
+                Console.WriteLine($"\t\tSSI:{statement.SelfScopeSubIndex}");
             }
         }
         Console.WriteLine("=================\n");

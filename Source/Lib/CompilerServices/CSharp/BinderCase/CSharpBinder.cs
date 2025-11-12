@@ -269,6 +269,12 @@ public sealed partial class CSharpBinder
         TextEditorTextSpan referenceTextSpan,
         TextSourceKind referenceTextSourceKind)
     {
+        if (referenceTextSpan.Length == "BlazorCrudApp.ServerSide.Pages".Length)
+        {
+            Console.WriteLine(nameof(FindNamespaceGroup_Reversed_WithMatchedIndex));
+            Console.WriteLine($"\trAPI:{referenceAbsolutePathId} rTS:{referenceTextSpan} rTSK:{referenceTextSourceKind}");
+        }
+    
         var findTuple = NamespaceGroup_FindRange(referenceTextSpan);
     
         for (int groupIndex = findTuple.EndIndex - 1; groupIndex >= findTuple.StartIndex; groupIndex--)

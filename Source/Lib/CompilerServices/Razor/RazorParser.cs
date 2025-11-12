@@ -53,7 +53,7 @@ public static class RazorParser
             absolutePathId,
             ref compilationUnit);
             
-        
+        Parser.implicit_HandleNamespaceTokenKeyword(ref parserModel, Binder.CSharpCompilerService.GetRazorNamespace(absolutePathId));
             
         CreateRazorPartialClass(ref parserModel, razorCompilerService);
         

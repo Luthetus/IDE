@@ -2199,4 +2199,92 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             AbsolutePathNameKind.NameNoExtension);
         return absolutePath.Name;
     }
+    
+    /// <summary>
+    /// TODO: Permit getting the name and the namespace in one invocation?
+    /// TODO: Don't copy and paste the namespace calculation code from the .NET solution explorer.
+    /// TODO: Why is csproj ending in .csproj
+    /// TODO: @namespace directive
+    /// </summary>
+    public string? GetRazorNamespace(int absolutePathId)
+    {
+        var absolutePathString = TryGetIntToFileAbsolutePathMap(absolutePathId);
+        if (absolutePathString is null)
+            return null;
+        var absolutePath = new AbsolutePath(
+            absolutePathString,
+            isDirectory: false,
+            _textEditorService.CommonService.FileSystemProvider,
+            _razorComponentNameTokenBuilder,
+            _razorComponentNameFormattedBuilder,
+            AbsolutePathNameKind.NameNoExtension);
+        return absolutePath.Name;
+        
+        var targetNode = treeViewModel;
+    
+        if (targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Csproj &&
+            targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Dir)
+        {
+            return string.Empty;
+        }
+        
+        // The upcoming algorithm has a lot of "shifting" due to 0 index insertions and likely is NOT the most optimal solution.
+        StringBuilder namespaceBuilder;
+        if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Csproj)
+        {
+            namespaceBuilder = new StringBuilder(container.DotNetSolutionModel.DotNetProjectList[targetNode.TraitsIndex].AbsolutePath.Name);
+        }
+        else if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Dir)
+        {
+            namespaceBuilder = new StringBuilder(container.DirectoryTraitsList[targetNode.TraitsIndex].Name);
+        }
+        else
+        {
+            throw new NotImplementedException($"{nameof(TreeViewNodeValue.ByteKind)} of {targetNode.ByteKind} is not supported. Check {nameof(SolutionExplorerTreeViewContainer)} for the supported 'ByteKind_...' values.");
+        }
+        
+        // for loop is an arbitrary "while-loop limit" until I prove to myself this won't infinite loop.
+        for (int i = 0; i < 256; i++)
+        {
+            if (targetNode.IsDefault())
+                break;
+
+            // EndsWith check includes the period to ensure a direct match on the extension rather than a substring.
+            if (targetNode.ByteKind == SolutionExplorerTreeViewContainer.ByteKind_Csproj)
+            {
+                if (i != 0)
+                {
+                    namespaceBuilder.Insert(0, '.');
+                    // This insertion is duplicated when invoking the StringBuilder constructor for initial capacity.
+                    namespaceBuilder.Insert(0, container.DotNetSolutionModel.DotNetProjectList[targetNode.TraitsIndex].AbsolutePath.Name.Replace(".csproj", string.Empty));
+                }
+                break;
+            }
+            else
+            {
+                if (i != 0)
+                {
+                    namespaceBuilder.Insert(0, '.');
+                    // This insertion is duplicated when invoking the StringBuilder constructor for initial capacity.
+                    namespaceBuilder.Insert(0, container.DirectoryTraitsList[targetNode.TraitsIndex].Name);
+                }
+                
+                if (targetNode.ParentIndex == -1)
+                {
+                    break;
+                }
+                else
+                {
+                    targetNode = container.NodeValueList[targetNode.ParentIndex];
+                    if (targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Csproj &&
+                        targetNode.ByteKind != SolutionExplorerTreeViewContainer.ByteKind_Dir)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        return namespaceBuilder.ToString();
+    }
 }

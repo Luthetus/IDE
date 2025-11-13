@@ -136,11 +136,13 @@ public static class RazorParser
             switch (parserModel.TokenWalker.Current.SyntaxKind)
             {
                 case SyntaxKind.EndOfFileToken:
-                    break;
+                    goto exit;
             }
             _ = parserModel.TokenWalker.Consume();
         }
-        
+
+        exit:
+
         return;
         
         /*while (true)

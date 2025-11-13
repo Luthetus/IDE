@@ -187,6 +187,7 @@ public static class RazorParser
                     }
                     else
                     {
+                        _ = parserModel.TokenWalker.Consume();
                         parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
                     }
                     break;

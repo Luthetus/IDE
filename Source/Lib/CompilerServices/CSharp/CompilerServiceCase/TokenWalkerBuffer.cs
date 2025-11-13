@@ -282,14 +282,23 @@ public sealed class TokenWalkerBuffer
                 _peekIndex = -1;
                 _peekSize = 0;
 
-                /*++_index;
-                _syntaxTokenBuffer[0] = CSharpLexer.Lex(
-                    _binder,
-                    MiscTextSpanList,
-                    StreamReaderWrap,
-                    ref _previousEscapeCharacterTextSpan,
-                    ref _interpolatedExpressionUnmatchedBraceCount);
-                MiscTextSpanList.Add(_syntaxTokenBuffer[0].TextSpan);*/
+                /*
+                ++_index;
+                if (_useCSharpLexer)
+                {
+                    _syntaxTokenBuffer[0] = CSharpLexer.Lex(
+                        _binder,
+                        MiscTextSpanList,
+                        StreamReaderWrap,
+                        ref _previousEscapeCharacterTextSpan,
+                        ref _interpolatedExpressionUnmatchedBraceCount);
+                    MiscTextSpanList.Add(_syntaxTokenBuffer[0].TextSpan);
+                }
+                else
+                {
+                    throw new NotImplementedException("razor lexer");
+                }
+                */
             }
         }
         else
@@ -309,12 +318,19 @@ public sealed class TokenWalkerBuffer
             _backtrackTuple = (_syntaxTokenBuffer[0], Index);
 
             ++_index;
-            _syntaxTokenBuffer[0] = CSharpLexer.Lex(
-                _binder,
-                this,
-                StreamReaderWrap,
-                ref _previousEscapeCharacterTextSpan,
-                ref _interpolatedExpressionUnmatchedBraceCount);
+            if (_useCSharpLexer)
+            {
+                _syntaxTokenBuffer[0] = CSharpLexer.Lex(
+                    _binder,
+                    this,
+                    StreamReaderWrap,
+                    ref _previousEscapeCharacterTextSpan,
+                    ref _interpolatedExpressionUnmatchedBraceCount);
+            }
+            else
+            {
+                throw new NotImplementedException("razor lexer");
+            }
             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
             {
@@ -403,12 +419,19 @@ public sealed class TokenWalkerBuffer
                             // This is duplicated inside the ReadCharacter() code.
 
                             ++_index;
-                            _syntaxTokenBuffer[0] = CSharpLexer.Lex(
-                                _binder,
-                                this,
-                                StreamReaderWrap,
-                                ref _previousEscapeCharacterTextSpan,
-                                ref _interpolatedExpressionUnmatchedBraceCount);
+                            if (_useCSharpLexer)
+                            {
+                                _syntaxTokenBuffer[0] = CSharpLexer.Lex(
+                                    _binder,
+                                    this,
+                                    StreamReaderWrap,
+                                    ref _previousEscapeCharacterTextSpan,
+                                    ref _interpolatedExpressionUnmatchedBraceCount);
+                            }
+                            else
+                            {
+                                throw new NotImplementedException("razor lexer");
+                            }
                             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
                             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
                             {
@@ -437,12 +460,19 @@ public sealed class TokenWalkerBuffer
             // This is duplicated inside the ReadCharacter() code.
 
             ++_index;
-            _syntaxTokenBuffer[0] = CSharpLexer.Lex(
-                _binder,
-                this,
-                StreamReaderWrap,
-                ref _previousEscapeCharacterTextSpan,
-                ref _interpolatedExpressionUnmatchedBraceCount);
+            if (_useCSharpLexer)
+            {
+                _syntaxTokenBuffer[0] = CSharpLexer.Lex(
+                    _binder,
+                    this,
+                    StreamReaderWrap,
+                    ref _previousEscapeCharacterTextSpan,
+                    ref _interpolatedExpressionUnmatchedBraceCount);
+            }
+            else
+            {
+                throw new NotImplementedException("razor lexer");
+            }
             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
             {

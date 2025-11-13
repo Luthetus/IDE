@@ -130,22 +130,30 @@ public static class RazorParser
         CreateRazorPartialClass(ref parserModel, razorCompilerService);
         
         parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
-        
+        var initialToken = parserModel.TokenWalker.Current;
         while (true)
         {
             switch (parserModel.TokenWalker.Current.SyntaxKind)
             {
                 case SyntaxKind.EndOfFileToken:
-                    goto exit;
+                    goto exitInitialLexing;
             }
             _ = parserModel.TokenWalker.Consume();
         }
-
-        exit:
-
-        return;
+        exitInitialLexing:
         
-        /*while (true)
+        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
+        
+        // Random note: consider finding matches by iterating over the scope rather than the scope...
+        // ...filtered by SyntaxKind?
+        //
+        // Or perhaps iterate over all possible scopes but start at the closest ancestor scope.
+        // i.e.: something about not invoking those Hierarchical methods that search for a definition
+        // over and over. That is a lot of copying of data for the parameters.
+        
+        tokenWalkerBuffer.Seek_SeekOriginBegin(initialToken, tokenIndex: 0, rootConsumeCounter: 0);
+
+        while (true)
         {
             // The last statement in this while loop is conditionally: '_ = parserModel.TokenWalker.Consume();'.
             // Knowing this to be the case is extremely important.
@@ -308,7 +316,6 @@ public static class RazorParser
 
         if (!parserModel.GetParent(parserModel.ScopeCurrent.ParentScopeSubIndex, compilationUnit).IsDefault())
             parserModel.CloseScope(parserModel.TokenWalker.Current.TextSpan); // The current token here would be the EOF token.
-        */
         
         parserModel.Binder.FinalizeCompilationUnit(parserModel.AbsolutePathId, compilationUnit);
     }

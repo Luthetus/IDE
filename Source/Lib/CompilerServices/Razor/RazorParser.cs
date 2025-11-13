@@ -142,8 +142,6 @@ public static class RazorParser
         }
         exitInitialLexing:
         
-        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
-        
         // Random note: consider finding matches by iterating over the scope rather than the scope...
         // ...filtered by SyntaxKind?
         //
@@ -169,7 +167,6 @@ public static class RazorParser
                 case SyntaxKind.MinusToken:
                 case SyntaxKind.StarToken:
                 case SyntaxKind.DollarSignToken:
-                case SyntaxKind.AtToken:
                     if (parserModel.StatementBuilder.StatementIsEmpty)
                     {
                         _ = Parser.ParseExpression(ref parserModel);
@@ -178,6 +175,9 @@ public static class RazorParser
                     {
                         parserModel.StatementBuilder.MostRecentNode = Parser.ParseExpression(ref parserModel);
                     }
+                    break;
+                case SyntaxKind.AtToken:
+                    parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
                     break;
                 case SyntaxKind.IdentifierToken:
                     Parser.ParseIdentifierToken(ref parserModel);

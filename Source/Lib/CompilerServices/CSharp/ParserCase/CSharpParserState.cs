@@ -30,8 +30,11 @@ public ref partial struct CSharpParserState
         CSharpBinder binder,
         TokenWalkerBuffer tokenWalkerBuffer,
         int absolutePathId,
-        ref CSharpCompilationUnit compilationUnit)
+        ref CSharpCompilationUnit compilationUnit,
+        bool includeRazorShortCircuits = false)
     {
+        IncludeRazorShortCircuits = includeRazorShortCircuits;
+    
         Binder = binder;
         Compilation = ref compilationUnit;
         ScopeCurrentSubIndex = 0;
@@ -52,6 +55,10 @@ public ref partial struct CSharpParserState
         ExpressionList.Add((SyntaxKind.EndOfFileToken, null));
         ExpressionList.Add((SyntaxKind.CloseBraceToken, null));
         ExpressionList.Add((SyntaxKind.StatementDelimiterToken, null));
+        if (IncludeRazorShortCircuits)
+        {
+            ExpressionList.Add((SyntaxKind.OpenAngleBracketToken, null));
+        }
         
         TryParseExpressionSyntaxKindList = Binder.CSharpParserModel_TryParseExpressionSyntaxKindList;
         TryParseExpressionSyntaxKindList.Clear();
@@ -88,6 +95,8 @@ public ref partial struct CSharpParserState
         
         Compilation.NodeOffset = Binder.NodeList.Count;
     }
+    
+    public bool IncludeRazorShortCircuits { get; }
     
     public TokenWalkerBuffer TokenWalker { get; }
     public CSharpStatementBuilder StatementBuilder { get; set; }

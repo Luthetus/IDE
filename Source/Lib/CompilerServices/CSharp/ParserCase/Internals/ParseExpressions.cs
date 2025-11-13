@@ -276,6 +276,10 @@ public static partial class Parser
         parserModel.ExpressionList.Add((SyntaxKind.EndOfFileToken, null));
         parserModel.ExpressionList.Add((SyntaxKind.CloseBraceToken, null));
         parserModel.ExpressionList.Add((SyntaxKind.StatementDelimiterToken, null));
+        if (parserModel.IncludeRazorShortCircuits)
+        {
+            parserModel.ExpressionList.Add((SyntaxKind.OpenAngleBracketToken, null));
+        }
         
         if (parserModel.ExpressionPrimary.SyntaxKind == SyntaxKind.AmbiguousIdentifierNode)
         {

@@ -44,6 +44,8 @@ public static class RazorParser
         // TokenWalker has overhead on each invocation of Consume().
         // Also I'm not sure but I think inheritance or interfaces would
         // impact whether the Consume() method is inlined.
+        //
+        // What is the overhead of invoking a delegate vs a static method?
     
         /*
         Any state that is "pooled" and cleared at the start of every Parse(...) invocation

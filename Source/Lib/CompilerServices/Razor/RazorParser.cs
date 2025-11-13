@@ -20,6 +20,16 @@ public static class RazorParser
         CSharpBinder binder,
         RazorCompilerService razorCompilerService)
     {
+        // Remove RazorParserState
+        // Only need CSharpParserState
+        //
+        // Difference is that the Razor parser also needs to invoke Razor Lexer
+        //
+        // CSharp static methods for parsing will exit and return to the razor statement loop.
+        // Razor statement loop then delegates either the CSharpLexer.Lex or RazorLexer.Lex
+        //
+        // Short circuit C# expression on unmatched '<' (also maybe '@')
+    
         /*
         Any state that is "pooled" and cleared at the start of every Parse(...) invocation
         should be changed.

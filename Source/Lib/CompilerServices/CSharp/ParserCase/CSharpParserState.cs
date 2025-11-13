@@ -96,6 +96,7 @@ public ref partial struct CSharpParserState
         Compilation.NodeOffset = Binder.NodeList.Count;
     }
     
+    /// <summary>Scuffed</summary>
     public bool IncludeRazorShortCircuits { get; }
     
     public TokenWalkerBuffer TokenWalker { get; }

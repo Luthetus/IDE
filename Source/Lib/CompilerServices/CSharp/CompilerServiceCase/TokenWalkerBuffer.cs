@@ -245,8 +245,12 @@ public sealed class TokenWalkerBuffer
 
         return closeChildScopeToken;
     }
-
-    public SyntaxToken Consume()
+    
+    /// <summary>
+    /// 'bool useCSharpLexer' is a pretty scuffed way to handle the Razor parsing.
+    /// But I'm gonna try it out and see where things go.
+    /// </summary>
+    public SyntaxToken Consume(bool useCSharpLexer = true)
     {
         if (IsCloseTokenIndex)
             return HandleDeferredParsingCloseTokenIndex();

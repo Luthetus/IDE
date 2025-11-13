@@ -15,11 +15,12 @@ public static class RazorParser
 {
     public static void Parse(
         int absolutePathId,
-        RazorTokenWalkerBuffer tokenWalkerBuffer,
+        TokenWalkerBuffer tokenWalkerBuffer,
         ref CSharpCompilationUnit compilationUnit,
         CSharpBinder binder,
         RazorCompilerService razorCompilerService)
     {
+        return;
         // Remove RazorParserState
         // Only need CSharpParserState
         //
@@ -74,12 +75,7 @@ public static class RazorParser
         		ownerSyntaxKind: SyntaxKind.GlobalCodeBlockNode));
         ++compilationUnit.ScopeLength;
         
-        var parserModel = new RazorParserState(
-            binder,
-            tokenWalkerBuffer,
-            absolutePathId,
-            ref compilationUnit);
-        var cSharpParserModel = new CSharpParserState(
+        var parserModel = new CSharpParserState(
             binder,
             null,
             absolutePathId,
@@ -132,7 +128,7 @@ public static class RazorParser
     	    namespaceStatementNode);
         parserModel.Return_NamespaceStatementNode(namespaceStatementNode);
         
-        CreateRazorPartialClass(ref parserModel, razorCompilerService, cSharpParserModel);
+        CreateRazorPartialClass(ref parserModel, razorCompilerService);
         
         // _ = RazorLexer.Lex(binder.KeywordCheckBuffer, tokenWalkerBuffer.StreamReaderWrap, tokenWalkerBuffer.TextEditorModel);
         
@@ -316,7 +312,7 @@ public static class RazorParser
         parserModel.Binder.FinalizeCompilationUnit(parserModel.AbsolutePathId, compilationUnit);
     }
     
-    public static void CreateRazorPartialClass(ref RazorParserState parserModel, RazorCompilerService razorCompilerService, ref CSharpParserState cSharpParserModel)
+    public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
     {
         var componentName = razorCompilerService._cSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId);
         
@@ -487,7 +483,7 @@ public static class RazorParser
     
         if (typeDefinitionNode.HasPartialModifier)
         {
-            Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref cSharpParserModel);
+            Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel);
         }
         
         parserModel.Return_TypeDefinitionNode(typeDefinitionNode);

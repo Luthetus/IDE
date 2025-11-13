@@ -13,10 +13,6 @@ namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
 /// <summary>
 /// ReInitialize must be invoked at the start of every "new usage" of the pooled instance.
 /// This invocation having occurred is NOT asserted, so neglecting to invoke it is undefined behavior.
-///
-/// TODO: Razor needs this type. This type invokes CSharpLexer directly.
-/// am in hospital atm and don't feel like dealing with this.
-/// I'm gonna just copy and paste the entire class and figure it out later.
 /// </summary>
 public sealed class TokenWalkerBuffer
 {

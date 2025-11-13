@@ -39,6 +39,11 @@ public static class RazorParser
         //
         // Optionally parameter have it default to C# lexer so the C# code can stay unchanged.
         // Then the RazorParser can explicitly ask for the Razor lexer to be invoked.
+        //
+        // I don't want to use inheritance nor an interface because then each invocation of the
+        // TokenWalker has overhead on each invocation of Consume().
+        // Also I'm not sure but I think inheritance or interfaces would
+        // impact whether the Consume() method is inlined.
     
         /*
         Any state that is "pooled" and cleared at the start of every Parse(...) invocation

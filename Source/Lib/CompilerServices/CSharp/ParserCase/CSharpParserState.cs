@@ -16,10 +16,6 @@ namespace Clair.CompilerServices.CSharp.ParserCase;
 /// <summary>
 /// The computational state for the CSharpParser is contained within this type.
 /// The output of the CSharpParser is the <see cref="CSharpCompilationUnit"/>.<see cref="CSharpCompilationUnit.RootCodeBlockNode"/>
-///
-/// TODO: Razor needs this type. This type invokes CSharpLexer directly.
-/// am in hospital atm and don't feel like dealing with this.
-/// I'm gonna just copy and paste the entire class and figure it out later.
 /// </summary>
 public ref partial struct CSharpParserState
 {

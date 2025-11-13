@@ -114,6 +114,8 @@ public sealed class RazorCompilerService : ICompilerService
     {
         return ValueTask.CompletedTask;
     }
+    
+    public readonly RazorTokenWalkerBuffer _tokenWalkerBuffer = new();
 
     public ValueTask ParseAsync(TextEditorEditContext editContext, TextEditorModel modelModifier, bool shouldApplySyntaxHighlighting)
     {
@@ -158,7 +160,7 @@ public sealed class RazorCompilerService : ICompilerService
                 shouldUseSharedStringWalker: true);
             
             _cSharpCompilerService.__CSharpBinder.StartCompilationUnit(absolutePathId);
-            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
+            RazorParser.Parse(absolutePathId, _tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
         }
         finally
         {
@@ -224,7 +226,7 @@ public sealed class RazorCompilerService : ICompilerService
 
             _cSharpCompilerService.FastParseTuple = (absolutePathId, parser_sr);
             _cSharpCompilerService.__CSharpBinder.StartCompilationUnit(absolutePathId);
-            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
+            RazorParser.Parse(absolutePathId, _tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
         }
         finally
         {

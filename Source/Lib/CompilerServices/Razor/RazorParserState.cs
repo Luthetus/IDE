@@ -10,8 +10,9 @@ using Clair.Extensions.CompilerServices.Syntax.Enums;
 using Clair.Extensions.CompilerServices.Syntax.Interfaces;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
+using Clair.CompilerServices.CSharp.ParserCase;
 
-namespace Clair.CompilerServices.CSharp.ParserCase;
+namespace Clair.CompilerServices.Razor;
 
 /// <summary>
 /// The computational state for the CSharpParser is contained within this type.
@@ -20,8 +21,11 @@ namespace Clair.CompilerServices.CSharp.ParserCase;
 /// TODO: Razor needs this type. This type invokes CSharpLexer directly.
 /// am in hospital atm and don't feel like dealing with this.
 /// I'm gonna just copy and paste the entire class and figure it out later.
+///
+/// Compositional design seems like it'd flow nice.
+/// RazorParserState has property of CSharpParserState.
 /// </summary>
-public ref partial struct CSharpParserState
+public ref partial struct RazorParserState
 {
     /// <summary>
     /// 0 is the global scope
@@ -30,9 +34,9 @@ public ref partial struct CSharpParserState
     
     private int _symbolId = 0;
 
-    public CSharpParserState(
+    public RazorParserState(
         CSharpBinder binder,
-        TokenWalkerBuffer tokenWalkerBuffer,
+        RazorTokenWalkerBuffer tokenWalkerBuffer,
         int absolutePathId,
         ref CSharpCompilationUnit compilationUnit)
     {
@@ -93,7 +97,7 @@ public ref partial struct CSharpParserState
         Compilation.NodeOffset = Binder.NodeList.Count;
     }
     
-    public TokenWalkerBuffer TokenWalker { get; }
+    public RazorTokenWalkerBuffer TokenWalker { get; }
     public CSharpStatementBuilder StatementBuilder { get; set; }
     
     public int AbsolutePathId { get; }
@@ -1518,3 +1522,4 @@ public ref partial struct CSharpParserState
         Binder.ScopeList[Compilation.ScopeOffset + ScopeCurrentSubIndex] = scope;
     }
 }
+

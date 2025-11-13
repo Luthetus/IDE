@@ -15,7 +15,7 @@ public static class RazorParser
 {
     public static void Parse(
         int absolutePathId,
-        TokenWalkerBuffer tokenWalkerBuffer,
+        RazorTokenWalkerBuffer tokenWalkerBuffer,
         ref CSharpCompilationUnit compilationUnit,
         CSharpBinder binder,
         RazorCompilerService razorCompilerService)
@@ -47,17 +47,81 @@ public static class RazorParser
         		ownerSyntaxKind: SyntaxKind.GlobalCodeBlockNode));
         ++compilationUnit.ScopeLength;
         
-        var parserModel = new CSharpParserState(
+        var parserModel = new RazorParserState(
             binder,
             tokenWalkerBuffer,
             absolutePathId,
             ref compilationUnit);
-            
-        Parser.implicit_HandleNamespaceTokenKeyword(ref parserModel, binder.CSharpCompilerService.GetRazorNamespace(absolutePathId, isTextEditorContext: true));
-            
-        CreateRazorPartialClass(ref parserModel, razorCompilerService);
+        var cSharpParserModel = new CSharpParserState(
+            binder,
+            null,
+            absolutePathId,
+            ref compilationUnit);
+
+        // TODO: Do these two steps after you've lexed incase there is @namespace directive...
+        // ...also consider '.csproj' RootNamespace.
+        // Parser.implicit_HandleNamespaceTokenKeyword(ref parserModel, binder.CSharpCompilerService.GetRazorNamespace(absolutePathId, isTextEditorContext: true));
+        var namespaceString = binder.CSharpCompilerService.GetRazorNamespace(absolutePathId, isTextEditorContext: true);
+        var charIntSum = 0;
+        foreach (var c in namespaceString)
+        {
+            charIntSum += (int)c;
+        }
+        // bathroom then compare if implicit vs explicit
+        // then
+        // search for @code section first (can there be more than 1?)
+        // then for @functions (can there be more than 1?)
+        // can you have @code and @functions?
+        //
+        // Parse those first,
+        // then open a method scope and reset the seek position.
+        var namespaceIdentifier = new SyntaxToken(
+            SyntaxKind.IdentifierToken,
+            new TextEditorTextSpan(
+                startInclusiveIndex: 0,
+                endExclusiveIndex: namespaceString.Length,
+                decorationByte: 0,
+                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
+                charIntSum));
+        var namespaceStatementNode = parserModel.Rent_NamespaceStatementNode();
+        namespaceStatementNode.KeywordToken = default;
+        namespaceStatementNode.IdentifierToken = namespaceIdentifier;
+        namespaceStatementNode.AbsolutePathId = parserModel.AbsolutePathId;
+        namespaceStatementNode.TextSourceKind = TextSourceKind.Implicit;
+        parserModel.SetCurrentNamespaceStatementValue(new NamespaceStatementValue(namespaceStatementNode));
+        parserModel.RegisterScope(
+        	new Scope(
+        		ScopeDirectionKind.Both,
+        		scope_StartInclusiveIndex: parserModel.TokenWalker.Current.TextSpan.StartInclusiveIndex,
+        		scope_EndExclusiveIndex: -1,
+        		codeBlock_StartInclusiveIndex: -1,
+        		codeBlock_EndExclusiveIndex: -1,
+        		parentScopeSubIndex: parserModel.ScopeCurrentSubIndex,
+        		selfScopeSubIndex: parserModel.Compilation.ScopeLength,
+        		nodeSubIndex: parserModel.Compilation.NodeLength,
+        		permitCodeBlockParsing: true,
+        		isImplicitOpenCodeBlockTextSpan: false,
+        		ownerSyntaxKind: namespaceStatementNode.SyntaxKind),
+    	    namespaceStatementNode);
+        parserModel.Return_NamespaceStatementNode(namespaceStatementNode);
+        
+        CreateRazorPartialClass(ref parserModel, razorCompilerService, cSharpParserModel);
+        
+        // _ = RazorLexer.Lex(binder.KeywordCheckBuffer, tokenWalkerBuffer.StreamReaderWrap, tokenWalkerBuffer.TextEditorModel);
         
         while (true)
+        {
+            switch (parserModel.TokenWalker.Current.SyntaxKind)
+            {
+                case SyntaxKind.EndOfFileToken:
+                    break;
+            }
+            _ = parserModel.TokenWalker.Consume();
+        }
+        
+        return;
+        
+        /*while (true)
         {
             // The last statement in this while loop is conditionally: '_ = parserModel.TokenWalker.Consume();'.
             // Knowing this to be the case is extremely important.
@@ -220,11 +284,12 @@ public static class RazorParser
 
         if (!parserModel.GetParent(parserModel.ScopeCurrent.ParentScopeSubIndex, compilationUnit).IsDefault())
             parserModel.CloseScope(parserModel.TokenWalker.Current.TextSpan); // The current token here would be the EOF token.
-
+        */
+        
         parserModel.Binder.FinalizeCompilationUnit(parserModel.AbsolutePathId, compilationUnit);
     }
     
-    public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
+    public static void CreateRazorPartialClass(ref RazorParserState parserModel, RazorCompilerService razorCompilerService, ref CSharpParserState cSharpParserModel)
     {
         var componentName = razorCompilerService._cSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId);
         
@@ -395,7 +460,7 @@ public static class RazorParser
     
         if (typeDefinitionNode.HasPartialModifier)
         {
-            Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref parserModel);
+            Parser.HandlePartialTypeDefinition(typeDefinitionNode, ref cSharpParserModel);
         }
         
         parserModel.Return_TypeDefinitionNode(typeDefinitionNode);

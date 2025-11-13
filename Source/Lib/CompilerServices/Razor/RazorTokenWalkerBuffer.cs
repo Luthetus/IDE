@@ -8,7 +8,7 @@ using Clair.CompilerServices.CSharp.LexerCase;
 using Clair.CompilerServices.CSharp.ParserCase;
 using Clair.CompilerServices.CSharp.BinderCase;
 
-namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
+namespace Clair.CompilerServices.Razor;
 
 /// <summary>
 /// ReInitialize must be invoked at the start of every "new usage" of the pooled instance.
@@ -18,7 +18,7 @@ namespace Clair.CompilerServices.CSharp.CompilerServiceCase;
 /// am in hospital atm and don't feel like dealing with this.
 /// I'm gonna just copy and paste the entire class and figure it out later.
 /// </summary>
-public sealed class TokenWalkerBuffer
+public sealed class RazorTokenWalkerBuffer
 {
     private TextEditorTextSpan _previousEscapeCharacterTextSpan;
     private int _interpolatedExpressionUnmatchedBraceCount;
@@ -163,7 +163,7 @@ public sealed class TokenWalkerBuffer
         CSharpBinder binder,
         ResourceUri resourceUri,
         TextEditorModel? textEditorModel,
-        TokenWalkerBuffer tokenWalkerBuffer,
+        RazorTokenWalkerBuffer tokenWalkerBuffer,
         StreamReaderPooledBufferWrap streamReaderWrap,
         bool shouldUseSharedStringWalker)
     {
@@ -269,7 +269,7 @@ public sealed class TokenWalkerBuffer
                 _peekSize = 0;
 
                 /*++_index;
-                _syntaxTokenBuffer[0] = CSharpLexer.Lex(
+                _syntaxTokenBuffer[0] = RazorLexer.Lex(
                     _binder,
                     MiscTextSpanList,
                     StreamReaderWrap,
@@ -295,7 +295,7 @@ public sealed class TokenWalkerBuffer
             _backtrackTuple = (_syntaxTokenBuffer[0], Index);
 
             ++_index;
-            _syntaxTokenBuffer[0] = CSharpLexer.Lex(
+            _syntaxTokenBuffer[0] = RazorLexer.Lex(
                 _binder,
                 this,
                 StreamReaderWrap,
@@ -389,7 +389,7 @@ public sealed class TokenWalkerBuffer
                             // This is duplicated inside the ReadCharacter() code.
 
                             ++_index;
-                            _syntaxTokenBuffer[0] = CSharpLexer.Lex(
+                            _syntaxTokenBuffer[0] = RazorLexer.Lex(
                                 _binder,
                                 this,
                                 StreamReaderWrap,
@@ -423,7 +423,7 @@ public sealed class TokenWalkerBuffer
             // This is duplicated inside the ReadCharacter() code.
 
             ++_index;
-            _syntaxTokenBuffer[0] = CSharpLexer.Lex(
+            _syntaxTokenBuffer[0] = RazorLexer.Lex(
                 _binder,
                 this,
                 StreamReaderWrap,
@@ -694,4 +694,5 @@ public sealed class TokenWalkerBuffer
         }
     }
 }
+
 

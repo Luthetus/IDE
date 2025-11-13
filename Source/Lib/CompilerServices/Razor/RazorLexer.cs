@@ -1,6 +1,8 @@
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.Decorations.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
+using Clair.Extensions.CompilerServices.Syntax;
+using Clair.CompilerServices.CSharp.BinderCase;
 
 namespace Clair.CompilerServices.Razor;
 
@@ -14,7 +16,12 @@ public static class RazorLexer
         Expect_AttributeValue,
     }
 
-    public static RazorLexerOutput Lex(char[] keywordCheckBuffer, StreamReaderWrap streamReaderWrap, TextEditorModel modelModifier)
+    public static SyntaxToken Lex(
+        CSharpBinder binder,
+        RazorTokenWalkerBuffer tokenWalkerBuffer,
+        StreamReaderPooledBufferWrap streamReaderWrap,
+        ref TextEditorTextSpan previousEscapeCharacterTextSpan,
+        ref int interpolatedExpressionUnmatchedBraceCount)
     {
         var context = RazorLexerContextKind.Expect_TagOrText;
         var output = new RazorLexerOutput(modelModifier);

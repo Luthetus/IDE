@@ -74,6 +74,11 @@ public sealed class TokenWalkerBuffer
     public int _peekSize = 0;
 
     private (SyntaxToken SyntaxToken, int PositionIndex) _backtrackTuple;
+    
+    /// <summary>Scuffed</summary>
+    private Func<SyntaxToken>? _lexRazor = null;
+    /// <summary>Scuffed</summary>
+    private bool _useCSharpLexer = true;
 
     private int _index;
     public int Index
@@ -154,6 +159,9 @@ public sealed class TokenWalkerBuffer
     /// This invocation having occurred is NOT asserted, so neglecting to invoke it is undefined behavior.
     ///
     /// WARNING: code duplication in 'Seek_SeekOriginBegin(...)'
+    /// 
+    /// 'Func<SyntaxToken> lexRazor' is a pretty scuffed way to handle the Razor parsing.
+    /// But I'm gonna try it out and see where things go.
     /// </summary>
     public void ReInitialize(
         CSharpBinder binder,
@@ -161,8 +169,13 @@ public sealed class TokenWalkerBuffer
         TextEditorModel? textEditorModel,
         TokenWalkerBuffer tokenWalkerBuffer,
         StreamReaderPooledBufferWrap streamReaderWrap,
-        bool shouldUseSharedStringWalker)
+        bool shouldUseSharedStringWalker,
+        bool useCSharpLexer = true,
+        Func<SyntaxToken>? lexRazor = null)
     {
+        _useCSharpLexer = useCSharpLexer;
+        _lexRazor = lexRazor;
+        
         _binder = binder;
     
         _index = -1;
@@ -246,11 +259,12 @@ public sealed class TokenWalkerBuffer
         return closeChildScopeToken;
     }
     
-    /// <summary>
-    /// 'bool useCSharpLexer' is a pretty scuffed way to handle the Razor parsing.
-    /// But I'm gonna try it out and see where things go.
-    /// </summary>
-    public SyntaxToken Consume(bool useCSharpLexer = true)
+    public void SetUseCSharpLexer(bool useCSharpLexer)
+    {
+        _useCSharpLexer = useCSharpLexer;
+    }
+    
+    public SyntaxToken Consume()
     {
         if (IsCloseTokenIndex)
             return HandleDeferredParsingCloseTokenIndex();

@@ -33,6 +33,12 @@ public static class RazorParser
         // Probably let the Razor lexer just run until it is necessary to short circuit for language transition to C#.
         //
         // Long term perhaps can use HtmlLexer and drop RazorLexer entirely, for now though I'm not getting involved in that.
+        //
+        // Might have to delete RazorTokenWalkerBuffer and pass a delegate to TokenWalker.
+        // Or add a parameter then if statement.
+        //
+        // Optionally parameter have it default to C# lexer so the C# code can stay unchanged.
+        // Then the RazorParser can explicitly ask for the Razor lexer to be invoked.
     
         /*
         Any state that is "pooled" and cleared at the start of every Parse(...) invocation

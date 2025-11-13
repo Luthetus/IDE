@@ -296,7 +296,10 @@ public sealed class TokenWalkerBuffer
                 }
                 else
                 {
-                    throw new NotImplementedException("razor lexer");
+                    _syntaxTokenBuffer[0] = LexRazor.Invoke(
+                        _binder,
+                        this,
+                        StreamReaderWrap);
                 }
                 */
             }
@@ -329,7 +332,10 @@ public sealed class TokenWalkerBuffer
             }
             else
             {
-                throw new NotImplementedException("razor lexer");
+                _syntaxTokenBuffer[0] = LexRazor.Invoke(
+                    _binder,
+                    this,
+                    0);
             }
             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
@@ -430,7 +436,10 @@ public sealed class TokenWalkerBuffer
                             }
                             else
                             {
-                                throw new NotImplementedException("razor lexer");
+                                _syntaxTokenBuffer[0] = LexRazor.Invoke(
+                                    _binder,
+                                    this,
+                                    0);
                             }
                             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
                             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
@@ -471,7 +480,10 @@ public sealed class TokenWalkerBuffer
             }
             else
             {
-                throw new NotImplementedException("razor lexer");
+                _syntaxTokenBuffer[0] = LexRazor.Invoke(
+                    _binder,
+                    this,
+                    0);
             }
             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)

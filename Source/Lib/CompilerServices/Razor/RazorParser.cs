@@ -29,6 +29,10 @@ public static class RazorParser
         // Razor statement loop then delegates either the CSharpLexer.Lex or RazorLexer.Lex
         //
         // Short circuit C# expression on unmatched '<' (also maybe '@')
+        //
+        // Probably let the Razor lexer just run until it is necessary to short circuit for language transition to C#.
+        //
+        // Long term perhaps can use HtmlLexer and drop RazorLexer entirely, for now though I'm not getting involved in that.
     
         /*
         Any state that is "pooled" and cleared at the start of every Parse(...) invocation

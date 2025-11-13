@@ -78,7 +78,8 @@ public static class RazorParser
             binder,
             tokenWalkerBuffer,
             absolutePathId,
-            ref compilationUnit);
+            ref compilationUnit,
+            includeRazorShortCircuits: true);
 
         // TODO: Do these two steps after you've lexed incase there is @namespace directive...
         // ...also consider '.csproj' RootNamespace.
@@ -156,6 +157,8 @@ public static class RazorParser
             // The last statement in this while loop is conditionally: '_ = parserModel.TokenWalker.Consume();'.
             // Knowing this to be the case is extremely important.
             
+            parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
+            
             switch (parserModel.TokenWalker.Current.SyntaxKind)
             {
                 case SyntaxKind.NumericLiteralToken:
@@ -177,7 +180,15 @@ public static class RazorParser
                     }
                     break;
                 case SyntaxKind.AtToken:
-                    parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
+                    var isRazorDirective = false;
+                    if (isRazorDirective)
+                    {
+                        // TODO: this
+                    }
+                    else
+                    {
+                        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
+                    }
                     break;
                 case SyntaxKind.IdentifierToken:
                     Parser.ParseIdentifierToken(ref parserModel);

@@ -20,7 +20,6 @@ public static class RazorParser
         CSharpBinder binder,
         RazorCompilerService razorCompilerService)
     {
-        return;
         // Remove RazorParserState
         // Only need CSharpParserState
         //
@@ -77,7 +76,7 @@ public static class RazorParser
         
         var parserModel = new CSharpParserState(
             binder,
-            null,
+            tokenWalkerBuffer,
             absolutePathId,
             ref compilationUnit);
 
@@ -130,7 +129,7 @@ public static class RazorParser
         
         CreateRazorPartialClass(ref parserModel, razorCompilerService);
         
-        // _ = RazorLexer.Lex(binder.KeywordCheckBuffer, tokenWalkerBuffer.StreamReaderWrap, tokenWalkerBuffer.TextEditorModel);
+        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
         
         while (true)
         {

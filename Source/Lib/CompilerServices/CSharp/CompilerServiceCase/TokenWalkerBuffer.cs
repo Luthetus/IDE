@@ -76,9 +76,9 @@ public sealed class TokenWalkerBuffer
     private (SyntaxToken SyntaxToken, int PositionIndex) _backtrackTuple;
     
     /// <summary>Scuffed</summary>
-    private Func<SyntaxToken>? _lexRazor = null;
+    public Func<CSharpBinder, TokenWalkerBuffer, byte/*RazorLexerContextKind.Expect_TagOrText*/, SyntaxToken>? LexRazor { get; private set; } = null;
     /// <summary>Scuffed</summary>
-    private bool _useCSharpLexer = true;
+    public bool UseCSharpLexer { get; private set; } = true;
 
     private int _index;
     public int Index
@@ -171,10 +171,10 @@ public sealed class TokenWalkerBuffer
         StreamReaderPooledBufferWrap streamReaderWrap,
         bool shouldUseSharedStringWalker,
         bool useCSharpLexer = true,
-        Func<SyntaxToken>? lexRazor = null)
+        Func<CSharpBinder, TokenWalkerBuffer, byte/*RazorLexerContextKind.Expect_TagOrText*/, SyntaxToken>? lexRazor = null)
     {
-        _useCSharpLexer = useCSharpLexer;
-        _lexRazor = lexRazor;
+        UseCSharpLexer = useCSharpLexer;
+        LexRazor = lexRazor;
         
         _binder = binder;
     
@@ -261,7 +261,7 @@ public sealed class TokenWalkerBuffer
     
     public void SetUseCSharpLexer(bool useCSharpLexer)
     {
-        _useCSharpLexer = useCSharpLexer;
+        UseCSharpLexer = useCSharpLexer;
     }
     
     public SyntaxToken Consume()
@@ -318,7 +318,7 @@ public sealed class TokenWalkerBuffer
             _backtrackTuple = (_syntaxTokenBuffer[0], Index);
 
             ++_index;
-            if (_useCSharpLexer)
+            if (UseCSharpLexer)
             {
                 _syntaxTokenBuffer[0] = CSharpLexer.Lex(
                     _binder,
@@ -419,7 +419,7 @@ public sealed class TokenWalkerBuffer
                             // This is duplicated inside the ReadCharacter() code.
 
                             ++_index;
-                            if (_useCSharpLexer)
+                            if (UseCSharpLexer)
                             {
                                 _syntaxTokenBuffer[0] = CSharpLexer.Lex(
                                     _binder,
@@ -460,7 +460,7 @@ public sealed class TokenWalkerBuffer
             // This is duplicated inside the ReadCharacter() code.
 
             ++_index;
-            if (_useCSharpLexer)
+            if (UseCSharpLexer)
             {
                 _syntaxTokenBuffer[0] = CSharpLexer.Lex(
                     _binder,

@@ -20,10 +20,9 @@ public static class RazorLexer
     public static SyntaxToken Lex(
         CSharpBinder binder,
         TokenWalkerBuffer tokenWalkerBuffer,
-        ref TextEditorTextSpan previousEscapeCharacterTextSpan,
-        ref int interpolatedExpressionUnmatchedBraceCount,
-        // RazorLexerContextKind.Expect_TagOrText
-        byte contextKindByte = 0)
+        //ref TextEditorTextSpan previousEscapeCharacterTextSpan,
+        //ref int interpolatedExpressionUnmatchedBraceCount,
+        byte contextKindByte = 0/*RazorLexerContextKind.Expect_TagOrText*/)
     {
         var context = (RazorLexerContextKind)contextKindByte;
         //var output = new RazorLexerOutput(modelModifier);

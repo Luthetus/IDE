@@ -2100,7 +2100,7 @@ public static partial class Parser
         // doesn't trigger the 'parserModel.MostRecentLeftHandSideAssignmentExpressionTypeClauseNode'.
         //
         if (CSharpFacts.Types.VoidValue.IdentifierToken.TextSpan.CharIntSum == constructorInvocationExpressionNode.ResultTypeReference.ExplicitDefinitionTextSpan.CharIntSum &&
-            parserModel.Binder.CSharpCompilerService.SafeCompareText(constructorInvocationExpressionNode.ResultTypeReference.ExplicitDefinitionAbsolutePathId, "void", constructorInvocationExpressionNode.ResultTypeReference.ExplicitDefinitionTextSpan))
+            parserModel.Binder.CSharpCompilerService.SafeCompareText(constructorInvocationExpressionNode.ResultTypeReference.ExplicitDefinitionAbsolutePathId, "void", constructorInvocationExpressionNode.ResultTypeReference.ExplicitDefinitionTextSpan, TextSourceKind.Explicit))
         {
             isVoidType = true;
         }
@@ -3676,7 +3676,7 @@ public static partial class Parser
                         absolutePathId = innerAbsolutePathId;
                     }
                     
-                    if (parserModel.Binder.CSharpCompilerService.SafeCompareTextSpans(parserModel.AbsolutePathId, memberIdentifierToken.TextSpan, absolutePathId, variableDeclarationNode.IdentifierToken.TextSpan))
+                    if (parserModel.Binder.CSharpCompilerService.SafeCompareTextSpans(parserModel.AbsolutePathId, memberIdentifierToken.TextSpan, absolutePathId, variableDeclarationNode.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                     {
                         foundDefinitionNode = variableDeclarationNode;
                         break;
@@ -3703,7 +3703,7 @@ public static partial class Parser
                         absolutePathId = innerAbsolutePathId;
                     }
                     
-                    if (parserModel.Binder.CSharpCompilerService.SafeCompareTextSpans(parserModel.AbsolutePathId, memberIdentifierToken.TextSpan, absolutePathId, functionDefinitionNode.IdentifierToken.TextSpan))
+                    if (parserModel.Binder.CSharpCompilerService.SafeCompareTextSpans(parserModel.AbsolutePathId, memberIdentifierToken.TextSpan, absolutePathId, functionDefinitionNode.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                     {
                         foundDefinitionNode = functionDefinitionNode;
                         break;
@@ -4236,7 +4236,7 @@ public static partial class Parser
             var variableDeclarationNode = (VariableDeclarationNode)expressionSecondary;
             
             if (CSharpFacts.Types.VarValue.IdentifierToken.TextSpan.CharIntSum == variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan.CharIntSum &&
-                parserModel.Binder.CSharpCompilerService.SafeCompareText(parserModel.AbsolutePathId, "var", variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan))
+                parserModel.Binder.CSharpCompilerService.SafeCompareText(parserModel.AbsolutePathId, "var", variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan, TextSourceKind.Explicit))
             {
                 if (invocationNode.SyntaxKind == SyntaxKind.FunctionInvocationNode)
                 {

@@ -174,7 +174,7 @@ public static partial class Parser
                 
                 if (expression.SyntaxKind == SyntaxKind.BinaryExpressionNode &&
                     CSharpFacts.Types.VarValue.IdentifierToken.TextSpan.CharIntSum == variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan.CharIntSum &&
-                    parserModel.Binder.CSharpCompilerService.SafeCompareText(parserModel.AbsolutePathId, "var", variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan))
+                    parserModel.Binder.CSharpCompilerService.SafeCompareText(parserModel.AbsolutePathId, "var", variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan, TextSourceKind.Explicit))
                 {
                     // 2025-09-14: `parserModel.StatementBuilder.MostRecentNode = expression;`...
                     // exists below but is this "certainly" going to return the binary expression node? can doing it this way miss a return?
@@ -277,7 +277,8 @@ public static partial class Parser
                     parserModel.AbsolutePathId,
                     nodeValue.IdentifierToken.TextSpan,
                     parserModel.AbsolutePathId,
-                    typeClauseNode.TypeIdentifierToken.TextSpan))
+                    typeClauseNode.TypeIdentifierToken.TextSpan,
+                    TextSourceKind.Explicit))
             {
                 wasHandled = true;
             

@@ -308,7 +308,7 @@ public static partial class Parser
         if ((enumerable.ResultTypeReference.ArrayRank == 1 || enumerable.ResultTypeReference.OffsetGenericParameterEntryList != -1) &&
             variableDeclarationNode is not null &&
             Facts.CSharpFacts.Types.VarValue.IdentifierToken.TextSpan.CharIntSum == variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan.CharIntSum &&
-            parserModel.Binder.CSharpCompilerService.SafeCompareText(parserModel.AbsolutePathId, "var", variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan))
+            parserModel.Binder.CSharpCompilerService.SafeCompareText(parserModel.AbsolutePathId, "var", variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan, TextSourceKind.Explicit))
         {
             var typeReferenceWasChanged = false;
         
@@ -987,11 +987,13 @@ public static partial class Parser
                         {
                             var currentParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
                                 parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].AbsolutePathId,
-                                parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].IdentifierToken.TextSpan);
+                                parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].IdentifierToken.TextSpan,
+                                TextSourceKind.Explicit);
                             
                             var previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].AbsolutePathId,
-                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan);
+                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan,
+                                TextSourceKind.Explicit);
                             
                             if (currentParentIdentifierText is not null &&
                                 currentParentIdentifierText == previousParentIdentifierText)
@@ -1016,8 +1018,9 @@ public static partial class Parser
                                         scope.OwnerSyntaxKind == SyntaxKind.TypeDefinitionNode &&
                                         binder.CSharpCompilerService.SafeGetText(
                                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].AbsolutePathId,
-                                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].IdentifierToken.TextSpan) ==
-                                            binder.GetIdentifierText(typeDefinitionNode, parserModel.AbsolutePathId, compilation))
+                                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].IdentifierToken.TextSpan,
+                                                TextSourceKind.Explicit) ==
+                                            binder.GetIdentifierText(typeDefinitionNode, parserModel.AbsolutePathId, compilation, TextSourceKind.Explicit))
                                     {
                                         previousNode = parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex];
                                         break;
@@ -1036,7 +1039,7 @@ public static partial class Parser
                 }
             }
             
-            if (parserModel.ClearedPartialDefinitionHashSet.Add(parserModel.GetTextSpanText(identifierToken.TextSpan)) &&
+            if (parserModel.ClearedPartialDefinitionHashSet.Add(parserModel.GetTextSpanText(identifierToken.TextSpan, TextSourceKind.Explicit)) &&
                 typeDefinitionNode.IndexPartialTypeDefinition != -1)
             {
                 // Partial definitions of the same type from the same ResourceUri are made contiguous.

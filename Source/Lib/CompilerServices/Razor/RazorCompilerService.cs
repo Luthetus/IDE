@@ -164,6 +164,7 @@ public sealed class RazorCompilerService : ICompilerService
                 _cSharpCompilerService._tokenWalkerBuffer,
                 _cSharpCompilerService._streamReaderWrap,
                 shouldUseSharedStringWalker: true,
+                useCSharpLexer: false,
                 lexRazor: _lexRazor);
             
             _cSharpCompilerService.__CSharpBinder.StartCompilationUnit(absolutePathId);
@@ -230,6 +231,7 @@ public sealed class RazorCompilerService : ICompilerService
                 _cSharpCompilerService._tokenWalkerBuffer,
                 _cSharpCompilerService._streamReaderWrap,
                 shouldUseSharedStringWalker: true,
+                useCSharpLexer: false,
                 lexRazor: _lexRazor);
 
             _cSharpCompilerService.FastParseTuple = (absolutePathId, parser_sr);

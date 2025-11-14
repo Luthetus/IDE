@@ -164,6 +164,9 @@ public sealed class TokenWalkerBuffer
     /// 
     /// 'Func<SyntaxToken> lexRazor' is a pretty scuffed way to handle the Razor parsing.
     /// But I'm gonna try it out and see where things go.
+    /// 
+    /// WARNING: This method internally will invoke Consume(), if you do not provide the...
+    /// ...optional parameter 'bool useCSharpLexer = true', then the first Consume() will be done with C# lexer.
     /// </summary>
     public void ReInitialize(
         CSharpBinder binder,
@@ -266,7 +269,11 @@ public sealed class TokenWalkerBuffer
     {
         UseCSharpLexer = useCSharpLexer;
     }
-    
+
+    /// <summary>
+    /// WARNING: Then ReInitialize method internally will invoke Consume(), if you do not provide the...
+    /// ...optional parameter 'bool useCSharpLexer = true', then the first Consume() will be done with C# lexer.
+    /// </summary>
     public SyntaxToken Consume()
     {
         if (!IsInitialParse)

@@ -204,6 +204,25 @@ public static class RazorLexer
                     }
                     else if (context == RazorLexerContextKind.Expect_TagOrText)
                     {
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
+                        {
+                            if (tokenWalkerBuffer.StreamReaderWrap.PositionIndex > 0)
+                            {
+                                tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
+                                    tokenWalkerBuffer.StreamReaderWrap.PositionIndex - 1,
+                                    tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                                    (byte)GenericDecorationKind.Razor_Text);
+                            }
+                            return new SyntaxToken(
+                                SyntaxKind.AtToken,
+                                new TextEditorTextSpan(
+                                    startInclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex - 1,
+                                    endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                                    decorationByte: (byte)GenericDecorationKind.Razor_Text,
+                                    byteIndex: tokenWalkerBuffer.StreamReaderWrap.ByteIndex - 1,
+                                    charIntSum: 64));
+                        }
+
                         var textStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
                         var textStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                         while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)

@@ -358,6 +358,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// </summary>
     public string? UnsafeGetText(string absolutePathString, TextEditorTextSpan textSpan)
     {
+        if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+            throw new NotImplementedException($"{nameof(UnsafeGetText)}_ImplicitTextSource");
+    
         if (absolutePathString == string.Empty)
         {
             if (textSpan.EndExclusiveIndex > EmptyFileHackForLanguagePrimitiveText.Length)
@@ -422,9 +425,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
     {
         if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
-        {
-            return null;
-        }
+            throw new NotImplementedException($"{nameof(UnsafeGetText)}_ImplicitTextSource");
         
         StreamReaderPooledBuffer sr;
 
@@ -537,6 +538,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     
     public bool SafeCompareText(int absolutePathId, string value, TextEditorTextSpan textSpan)
     {
+        if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+            throw new NotImplementedException($"{nameof(UnsafeGetText)}_ImplicitTextSource");
+    
         if (value.Length != textSpan.Length)
             return false;
 
@@ -694,6 +698,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     
     public bool SafeCompareTextSpans(int sourceAbsolutePathId, TextEditorTextSpan sourceTextSpan, int otherAbsolutePathId, TextEditorTextSpan otherTextSpan)
     {
+        if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+            throw new NotImplementedException($"{nameof(UnsafeGetText)}_ImplicitTextSource");
+            
         if (sourceTextSpan.Length != otherTextSpan.Length ||
             sourceTextSpan.CharIntSum != otherTextSpan.CharIntSum)
         {
@@ -2169,6 +2176,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     
     public string GetIdentifierText(ISyntaxNode node, int absolutePathId)
     {
+        if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+            throw new NotImplementedException($"{nameof(UnsafeGetText)}_ImplicitTextSource");
+    
         if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilationUnit))
             return __CSharpBinder.GetIdentifierText(node, absolutePathId, compilationUnit) ?? string.Empty;
     

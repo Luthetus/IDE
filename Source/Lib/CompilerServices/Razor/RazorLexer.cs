@@ -963,7 +963,28 @@ public static class RazorLexer
                 
             _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
         }
-        
+
+        /*
+         Directives
+         ==========
+         @attribute
+         @page "/counter"
+         @code
+         @functions
+         @implements
+         @inherits
+         @model
+         @inject
+         @layout
+         @model
+         @namespace
+         @preservewhitespace
+         @rendermode
+         @using static Microsoft.AspNetCore.Components.Web.RenderMode
+         @section
+         @typeparam
+         */
+
         switch (characterIntSum)
         {
             case 1189: // addTagHelper

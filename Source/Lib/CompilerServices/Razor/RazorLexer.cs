@@ -206,20 +206,23 @@ public static class RazorLexer
                     {
                         if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
                         {
-                            if (tokenWalkerBuffer.StreamReaderWrap.PositionIndex > 0)
-                            {
-                                tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
-                                    tokenWalkerBuffer.StreamReaderWrap.PositionIndex - 1,
-                                    tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
-                                    (byte)GenericDecorationKind.Razor_Text);
-                            }
+                            var startInclusiveIndex = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                            var byteIndex = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
+                                startInclusiveIndex,
+                                tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                                (byte)GenericDecorationKind.Razor_Text);
+
                             return new SyntaxToken(
                                 SyntaxKind.AtToken,
                                 new TextEditorTextSpan(
-                                    startInclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex - 1,
+                                    startInclusiveIndex,
                                     endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                     decorationByte: (byte)GenericDecorationKind.Razor_Text,
-                                    byteIndex: tokenWalkerBuffer.StreamReaderWrap.ByteIndex - 1,
+                                    byteIndex,
                                     charIntSum: 64));
                         }
 

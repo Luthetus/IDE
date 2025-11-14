@@ -1,9 +1,10 @@
+using Clair.Extensions.CompilerServices.Syntax;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
+using Clair.Extensions.CompilerServices.Syntax.Interfaces;
+using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.TextEditor.RazorLib;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
-using Clair.Extensions.CompilerServices.Syntax;
-using Clair.Extensions.CompilerServices.Syntax.Interfaces;
-using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 
 namespace Clair.Extensions.CompilerServices;
 
@@ -130,7 +131,7 @@ public struct SyntaxViewModel
         if (ExtendedCompilerService is IExtendedCompilerService extendedCompilerService)
         {
             var compilationUnit = ExtendedCompilerService.GetResourceByAbsolutePathId(AbsolutePathId);
-            return extendedCompilerService.GetIdentifierText(node, AbsolutePathId);
+            return extendedCompilerService.GetIdentifierText(node, AbsolutePathId, TextSourceKind.Explicit);
         }
         
         return "null";
@@ -144,7 +145,7 @@ public struct SyntaxViewModel
             
             if (compilationUnit is IExtendedCompilationUnit extendedCompilationUnit)
             {
-                return ExtendedCompilerService.UnsafeGetText(AbsolutePathId, textSpan) ?? string.Empty;
+                return ExtendedCompilerService.UnsafeGetText(AbsolutePathId, textSpan, TextSourceKind.Explicit) ?? string.Empty;
             }
         }
         
@@ -160,7 +161,7 @@ public struct SyntaxViewModel
             if (compilationUnit is IExtendedCompilationUnit extendedCompilationUnit)
             {
                 return ExtendedCompilerService
-                    .UnsafeGetText(AbsolutePathId, symbol.ToTextSpan()) ?? string.Empty;
+                    .UnsafeGetText(AbsolutePathId, symbol.ToTextSpan(), TextSourceKind.Explicit) ?? string.Empty;
             }
         }
         

@@ -9,6 +9,7 @@ using Clair.CompilerServices.CSharp.ParserCase;
 using Clair.Extensions.CompilerServices;
 using Clair.Extensions.CompilerServices.Displays;
 using Clair.Extensions.CompilerServices.Syntax;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
 using Clair.Extensions.CompilerServices.Syntax.Interfaces;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.TextEditor.RazorLib;
@@ -342,20 +343,20 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
     /// </summary>
-    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
+    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
     {
         var absolutePathString = TryGetIntToFileAbsolutePathMap(absolutePathId);
         if (absolutePathString is null)
             return null;
 
-        return UnsafeGetText(absolutePathString, textSpan);
+        return UnsafeGetText(absolutePathString, textSpan, textSourceKind);
     }
 
     /// <summary>
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
     /// </summary>
-    public string? UnsafeGetText(string absolutePathString, TextEditorTextSpan textSpan)
+    public string? UnsafeGetText(string absolutePathString, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
     {
         if (absolutePathString == string.Empty)
         {
@@ -418,8 +419,13 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
     /// </summary>
-    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
+    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
     {
+        if (textSourceKind == TextSourceKind.Implicit)
+        {
+            return null;
+        }
+        
         StreamReaderPooledBuffer sr;
 
         if (absolutePathId == ResourceUri.EmptyAbsolutePathId)
@@ -529,7 +535,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         }
     }
     
-    public bool SafeCompareText(int absolutePathId, string value, TextEditorTextSpan textSpan)
+    public bool SafeCompareText(int absolutePathId, string value, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
     {
         if (value.Length != textSpan.Length)
             return false;
@@ -686,7 +692,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return true;
     }
     
-    public bool SafeCompareTextSpans(int sourceAbsolutePathId, TextEditorTextSpan sourceTextSpan, int otherAbsolutePathId, TextEditorTextSpan otherTextSpan)
+    public bool SafeCompareTextSpans(int sourceAbsolutePathId, TextEditorTextSpan sourceTextSpan, int otherAbsolutePathId, TextEditorTextSpan otherTextSpan, TextSourceKind textSourceKind)
     {
         if (sourceTextSpan.Length != otherTextSpan.Length ||
             sourceTextSpan.CharIntSum != otherTextSpan.CharIntSum)
@@ -2161,10 +2167,10 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return default;
     }
     
-    public string GetIdentifierText(ISyntaxNode node, int absolutePathId)
+    public string GetIdentifierText(ISyntaxNode node, int absolutePathId, TextSourceKind textSourceKind)
     {
         if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilationUnit))
-            return __CSharpBinder.GetIdentifierText(node, absolutePathId, compilationUnit) ?? string.Empty;
+            return __CSharpBinder.GetIdentifierText(node, absolutePathId, compilationUnit, textSourceKind) ?? string.Empty;
     
         return string.Empty;
     }

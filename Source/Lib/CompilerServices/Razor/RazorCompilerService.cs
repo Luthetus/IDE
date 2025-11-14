@@ -14,7 +14,7 @@ using Clair.CompilerServices.CSharp.BinderCase;
 using Clair.Extensions.CompilerServices;
 using Clair.Extensions.CompilerServices.Syntax.Interfaces;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
-using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
 
 namespace Clair.CompilerServices.Razor;
 
@@ -298,19 +298,19 @@ public sealed class RazorCompilerService : IExtendedCompilerService
         return _cSharpCompilerService.GetResourceByAbsolutePathId(absolutePathId);
     }
 
-    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
+    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
     {
-        return _cSharpCompilerService.UnsafeGetText(absolutePathId, textSpan);
+        return _cSharpCompilerService.UnsafeGetText(absolutePathId, textSpan, textSourceKind);
     }
     
-    public string? UnsafeGetText(string absolutePath, TextEditorTextSpan textSpan)
+    public string? UnsafeGetText(string absolutePath, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
     {
-        return _cSharpCompilerService.UnsafeGetText(absolutePath, textSpan);
+        return _cSharpCompilerService.UnsafeGetText(absolutePath, textSpan, textSourceKind);
     }
 
-    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
+    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
     {
-        return _cSharpCompilerService.SafeGetText(absolutePathId, textSpan);
+        return _cSharpCompilerService.SafeGetText(absolutePathId, textSpan, textSourceKind);
     }
 
     public IReadOnlyList<GenericParameter> GenericParameterEntryList => _cSharpCompilerService.GenericParameterEntryList;
@@ -337,8 +337,8 @@ public sealed class RazorCompilerService : IExtendedCompilerService
         return _cSharpCompilerService.GetCodeBlockTupleByPositionIndex(absolutePathId, positionIndex);
     }
     
-    public string GetIdentifierText(ISyntaxNode node, int absolutePathId)
+    public string GetIdentifierText(ISyntaxNode node, int absolutePathId, TextSourceKind textSourceKind)
     {
-        return _cSharpCompilerService.GetIdentifierText(node, absolutePathId);
+        return _cSharpCompilerService.GetIdentifierText(node, absolutePathId, textSourceKind);
     }
 }

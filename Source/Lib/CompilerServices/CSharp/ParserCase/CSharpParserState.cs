@@ -913,18 +913,18 @@ public ref partial struct CSharpParserState
             }
             else
             {
-                if (Binder.CSharpCompilerService.SafeCompareText(referenceAbsolutePathId, definitionName, referenceTextSpan))
+                if (Binder.CSharpCompilerService.SafeCompareText(referenceAbsolutePathId, definitionName, referenceTextSpan, TextSourceKind.Explicit))
                     return true;
             }
         }
         else if (referenceTextSourceKind == TextSourceKind.Implicit)
         {
             var referenceName = Binder.CSharpCompilerService.GetRazorComponentName(referenceAbsolutePathId);
-            if (Binder.CSharpCompilerService.SafeCompareText(definitionAbsolutePathId, referenceName, definitionValue.IdentifierToken.TextSpan))
+            if (Binder.CSharpCompilerService.SafeCompareText(definitionAbsolutePathId, referenceName, definitionValue.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                 return true;
         }
         else if (Binder.CSharpCompilerService.SafeCompareTextSpans(
-                referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, definitionValue.IdentifierToken.TextSpan))
+                referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, definitionValue.IdentifierToken.TextSpan, TextSourceKind.Explicit))
         {
             return true;
         }
@@ -999,7 +999,7 @@ public ref partial struct CSharpParserState
             if (node.ParentScopeSubIndex == definitionScopeSubIndex &&
                 node.SyntaxKind == SyntaxKind.FunctionDefinitionNode)
             {
-                if (Binder.CSharpCompilerService.SafeCompareTextSpans(referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, node.IdentifierToken.TextSpan))
+                if (Binder.CSharpCompilerService.SafeCompareTextSpans(referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                 {
                     functionDefinitionValue = node;
                     break;
@@ -1150,7 +1150,7 @@ public ref partial struct CSharpParserState
                 node.SyntaxKind == SyntaxKind.VariableDeclarationNode)
             {
                 if (Binder.CSharpCompilerService.SafeCompareTextSpans(
-                        referenceAbsolutePathId, referenceTextSpan, declarationAbsolutePathId, node.IdentifierToken.TextSpan))
+                        referenceAbsolutePathId, referenceTextSpan, declarationAbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                 {
                     variableDeclarationValue = node;
                     break;
@@ -1263,7 +1263,7 @@ public ref partial struct CSharpParserState
                 node.SyntaxKind == SyntaxKind.VariableDeclarationNode)
             {
                 if (Binder.CSharpCompilerService.SafeCompareTextSpans(
-                        AbsolutePathId, variableIdentifierTextSpan, AbsolutePathId, node.IdentifierToken.TextSpan))
+                        AbsolutePathId, variableIdentifierTextSpan, AbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                 {
                     matchNode = node;
                     break;
@@ -1308,7 +1308,7 @@ public ref partial struct CSharpParserState
                 node.SyntaxKind == SyntaxKind.VariableDeclarationNode)
             {
                 if (Binder.CSharpCompilerService.SafeCompareTextSpans(
-                        AbsolutePathId, variableIdentifierTextSpan, AbsolutePathId, node.IdentifierToken.TextSpan))
+                        AbsolutePathId, variableIdentifierTextSpan, AbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                 {
                     matchNode = node;
                     break;
@@ -1387,7 +1387,7 @@ public ref partial struct CSharpParserState
             if (node.ParentScopeSubIndex == declarationScopeSubIndex &&
                 node.SyntaxKind == SyntaxKind.LabelDeclarationNode)
             {
-                if (Binder.CSharpCompilerService.SafeCompareTextSpans(referenceAbsolutePathId, referenceTextSpan, declarationAbsolutePathId, node.IdentifierToken.TextSpan))
+                if (Binder.CSharpCompilerService.SafeCompareTextSpans(referenceAbsolutePathId, referenceTextSpan, declarationAbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                 {
                     labelDeclarationValue = node;
                     break;
@@ -1414,7 +1414,7 @@ public ref partial struct CSharpParserState
             if (node.ParentScopeSubIndex == scopeSubIndex &&
                 node.SyntaxKind == SyntaxKind.LabelDeclarationNode)
             {
-                if (Binder.CSharpCompilerService.SafeCompareTextSpans(AbsolutePathId, labelIdentifierTextSpan, AbsolutePathId, node.IdentifierToken.TextSpan))
+                if (Binder.CSharpCompilerService.SafeCompareTextSpans(AbsolutePathId, labelIdentifierTextSpan, AbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                 {
                     matchNode = node;
                     break;
@@ -1455,7 +1455,7 @@ public ref partial struct CSharpParserState
             if (node.ParentScopeSubIndex == scopeSubIndex &&
                 node.SyntaxKind == SyntaxKind.LabelDeclarationNode)
             {
-                if (Binder.CSharpCompilerService.SafeCompareTextSpans(AbsolutePathId, referenceTextSpan, AbsolutePathId, node.IdentifierToken.TextSpan))
+                if (Binder.CSharpCompilerService.SafeCompareTextSpans(AbsolutePathId, referenceTextSpan, AbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit))
                 {
                     matchNode = node;
                     break;
@@ -1472,9 +1472,9 @@ public ref partial struct CSharpParserState
         }
     }
     
-    public readonly string GetTextSpanText(TextEditorTextSpan textSpan)
+    public readonly string GetTextSpanText(TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
     {
-        return Binder.CSharpCompilerService.SafeGetText(AbsolutePathId, textSpan) ?? string.Empty;
+        return Binder.CSharpCompilerService.SafeGetText(AbsolutePathId, textSpan, textSourceKind) ?? string.Empty;
     }
 
     public readonly TypeClauseNode ToTypeClause(TypeDefinitionNode typeDefinitionNode)

@@ -590,6 +590,12 @@ public sealed class TokenWalkerBuffer
         ConsumeCounter = 0;
     }
     
+    /// <summary>Hack, avoid usage</summary>
+    public void SetConsumeCounter(int consumeCounter)
+    {
+        ConsumeCounter = consumeCounter;
+    }
+    
     public void DeferParsingOfChildScope(SyntaxToken openToken, ref CSharpParserState parserModel)
     {
         // Pop off the 'TypeDefinitionNode', then push it back on when later dequeued.

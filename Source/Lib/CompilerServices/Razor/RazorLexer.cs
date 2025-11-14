@@ -989,22 +989,21 @@ public static class RazorLexer
         /*
          Directives
          ==========
-         @attribute
-         @page "/counter"
-         @code
-         @functions
-         @implements
-         @inherits
-         @model
-         @inject
-         @layout
-         @model
-         @namespace
-         @preservewhitespace
-         @rendermode
-         @using static Microsoft.AspNetCore.Components.Web.RenderMode
-         @section
-         @typeparam
+         @attribute case 980: // attribute
+         @page "/counter" case 413: // page
+         @code case 411: // code
+         @functions case 985: // functions
+         @implements case 1086: // implements
+         @inherits case 870: // inherits
+         @model case 529: // model
+         @inject case 637: // inject
+         @layout case 670: // layout
+         @namespace case 941: // namespace
+         @preservewhitespace case 1945: // preservewhitespace
+         @rendermode case 1061: // rendermode
+         @using case 550: // using  // static Microsoft.AspNetCore.Components.Web.RenderMode
+         @section case 757: // section
+         @typeparam case 979: // typeparam
          */
 
         switch (characterIntSum)
@@ -1044,11 +1043,19 @@ public static class RazorLexer
                     keywordCheckBuffer[7] ==  't' &&
                     keywordCheckBuffer[8] ==  'e')
                 {
+
                     tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1128,17 +1135,26 @@ public static class RazorLexer
                     
                     _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                 }
-                
+
+                var resultToken = new SyntaxToken(
+                    SyntaxKind.RazorDirective,
+                    new TextEditorTextSpan(
+                        startInclusiveIndex: wordStartPosition,
+                        endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                        decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                        byteIndex: wordStartByte,
+                        charIntSum: characterIntSum));
+
                 if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                 {
                     LexCSharpCodeBlock(tokenWalkerBuffer);
                     if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
-                        return new SyntaxToken(SyntaxKind.NotProvided, default);
-                    return new SyntaxToken(SyntaxKind.NotProvided, default); ;
+                        return resultToken;
+                    return resultToken;
                 }
                 else
                 {
-                    return new SyntaxToken(SyntaxKind.NotProvided, default); ;
+                    return resultToken;
                 }
             case 741: // default
                 if (lengthCharacter == 7 &&
@@ -1339,7 +1355,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1485,7 +1508,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1500,13 +1530,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    return new SyntaxToken(SyntaxKind.RazorDirective, new TextEditorTextSpan(
-                        startInclusiveIndex: wordStartPosition,
-                        endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
-                        decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
-                        byteIndex: wordStartByte,
-                        charIntSum: characterIntSum));
-                    //break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1535,7 +1566,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1632,7 +1670,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1651,7 +1696,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1668,7 +1720,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1688,7 +1747,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1761,7 +1827,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -1779,7 +1852,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -2034,7 +2114,14 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(
+                        SyntaxKind.RazorDirective,
+                        new TextEditorTextSpan(
+                            startInclusiveIndex: wordStartPosition,
+                            endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                            byteIndex: wordStartByte,
+                            charIntSum: characterIntSum));
                 }
                 
                 goto default;
@@ -2060,7 +2147,16 @@ public static class RazorLexer
                     }
                     
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '(')
-                        return new SyntaxToken(SyntaxKind.NotProvided, default);
+                    {
+                        return new SyntaxToken(
+                            SyntaxKind.RazorDirective,
+                            new TextEditorTextSpan(
+                                startInclusiveIndex: wordStartPosition,
+                                endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                                decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                                byteIndex: wordStartByte,
+                                charIntSum: characterIntSum));
+                    }
                     
                     // Move one beyond the end of using statement condition
                     var matchParenthesis = 0;

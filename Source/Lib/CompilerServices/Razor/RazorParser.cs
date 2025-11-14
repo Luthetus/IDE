@@ -192,9 +192,35 @@ public static class RazorParser
 
                     if (identifierOrKeyword.SyntaxKind == SyntaxKind.RazorDirective)
                     {
-                        if (identifierOrKeyword.TextSpan.CharIntSum == 413) // page
+                        switch (identifierOrKeyword.TextSpan.CharIntSum)
                         {
-                            isSupportedRazorDirective = true;
+                            case 980:  // attribute
+                            case 413:  // page
+                            case 411:  // code
+                            case 985:  // functions
+                            case 1086: // implements
+                            case 870:  // inherits
+                            case 529:  // model
+                            case 637:  // inject
+                            case 670:  // layout
+                            case 941:  // namespace
+                            case 1945: // preservewhitespace
+                            case 1061: // rendermode
+                            case 550:  // using
+                            case 757:  // section
+                            case 979:  // typeparam
+                                isSupportedRazorDirective = true;
+                                while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
+                                {
+                                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '\r' ||
+                                        tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '\n')
+                                    {
+                                        break;
+                                    }
+                                    _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                                }
+                                tokenWalkerBuffer.Consume();
+                                break;
                         }
                     }
                     

@@ -214,14 +214,14 @@ public static class RazorLexer
                             tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 startInclusiveIndex,
                                 tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
-                                (byte)GenericDecorationKind.Razor_Text);
+                                (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
 
                             return new SyntaxToken(
                                 SyntaxKind.AtToken,
                                 new TextEditorTextSpan(
                                     startInclusiveIndex,
                                     endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
-                                    decorationByte: (byte)GenericDecorationKind.Razor_Text,
+                                    decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
                                     byteIndex,
                                     charIntSum: 64));
                         }

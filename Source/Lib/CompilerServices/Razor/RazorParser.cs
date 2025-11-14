@@ -160,9 +160,9 @@ public static class RazorParser
         {
             // The last statement in this while loop is conditionally: '_ = parserModel.TokenWalker.Consume();'.
             // Knowing this to be the case is extremely important.
-            
-            
-            
+
+            //parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
+
             switch (parserModel.TokenWalker.Current.SyntaxKind)
             {
                 case SyntaxKind.NumericLiteralToken:

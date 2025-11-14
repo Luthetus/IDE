@@ -428,10 +428,36 @@ public static class RazorParser
                         if (currentParent.OwnerSyntaxKind == previousParent.OwnerSyntaxKind)
                         {
                             var currentParentIdentifierText = string.Empty;
+
+                            string? previousParentIdentifierText;
+                            if (parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan.DecorationByte ==
+                                    (byte)SyntaxKind.ImplicitTextSource)
+                            {
+                                if (parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].SyntaxKind ==
+                                        SyntaxKind.NamespaceStatementNode)
+                                {
+                                    previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.GetRazorNamespace(
+                                        parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].AbsolutePathId,
+                                        isTextEditorContext: true);
+                                }
+                                else if (parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].SyntaxKind ==
+                                        SyntaxKind.TypeDefinitionNode)
+                                {
+                                    previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.GetRazorComponentName(
+                                        parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].AbsolutePathId);
+                                }
+                                else
+                                {
+                                    throw new NotImplementedException("Currently only namespaces and types are ever made implicit text source.");
+                                }
+                            }
+                            else
+                            {
+                                previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
+                                    parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].AbsolutePathId,
+                                    parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan);
+                            }
                             
-                            var previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
-                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].AbsolutePathId,
-                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan);
                             
                             if (currentParentIdentifierText is not null &&
                                 currentParentIdentifierText == previousParentIdentifierText)
@@ -476,7 +502,7 @@ public static class RazorParser
                 }
             }
             
-            if (parserModel.ClearedPartialDefinitionHashSet.Add(parserModel.GetTextSpanText(identifierToken.TextSpan)) &&
+            if (parserModel.ClearedPartialDefinitionHashSet.Add(componentName) &&
                 typeDefinitionNode.IndexPartialTypeDefinition != -1)
             {
                 // Partial definitions of the same type from the same ResourceUri are made contiguous.

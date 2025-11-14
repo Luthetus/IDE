@@ -193,17 +193,17 @@ public static class RazorParser
                         tokenWalkerBuffer,
                         SyntaxContinuationKind.None);
 
+                    var isSupportedRazorDirective = false;
+
                     if (identifierOrKeyword.SyntaxKind == SyntaxKind.RazorDirective)
                     {
-
+                        if (identifierOrKeyword.TextSpan.CharIntSum == 413) // page
+                        {
+                            isSupportedRazorDirective = true;
+                        }
                     }
                     
-                    var isRazorDirective = false;
-                    if (isRazorDirective)
-                    {
-                        // TODO: this
-                    }
-                    else
+                    if (!isSupportedRazorDirective)
                     {
                         parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
                         _ = parserModel.TokenWalker.Consume();

@@ -184,19 +184,12 @@ public static class RazorParser
                     }
                     break;
                 case SyntaxKind.AtToken:
-                    
-                    Console.WriteLine(parserModel.TokenWalker.StreamReaderWrap.PositionIndex);
-                    //_ = parserModel.TokenWalker.Consume();
-                    Console.WriteLine(parserModel.TokenWalker.StreamReaderWrap.PositionIndex);
-
                     var identifierOrKeyword = RazorLexer.SkipCSharpdentifierOrKeyword(
                         binder.KeywordCheckBuffer,
                         tokenWalkerBuffer,
                         SyntaxContinuationKind.None);
 
                     var isSupportedRazorDirective = false;
-
-                    Console.WriteLine(identifierOrKeyword.SyntaxKind);
 
                     if (identifierOrKeyword.SyntaxKind == SyntaxKind.RazorDirective)
                     {

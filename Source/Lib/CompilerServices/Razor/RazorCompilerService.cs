@@ -99,7 +99,17 @@ public sealed class RazorCompilerService : ICompilerService
         TextEditorComponentData componentData,
         ResourceUri resourceUri)
     {
-        return ValueTask.CompletedTask;
+        return _cSharpCompilerService.OnInspect(
+            editContext,
+            modelModifier,
+            viewModelModifier,
+            clientX,
+            clientY,
+            shiftKey,
+            ctrlKey,
+            altKey,
+            componentData,
+            resourceUri);
     }
     
     public ValueTask ShowCallingSignature(

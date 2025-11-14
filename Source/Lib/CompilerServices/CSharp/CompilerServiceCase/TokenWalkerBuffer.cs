@@ -215,6 +215,7 @@ public sealed class TokenWalkerBuffer
     /// <summary>WARNING: code duplication in 'ReInitialize(...)'</summary>
     public void Seek_SeekOriginBegin(SyntaxToken token, int tokenIndex, int rootConsumeCounter)
     {
+        Console.WriteLine(nameof(Seek_SeekOriginBegin));
         StreamReaderWrap.Unsafe_Seek_SeekOriginBegin(token.TextSpan.ByteIndex, token.TextSpan.StartInclusiveIndex, token.TextSpan.Length);
         
         _syntaxTokenBuffer[0] = token;
@@ -268,8 +269,14 @@ public sealed class TokenWalkerBuffer
     
     public SyntaxToken Consume()
     {
+        if (!IsInitialParse)
+            Console.WriteLine(nameof(Consume));
         if (IsCloseTokenIndex)
+        {
+            if (!IsInitialParse)
+                Console.WriteLine("\tif (IsCloseTokenIndex)");
             return HandleDeferredParsingCloseTokenIndex();
+        }
     
         ++ConsumeCounter;
 
@@ -277,6 +284,8 @@ public sealed class TokenWalkerBuffer
     
         if (_peekIndex != -1)
         {
+            if (!IsInitialParse)
+                Console.WriteLine("if (_peekIndex != -1)");
             _backtrackTuple = _peekBuffer[_peekIndex++];
 
             if (_peekIndex >= _peekSize)
@@ -310,6 +319,8 @@ public sealed class TokenWalkerBuffer
         {
             if (StreamReaderWrap.IsEof)
             {
+                if (!IsInitialParse)
+                    Console.WriteLine("if (StreamReaderWrap.IsEof)");
                 var endOfFileTextSpan = new TextEditorTextSpan(
                     StreamReaderWrap.PositionIndex,
                     StreamReaderWrap.PositionIndex,
@@ -319,12 +330,17 @@ public sealed class TokenWalkerBuffer
                 return consumedToken;
             }
             // This is duplicated more than once inside the Peek(int) code.
+            
+            if (!IsInitialParse)
+                Console.WriteLine("AFTER____if (StreamReaderWrap.IsEof)");
 
             _backtrackTuple = (_syntaxTokenBuffer[0], Index);
 
             ++_index;
             if (UseCSharpLexer)
             {
+                if (!IsInitialParse)
+                    Console.WriteLine("if (UseCSharpLexer)");
                 _syntaxTokenBuffer[0] = CSharpLexer.Lex(
                     _binder,
                     this,
@@ -334,6 +350,8 @@ public sealed class TokenWalkerBuffer
             }
             else
             {
+                if (!IsInitialParse)
+                    Console.WriteLine("ELSE____if (UseCSharpLexer)");
                 _syntaxTokenBuffer[0] = LexRazor.Invoke(
                     _binder,
                     this,

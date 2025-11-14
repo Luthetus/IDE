@@ -153,9 +153,8 @@ public static class RazorParser
         // i.e.: something about not invoking those Hierarchical methods that search for a definition
         // over and over. That is a lot of copying of data for the parameters.
 
+        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
         tokenWalkerBuffer.Seek_SeekOriginBegin(initialToken, tokenIndex: 0, rootConsumeCounter: 0);
-
-        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
 
         while (true)
         {
@@ -185,8 +184,10 @@ public static class RazorParser
                     }
                     break;
                 case SyntaxKind.AtToken:
-
-                    _ = parserModel.TokenWalker.Consume();
+                    
+                    Console.WriteLine(parserModel.TokenWalker.StreamReaderWrap.PositionIndex);
+                    //_ = parserModel.TokenWalker.Consume();
+                    Console.WriteLine(parserModel.TokenWalker.StreamReaderWrap.PositionIndex);
 
                     var identifierOrKeyword = RazorLexer.SkipCSharpdentifierOrKeyword(
                         binder.KeywordCheckBuffer,
@@ -194,6 +195,8 @@ public static class RazorParser
                         SyntaxContinuationKind.None);
 
                     var isSupportedRazorDirective = false;
+
+                    Console.WriteLine(identifierOrKeyword.SyntaxKind);
 
                     if (identifierOrKeyword.SyntaxKind == SyntaxKind.RazorDirective)
                     {
@@ -527,4 +530,3 @@ public static class RazorParser
         parserModel.Return_TypeDefinitionNode(typeDefinitionNode);
     }
 }
-

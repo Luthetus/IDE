@@ -1478,7 +1478,13 @@ public static class RazorLexer
                         wordStartPosition,
                         tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(SyntaxKind.RazorDirective, new TextEditorTextSpan(
+                        startInclusiveIndex: wordStartPosition,
+                        endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                        decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                        byteIndex: wordStartByte,
+                        charIntSum: characterIntSum));
+                    //break;
                 }
                 
                 goto default;

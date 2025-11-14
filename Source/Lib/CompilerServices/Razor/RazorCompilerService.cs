@@ -11,12 +11,14 @@ using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.CompilerServices.CSharp.CompilerServiceCase;
 using Clair.CompilerServices.CSharp.BinderCase;
+using Clair.Extensions.CompilerServices;
 using Clair.Extensions.CompilerServices.Syntax.Interfaces;
+using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
 
 namespace Clair.CompilerServices.Razor;
 
-public sealed class RazorCompilerService : ICompilerService
+public sealed class RazorCompilerService : IExtendedCompilerService
 {
     public readonly TextEditorService _textEditorService;
     public readonly CSharpCompilerService _cSharpCompilerService;
@@ -260,25 +262,6 @@ public sealed class RazorCompilerService : ICompilerService
         _cSharpCompilerService.FastParseTuple = (0, null);
     }
     
-    /// <summary>
-    /// Looks up the <see cref="IScope"/> that encompasses the provided positionIndex.
-    ///
-    /// Then, checks the <see cref="IScope"/>.<see cref="IScope.CodeBlockOwner"/>'s children
-    /// to determine which node exists at the positionIndex.
-    ///
-    /// If the <see cref="IScope"/> cannot be found, then as a fallback the provided compilationUnit's
-    /// <see cref="CompilationUnit.RootCodeBlockNode"/> will be treated
-    /// the same as if it were the <see cref="IScope"/>.<see cref="IScope.CodeBlockOwner"/>.
-    ///
-    /// If the provided compilerServiceResource?.CompilationUnit is null, then the fallback step will not occur.
-    /// The fallback step is expected to occur due to the global scope being implemented with a null
-    /// <see cref="IScope"/>.<see cref="IScope.CodeBlockOwner"/> at the time of this comment.
-    /// </summary>
-    public ISyntaxNode? GetSyntaxNode(int positionIndex, ResourceUri resourceUri, ICompilerServiceResource? compilerServiceResource)
-    {
-        return null;
-    }
-
     public ICodeBlockOwner? GetScopeByPositionIndex(ResourceUri resourceUri, int positionIndex)
     {
         return default;
@@ -293,5 +276,69 @@ public sealed class RazorCompilerService : ICompilerService
     public ISyntaxNode? GetDefinitionNode(TextEditorTextSpan textSpan, ICompilerServiceResource compilerServiceResource, Symbol? symbol = null)
     {
         return null;
+    }
+    
+    public int TryAddFileAbsolutePath(string fileAbsolutePath)
+    {
+        return _cSharpCompilerService.TryAddFileAbsolutePath(fileAbsolutePath);
+    }
+
+    public int TryGetFileAbsolutePathToInt(string fileAbsolutePath)
+    {
+        return _cSharpCompilerService.TryGetFileAbsolutePathToInt(fileAbsolutePath);
+    }
+
+    public string? TryGetIntToFileAbsolutePathMap(int intId)
+    {
+        return _cSharpCompilerService.TryGetIntToFileAbsolutePathMap(intId);
+    }
+
+    public ICompilerServiceResource? GetResourceByAbsolutePathId(int absolutePathId)
+    {
+        return _cSharpCompilerService.GetResourceByAbsolutePathId(absolutePathId);
+    }
+
+    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
+    {
+        return _cSharpCompilerService.UnsafeGetText(absolutePathId, textSpan);
+    }
+    
+    public string? UnsafeGetText(string absolutePath, TextEditorTextSpan textSpan)
+    {
+        return _cSharpCompilerService.UnsafeGetText(absolutePath, textSpan);
+    }
+
+    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
+    {
+        return _cSharpCompilerService.SafeGetText(absolutePathId, textSpan);
+    }
+
+    public IReadOnlyList<GenericParameter> GenericParameterEntryList => _cSharpCompilerService.GenericParameterEntryList;
+    public IReadOnlyList<FunctionParameter> FunctionParameterEntryList => _cSharpCompilerService.FunctionParameterEntryList;
+    public IReadOnlyList<FunctionArgument> FunctionArgumentEntryList => _cSharpCompilerService.FunctionArgumentEntryList;
+    
+    public IReadOnlyList<TypeDefinitionTraits> TypeDefinitionTraitsList => _cSharpCompilerService.TypeDefinitionTraitsList;
+    public IReadOnlyList<FunctionDefinitionTraits> FunctionDefinitionTraitsList => _cSharpCompilerService.FunctionDefinitionTraitsList;
+    public IReadOnlyList<VariableDeclarationTraits> VariableDeclarationTraitsList => _cSharpCompilerService.VariableDeclarationTraitsList;
+    public IReadOnlyList<ConstructorDefinitionTraits> ConstructorDefinitionTraitsList => _cSharpCompilerService.ConstructorDefinitionTraitsList;
+
+    public SyntaxNodeValue GetSyntaxNode(int positionIndex, ResourceUri resourceUri, ICompilerServiceResource? compilerServiceResource)
+    {
+        return _cSharpCompilerService.GetSyntaxNode(positionIndex, resourceUri, compilerServiceResource);
+    }
+    
+    public SyntaxNodeValue GetDefinitionNodeValue(TextEditorTextSpan textSpan, int absolutePathId, ICompilerServiceResource compilerServiceResource, Symbol? symbol = null)
+    {
+        return _cSharpCompilerService.GetDefinitionNodeValue(textSpan, absolutePathId, compilerServiceResource, symbol);
+    }
+    
+    public (Scope Scope, SyntaxNodeValue CodeBlockOwner) GetCodeBlockTupleByPositionIndex(int absolutePathId, int positionIndex)
+    {
+        return _cSharpCompilerService.GetCodeBlockTupleByPositionIndex(absolutePathId, positionIndex);
+    }
+    
+    public string GetIdentifierText(ISyntaxNode node, int absolutePathId)
+    {
+        return _cSharpCompilerService.GetIdentifierText(node, absolutePathId);
     }
 }

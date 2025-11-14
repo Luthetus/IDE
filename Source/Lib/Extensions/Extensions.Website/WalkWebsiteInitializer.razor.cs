@@ -150,6 +150,7 @@ public partial class ClairWebsiteInitializer : ComponentBase
         // but its duplicated here because the website
         // won't open the first file correctly without this.
         DotNetService.TextEditorService.UpsertHeader("cs", typeof(Clair.Extensions.CompilerServices.Displays.TextEditorCompilerServiceHeaderDisplay));
+        DotNetService.TextEditorService.UpsertHeader("razor", typeof(Clair.Extensions.CompilerServices.Displays.TextEditorCompilerServiceHeaderDisplay));
 
         DotNetService.Enqueue(new DotNetWorkArgs
         {

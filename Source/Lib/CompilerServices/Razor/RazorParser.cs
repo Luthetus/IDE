@@ -219,6 +219,7 @@ public static class RazorParser
                                     }
                                     _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 }
+                                tokenWalkerBuffer.SetUseCSharpLexer(false);
                                 tokenWalkerBuffer.Consume();
                                 break;
                         }

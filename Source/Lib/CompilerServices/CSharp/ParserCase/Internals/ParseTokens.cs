@@ -272,24 +272,39 @@ public static partial class Parser
             if (parserModel.ScopeCurrent.OwnerSyntaxKind == SyntaxKind.TypeDefinitionNode &&
                 nodeValue.SyntaxKind == SyntaxKind.TypeDefinitionNode &&
                 UtilityApi.IsConvertibleToIdentifierToken(typeClauseNode.TypeIdentifierToken.SyntaxKind) &&
-                parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.OpenParenthesisToken &&
-                parserModel.Binder.CSharpCompilerService.SafeCompareTextSpans(
-                    parserModel.AbsolutePathId,
-                    nodeValue.IdentifierToken.TextSpan,
-                    parserModel.AbsolutePathId,
-                    typeClauseNode.TypeIdentifierToken.TextSpan))
+                parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.OpenParenthesisToken)
             {
-                wasHandled = true;
-            
-                // ConstructorDefinitionNode
-    
-                var typeClauseToken = typeClauseNode.TypeIdentifierToken;
-                var identifierToken = UtilityApi.ConvertToIdentifierToken(ref typeClauseToken, ref parserModel);
-    
-                Parser.HandleConstructorDefinition(
-                    typeDefinitionIdentifierToken: nodeValue.IdentifierToken,
-                    identifierToken,
-                    ref parserModel);
+                bool textSpansAreEqual;
+                if (nodeValue.IdentifierToken.TextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+                {
+                    var nodeValueName = parserModel.Binder.CSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId);
+                    textSpansAreEqual = parserModel.Binder.CSharpCompilerService.SafeCompareText(
+                        parserModel.AbsolutePathId,
+                        nodeValueName,
+                        typeClauseNode.TypeIdentifierToken.TextSpan);
+                }
+                else
+                {
+                    textSpansAreEqual = parserModel.Binder.CSharpCompilerService.SafeCompareTextSpans(
+                        parserModel.AbsolutePathId,
+                        nodeValue.IdentifierToken.TextSpan,
+                        parserModel.AbsolutePathId,
+                        typeClauseNode.TypeIdentifierToken.TextSpan);
+                }
+                if (textSpansAreEqual)
+                {
+                    wasHandled = true;
+
+                    // ConstructorDefinitionNode
+
+                    var typeClauseToken = typeClauseNode.TypeIdentifierToken;
+                    var identifierToken = UtilityApi.ConvertToIdentifierToken(ref typeClauseToken, ref parserModel);
+
+                    Parser.HandleConstructorDefinition(
+                        typeDefinitionIdentifierToken: nodeValue.IdentifierToken,
+                        identifierToken,
+                        ref parserModel);
+                }
             }
         }
         

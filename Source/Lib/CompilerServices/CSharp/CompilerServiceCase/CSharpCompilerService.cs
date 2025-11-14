@@ -425,7 +425,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
     {
         if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
-            throw new NotImplementedException($"{nameof(UnsafeGetText)}_ImplicitTextSource");
+            throw new NotImplementedException($"{nameof(SafeGetText)}_ImplicitTextSource");
         
         StreamReaderPooledBuffer sr;
 
@@ -539,7 +539,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     public bool SafeCompareText(int absolutePathId, string value, TextEditorTextSpan textSpan)
     {
         if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
-            throw new NotImplementedException($"{nameof(UnsafeGetText)}_ImplicitTextSource");
+            throw new NotImplementedException($"{nameof(SafeCompareText)}_ImplicitTextSource");
     
         if (value.Length != textSpan.Length)
             return false;
@@ -701,7 +701,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         if (sourceTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource ||
             otherTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
         {
-            throw new NotImplementedException($"{nameof(UnsafeGetText)}_ImplicitTextSource");
+            throw new NotImplementedException($"{nameof(SafeCompareTextSpans)}_ImplicitTextSource");
         }
             
         if (sourceTextSpan.Length != otherTextSpan.Length ||

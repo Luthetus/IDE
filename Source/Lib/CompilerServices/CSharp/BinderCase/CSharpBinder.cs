@@ -433,10 +433,10 @@ public sealed partial class CSharpBinder
         int referenceAbsolutePathId,
         TextEditorTextSpan referenceTextSpan)
     {
-        if (definitionTextSpan.DecorationByte == SyntaxKind.ImplicitTextSource)
+        if (definitionTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
         {
             var definitionName = CSharpCompilerService.GetRazorNamespace(definitionAbsolutePathId, isTextEditorContext: false);
-            if (referenceTextSpan.DecorationByte == SyntaxKind.ImplicitTextSource)
+            if (referenceTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
             {
                 var referenceName = CSharpCompilerService.GetRazorNamespace(referenceAbsolutePathId, isTextEditorContext: false);
                 if (definitionName == referenceName)
@@ -444,18 +444,18 @@ public sealed partial class CSharpBinder
             }
             else
             {
-                if (CSharpCompilerService.SafeCompareText(referenceAbsolutePathId, definitionName, referenceTextSpan, TextSourceKind.Explicit))
+                if (CSharpCompilerService.SafeCompareText(referenceAbsolutePathId, definitionName, referenceTextSpan))
                     return true;
             }
         }
-        else if (referenceTextSpan.DecorationByte == SyntaxKind.ImplicitTextSource)
+        else if (referenceTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
         {
             var referenceName = CSharpCompilerService.GetRazorNamespace(referenceAbsolutePathId, isTextEditorContext: false);
-            if (CSharpCompilerService.SafeCompareText(definitionAbsolutePathId, referenceName, definitionTextSpan, TextSourceKind.Explicit))
+            if (CSharpCompilerService.SafeCompareText(definitionAbsolutePathId, referenceName, definitionTextSpan))
                 return true;
         }
         else if (CSharpCompilerService.SafeCompareTextSpans(
-                referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, definitionTextSpan, TextSourceKind.Explicit))
+                referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, definitionTextSpan))
         {
             return true;
         }
@@ -474,8 +474,7 @@ public sealed partial class CSharpBinder
                 
                 var tuple = FindNamespaceGroup_Reversed_WithMatchedIndex(
                     absolutePathId,
-                    namespaceContributionEntry.TextSpan,
-                    namespaceContributionEntry.TextSourceKind);
+                    namespaceContributionEntry.TextSpan);
                 
                 if (tuple.TargetGroup.ConstructorWasInvoked)
                 {
@@ -717,7 +716,7 @@ public sealed partial class CSharpBinder
             var node = NodeList[i];
             if (node.ParentScopeSubIndex == scopeSubIndex &&
                 node.SyntaxKind == SyntaxKind.TypeDefinitionNode &&
-                CSharpCompilerService.UnsafeGetText(node.AbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit) == typeIdentifierText)
+                CSharpCompilerService.UnsafeGetText(node.AbsolutePathId, node.IdentifierToken.TextSpan) == typeIdentifierText)
             {
                 typeDefinitionNode = node;
                 break;
@@ -742,7 +741,7 @@ public sealed partial class CSharpBinder
             var node = NodeList[i];
             
             if (node.ParentScopeSubIndex == scopeSubIndex && node.SyntaxKind == SyntaxKind.FunctionDefinitionNode)
-                functionDefinitionNameList.Add(CSharpCompilerService.UnsafeGetText(resourceUri.Value, node.IdentifierToken.TextSpan, TextSourceKind.Explicit));
+                functionDefinitionNameList.Add(CSharpCompilerService.UnsafeGetText(resourceUri.Value, node.IdentifierToken.TextSpan));
         }
         
         return functionDefinitionNameList;
@@ -799,7 +798,7 @@ public sealed partial class CSharpBinder
             
             if (node.ParentScopeSubIndex == scopeSubIndex &&
                 node.SyntaxKind == SyntaxKind.FunctionDefinitionNode &&
-                CSharpCompilerService.UnsafeGetText(node.AbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit) == functionIdentifierText)
+                CSharpCompilerService.UnsafeGetText(node.AbsolutePathId, node.IdentifierToken.TextSpan) == functionIdentifierText)
             {
                 functionDefinitionNode = node;
                 break;
@@ -826,7 +825,7 @@ public sealed partial class CSharpBinder
             var node = NodeList[i];
             
             if (node.ParentScopeSubIndex == scopeSubIndex && node.SyntaxKind == SyntaxKind.VariableDeclarationNode)
-                variableDeclarationNodeList.Add(CSharpCompilerService.UnsafeGetText(absolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit));
+                variableDeclarationNodeList.Add(CSharpCompilerService.UnsafeGetText(absolutePathId, node.IdentifierToken.TextSpan));
         }
 
         if (!isRecursive && scopeSubIndex < compilationUnit.ScopeLength)
@@ -889,14 +888,14 @@ public sealed partial class CSharpBinder
                     {
                         innerCompilationUnit = compilationUnit;
                         innerAbsolutePathId = absolutePathId;
-                        identifierText = CSharpCompilerService.UnsafeGetText(innerAbsolutePathId, typeDefinitionMetadata.InheritedTypeReference.TypeIdentifierToken.TextSpan, TextSourceKind.Explicit);
+                        identifierText = CSharpCompilerService.UnsafeGetText(innerAbsolutePathId, typeDefinitionMetadata.InheritedTypeReference.TypeIdentifierToken.TextSpan);
                     }
                     else
                     {
                         if (TryGetCompilationUnitByAbsolutePathId(typeDefinitionMetadata.InheritedTypeReference.ExplicitDefinitionAbsolutePathId, out innerCompilationUnit))
                         {
                             innerAbsolutePathId = typeDefinitionMetadata.InheritedTypeReference.ExplicitDefinitionAbsolutePathId;
-                            identifierText = CSharpCompilerService.UnsafeGetText(innerAbsolutePathId, typeDefinitionMetadata.InheritedTypeReference.TypeIdentifierToken.TextSpan, TextSourceKind.Explicit);
+                            identifierText = CSharpCompilerService.UnsafeGetText(innerAbsolutePathId, typeDefinitionMetadata.InheritedTypeReference.TypeIdentifierToken.TextSpan);
                         }
                         else
                         {
@@ -1063,7 +1062,7 @@ public sealed partial class CSharpBinder
             
             if (node.ParentScopeSubIndex == scopeSubIndex &&
                 node.SyntaxKind == SyntaxKind.VariableDeclarationNode &&
-                CSharpCompilerService.UnsafeGetText(node.AbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit) == variableIdentifierText)
+                CSharpCompilerService.UnsafeGetText(node.AbsolutePathId, node.IdentifierToken.TextSpan) == variableIdentifierText)
             {
                 matchNode = node;
                 break;
@@ -1148,7 +1147,7 @@ public sealed partial class CSharpBinder
             
             if (node.ParentScopeSubIndex == scopeSubIndex &&
                 node.SyntaxKind == SyntaxKind.LabelDeclarationNode &&
-                CSharpCompilerService.UnsafeGetText(node.AbsolutePathId, node.IdentifierToken.TextSpan, TextSourceKind.Explicit) == labelIdentifierText)
+                CSharpCompilerService.UnsafeGetText(node.AbsolutePathId, node.IdentifierToken.TextSpan) == labelIdentifierText)
             {
                 matchNode = node;
             }
@@ -1214,7 +1213,7 @@ public sealed partial class CSharpBinder
             case SyntaxKind.FieldSymbol:
             case SyntaxKind.EnumMemberSymbol:
             {
-                var text = getTextResult ?? CSharpCompilerService.UnsafeGetText(absolutePathId, textSpan, TextSourceKind.Explicit);
+                var text = getTextResult ?? CSharpCompilerService.UnsafeGetText(absolutePathId, textSpan);
             
                 if (text is not null &&
                     TryGetVariableDeclarationHierarchically(
@@ -1234,7 +1233,7 @@ public sealed partial class CSharpBinder
             case SyntaxKind.FunctionDefinitionNode:
             case SyntaxKind.FunctionSymbol:
             {
-                var text = getTextResult ?? CSharpCompilerService.UnsafeGetText(absolutePathId, textSpan, TextSourceKind.Explicit);
+                var text = getTextResult ?? CSharpCompilerService.UnsafeGetText(absolutePathId, textSpan);
                 
                 if (text is not null && 
                     TryGetFunctionHierarchically(
@@ -1317,7 +1316,7 @@ public sealed partial class CSharpBinder
             case SyntaxKind.TypeSymbol:
             case SyntaxKind.ConstructorSymbol:
             {
-                var text = getTextResult ?? CSharpCompilerService.UnsafeGetText(absolutePathId, textSpan, TextSourceKind.Explicit);
+                var text = getTextResult ?? CSharpCompilerService.UnsafeGetText(absolutePathId, textSpan);
             
                 if (TryGetTypeDefinitionHierarchically(
                         absolutePathId,
@@ -1408,7 +1407,7 @@ public sealed partial class CSharpBinder
                                 default),
                             externalSyntaxKind,
                             symbol: symbol,
-                            getTextResult: CSharpCompilerService.UnsafeGetText(absolutePathId, textSpan, TextSourceKind.Explicit));
+                            getTextResult: CSharpCompilerService.UnsafeGetText(absolutePathId, textSpan));
                     }
                 }
             }
@@ -1662,7 +1661,7 @@ public sealed partial class CSharpBinder
                     else
                         return string.Empty;
                 }
-                return CSharpCompilerService.UnsafeGetText(resourceUriValue, typeDefinitionNode.TypeIdentifierToken.TextSpan, TextSourceKind.Explicit);
+                return CSharpCompilerService.UnsafeGetText(resourceUriValue, typeDefinitionNode.TypeIdentifierToken.TextSpan);
             }
             case SyntaxKind.TypeClauseNode:
             {
@@ -1678,7 +1677,7 @@ public sealed partial class CSharpBinder
                     else
                         return string.Empty;
                 }
-                return CSharpCompilerService.UnsafeGetText(resourceUriValue, typeClauseNode.TypeIdentifierToken.TextSpan, TextSourceKind.Explicit);
+                return CSharpCompilerService.UnsafeGetText(resourceUriValue, typeClauseNode.TypeIdentifierToken.TextSpan);
             }
             case SyntaxKind.FunctionDefinitionNode:
             {
@@ -1694,7 +1693,7 @@ public sealed partial class CSharpBinder
                     else
                         return string.Empty;
                 }
-                return CSharpCompilerService.UnsafeGetText(resourceUriValue, functionDefinitionNode.FunctionIdentifierToken.TextSpan, TextSourceKind.Explicit);
+                return CSharpCompilerService.UnsafeGetText(resourceUriValue, functionDefinitionNode.FunctionIdentifierToken.TextSpan);
             }
             case SyntaxKind.FunctionInvocationNode:
             {
@@ -1710,7 +1709,7 @@ public sealed partial class CSharpBinder
                     else
                         return string.Empty;
                 }
-                return CSharpCompilerService.UnsafeGetText(resourceUriValue, functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan, TextSourceKind.Explicit);
+                return CSharpCompilerService.UnsafeGetText(resourceUriValue, functionInvocationNode.FunctionInvocationIdentifierToken.TextSpan);
             }
             case SyntaxKind.VariableDeclarationNode:
             {
@@ -1726,22 +1725,22 @@ public sealed partial class CSharpBinder
                     else
                         return string.Empty;
                 }
-                return CSharpCompilerService.UnsafeGetText(resourceUriValue, variableDeclarationNode.IdentifierToken.TextSpan, TextSourceKind.Explicit);
+                return CSharpCompilerService.UnsafeGetText(resourceUriValue, variableDeclarationNode.IdentifierToken.TextSpan);
             }
             case SyntaxKind.VariableReferenceNode:
             {
                 var variableReferenceNode = (VariableReferenceNode)node;
-                return CSharpCompilerService.UnsafeGetText(absolutePathId, variableReferenceNode.VariableIdentifierToken.TextSpan, TextSourceKind.Explicit);
+                return CSharpCompilerService.UnsafeGetText(absolutePathId, variableReferenceNode.VariableIdentifierToken.TextSpan);
             }
             case SyntaxKind.LabelDeclarationNode:
             {
                 var labelDeclarationNode = (LabelDeclarationNode)node;
-                return CSharpCompilerService.UnsafeGetText(absolutePathId, labelDeclarationNode.IdentifierToken.TextSpan, TextSourceKind.Explicit);
+                return CSharpCompilerService.UnsafeGetText(absolutePathId, labelDeclarationNode.IdentifierToken.TextSpan);
             }
             case SyntaxKind.LabelReferenceNode:
             {
                 var labelReferenceNode = (LabelReferenceNode)node;
-                return CSharpCompilerService.UnsafeGetText(absolutePathId, labelReferenceNode.IdentifierToken.TextSpan, TextSourceKind.Explicit);
+                return CSharpCompilerService.UnsafeGetText(absolutePathId, labelReferenceNode.IdentifierToken.TextSpan);
             }
             default:
             {

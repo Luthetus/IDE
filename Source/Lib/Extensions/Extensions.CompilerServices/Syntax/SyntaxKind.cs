@@ -11,8 +11,7 @@ public enum SyntaxKind : byte
     NotApplicable,
     NotProvided,
     
-    // The text doesn't actually exist, it is calculated on demand contextually.
-    ImplicitTextSource,
+    
 
     // Tokens Normal
     CommentMultiLineToken,
@@ -281,4 +280,11 @@ public enum SyntaxKind : byte
     OnClickSymbol,
 
     RazorDirective,
+    
+    // TODO:...
+    // ...The text doesn't actually exist, it is calculated on demand contextually.
+    // This shouldn't be here. The decoration bytes are very generalized
+    // and some other enum could overlap the byte and unintentionally
+    // signal that the text doesn't exist.
+    ImplicitTextSource,
 }

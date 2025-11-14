@@ -104,14 +104,13 @@ public static class RazorParser
             new TextEditorTextSpan(
                 startInclusiveIndex: 0,
                 endExclusiveIndex: namespaceString.Length,
-                decorationByte: 0,
+                decorationByte: (byte)SyntaxKind.ImplicitTextSource,
                 byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
                 charIntSum));
         var namespaceStatementNode = parserModel.Rent_NamespaceStatementNode();
         namespaceStatementNode.KeywordToken = default;
         namespaceStatementNode.IdentifierToken = namespaceIdentifier;
         namespaceStatementNode.AbsolutePathId = parserModel.AbsolutePathId;
-        namespaceStatementNode.TextSourceKind = TextSourceKind.Implicit;
         parserModel.SetCurrentNamespaceStatementValue(new NamespaceStatementValue(namespaceStatementNode));
         parserModel.RegisterScope(
         	new Scope(
@@ -361,7 +360,7 @@ public static class RazorParser
             new TextEditorTextSpan(
                 startInclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex,
                 endExclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex + componentName.Length/* + 1*/,
-                decorationByte: 0,
+                decorationByte: (byte)SyntaxKind.ImplicitTextSource,
                 byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
                 charIntSum));
         var typeDefinitionNode = parserModel.Rent_TypeDefinitionNode();
@@ -375,7 +374,6 @@ public static class RazorParser
         typeDefinitionNode.LengthGenericParameterEntryList = 0;
         typeDefinitionNode.CloseAngleBracketToken = default;
         typeDefinitionNode.AbsolutePathId = parserModel.AbsolutePathId;
-        typeDefinitionNode.TextSourceKind = TextSourceKind.Implicit;
         
         if (typeDefinitionNode.HasPartialModifier)
         {
@@ -387,7 +385,6 @@ public static class RazorParser
                     parserModel.ScopeCurrentSubIndex,
                     parserModel.AbsolutePathId,
                     identifierToken.TextSpan,
-                    TextSourceKind.Implicit,
                     out SyntaxNodeValue previousTypeDefinitionNode))
             {
                 var typeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];
@@ -434,8 +431,7 @@ public static class RazorParser
                             
                             var previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].AbsolutePathId,
-                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan,
-                                TextSourceKind.Explicit);
+                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan);
                             
                             if (currentParentIdentifierText is not null &&
                                 currentParentIdentifierText == previousParentIdentifierText)
@@ -460,8 +456,7 @@ public static class RazorParser
                                         scope.OwnerSyntaxKind == SyntaxKind.TypeDefinitionNode &&
                                         binder.CSharpCompilerService.SafeGetText(
                                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].AbsolutePathId,
-                                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].IdentifierToken.TextSpan,
-                                                TextSourceKind.Explicit) ==
+                                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].IdentifierToken.TextSpan) ==
                                             razorCompilerService._cSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId))
                                     {
                                         previousNode = parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex];
@@ -481,7 +476,7 @@ public static class RazorParser
                 }
             }
             
-            if (parserModel.ClearedPartialDefinitionHashSet.Add(parserModel.GetTextSpanText(identifierToken.TextSpan, TextSourceKind.Explicit)) &&
+            if (parserModel.ClearedPartialDefinitionHashSet.Add(parserModel.GetTextSpanText(identifierToken.TextSpan)) &&
                 typeDefinitionNode.IndexPartialTypeDefinition != -1)
             {
                 // Partial definitions of the same type from the same ResourceUri are made contiguous.

@@ -93,8 +93,7 @@ public static partial class Parser
                             textSpan with
                             {
                                 CharIntSum = charIntSum
-                            },
-                            TextSourceKind.Explicit);
+                            });
                     }
                 //}
                 

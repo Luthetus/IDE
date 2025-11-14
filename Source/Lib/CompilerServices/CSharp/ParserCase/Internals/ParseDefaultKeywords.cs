@@ -308,7 +308,7 @@ public static partial class Parser
         if ((enumerable.ResultTypeReference.ArrayRank == 1 || enumerable.ResultTypeReference.OffsetGenericParameterEntryList != -1) &&
             variableDeclarationNode is not null &&
             Facts.CSharpFacts.Types.VarValue.IdentifierToken.TextSpan.CharIntSum == variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan.CharIntSum &&
-            parserModel.Binder.CSharpCompilerService.SafeCompareText(parserModel.AbsolutePathId, "var", variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan, TextSourceKind.Explicit))
+            parserModel.Binder.CSharpCompilerService.SafeCompareText(parserModel.AbsolutePathId, "var", variableDeclarationNode.TypeReference.TypeIdentifierToken.TextSpan))
         {
             var typeReferenceWasChanged = false;
         
@@ -942,7 +942,6 @@ public static partial class Parser
                     parserModel.ScopeCurrentSubIndex,
                     parserModel.AbsolutePathId,
                     identifierToken.TextSpan,
-                    TextSourceKind.Explicit,
                     out SyntaxNodeValue previousTypeDefinitionNode))
             {
                 var typeDefinitionMetadata = parserModel.Binder.TypeDefinitionTraitsList[previousTypeDefinitionNode.TraitsIndex];
@@ -987,13 +986,11 @@ public static partial class Parser
                         {
                             var currentParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
                                 parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].AbsolutePathId,
-                                parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].IdentifierToken.TextSpan,
-                                TextSourceKind.Explicit);
+                                parserModel.Binder.NodeList[parserModel.Compilation.NodeOffset + currentParent.NodeSubIndex].IdentifierToken.TextSpan);
                             
                             var previousParentIdentifierText = parserModel.Binder.CSharpCompilerService.SafeGetText(
                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].AbsolutePathId,
-                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan,
-                                TextSourceKind.Explicit);
+                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + previousParent.NodeSubIndex].IdentifierToken.TextSpan);
                             
                             if (currentParentIdentifierText is not null &&
                                 currentParentIdentifierText == previousParentIdentifierText)
@@ -1018,9 +1015,8 @@ public static partial class Parser
                                         scope.OwnerSyntaxKind == SyntaxKind.TypeDefinitionNode &&
                                         binder.CSharpCompilerService.SafeGetText(
                                                 parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].AbsolutePathId,
-                                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].IdentifierToken.TextSpan,
-                                                TextSourceKind.Explicit) ==
-                                            binder.GetIdentifierText(typeDefinitionNode, parserModel.AbsolutePathId, compilation, TextSourceKind.Explicit))
+                                                parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex].IdentifierToken.TextSpan) ==
+                                            binder.GetIdentifierText(typeDefinitionNode, parserModel.AbsolutePathId, compilation))
                                     {
                                         previousNode = parserModel.Binder.NodeList[previousCompilationUnit.NodeOffset + scope.NodeSubIndex];
                                         break;
@@ -1039,7 +1035,7 @@ public static partial class Parser
                 }
             }
             
-            if (parserModel.ClearedPartialDefinitionHashSet.Add(parserModel.GetTextSpanText(identifierToken.TextSpan, TextSourceKind.Explicit)) &&
+            if (parserModel.ClearedPartialDefinitionHashSet.Add(parserModel.GetTextSpanText(identifierToken.TextSpan)) &&
                 typeDefinitionNode.IndexPartialTypeDefinition != -1)
             {
                 // Partial definitions of the same type from the same ResourceUri are made contiguous.
@@ -1201,8 +1197,7 @@ public static partial class Parser
                 new PartialTypeDefinitionValue(
                     typeDefinitionNode.AbsolutePathId,
                     typeDefinitionNode.IndexPartialTypeDefinition,
-                    typeDefinitionNode.SelfScopeSubIndex,
-                    typeDefinitionNode.TextSourceKind));
+                    typeDefinitionNode.SelfScopeSubIndex));
         
             int positionExclusive = indexForInsertion + 1;
             int lastSeenIndexStartGroup = typeDefinitionNode.IndexPartialTypeDefinition;
@@ -1302,7 +1297,7 @@ public static partial class Parser
             new TextEditorTextSpan(
                 startInclusiveIndex: 0,
                 endExclusiveIndex: namespaceString.Length,
-                decorationByte: 0,
+                decorationByte: (byte)SyntaxKind.ImplicitTextSource,
                 byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
                 charIntSum));
         
@@ -1310,7 +1305,6 @@ public static partial class Parser
         namespaceStatementNode.KeywordToken = default;
         namespaceStatementNode.IdentifierToken = namespaceIdentifier;
         namespaceStatementNode.AbsolutePathId = parserModel.AbsolutePathId;
-        namespaceStatementNode.TextSourceKind = TextSourceKind.Implicit;
 
         parserModel.SetCurrentNamespaceStatementValue(new NamespaceStatementValue(namespaceStatementNode));
         

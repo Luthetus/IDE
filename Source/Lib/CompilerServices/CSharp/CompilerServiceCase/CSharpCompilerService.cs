@@ -421,7 +421,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// </summary>
     public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
     {
-        if (textSourceKind == TextSourceKind.Implicit)
+        if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
         {
             return null;
         }
@@ -2170,7 +2170,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     public string GetIdentifierText(ISyntaxNode node, int absolutePathId)
     {
         if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilationUnit))
-            return __CSharpBinder.GetIdentifierText(node, absolutePathId, compilationUnit, textSourceKind) ?? string.Empty;
+            return __CSharpBinder.GetIdentifierText(node, absolutePathId, compilationUnit) ?? string.Empty;
     
         return string.Empty;
     }

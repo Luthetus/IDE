@@ -298,19 +298,19 @@ public sealed class RazorCompilerService : IExtendedCompilerService
         return _cSharpCompilerService.GetResourceByAbsolutePathId(absolutePathId);
     }
 
-    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
     {
-        return _cSharpCompilerService.UnsafeGetText(absolutePathId, textSpan, textSourceKind);
+        return _cSharpCompilerService.UnsafeGetText(absolutePathId, textSpan);
     }
     
-    public string? UnsafeGetText(string absolutePath, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public string? UnsafeGetText(string absolutePath, TextEditorTextSpan textSpan)
     {
-        return _cSharpCompilerService.UnsafeGetText(absolutePath, textSpan, textSourceKind);
+        return _cSharpCompilerService.UnsafeGetText(absolutePath, textSpan);
     }
 
-    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
     {
-        return _cSharpCompilerService.SafeGetText(absolutePathId, textSpan, textSourceKind);
+        return _cSharpCompilerService.SafeGetText(absolutePathId, textSpan);
     }
 
     public IReadOnlyList<GenericParameter> GenericParameterEntryList => _cSharpCompilerService.GenericParameterEntryList;
@@ -337,8 +337,8 @@ public sealed class RazorCompilerService : IExtendedCompilerService
         return _cSharpCompilerService.GetCodeBlockTupleByPositionIndex(absolutePathId, positionIndex);
     }
     
-    public string GetIdentifierText(ISyntaxNode node, int absolutePathId, TextSourceKind textSourceKind)
+    public string GetIdentifierText(ISyntaxNode node, int absolutePathId)
     {
-        return _cSharpCompilerService.GetIdentifierText(node, absolutePathId, textSourceKind);
+        return _cSharpCompilerService.GetIdentifierText(node, absolutePathId);
     }
 }

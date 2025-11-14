@@ -10,6 +10,9 @@ public enum SyntaxKind : byte
     // Keep NotApplicable at 0
     NotApplicable,
     NotProvided,
+    
+    // The text doesn't actually exist, it is calculated on demand contextually.
+    ImplicitTextSource,
 
     // Tokens Normal
     CommentMultiLineToken,

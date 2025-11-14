@@ -9,6 +9,7 @@ using Clair.CompilerServices.CSharp.ParserCase;
 using Clair.Extensions.CompilerServices;
 using Clair.Extensions.CompilerServices.Displays;
 using Clair.Extensions.CompilerServices.Syntax;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
 using Clair.Extensions.CompilerServices.Syntax.Interfaces;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.TextEditor.RazorLib;
@@ -28,14 +29,14 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
 {
     // <summary>Public because the RazorCompilerService uses it.</summary>
     public readonly CSharpBinder __CSharpBinder;
-    private readonly StreamReaderPooledBufferWrap _streamReaderWrap = new();
+    public readonly StreamReaderPooledBufferWrap _streamReaderWrap = new();
     // Where do I want the state...
-    private readonly TokenWalkerBuffer _tokenWalkerBuffer = new();
+    public readonly TokenWalkerBuffer _tokenWalkerBuffer = new();
     
     // Service dependencies
-    private readonly TextEditorService _textEditorService;
+    public readonly TextEditorService _textEditorService;
     
-    private const string EmptyFileHackForLanguagePrimitiveText = "NotApplicable empty" + " void int char string bool var";
+    public const string EmptyFileHackForLanguagePrimitiveText = "NotApplicable empty" + " void int char string bool var";
     
     public const int GET_TEXT_BUFFER_SIZE = 32;
     
@@ -65,6 +66,16 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     private int _uiLeftOff_UpperBound = 0;
     
     public TextEditorService TextEditorService => _textEditorService;
+
+    public readonly StringBuilder _razorComponentNameTokenBuilder = new();
+    public readonly StringBuilder _razorComponentNameFormattedBuilder = new();
+    public readonly StringBuilder _razorNamespaceBuilder = new();
+    public readonly List<string> _razorGetRazorNamespaceAncestorDirectoryList = new();
+    /// <summary>
+    /// If RootNamespace or @namespace directive need to overwrite this.
+    /// As well the 'NamespaceContribution' for the previous compilation's RootNamespace/@namespace directive needs to be cleared.
+    /// </summary>
+    public readonly Dictionary<int, string> _absolutePathIdToImplicitNamespaceStringMap = new();
 
     /// <summary>
     /// unsafe vs safe are duplicates of the same code
@@ -278,7 +289,8 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         if (absolutePathId == 0)
             absolutePathId = TryAddFileAbsolutePath(resourceUri.Value);
 
-        __CSharpBinder.UpsertCompilationUnit(absolutePathId, new CSharpCompilationUnit(CompilationUnitKind.IndividualFile_AllData));
+        if (!__CSharpBinder.__CompilationUnitMap.ContainsKey(absolutePathId))
+            _ = __CSharpBinder.__CompilationUnitMap.TryAdd(absolutePathId, new CSharpCompilationUnit(CompilationUnitKind.IndividualFile_AllData));
             
         if (shouldTriggerResourceWasModified)
             ResourceWasModified(resourceUri, Array.Empty<TextEditorTextSpan>());
@@ -346,6 +358,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// </summary>
     public string? UnsafeGetText(string absolutePathString, TextEditorTextSpan textSpan)
     {
+        if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+            throw new NotImplementedException($"{nameof(UnsafeGetText)}_ImplicitTextSource");
+    
         if (absolutePathString == string.Empty)
         {
             if (textSpan.EndExclusiveIndex > EmptyFileHackForLanguagePrimitiveText.Length)
@@ -409,6 +424,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// </summary>
     public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
     {
+        if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+            throw new NotImplementedException($"{nameof(SafeGetText)}_ImplicitTextSource");
+        
         StreamReaderPooledBuffer sr;
 
         if (absolutePathId == ResourceUri.EmptyAbsolutePathId)
@@ -520,6 +538,9 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     
     public bool SafeCompareText(int absolutePathId, string value, TextEditorTextSpan textSpan)
     {
+        if (textSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+            throw new NotImplementedException($"{nameof(SafeCompareText)}_ImplicitTextSource");
+    
         if (value.Length != textSpan.Length)
             return false;
 
@@ -677,6 +698,12 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     
     public bool SafeCompareTextSpans(int sourceAbsolutePathId, TextEditorTextSpan sourceTextSpan, int otherAbsolutePathId, TextEditorTextSpan otherTextSpan)
     {
+        if (sourceTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource ||
+            otherTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+        {
+            throw new NotImplementedException($"{nameof(SafeCompareTextSpans)}_ImplicitTextSource");
+        }
+            
         if (sourceTextSpan.Length != otherTextSpan.Length ||
             sourceTextSpan.CharIntSum != otherTextSpan.CharIntSum)
         {
@@ -2156,5 +2183,126 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
             return __CSharpBinder.GetIdentifierText(node, absolutePathId, compilationUnit) ?? string.Empty;
     
         return string.Empty;
+    }
+    
+    /// <summary>
+    /// TODO: This allocates an extra string because it does a .Replace to remove the .razor on the end (.razor.cs)????
+    /// </summary>
+    public string? GetRazorComponentName(int absolutePathId)
+    {
+        var absolutePathString = TryGetIntToFileAbsolutePathMap(absolutePathId);
+        if (absolutePathString is null)
+            return null;
+        var absolutePath = new AbsolutePath(
+            absolutePathString,
+            isDirectory: false,
+            _textEditorService.CommonService.FileSystemProvider,
+            _razorComponentNameTokenBuilder,
+            _razorComponentNameFormattedBuilder,
+            AbsolutePathNameKind.NameNoExtension);
+        return absolutePath.Name;
+    }
+    
+    private string? textEditorContext_previousParentDirectory_GetRazorNamespace = null;
+    private string? textEditorContext_previousNamespace_GetRazorNamespace = null;
+    
+    /// <summary>
+    /// TODO: Permit getting the name and the namespace in one invocation?
+    /// TODO: Don't copy and paste the namespace calculation code from the .NET solution explorer.
+    /// TODO: Why is csproj ending in .csproj
+    /// TODO: @namespace directive
+    /// TODO: don't StringBuilder allocate inside this
+    /// TODO: Root namespace in .csproj
+    /// </summary>
+    public string? GetRazorNamespace(int absolutePathId, bool isTextEditorContext)
+    {
+        if (_absolutePathIdToImplicitNamespaceStringMap.TryGetValue(absolutePathId, out var namespaceString))
+            return namespaceString;
+        var absolutePathString = TryGetIntToFileAbsolutePathMap(absolutePathId);
+        if (absolutePathString is null)
+            return null;
+        
+        var absolutePath = new AbsolutePath(
+            absolutePathString,
+            isDirectory: false,
+            _textEditorService.CommonService.FileSystemProvider,
+            _razorComponentNameTokenBuilder,
+            _razorComponentNameFormattedBuilder,
+            AbsolutePathNameKind.NameNoExtension,
+            ancestorDirectoryList: _razorGetRazorNamespaceAncestorDirectoryList);
+        
+        if (_razorGetRazorNamespaceAncestorDirectoryList.Count > 0 &&
+            _razorGetRazorNamespaceAncestorDirectoryList[^1] == textEditorContext_previousNamespace_GetRazorNamespace)
+        {
+            namespaceString = textEditorContext_previousNamespace_GetRazorNamespace;
+            goto finalize;
+        }
+        // Razor ! in sln? => ???
+        
+        // Track csproj and files in it?
+        
+        // TODO: GC bad: This will blow up the GC btw
+        
+        var foundCsproj = false;
+        for (int i = _razorGetRazorNamespaceAncestorDirectoryList.Count - 1; i >= 0; i--)
+        {
+            if (foundCsproj)
+                break;
+        
+            var ancestorDirectory = _razorGetRazorNamespaceAncestorDirectoryList[i];
+            var files = Directory.EnumerateFiles(ancestorDirectory);
+            
+            if (i != _razorGetRazorNamespaceAncestorDirectoryList.Count - 1)
+                _razorNamespaceBuilder.Insert(0, '.');
+            
+            foreach (var file in files)
+            {
+                if (file.EndsWith(".csproj"))
+                {
+                    _razorNamespaceBuilder.Insert(
+                        0,
+                        new AbsolutePath(
+                            file,
+                            isDirectory: false,
+                            _textEditorService.CommonService.FileSystemProvider,
+                            _razorComponentNameTokenBuilder,
+                            _razorComponentNameFormattedBuilder,
+                            AbsolutePathNameKind.NameNoExtension,
+                            ancestorDirectoryList: _razorGetRazorNamespaceAncestorDirectoryList)
+                        .Name);
+                    foundCsproj = true;
+                    break;
+                }
+            }
+            if (!foundCsproj)
+            {
+                _razorNamespaceBuilder.Insert(
+                    0,
+                    new AbsolutePath(
+                        ancestorDirectory,
+                        isDirectory: true,
+                        _textEditorService.CommonService.FileSystemProvider,
+                        _razorComponentNameTokenBuilder,
+                        _razorComponentNameFormattedBuilder,
+                        AbsolutePathNameKind.NameNoExtension,
+                        ancestorDirectoryList: _razorGetRazorNamespaceAncestorDirectoryList)
+                    .Name);
+            }
+        }
+        
+        namespaceString = _razorNamespaceBuilder.ToString();
+        _absolutePathIdToImplicitNamespaceStringMap.Add(absolutePathId, namespaceString);
+        
+        if (isTextEditorContext && _razorGetRazorNamespaceAncestorDirectoryList.Count > 0)
+        {
+            textEditorContext_previousParentDirectory_GetRazorNamespace = _razorGetRazorNamespaceAncestorDirectoryList[^1];
+            textEditorContext_previousNamespace_GetRazorNamespace = namespaceString;
+        }
+        
+        finalize:
+        _razorNamespaceBuilder.Clear();
+        _razorGetRazorNamespaceAncestorDirectoryList.Clear();
+        
+        return namespaceString;
     }
 }

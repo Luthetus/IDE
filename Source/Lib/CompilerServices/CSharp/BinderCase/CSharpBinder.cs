@@ -264,22 +264,30 @@ public sealed partial class CSharpBinder
     }*/
     
     public (NamespaceGroup TargetGroup, int GroupIndex) FindNamespaceGroup_Reversed_WithMatchedIndex(
-        int absolutePathId,
-        TextEditorTextSpan textSpan)
+        int referenceAbsolutePathId,
+        TextEditorTextSpan referenceTextSpan)
     {
-        var findTuple = NamespaceGroup_FindRange(textSpan);
+        var findTuple = NamespaceGroup_FindRange(referenceTextSpan);
     
         for (int groupIndex = findTuple.EndIndex - 1; groupIndex >= findTuple.StartIndex; groupIndex--)
         {
             var targetGroup = _namespaceGroupList[groupIndex];
             if (targetGroup.NamespaceStatementValueList.Count != 0)
             {
-                var sampleNamespaceStatementNode = targetGroup.NamespaceStatementValueList[0];
-                if (CSharpCompilerService.SafeCompareTextSpans(
-                    absolutePathId,
-                    textSpan,
-                    sampleNamespaceStatementNode.AbsolutePathId,
-                    sampleNamespaceStatementNode.IdentifierToken.TextSpan))
+                // Arbitrary sample
+                var definitionNamespace = targetGroup.NamespaceStatementValueList[0];
+                
+                // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+                if (definitionNamespace.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+                    definitionNamespace.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+                {
+                    continue;
+                }
+                if (CompareNamespaceNames(
+                        definitionNamespace.AbsolutePathId,
+                        definitionNamespace.IdentifierToken.TextSpan,
+                        referenceAbsolutePathId,
+                        referenceTextSpan))
                 {
                     return (targetGroup, groupIndex);
                 }
@@ -358,9 +366,7 @@ public sealed partial class CSharpBinder
 
         for (int i = 0; i < CSharpParserModel_AddedNamespaceList.Count; i++)
         {
-            var node = CSharpParserModel_AddedNamespaceList[i];
-
-            if (node.CharIntSum == textSpan.CharIntSum)
+            if (CSharpParserModel_AddedNamespaceList[i].TextSpan.CharIntSum == textSpan.CharIntSum)
             {
                 if (startIndex == -1)
                     startIndex = i;
@@ -381,21 +387,77 @@ public sealed partial class CSharpBinder
     
     public bool CheckAlreadyAddedNamespace(
         int filePathInt,
-        TextEditorTextSpan textSpan)
+        TextEditorTextSpan referenceTextSpan)
     {
-        var findTuple = AddedNamespaceList_FindRange(textSpan);
+        var findTuple = AddedNamespaceList_FindRange(referenceTextSpan);
 
         for (int i = findTuple.StartIndex; i < findTuple.EndIndex; i++)
         {
-            var target = CSharpParserModel_AddedNamespaceList[i];
-            if (CSharpCompilerService.SafeCompareTextSpans(
+            var definitionNamespace = CSharpParserModel_AddedNamespaceList[i];
+            
+            // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+            if (definitionNamespace.TextSpan.Length != referenceTextSpan.Length ||
+                definitionNamespace.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+            {
+                continue;
+            }
+            if (CompareNamespaceNames(
                     filePathInt,
-                    textSpan,
+                    definitionNamespace.TextSpan,
                     filePathInt,
-                    target))
+                    referenceTextSpan))
             {
                 return true;
             }
+        }
+        
+        return false;
+    }
+    
+    /// <summary>
+    /// You need to put:
+    /// ```csharp
+    /// // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+    /// if (definitionValue.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+    ///     definitionValue.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+    /// {
+    ///     continue;
+    /// }
+    /// ```
+    ///
+    /// Prior to the invocation because the method cannot continue the invoker's loop.
+    /// </summary>
+    private bool CompareNamespaceNames(
+        int definitionAbsolutePathId,
+        TextEditorTextSpan definitionTextSpan,
+        int referenceAbsolutePathId,
+        TextEditorTextSpan referenceTextSpan)
+    {
+        if (definitionTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+        {
+            var definitionName = CSharpCompilerService.GetRazorNamespace(definitionAbsolutePathId, isTextEditorContext: false);
+            if (referenceTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+            {
+                var referenceName = CSharpCompilerService.GetRazorNamespace(referenceAbsolutePathId, isTextEditorContext: false);
+                if (definitionName == referenceName)
+                    return true;
+            }
+            else
+            {
+                if (CSharpCompilerService.SafeCompareText(referenceAbsolutePathId, definitionName, referenceTextSpan))
+                    return true;
+            }
+        }
+        else if (referenceTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+        {
+            var referenceName = CSharpCompilerService.GetRazorNamespace(referenceAbsolutePathId, isTextEditorContext: false);
+            if (CSharpCompilerService.SafeCompareText(definitionAbsolutePathId, referenceName, definitionTextSpan))
+                return true;
+        }
+        else if (CSharpCompilerService.SafeCompareTextSpans(
+                referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, definitionTextSpan))
+        {
+            return true;
         }
         
         return false;
@@ -482,6 +544,42 @@ public sealed partial class CSharpBinder
         {
             _  = Pool_ConstructorInvocationExpressionNode_Queue.Dequeue();
         }
+        
+        /*
+        Console.WriteLine(nameof(PartialTypeDefinitionList));
+        for (int i = 0; i < PartialTypeDefinitionList.Count; i++)
+        {
+            Console.WriteLine($"\t{i}");
+            var partial = PartialTypeDefinitionList[i];
+            
+            Console.WriteLine($"\t\tAPI_{partial.AbsolutePathId}");
+            Console.WriteLine($"\t\tISG_{partial.IndexStartGroup}");
+            Console.WriteLine($"\t\tSSI_{partial.ScopeSubIndex}");
+            Console.WriteLine($"\t\tTSK_{partial.TextSourceKind}");
+        }
+        */
+        
+        /*
+        Console.WriteLine("\n\n=================");
+        Console.WriteLine($"_namespaceGroupList.Count:{_namespaceGroupList.Count}");
+        foreach (var namespaceGroup in _namespaceGroupList)
+        {
+            Console.WriteLine($"\tcis:{namespaceGroup.CharIntSum} NStatementValueList.Count:{namespaceGroup.NamespaceStatementValueList.Count}");
+            foreach (var statement in namespaceGroup.NamespaceStatementValueList)
+            {
+                //Console.WriteLine($"\t\tKT:{statement.KeywordToken}");
+                
+                Console.WriteLine($"\t\tIT:{statement.IdentifierToken}");
+                Console.WriteLine($"\t\t\tIT_TS_CIS:{statement.IdentifierToken.TextSpan.CharIntSum}");
+                
+                var aaa = CSharpCompilerService.TryGetIntToFileAbsolutePathMap(statement.AbsolutePathId);
+                Console.WriteLine($"\t\tABI:{statement.AbsolutePathId}|{aaa ?? "null"}");
+                Console.WriteLine($"\t\tPSI:{statement.ParentScopeSubIndex}");
+                Console.WriteLine($"\t\tSSI:{statement.SelfScopeSubIndex}");
+            }
+        }
+        Console.WriteLine("=================\n");
+        */
     }
     
     /// <summary>This also clears any pooled lists.</summary>

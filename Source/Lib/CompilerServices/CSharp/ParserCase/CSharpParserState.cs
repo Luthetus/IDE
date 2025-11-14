@@ -30,8 +30,11 @@ public ref partial struct CSharpParserState
         CSharpBinder binder,
         TokenWalkerBuffer tokenWalkerBuffer,
         int absolutePathId,
-        ref CSharpCompilationUnit compilationUnit)
+        ref CSharpCompilationUnit compilationUnit,
+        bool includeRazorShortCircuits = false)
     {
+        IncludeRazorShortCircuits = includeRazorShortCircuits;
+    
         Binder = binder;
         Compilation = ref compilationUnit;
         ScopeCurrentSubIndex = 0;
@@ -52,6 +55,10 @@ public ref partial struct CSharpParserState
         ExpressionList.Add((SyntaxKind.EndOfFileToken, null));
         ExpressionList.Add((SyntaxKind.CloseBraceToken, null));
         ExpressionList.Add((SyntaxKind.StatementDelimiterToken, null));
+        if (IncludeRazorShortCircuits)
+        {
+            ExpressionList.Add((SyntaxKind.OpenAngleBracketToken, null));
+        }
         
         TryParseExpressionSyntaxKindList = Binder.CSharpParserModel_TryParseExpressionSyntaxKindList;
         TryParseExpressionSyntaxKindList.Clear();
@@ -89,7 +96,10 @@ public ref partial struct CSharpParserState
         Compilation.NodeOffset = Binder.NodeList.Count;
     }
     
-    public TokenWalkerBuffer TokenWalker{ get; }
+    /// <summary>Scuffed</summary>
+    public bool IncludeRazorShortCircuits { get; }
+    
+    public TokenWalkerBuffer TokenWalker { get; }
     public CSharpStatementBuilder StatementBuilder { get; set; }
     
     public int AbsolutePathId { get; }
@@ -565,8 +575,9 @@ public ref partial struct CSharpParserState
             {
                 case SyntaxKind.NamespaceStatementNode:
                     var namespaceStatementNode = (NamespaceStatementNode)codeBlockOwner;
+                    // TODO: Add vs Bind? Both touch a namespace contribution?
                     AddNamespaceToCurrentScope(namespaceStatementNode.IdentifierToken.TextSpan);
-                    BindNamespaceStatementNode((NamespaceStatementNode)codeBlockOwner);
+                    BindNamespaceStatementNode(namespaceStatementNode);
                     break;
                 case SyntaxKind.TypeDefinitionNode:
                     var typeDefinitionNode = (TypeDefinitionNode)codeBlockOwner;
@@ -614,7 +625,7 @@ public ref partial struct CSharpParserState
             return;
         }
         
-        Binder.CSharpParserModel_AddedNamespaceList.Add(textSpan);
+        Binder.CSharpParserModel_AddedNamespaceList.Add(new AddedNamespace(textSpan));
         
         var tuple = Binder.FindNamespaceGroup_Reversed_WithMatchedIndex(
             AbsolutePathId,
@@ -802,14 +813,24 @@ public ref partial struct CSharpParserState
         
         for (int i = definitionCompilationUnit.NodeOffset; i < definitionCompilationUnit.NodeOffset + definitionCompilationUnit.NodeLength; i++)
         {
-            var node = Binder.NodeList[i];
-            if (node.ParentScopeSubIndex == definitionScopeSubIndex &&
-                node.SyntaxKind == SyntaxKind.TypeDefinitionNode)
+            var definitionValue = Binder.NodeList[i];
+            if (definitionValue.ParentScopeSubIndex == definitionScopeSubIndex &&
+                definitionValue.SyntaxKind == SyntaxKind.TypeDefinitionNode)
             {
-                if (Binder.CSharpCompilerService.SafeCompareTextSpans(
-                        referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, node.IdentifierToken.TextSpan))
+                // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+                if (definitionValue.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+                    definitionValue.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
                 {
-                    typeDefinitionValue = node;
+                    continue;
+                }
+
+                if (CompareTypeNames(
+                        definitionAbsolutePathId,
+                        definitionValue,
+                        referenceAbsolutePathId,
+                        referenceTextSpan))
+                {
+                    typeDefinitionValue = definitionValue;
                     break;
                 }
             }
@@ -821,8 +842,18 @@ public ref partial struct CSharpParserState
             {
                 foreach (var externalDefinitionNode in ExternalTypeDefinitionList)
                 {
-                    if (Binder.CSharpCompilerService.SafeCompareTextSpans(
-                            referenceAbsolutePathId, referenceTextSpan, externalDefinitionNode.AbsolutePathId, externalDefinitionNode.IdentifierToken.TextSpan))
+                    // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+                    if (externalDefinitionNode.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+                        externalDefinitionNode.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+                    {
+                        continue;
+                    }
+
+                    if (CompareTypeNames(
+                            externalDefinitionNode.AbsolutePathId,
+                            externalDefinitionNode,
+                            referenceAbsolutePathId,
+                            referenceTextSpan))
                     {
                         typeDefinitionValue = externalDefinitionNode;
                         break;
@@ -840,6 +871,55 @@ public ref partial struct CSharpParserState
         {
             return true;
         }
+    }
+    
+    /// <summary>
+    /// You need to put:
+    /// ```csharp
+    /// // This is redundant if the 'SafeCompareTextSpans(...)' conditional branch is taken.
+    /// if (definitionValue.IdentifierToken.TextSpan.Length != referenceTextSpan.Length ||
+    ///     definitionValue.IdentifierToken.TextSpan.CharIntSum != referenceTextSpan.CharIntSum)
+    /// {
+    ///     continue;
+    /// }
+    /// ```
+    ///
+    /// Prior to the invocation because the method cannot continue the invoker's loop.
+    /// </summary>
+    private bool CompareTypeNames(
+        int definitionAbsolutePathId,
+        SyntaxNodeValue definitionValue,
+        int referenceAbsolutePathId,
+        TextEditorTextSpan referenceTextSpan)
+    {
+        if (definitionValue.IdentifierToken.TextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+        {
+            var definitionName = Binder.CSharpCompilerService.GetRazorComponentName(definitionAbsolutePathId);
+            if (referenceTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+            {
+                var referenceName = Binder.CSharpCompilerService.GetRazorComponentName(referenceAbsolutePathId);
+                if (definitionName == referenceName)
+                    return true;
+            }
+            else
+            {
+                if (Binder.CSharpCompilerService.SafeCompareText(referenceAbsolutePathId, definitionName, referenceTextSpan))
+                    return true;
+            }
+        }
+        else if (referenceTextSpan.DecorationByte == (byte)SyntaxKind.ImplicitTextSource)
+        {
+            var referenceName = Binder.CSharpCompilerService.GetRazorComponentName(referenceAbsolutePathId);
+            if (Binder.CSharpCompilerService.SafeCompareText(definitionAbsolutePathId, referenceName, definitionValue.IdentifierToken.TextSpan))
+                return true;
+        }
+        else if (Binder.CSharpCompilerService.SafeCompareTextSpans(
+                referenceAbsolutePathId, referenceTextSpan, definitionAbsolutePathId, definitionValue.IdentifierToken.TextSpan))
+        {
+            return true;
+        }
+        
+        return false;
     }
     
     /// <summary>

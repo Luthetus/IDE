@@ -4,14 +4,16 @@ using Clair.Extensions.CompilerServices.Syntax.Enums;
 namespace Clair.Extensions.CompilerServices.Syntax.NodeValues;
 
 /// <summary>
-/// The textspan points to the text that identifies the namespace group that was contributed to.
+/// TODO: 'Ctrl A' then 'Ctrl V' => handled exception???...
+/// ...I had to paste without doing 'Ctrl A' first.
 /// </summary>
-public struct NamespaceContribution
+public struct AddedNamespace
 {
-    public NamespaceContribution(TextEditorTextSpan textSpan)
+    public AddedNamespace(TextEditorTextSpan textSpan)
     {
         TextSpan = textSpan;
     }
 
     public TextEditorTextSpan TextSpan { get; }
 }
+

@@ -1,4 +1,5 @@
-﻿using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
+using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
 
 namespace Clair.Extensions.CompilerServices.Syntax.NodeValues;
 

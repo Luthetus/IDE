@@ -473,6 +473,10 @@ public partial class SolutionExplorerContextMenu : ComponentBase
         };
     }
 
+    /// <summary>
+    /// TODO: Don't copy and paste the namespace calculation code from the CSharpCompilerService.GetRazorNamespace(...)
+    /// TODO: Why is csproj ending in .csproj
+    /// </summary>
     private string GetNamespaceString(SolutionExplorerTreeViewContainer container, TreeViewNodeValue treeViewModel)
     {
         var targetNode = treeViewModel;

@@ -10,6 +10,8 @@ public enum SyntaxKind : byte
     // Keep NotApplicable at 0
     NotApplicable,
     NotProvided,
+    
+    
 
     // Tokens Normal
     CommentMultiLineToken,
@@ -276,4 +278,13 @@ public enum SyntaxKind : byte
     InjectedLanguageComponentSymbol,
     SourceFileSymbol,
     OnClickSymbol,
+
+    RazorDirective,
+    
+    // TODO:...
+    // ...The text doesn't actually exist, it is calculated on demand contextually.
+    // This shouldn't be here. The decoration bytes are very generalized
+    // and some other enum could overlap the byte and unintentionally
+    // signal that the text doesn't exist.
+    ImplicitTextSource,
 }

@@ -3,6 +3,7 @@ using Clair.TextEditor.RazorLib.CompilerServices;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.Extensions.CompilerServices.Syntax.Interfaces;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
 
 namespace Clair.Extensions.CompilerServices;
 

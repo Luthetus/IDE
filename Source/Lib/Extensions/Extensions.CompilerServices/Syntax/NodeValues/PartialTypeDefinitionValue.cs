@@ -1,3 +1,5 @@
+using Clair.Extensions.CompilerServices.Syntax.Enums;
+
 namespace Clair.Extensions.CompilerServices.Syntax.NodeValues;
 
 public struct PartialTypeDefinitionValue

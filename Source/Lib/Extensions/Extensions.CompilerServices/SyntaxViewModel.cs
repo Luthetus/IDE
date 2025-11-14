@@ -1,9 +1,10 @@
+using Clair.Extensions.CompilerServices.Syntax;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
+using Clair.Extensions.CompilerServices.Syntax.Interfaces;
+using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.TextEditor.RazorLib;
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.TextEditors.Models;
-using Clair.Extensions.CompilerServices.Syntax;
-using Clair.Extensions.CompilerServices.Syntax.Interfaces;
-using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 
 namespace Clair.Extensions.CompilerServices;
 

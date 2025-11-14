@@ -1,3 +1,4 @@
+using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.Extensions.CompilerServices.Syntax.Enums;
 using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
@@ -1099,7 +1100,7 @@ public static partial class Parser
                     _ = parserModel.TokenWalker.Consume(); // Consume the CommaToken
                 
                     var consumeCounter = parserModel.TokenWalker.ConsumeCounter;
-                    
+                    //bathroom/food
                     _ = Parser.MatchTypeClause(ref parserModel);
                     // parserModel.BindTypeClauseNode();
                     
@@ -1235,7 +1236,7 @@ public static partial class Parser
         HandleStorageModifierTokenKeyword(ref parserModel);
     }
 
-    public static void HandleNamespaceTokenKeyword(ref CSharpParserState parserModel)
+    public static void explicit_HandleNamespaceTokenKeyword(ref CSharpParserState parserModel)
     {
         var namespaceKeywordToken = parserModel.TokenWalker.Consume();
         
@@ -1249,6 +1250,59 @@ public static partial class Parser
 
         var namespaceStatementNode = parserModel.Rent_NamespaceStatementNode();
         namespaceStatementNode.KeywordToken = namespaceKeywordToken;
+        namespaceStatementNode.IdentifierToken = namespaceIdentifier;
+        namespaceStatementNode.AbsolutePathId = parserModel.AbsolutePathId;
+
+        parserModel.SetCurrentNamespaceStatementValue(new NamespaceStatementValue(namespaceStatementNode));
+        
+        parserModel.RegisterScope(
+        	new Scope(
+        		ScopeDirectionKind.Both,
+        		scope_StartInclusiveIndex: parserModel.TokenWalker.Current.TextSpan.StartInclusiveIndex,
+        		scope_EndExclusiveIndex: -1,
+        		codeBlock_StartInclusiveIndex: -1,
+        		codeBlock_EndExclusiveIndex: -1,
+        		parentScopeSubIndex: parserModel.ScopeCurrentSubIndex,
+        		selfScopeSubIndex: parserModel.Compilation.ScopeLength,
+        		nodeSubIndex: parserModel.Compilation.NodeLength,
+        		permitCodeBlockParsing: true,
+        		isImplicitOpenCodeBlockTextSpan: false,
+        		ownerSyntaxKind: namespaceStatementNode.SyntaxKind),
+    	    namespaceStatementNode);
+
+        parserModel.Return_NamespaceStatementNode(namespaceStatementNode);
+
+        // Do not set 'IsImplicitOpenCodeBlockTextSpan' for namespace file scoped.
+    }
+    
+    public static void implicit_HandleNamespaceTokenKeyword(ref CSharpParserState parserModel, string namespaceString)
+    {
+        var charIntSum = 0;
+        foreach (var c in namespaceString)
+        {
+            charIntSum += (int)c;
+        }
+        
+        // bathroom then compare if implicit vs explicit
+        // then
+        // search for @code section first (can there be more than 1?)
+        // then for @functions (can there be more than 1?)
+        // can you have @code and @functions?
+        //
+        // Parse those first,
+        // then open a method scope and reset the seek position.
+        
+        var namespaceIdentifier = new SyntaxToken(
+            SyntaxKind.IdentifierToken,
+            new TextEditorTextSpan(
+                startInclusiveIndex: 0,
+                endExclusiveIndex: namespaceString.Length,
+                decorationByte: (byte)SyntaxKind.ImplicitTextSource,
+                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
+                charIntSum));
+        
+        var namespaceStatementNode = parserModel.Rent_NamespaceStatementNode();
+        namespaceStatementNode.KeywordToken = default;
         namespaceStatementNode.IdentifierToken = namespaceIdentifier;
         namespaceStatementNode.AbsolutePathId = parserModel.AbsolutePathId;
 

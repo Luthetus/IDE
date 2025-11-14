@@ -1,6 +1,8 @@
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.Decorations.Models;
-using Clair.TextEditor.RazorLib.TextEditors.Models;
+using Clair.Extensions.CompilerServices.Syntax;
+using Clair.CompilerServices.CSharp.BinderCase;
+using Clair.CompilerServices.CSharp.CompilerServiceCase;
 
 namespace Clair.CompilerServices.Razor;
 
@@ -8,26 +10,31 @@ public static class RazorLexer
 {
     public enum RazorLexerContextKind
     {
-        Expect_TagOrText,
+        Expect_TagOrText = 0,
         // Expect_TagName, // There is no expect tag name, you can't have whitespace here
-        Expect_AttributeName,
-        Expect_AttributeValue,
+        Expect_AttributeName = 1,
+        Expect_AttributeValue = 2,
     }
 
-    public static RazorLexerOutput Lex(char[] keywordCheckBuffer, StreamReaderWrap streamReaderWrap, TextEditorModel modelModifier)
+    public static SyntaxToken Lex(
+        CSharpBinder binder,
+        TokenWalkerBuffer tokenWalkerBuffer,
+        //ref TextEditorTextSpan previousEscapeCharacterTextSpan,
+        //ref int interpolatedExpressionUnmatchedBraceCount,
+        byte contextKindByte = 0/*RazorLexerContextKind.Expect_TagOrText*/)
     {
-        var context = RazorLexerContextKind.Expect_TagOrText;
-        var output = new RazorLexerOutput(modelModifier);
+        var context = (RazorLexerContextKind)contextKindByte;
+        //var output = new RazorLexerOutput(modelModifier);
         
         // This gets updated throughout the loop
-        var startPosition = streamReaderWrap.PositionIndex;
-        var startByte = streamReaderWrap.ByteIndex;
+        var startPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+        var startByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
         
         TextEditorTextSpan textSpanOfMostRecentTagOpen = default;
         
-        while (!streamReaderWrap.IsEof)
+        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
         {
-            switch (streamReaderWrap.CurrentCharacter)
+            switch (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter)
             {
                 /* Lowercase Letters */
                 case 'a':
@@ -89,40 +96,40 @@ public static class RazorLexer
                 case '@':
                     if (context == RazorLexerContextKind.Expect_AttributeName)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '@')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
                         {
-                            var atCharStartPosition = streamReaderWrap.PositionIndex;
-                            var atCharStartByte = streamReaderWrap.ByteIndex;
-                            _ = streamReaderWrap.ReadCharacter();
+                            var atCharStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                            var atCharStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                             // Attribute skips HTML identifier because ':' example: 'onclick:stopPropagation="true"'
-                            SkipHtmlIdentifier(streamReaderWrap);
-                            output.ModelModifier.__SetDecorationByteRange(
+                            SkipHtmlIdentifier(tokenWalkerBuffer);
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 atCharStartPosition,
-                                streamReaderWrap.PositionIndex,
+                                tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                 (byte)GenericDecorationKind.Razor_AttributeNameInjectedLanguageFragment);
                         }
                         else
                         {
-                            var attributeNameStartPosition = streamReaderWrap.PositionIndex;
-                            var attributeNameStartByte = streamReaderWrap.ByteIndex;
+                            var attributeNameStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                            var attributeNameStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                             var wasInjectedLanguageFragment = false;
-                            while (!streamReaderWrap.IsEof)
+                            while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                             {
-                                if (!char.IsLetterOrDigit(streamReaderWrap.CurrentCharacter))
+                                if (!char.IsLetterOrDigit(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                                 {
-                                    if (streamReaderWrap.CurrentCharacter != '_' &&
-                                        streamReaderWrap.CurrentCharacter != '-' &&
-                                        streamReaderWrap.CurrentCharacter != ':')
+                                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '_' &&
+                                        tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '-' &&
+                                        tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != ':')
                                     {
                                         break;
                                     }
                                 }
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                             }
 
-                            output.ModelModifier.__SetDecorationByteRange(
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 attributeNameStartPosition,
-                                streamReaderWrap.PositionIndex,
+                                tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                 (byte)GenericDecorationKind.Razor_AttributeName);
                         }
                         
@@ -131,64 +138,64 @@ public static class RazorLexer
                     }
                     else if (context == RazorLexerContextKind.Expect_AttributeValue)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '@')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
                         {
-                            var atCharStartPosition = streamReaderWrap.PositionIndex;
-                            var atCharStartByte = streamReaderWrap.ByteIndex;
-                            _ = streamReaderWrap.ReadCharacter();
+                            var atCharStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                            var atCharStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                             
-                            if (streamReaderWrap.CurrentCharacter == '(')
+                            if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                             {
                                 var matchParenthesis = 0;
-                                while (!streamReaderWrap.IsEof)
+                                while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                                 {
-                                    if (streamReaderWrap.CurrentCharacter == '(')
+                                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                                     {
                                         ++matchParenthesis;
                                     }
-                                    else if (streamReaderWrap.CurrentCharacter == ')')
+                                    else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                                     {
                                         --matchParenthesis;
                                         if (matchParenthesis == 0)
                                         {
-                                            _ = streamReaderWrap.ReadCharacter();
+                                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                             break;
                                         }
                                     }
-                                    _ = streamReaderWrap.ReadCharacter();
+                                    _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 }
                             }
                             else
                             {
-                                SkipCSharpdentifier(streamReaderWrap);
+                                SkipCSharpdentifier(tokenWalkerBuffer);
                             }
                             
-                            output.ModelModifier.__SetDecorationByteRange(
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 atCharStartPosition,
-                                streamReaderWrap.PositionIndex,
+                                tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInjectedLanguageFragment);
                         }
                         else
                         {
-                            var attributeValueStartPosition = streamReaderWrap.PositionIndex;
-                            var attributeValueStartByte = streamReaderWrap.ByteIndex;
-                            while (!streamReaderWrap.IsEof)
+                            var attributeValueStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                            var attributeValueStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                            while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                             {
-                                if (!char.IsLetterOrDigit(streamReaderWrap.CurrentCharacter))
+                                if (!char.IsLetterOrDigit(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                                 {
-                                    if (streamReaderWrap.CurrentCharacter == '@' &&
-                                        streamReaderWrap.CurrentCharacter != '_' &&
-                                        streamReaderWrap.CurrentCharacter != '-' &&
-                                        streamReaderWrap.CurrentCharacter != ':')
+                                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@' &&
+                                        tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '_' &&
+                                        tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '-' &&
+                                        tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != ':')
                                     {
                                         break;
                                     }
                                 }
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                             }
-                            output.ModelModifier.__SetDecorationByteRange(
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
-                                streamReaderWrap.PositionIndex,
+                                tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                 (byte)GenericDecorationKind.Razor_AttributeValue);
                         }
                         
@@ -197,100 +204,126 @@ public static class RazorLexer
                     }
                     else if (context == RazorLexerContextKind.Expect_TagOrText)
                     {
-                        var textStartPosition = streamReaderWrap.PositionIndex;
-                        var textStartByte = streamReaderWrap.ByteIndex;
-                        while (!streamReaderWrap.IsEof)
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
                         {
-                            if (streamReaderWrap.CurrentCharacter == '<')
+                            var startInclusiveIndex = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                            var byteIndex = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
+                                startInclusiveIndex,
+                                tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                                (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
+
+                            return new SyntaxToken(
+                                SyntaxKind.AtToken,
+                                new TextEditorTextSpan(
+                                    startInclusiveIndex,
+                                    endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                                    decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                                    byteIndex,
+                                    charIntSum: 64));
+                        }
+
+                        var textStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                        var textStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
+                        {
+                            if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '<')
                             {
                                 break;
                             }
-                            else if (streamReaderWrap.CurrentCharacter == '@')
+                            else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
                             {
-                                output.ModelModifier.__SetDecorationByteRange(
+                                tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                     textStartPosition,
-                                    streamReaderWrap.PositionIndex,
+                                    tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                     (byte)GenericDecorationKind.Razor_Text);
-                                var atCharStartPosition = streamReaderWrap.PositionIndex;
-                                var atCharStartByte = streamReaderWrap.ByteIndex;
-                                _ = streamReaderWrap.ReadCharacter();
+                                var atCharStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                var atCharStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                             
-                                if (streamReaderWrap.CurrentCharacter == '*')
+                                if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '*')
                                 {
-                                    _ = streamReaderWrap.ReadCharacter();
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                         atCharStartPosition,
-                                        streamReaderWrap.PositionIndex,
+                                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                                         
-                                    var commentStartPosition = streamReaderWrap.PositionIndex;
-                                    var commentStartByte = streamReaderWrap.ByteIndex;
+                                    var commentStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                    var commentStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                                     
-                                    while (!streamReaderWrap.IsEof)
+                                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                                     {
-                                        if (streamReaderWrap.CurrentCharacter == '*' && streamReaderWrap.PeekCharacter(1) == '@')
+                                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '*' && tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '@')
                                             break;
                                     
-                                        _ = streamReaderWrap.ReadCharacter();
+                                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                     }
                                     
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                         commentStartPosition,
-                                        streamReaderWrap.PositionIndex,
+                                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_Comment);
                                     
                                     // The while loop has 2 break cases, thus !IsEof means "*@" was the break cause.
-                                    if (!streamReaderWrap.IsEof)
+                                    if (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                                     {
-                                        var starStartPosition = streamReaderWrap.PositionIndex;
-                                        var starStartByte = streamReaderWrap.ByteIndex;
+                                        var starStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                        var starStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                                         
-                                        _ = streamReaderWrap.ReadCharacter();
-                                        _ = streamReaderWrap.ReadCharacter();
-                                        output.ModelModifier.__SetDecorationByteRange(
+                                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                             starStartPosition,
-                                            streamReaderWrap.PositionIndex,
+                                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                             (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                                     }
                                 }
-                                else if (streamReaderWrap.CurrentCharacter == '{')
+                                else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                                 {
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                         atCharStartPosition,
-                                        streamReaderWrap.PositionIndex,
+                                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                                         
-                                    LexCSharpCodeBlock(streamReaderWrap, output);
+                                    LexCSharpCodeBlock(tokenWalkerBuffer);
+                                    if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                                        return default;
                                 }
                                 else
                                 {
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                         atCharStartPosition,
-                                        streamReaderWrap.PositionIndex,
+                                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                                 
-                                    var wordStartPosition = streamReaderWrap.PositionIndex;
-                                    var wordStartByte = streamReaderWrap.ByteIndex;
+                                    var wordStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                    var wordStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                                     
-                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(keywordCheckBuffer, streamReaderWrap, output);
-                                    if (!everythingWasHandledForMe)
+                                    var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(binder.KeywordCheckBuffer, tokenWalkerBuffer);
+                                    if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                                        return default;
+                                    if (everythingWasHandledForMe.SyntaxKind == SyntaxKind.NotApplicable)
                                     {
-                                        output.ModelModifier.__SetDecorationByteRange(
+                                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                             wordStartPosition,
-                                            streamReaderWrap.PositionIndex,
+                                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                             (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                                     }
                                 }
                                 
-                                textStartPosition = streamReaderWrap.PositionIndex;
-                                textStartByte = streamReaderWrap.ByteIndex;
+                                textStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                textStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                                 continue;
                             }
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
-                        output.ModelModifier.__SetDecorationByteRange(
+                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                             textStartPosition,
-                            streamReaderWrap.PositionIndex,
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_Text);
                         context = RazorLexerContextKind.Expect_TagOrText;
                         break;
@@ -309,22 +342,22 @@ public static class RazorLexer
                 case '9':
                     if (context == RazorLexerContextKind.Expect_AttributeValue)
                     {
-                        var attributeValueStartPosition = streamReaderWrap.PositionIndex;
-                        var attributeValueStartByte = streamReaderWrap.ByteIndex;
-                        while (!streamReaderWrap.IsEof)
+                        var attributeValueStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                        var attributeValueStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
-                            if (!char.IsLetterOrDigit(streamReaderWrap.CurrentCharacter) &&
-                                streamReaderWrap.CurrentCharacter != '_' &&
-                                streamReaderWrap.CurrentCharacter != '-' &&
-                                streamReaderWrap.CurrentCharacter != ':')
+                            if (!char.IsLetterOrDigit(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter) &&
+                                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '_' &&
+                                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '-' &&
+                                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != ':')
                             {
                                 break;
                             }
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
-                        output.ModelModifier.__SetDecorationByteRange(
+                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                             attributeValueStartPosition,
-                            streamReaderWrap.PositionIndex,
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeValue);
                         context = RazorLexerContextKind.Expect_AttributeName;
                         break;
@@ -334,111 +367,111 @@ public static class RazorLexer
                 case '\'':
                     if (context == RazorLexerContextKind.Expect_AttributeValue)
                     {
-                        var delimiterStartPosition = streamReaderWrap.PositionIndex;
-                        var delimiterStartByte = streamReaderWrap.ByteIndex;
-                        _ = streamReaderWrap.ReadCharacter();
-                        output.ModelModifier.__SetDecorationByteRange(
+                        var delimiterStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                        var delimiterStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                             delimiterStartPosition,
-                            streamReaderWrap.PositionIndex,
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeDelimiter);
                             
-                        var attributeValueStartPosition = streamReaderWrap.PositionIndex;
-                        var attributeValueStartByte = streamReaderWrap.ByteIndex;
-                        var attributeValueEnd = streamReaderWrap.PositionIndex;
+                        var attributeValueStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                        var attributeValueStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                        var attributeValueEnd = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
                         var hasSeenInterpolation = false;
-                        while (!streamReaderWrap.IsEof)
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
-                            if (streamReaderWrap.CurrentCharacter == '\'')
+                            if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '\'')
                             {
-                                attributeValueEnd = streamReaderWrap.PositionIndex;
-                                delimiterStartPosition = streamReaderWrap.PositionIndex;
-                                delimiterStartByte = streamReaderWrap.ByteIndex;
-                                _ = streamReaderWrap.ReadCharacter();
+                                attributeValueEnd = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                delimiterStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                delimiterStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
-                            else if (streamReaderWrap.CurrentCharacter == '@')
+                            else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
                             {
                                 if (!hasSeenInterpolation)
                                 {
                                     hasSeenInterpolation = true;
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                         attributeValueStartPosition,
-                                        streamReaderWrap.PositionIndex,
+                                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_AttributeValueInterpolationStart);
                                 }
                                 else
                                 {
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                         attributeValueStartPosition,
-                                        streamReaderWrap.PositionIndex,
+                                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_AttributeValueInterpolationContinue);
                                 }
                                 
-                                var interpolationStartPosition = streamReaderWrap.PositionIndex;
-                                var interpolationStartByte = streamReaderWrap.ByteIndex;
-                                _ = streamReaderWrap.ReadCharacter();
+                                var interpolationStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                var interpolationStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 
-                                if (streamReaderWrap.CurrentCharacter == '(')
+                                if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                                 {
                                     var matchParenthesis = 0;
-                                    while (!streamReaderWrap.IsEof)
+                                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                                     {
-                                        if (streamReaderWrap.CurrentCharacter == '(')
+                                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                                         {
                                             ++matchParenthesis;
                                         }
-                                        else if (streamReaderWrap.CurrentCharacter == ')')
+                                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                                         {
                                             --matchParenthesis;
                                             if (matchParenthesis == 0)
                                             {
-                                                _ = streamReaderWrap.ReadCharacter();
+                                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                                 break;
                                             }
                                         }
-                                        _ = streamReaderWrap.ReadCharacter();
+                                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                     }
                                 }
                                 else
                                 {
-                                    SkipCSharpdentifier(streamReaderWrap);
+                                    SkipCSharpdentifier(tokenWalkerBuffer);
                                 }
                                 
-                                output.ModelModifier.__SetDecorationByteRange(
+                                tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                     interpolationStartPosition,
-                                    streamReaderWrap.PositionIndex,
+                                    tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                     (byte)GenericDecorationKind.Razor_AttributeValueInjectedLanguageFragment);
                                 
-                                attributeValueStartPosition = streamReaderWrap.PositionIndex;
-                                attributeValueStartByte = streamReaderWrap.ByteIndex;
+                                attributeValueStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                attributeValueStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                                 continue;
                             }
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
                         
                         if (hasSeenInterpolation)
                         {
-                            output.ModelModifier.__SetDecorationByteRange(
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
                                 attributeValueEnd,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInterpolationContinue);
                         
-                            output.ModelModifier.__SetDecorationByteRange(
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 delimiterStartPosition,
                                 delimiterStartPosition,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInterpolationEnd);
                         }
                         else
                         {
-                            output.ModelModifier.__SetDecorationByteRange(
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
                                 attributeValueEnd,
                                 (byte)GenericDecorationKind.Razor_AttributeValue);
                         }
                         
-                        output.ModelModifier.__SetDecorationByteRange(
+                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                             delimiterStartPosition,
-                            streamReaderWrap.PositionIndex,
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeDelimiter);
                             
                         context = RazorLexerContextKind.Expect_AttributeName;
@@ -448,111 +481,111 @@ public static class RazorLexer
                 case '"':
                     if (context == RazorLexerContextKind.Expect_AttributeValue)
                     {
-                        var delimiterStartPosition = streamReaderWrap.PositionIndex;
-                        var delimiterStartByte = streamReaderWrap.ByteIndex;
-                        _ = streamReaderWrap.ReadCharacter();
-                        output.ModelModifier.__SetDecorationByteRange(
+                        var delimiterStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                        var delimiterStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                             delimiterStartPosition,
-                            streamReaderWrap.PositionIndex,
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeDelimiter);
                         
-                        var attributeValueStartPosition = streamReaderWrap.PositionIndex;
-                        var attributeValueStartByte = streamReaderWrap.ByteIndex;
-                        var attributeValueEnd = streamReaderWrap.PositionIndex;
+                        var attributeValueStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                        var attributeValueStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                        var attributeValueEnd = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
                         var hasSeenInterpolation = false;
-                        while (!streamReaderWrap.IsEof)
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
-                            if (streamReaderWrap.CurrentCharacter == '"')
+                            if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '"')
                             {
-                                attributeValueEnd = streamReaderWrap.PositionIndex;
-                                delimiterStartPosition = streamReaderWrap.PositionIndex;
-                                delimiterStartByte = streamReaderWrap.ByteIndex;
-                                _ = streamReaderWrap.ReadCharacter();
+                                attributeValueEnd = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                delimiterStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                delimiterStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
-                            else if (streamReaderWrap.CurrentCharacter == '@')
+                            else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
                             {
                                 if (!hasSeenInterpolation)
                                 {
                                     hasSeenInterpolation = true;
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                         attributeValueStartPosition,
-                                        streamReaderWrap.PositionIndex,
+                                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_AttributeValueInterpolationStart);
                                 }
                                 else
                                 {
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                         attributeValueStartPosition,
-                                        streamReaderWrap.PositionIndex,
+                                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_AttributeValueInterpolationContinue);
                                 }
                                 
-                                var interpolationStartPosition = streamReaderWrap.PositionIndex;
-                                var interpolationStartByte = streamReaderWrap.ByteIndex;
-                                _ = streamReaderWrap.ReadCharacter();
+                                var interpolationStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                var interpolationStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 
-                                if (streamReaderWrap.CurrentCharacter == '(')
+                                if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                                 {
                                     var matchParenthesis = 0;
-                                    while (!streamReaderWrap.IsEof)
+                                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                                     {
-                                        if (streamReaderWrap.CurrentCharacter == '(')
+                                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                                         {
                                             ++matchParenthesis;
                                         }
-                                        else if (streamReaderWrap.CurrentCharacter == ')')
+                                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                                         {
                                             --matchParenthesis;
                                             if (matchParenthesis == 0)
                                             {
-                                                _ = streamReaderWrap.ReadCharacter();
+                                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                                 break;
                                             }
                                         }
-                                        _ = streamReaderWrap.ReadCharacter();
+                                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                     }
                                 }
                                 else
                                 {
-                                    SkipCSharpdentifier(streamReaderWrap);
+                                    SkipCSharpdentifier(tokenWalkerBuffer);
                                 }
                                 
-                                output.ModelModifier.__SetDecorationByteRange(
+                                tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                     interpolationStartPosition,
-                                    streamReaderWrap.PositionIndex,
+                                    tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                                     (byte)GenericDecorationKind.Razor_AttributeValueInjectedLanguageFragment);
                                 
-                                attributeValueStartPosition = streamReaderWrap.PositionIndex;
-                                attributeValueStartByte = streamReaderWrap.ByteIndex;
+                                attributeValueStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                                attributeValueStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                                 continue;
                             }
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
                         
                         if (hasSeenInterpolation)
                         {
-                            output.ModelModifier.__SetDecorationByteRange(
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
                                 attributeValueEnd,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInterpolationContinue);
                         
-                            output.ModelModifier.__SetDecorationByteRange(
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 delimiterStartPosition,
                                 delimiterStartPosition,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInterpolationEnd);
                         }
                         else
                         {
-                            output.ModelModifier.__SetDecorationByteRange(
+                            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
                                 attributeValueEnd,
                                 (byte)GenericDecorationKind.Razor_AttributeValue);
                         }
                         
-                        output.ModelModifier.__SetDecorationByteRange(
+                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                             delimiterStartPosition,
-                            streamReaderWrap.PositionIndex,
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeDelimiter);
                         
                         context = RazorLexerContextKind.Expect_AttributeName;
@@ -561,13 +594,13 @@ public static class RazorLexer
                     goto default;
                 case '/':
                 
-                    if (streamReaderWrap.PeekCharacter(1) == '>')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '>')
                     {
                         if (context == RazorLexerContextKind.Expect_AttributeName || context == RazorLexerContextKind.Expect_AttributeValue)
                         {
                             if (textSpanOfMostRecentTagOpen.DecorationByte != 0)
                             {
-                                output.ModelModifier?.__SetDecorationByteRange(
+                                tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                     textSpanOfMostRecentTagOpen.StartInclusiveIndex,
                                     textSpanOfMostRecentTagOpen.EndExclusiveIndex,
                                     (byte)GenericDecorationKind.Razor_TagNameSelf);
@@ -577,11 +610,11 @@ public static class RazorLexer
                         }
                     }
                 
-                    if (streamReaderWrap.PeekCharacter(1) == '/')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '/')
                     {
                         goto default;
                     }
-                    else if (streamReaderWrap.PeekCharacter(1) == '*')
+                    else if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '*')
                     {
                         goto default;
                     }
@@ -591,7 +624,7 @@ public static class RazorLexer
                     }
                     break;
                 case '+':
-                    if (streamReaderWrap.PeekCharacter(1) == '+')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '+')
                     {
                         goto default;
                     }
@@ -601,7 +634,7 @@ public static class RazorLexer
                     }
                     break;
                 case '-':
-                    if (streamReaderWrap.PeekCharacter(1) == '-')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '-')
                     {
                         goto default;
                     }
@@ -613,21 +646,21 @@ public static class RazorLexer
                 case '=':
                     if (context == RazorLexerContextKind.Expect_AttributeValue)
                     {
-                        var attributeValueStartPosition = streamReaderWrap.PositionIndex;
-                        var attributeValueStartByte = streamReaderWrap.ByteIndex;
-                        _ = streamReaderWrap.ReadCharacter();
-                        output.ModelModifier.__SetDecorationByteRange(
+                        var attributeValueStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                        var attributeValueStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                             attributeValueStartPosition,
-                            streamReaderWrap.PositionIndex,
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeOperator);
                         break;
                     }
                 
-                    if (streamReaderWrap.PeekCharacter(1) == '=')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '=')
                     {
                         goto default;
                     }
-                    else if (streamReaderWrap.PeekCharacter(1) == '>')
+                    else if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '>')
                     {
                         goto default;
                     }
@@ -637,7 +670,7 @@ public static class RazorLexer
                     }
                     break;
                 case '?':
-                    if (streamReaderWrap.PeekCharacter(1) == '?')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '?')
                     {
                         goto default;
                     }
@@ -647,7 +680,7 @@ public static class RazorLexer
                     }
                     break;
                 case '|':
-                    if (streamReaderWrap.PeekCharacter(1) == '|')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '|')
                     {
                         goto default;
                     }
@@ -656,7 +689,7 @@ public static class RazorLexer
                         goto default;
                     }
                 case '&':
-                    if (streamReaderWrap.PeekCharacter(1) == '&')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '&')
                     {
                         goto default;
                     }
@@ -670,7 +703,7 @@ public static class RazorLexer
                 }
                 case '!':
                 {
-                    if (streamReaderWrap.PeekCharacter(1) == '=')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '=')
                     {
                         goto default;
                     }
@@ -710,7 +743,7 @@ public static class RazorLexer
                 }
                 case '<':
                 {
-                    if (streamReaderWrap.PeekCharacter(1) == '=')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '=')
                     {
                         goto default;
                     }
@@ -719,47 +752,47 @@ public static class RazorLexer
                     
                     if (context == RazorLexerContextKind.Expect_TagOrText)
                     {
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         
-                        if (streamReaderWrap.CurrentCharacter == '/')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '/')
                         {
                             tagDecoration = (byte)GenericDecorationKind.Razor_TagNameClose;
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
-                        else if (streamReaderWrap.CurrentCharacter == '!')
+                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '!')
                         {
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
                         
-                        var tagNameStartPosition = streamReaderWrap.PositionIndex;
-                        var tagNameStartByte = streamReaderWrap.ByteIndex;
-                        while (!streamReaderWrap.IsEof)
+                        var tagNameStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                        var tagNameStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
-                            if (!char.IsLetterOrDigit(streamReaderWrap.CurrentCharacter) &&
-                                streamReaderWrap.CurrentCharacter != '_' &&
-                                streamReaderWrap.CurrentCharacter != '-' &&
-                                streamReaderWrap.CurrentCharacter != ':' &&
-                                streamReaderWrap.CurrentCharacter != '.')
+                            if (!char.IsLetterOrDigit(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter) &&
+                                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '_' &&
+                                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '-' &&
+                                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != ':' &&
+                                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '.')
                             {
                                 break;
                             }
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
                         var textSpan = new TextEditorTextSpan(
                             tagNameStartPosition,
-                            streamReaderWrap.PositionIndex,
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                             tagDecoration,
                             tagNameStartByte);
                         if (tagDecoration == (byte)GenericDecorationKind.Razor_TagNameOpen)
                         {
                             textSpanOfMostRecentTagOpen = textSpan;
                         }
-                        output.ModelModifier.__SetDecorationByteRange(
+                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                             textSpan.StartInclusiveIndex,
                             textSpan.EndExclusiveIndex,
                             textSpan.DecorationByte);
 
-                        if (streamReaderWrap.CurrentCharacter == '>')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '>')
                         {
                             context = RazorLexerContextKind.Expect_TagOrText;
                         }
@@ -779,7 +812,7 @@ public static class RazorLexer
                 {
                     context = RazorLexerContextKind.Expect_TagOrText;
                 
-                    if (streamReaderWrap.PeekCharacter(1) == '=')
+                    if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '=')
                     {
                         goto default;
                     }
@@ -797,35 +830,35 @@ public static class RazorLexer
                     goto default;
                 }
                 case '$':
-                    if (streamReaderWrap.NextCharacter == '"')
+                    if (tokenWalkerBuffer.StreamReaderWrap.NextCharacter == '"')
                     {
                         goto default;
                     }
-                    else if (streamReaderWrap.PeekCharacter(1) == '@' && streamReaderWrap.PeekCharacter(2) == '"')
+                    else if (tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '@' && tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(2) == '"')
                     {
                         goto default;
                     }
-                    else if (streamReaderWrap.NextCharacter == '$')
+                    else if (tokenWalkerBuffer.StreamReaderWrap.NextCharacter == '$')
                     {
-                        /*var entryPositionIndex = streamReaderWrap.PositionIndex;
-                        var byteEntryIndex = streamReaderWrap.ByteIndex;
+                        /*var entryPositionIndex = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+                        var byteEntryIndex = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
 
                         // The while loop starts counting from and including the first dollar sign.
                         var countDollarSign = 0;
                     
-                        while (!streamReaderWrap.IsEof)
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
-                            if (streamReaderWrap.CurrentCharacter != '$')
+                            if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '$')
                                 break;
                             
                             ++countDollarSign;
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }*/
                         
                         goto default;
                         
-                        /*if (streamReaderWrap.NextCharacter == '"')
-                            LexString(binder, ref lexerOutput, streamReaderWrap, ref previousEscapeCharacterTextSpan, countDollarSign: countDollarSign, useVerbatim: false);*/
+                        /*if (tokenWalkerBuffer.StreamReaderWrap.NextCharacter == '"')
+                            LexString(binder, ref lexerOutput, tokenWalkerBuffer.StreamReaderWrap, ref previousEscapeCharacterTextSpan, countDollarSign: countDollarSign, useVerbatim: false);*/
                     }
                     else
                     {
@@ -847,40 +880,42 @@ public static class RazorLexer
                 case '#':
                     goto default;
                 default:
-                    _ = streamReaderWrap.ReadCharacter();
+                    _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     break;
             }
         }
 
         forceExit:
-        return output;
+        return new SyntaxToken(SyntaxKind.EndOfFileToken, default);
+        throw new NotImplementedException();
+        //return output;
     }
     
-    private static void SkipHtmlIdentifier(StreamReaderWrap streamReaderWrap)
+    private static void SkipHtmlIdentifier(TokenWalkerBuffer tokenWalkerBuffer)
     {
-        while (!streamReaderWrap.IsEof)
+        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
         {
-            if (!char.IsLetterOrDigit(streamReaderWrap.CurrentCharacter) &&
-                streamReaderWrap.CurrentCharacter != '_' &&
-                streamReaderWrap.CurrentCharacter != '-' &&
-                streamReaderWrap.CurrentCharacter != ':')
+            if (!char.IsLetterOrDigit(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter) &&
+                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '_' &&
+                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '-' &&
+                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != ':')
             {
                 break;
             }
-            _ = streamReaderWrap.ReadCharacter();
+            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
         }
     }
     
-    private static void SkipCSharpdentifier(StreamReaderWrap streamReaderWrap)
+    private static void SkipCSharpdentifier(TokenWalkerBuffer tokenWalkerBuffer)
     {
-        while (!streamReaderWrap.IsEof)
+        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
         {
-            if (!char.IsLetterOrDigit(streamReaderWrap.CurrentCharacter) &&
-                streamReaderWrap.CurrentCharacter != '_')
+            if (!char.IsLetterOrDigit(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter) &&
+                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '_')
             {
                 break;
             }
-            _ = streamReaderWrap.ReadCharacter();
+            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
         }
     }
     
@@ -897,15 +932,14 @@ public static class RazorLexer
     }
     
     /// <summary>
-    /// When this returns true, then the state of the lexer has entirely changed
+    /// When this returns default, then the state of the lexer has entirely changed
     /// and the invoker should disregard any of their previous state and reset it.
     ///
     /// This method when finding a brace deliminated code blocked keyword will entirely lex to the close brace.
     /// </summary>
-    private static bool SkipCSharpdentifierOrKeyword(
+    public static SyntaxToken SkipCSharpdentifierOrKeyword(
         char[] keywordCheckBuffer,
-        StreamReaderWrap streamReaderWrap,
-        RazorLexerOutput output,
+        TokenWalkerBuffer tokenWalkerBuffer,
         SyntaxContinuationKind syntaxContinuationKind = SyntaxContinuationKind.None)
     {
         // To detect whether a word is an identifier or a keyword:
@@ -928,30 +962,51 @@ public static class RazorLexer
         // The check is only performed for the length of the word, so the indices are always initialized in time.
         // 
     
-        var wordStartPosition = streamReaderWrap.PositionIndex;
-        var wordStartByte = streamReaderWrap.ByteIndex;
+        var wordStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+        var wordStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
         
         var lengthCharacter = 0;
         var characterIntSum = 0;
         
         int bufferIndex = 0;
     
-        while (!streamReaderWrap.IsEof)
+        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
         {
-            if (!char.IsLetterOrDigit(streamReaderWrap.CurrentCharacter) &&
-                streamReaderWrap.CurrentCharacter != '_')
+            if (!char.IsLetterOrDigit(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter) &&
+                tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '_')
             {
                 break;
             }
             
-            characterIntSum += (int)streamReaderWrap.CurrentCharacter;
+            characterIntSum += (int)tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter;
             ++lengthCharacter;
             if (bufferIndex < Clair.CompilerServices.CSharp.BinderCase.CSharpBinder.KeywordCheckBufferSize)
-                keywordCheckBuffer[bufferIndex++] = streamReaderWrap.CurrentCharacter;
+                keywordCheckBuffer[bufferIndex++] = tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter;
                 
-            _ = streamReaderWrap.ReadCharacter();
+            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
         }
-        
+
+        /*
+         Directives
+         ==========
+         @attribute
+         @page "/counter"
+         @code
+         @functions
+         @implements
+         @inherits
+         @model
+         @inject
+         @layout
+         @model
+         @namespace
+         @preservewhitespace
+         @rendermode
+         @using static Microsoft.AspNetCore.Components.Web.RenderMode
+         @section
+         @typeparam
+         */
+
         switch (characterIntSum)
         {
             case 1189: // addTagHelper
@@ -969,9 +1024,9 @@ public static class RazorLexer
                     keywordCheckBuffer[10] == 'e' &&
                     keywordCheckBuffer[11] == 'r')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -989,9 +1044,9 @@ public static class RazorLexer
                     keywordCheckBuffer[7] ==  't' &&
                     keywordCheckBuffer[8] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1004,9 +1059,9 @@ public static class RazorLexer
                     keywordCheckBuffer[2] ==  's' &&
                     keywordCheckBuffer[3] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1020,9 +1075,9 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  's' &&
                     keywordCheckBuffer[4] ==  's')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1059,29 +1114,31 @@ public static class RazorLexer
                 if (!isCode && !isFunctions)
                     goto default;
             
-                output.ModelModifier.__SetDecorationByteRange(
+                tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                     wordStartPosition,
-                    streamReaderWrap.PositionIndex,
+                    tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                     (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
-                while (!streamReaderWrap.IsEof)
+                while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                 {
-                    if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                    if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                     {
                         break;
                     }
                     
-                    _ = streamReaderWrap.ReadCharacter();
+                    _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                 }
                 
-                if (streamReaderWrap.CurrentCharacter == '{')
+                if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                 {
-                    LexCSharpCodeBlock(streamReaderWrap, output);
-                    return true;
+                    LexCSharpCodeBlock(tokenWalkerBuffer);
+                    if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
+                    return new SyntaxToken(SyntaxKind.NotProvided, default); ;
                 }
                 else
                 {
-                    return true;
+                    return new SyntaxToken(SyntaxKind.NotProvided, default); ;
                 }
             case 741: // default
                 if (lengthCharacter == 7 &&
@@ -1093,9 +1150,9 @@ public static class RazorLexer
                     keywordCheckBuffer[5] ==  'l' &&
                     keywordCheckBuffer[6] ==  't')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1106,33 +1163,34 @@ public static class RazorLexer
                     keywordCheckBuffer[0] ==  'd' &&
                     keywordCheckBuffer[1] ==  'o')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Move to start of do statement code block.
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
-                    LexCSharpCodeBlock(streamReaderWrap, output);
+                    LexCSharpCodeBlock(tokenWalkerBuffer);
+                    if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                        return new SyntaxToken(SyntaxKind.NotProvided, default); ;
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     return SkipCSharpdentifierOrKeyword(
                         keywordCheckBuffer,
-                        streamReaderWrap,
-                        output);
+                        tokenWalkerBuffer);
                     
                     break;
                 }
@@ -1144,55 +1202,57 @@ public static class RazorLexer
                     keywordCheckBuffer[1] ==  'o' &&
                     keywordCheckBuffer[2] ==  'r')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Move to start of for statement condition.
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Move one beyond the end of for statement condition
                     var matchParenthesis = 0;
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                         {
                             ++matchParenthesis;
                         }
-                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                         {
                             --matchParenthesis;
                             if (matchParenthesis == 0)
                             {
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
                         }
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
-                        return true;
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default); ;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default); ;
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1209,55 +1269,57 @@ public static class RazorLexer
                     keywordCheckBuffer[5] ==  'c' &&
                     keywordCheckBuffer[6] ==  'h')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Move to start of foreach statement condition.
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Move one beyond the end of foreach statement condition
                     var matchParenthesis = 0;
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                         {
                             ++matchParenthesis;
                         }
-                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                         {
                             --matchParenthesis;
                             if (matchParenthesis == 0)
                             {
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
                         }
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
-                        return true;
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1273,9 +1335,9 @@ public static class RazorLexer
                     keywordCheckBuffer[4] ==  'u' &&
                     keywordCheckBuffer[5] ==  't')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1292,43 +1354,44 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'e')
                 {
                     // else
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Move to start of else-if "if" text,
                     // or to start of 'else' codeblock
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == 'i')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == 'i')
                         {
                             return SkipCSharpdentifierOrKeyword(
                                 keywordCheckBuffer,
-                                streamReaderWrap,
-                                output);
+                                tokenWalkerBuffer);
                         }
-                        if (streamReaderWrap.CurrentCharacter == '{')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
-                        return true;
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1339,70 +1402,71 @@ public static class RazorLexer
                          keywordCheckBuffer[3] ==  'k')
                 {
                     // lock
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Move to start of lock statement condition.
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Move one beyond the end of lock statement condition
                     var matchParenthesis = 0;
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                         {
                             ++matchParenthesis;
                         }
-                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                         {
                             --matchParenthesis;
                             if (matchParenthesis == 0)
                             {
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
                         }
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
                         
                         // Skip whitespace
-                        while (!streamReaderWrap.IsEof)
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
-                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                                 break;
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
                         
                         SkipCSharpdentifierOrKeyword(
                             keywordCheckBuffer,
-                            streamReaderWrap,
-                            output,
+                            tokenWalkerBuffer,
                             SyntaxContinuationKind.IfStatement);
                         
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1417,9 +1481,9 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'e' &&
                     keywordCheckBuffer[4] ==  'l')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1432,11 +1496,17 @@ public static class RazorLexer
                     keywordCheckBuffer[2] ==  'g' &&
                     keywordCheckBuffer[3] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                    break;
+                    return new SyntaxToken(SyntaxKind.RazorDirective, new TextEditorTextSpan(
+                        startInclusiveIndex: wordStartPosition,
+                        endExclusiveIndex: tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                        decorationByte: (byte)GenericDecorationKind.Razor_InjectedLanguageFragment,
+                        byteIndex: wordStartByte,
+                        charIntSum: characterIntSum));
+                    //break;
                 }
                 
                 goto default;
@@ -1461,9 +1531,9 @@ public static class RazorLexer
                     keywordCheckBuffer[16] ==  'c' &&
                     keywordCheckBuffer[17] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1474,70 +1544,71 @@ public static class RazorLexer
                     keywordCheckBuffer[0] ==  'i' &&
                     keywordCheckBuffer[1] ==  'f')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Move to start of if statement condition.
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Move one beyond the end of if statement condition
                     var matchParenthesis = 0;
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                         {
                             ++matchParenthesis;
                         }
-                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                         {
                             --matchParenthesis;
                             if (matchParenthesis == 0)
                             {
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
                         }
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
                         
                         // Skip whitespace
-                        while (!streamReaderWrap.IsEof)
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
-                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                                 break;
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
                         
                         SkipCSharpdentifierOrKeyword(
                             keywordCheckBuffer,
-                            streamReaderWrap,
-                            output,
+                            tokenWalkerBuffer,
                             SyntaxContinuationKind.IfStatement);
                         
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1557,9 +1628,9 @@ public static class RazorLexer
                     keywordCheckBuffer[8] ==  't' &&
                     keywordCheckBuffer[9] ==  's')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1576,9 +1647,9 @@ public static class RazorLexer
                     keywordCheckBuffer[6] ==  't' &&
                     keywordCheckBuffer[7] ==  's')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1593,9 +1664,9 @@ public static class RazorLexer
                     keywordCheckBuffer[4] ==  'c' &&
                     keywordCheckBuffer[5] ==  't')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1613,9 +1684,9 @@ public static class RazorLexer
                     keywordCheckBuffer[7] ==  'c' &&
                     keywordCheckBuffer[8] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1642,9 +1713,9 @@ public static class RazorLexer
                     keywordCheckBuffer[14] ==  'r')
                 {
                     // removeTagHelper
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1665,9 +1736,9 @@ public static class RazorLexer
                          keywordCheckBuffer[14] ==  'x')
                 {
                     // tagHelperPrefix
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1686,9 +1757,9 @@ public static class RazorLexer
                     keywordCheckBuffer[8] ==  'd' &&
                     keywordCheckBuffer[9] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1704,9 +1775,9 @@ public static class RazorLexer
                     keywordCheckBuffer[5] ==  'o' &&
                     keywordCheckBuffer[6] ==  'n')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1721,55 +1792,57 @@ public static class RazorLexer
                     keywordCheckBuffer[4] ==  'c' &&
                     keywordCheckBuffer[5] ==  'h')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                         
                     // Move to start of switch statement condition.
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Move one beyond the end of switch statement condition
                     var matchParenthesis = 0;
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                         {
                             ++matchParenthesis;
                         }
-                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                         {
                             --matchParenthesis;
                             if (matchParenthesis == 0)
                             {
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
                         }
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
-                        return true;
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1782,42 +1855,43 @@ public static class RazorLexer
                     keywordCheckBuffer[1] ==  'r' &&
                     keywordCheckBuffer[2] ==  'y')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
                         
                         // Skip whitespace
-                        while (!streamReaderWrap.IsEof)
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
-                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                                 break;
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
                         
                         SkipCSharpdentifierOrKeyword(
                             keywordCheckBuffer,
-                            streamReaderWrap,
-                            output,
+                            tokenWalkerBuffer,
                             SyntaxContinuationKind.TryStatement);
                         
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1833,70 +1907,71 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'c' &&
                     keywordCheckBuffer[4] ==  'h')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Move to start of catch statement variable declaration.
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Move one beyond the end of if statement condition
                     var matchParenthesis = 0;
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                         {
                             ++matchParenthesis;
                         }
-                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                         {
                             --matchParenthesis;
                             if (matchParenthesis == 0)
                             {
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
                         }
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
                         
                         // Skip whitespace
-                        while (!streamReaderWrap.IsEof)
+                        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
-                            if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                            if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                                 break;
-                            _ = streamReaderWrap.ReadCharacter();
+                            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                         }
                         
                         SkipCSharpdentifierOrKeyword(
                             keywordCheckBuffer,
-                            streamReaderWrap,
-                            output,
+                            tokenWalkerBuffer,
                             SyntaxContinuationKind.TryStatement);
                         
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1914,27 +1989,29 @@ public static class RazorLexer
                     keywordCheckBuffer[5] ==  'l' &&
                     keywordCheckBuffer[6] ==  'y')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
-                        return true;
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1953,9 +2030,9 @@ public static class RazorLexer
                     keywordCheckBuffer[7] ==  'a' &&
                     keywordCheckBuffer[8] ==  'm')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     break;
                 }
@@ -1969,58 +2046,60 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'n' &&
                     keywordCheckBuffer[4] ==  'g')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                         
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter != '(')
-                        return true;
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '(')
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     
                     // Move one beyond the end of using statement condition
                     var matchParenthesis = 0;
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                         {
                             ++matchParenthesis;
                         }
-                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                         {
                             --matchParenthesis;
                             if (matchParenthesis == 0)
                             {
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
                         }
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
-                        return true;
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -2035,66 +2114,68 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'l' &&
                     keywordCheckBuffer[4] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                         wordStartPosition,
-                        streamReaderWrap.PositionIndex,
+                        tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                     
                     // Move to start of while statement condition.
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Move one beyond the end of while statement condition
                     var matchParenthesis = 0;
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (streamReaderWrap.CurrentCharacter == '(')
+                        if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '(')
                         {
                             ++matchParenthesis;
                         }
-                        else if (streamReaderWrap.CurrentCharacter == ')')
+                        else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ')')
                         {
                             --matchParenthesis;
                             if (matchParenthesis == 0)
                             {
-                                _ = streamReaderWrap.ReadCharacter();
+                                _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 break;
                             }
                         }
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
                     // Skip whitespace
-                    while (!streamReaderWrap.IsEof)
+                    while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                     {
-                        if (!char.IsWhiteSpace(streamReaderWrap.CurrentCharacter))
+                        if (!char.IsWhiteSpace(tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter))
                             break;
-                        _ = streamReaderWrap.ReadCharacter();
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     
-                    if (streamReaderWrap.CurrentCharacter == '{')
+                    if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
-                        LexCSharpCodeBlock(streamReaderWrap, output);
-                        return true;
+                        LexCSharpCodeBlock(tokenWalkerBuffer);
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
-                    else if (streamReaderWrap.CurrentCharacter == ';')
+                    else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ';')
                     {
                         // This is convenient for the 'do-while' case.
                         // Albeit probably invalid when it is the 'while' case.
-                        output.ModelModifier.__SetDecorationByteRange(
-                            streamReaderWrap.PositionIndex,
-                            streamReaderWrap.PositionIndex + 1,
+                        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
+                            tokenWalkerBuffer.StreamReaderWrap.PositionIndex + 1,
                             (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
-                        _ = streamReaderWrap.ReadCharacter();
-                        return true;
+                        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -2105,7 +2186,7 @@ public static class RazorLexer
                 break;
         }
         
-        return false;
+        return new SyntaxToken(SyntaxKind.NotProvided, default);
     }
     
     /// <summary>
@@ -2122,18 +2203,20 @@ public static class RazorLexer
     ///
     /// This method returns 1 character after the close brace, or EOF.
     /// </summary>
-    private static void LexCSharpCodeBlock(StreamReaderWrap streamReaderWrap, RazorLexerOutput output)
+    private static void LexCSharpCodeBlock(TokenWalkerBuffer tokenWalkerBuffer)
     {
-        var openBraceStartPosition = streamReaderWrap.PositionIndex;
-        var openBraceStartByte = streamReaderWrap.ByteIndex;
-        _ = streamReaderWrap.ReadCharacter();
-        output.ModelModifier.__SetDecorationByteRange(
+        tokenWalkerBuffer.SetUseCSharpLexer(useCSharpLexer: true);
+        return;
+        var openBraceStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+        var openBraceStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
+        _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
             openBraceStartPosition,
-            streamReaderWrap.PositionIndex,
+            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
             (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
         
-        var cSharpStartPosition = streamReaderWrap.PositionIndex;
-        var cSharpStartByte = streamReaderWrap.ByteIndex;
+        var cSharpStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+        var cSharpStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
         
         var braceMatch = 1;
         
@@ -2143,11 +2226,11 @@ public static class RazorLexer
         
         var previousCharWasForwardSlash = false;
         
-        while (!streamReaderWrap.IsEof)
+        while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
         {
             var localPreviousCharWasForwardSlash = previousCharWasForwardSlash;
             
-            if (streamReaderWrap.CurrentCharacter == '/')
+            if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '/')
             {
                 previousCharWasForwardSlash = true;
             }
@@ -2158,1434 +2241,76 @@ public static class RazorLexer
         
             if (isMultiLineComment)
             {
-                if (streamReaderWrap.CurrentCharacter == '*' && streamReaderWrap.PeekCharacter(1) == '/')
+                if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '*' && tokenWalkerBuffer.StreamReaderWrap.PeekCharacter(1) == '/')
                 {
-                    _ = streamReaderWrap.ReadCharacter();
-                    _ = streamReaderWrap.ReadCharacter();
+                    _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                    _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     isMultiLineComment = false;
                     continue;
                 }
             }
             else if (isSingleLineComment)
             {
-                if (streamReaderWrap.CurrentCharacter == '\r' ||
-                    streamReaderWrap.CurrentCharacter == '\n')
+                if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '\r' ||
+                    tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '\n')
                 {
                     isSingleLineComment = false;
                 }
             }
             else if (isString)
             {
-                if (streamReaderWrap.CurrentCharacter == '"')
+                if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '"')
                 {
                     isString = false;
                 }
             }
-            else if (streamReaderWrap.CurrentCharacter == '"')
+            else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '"')
             {
                 isString = true;
             }
-            else if (streamReaderWrap.CurrentCharacter == '/')
+            else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '/')
             {
                 if (localPreviousCharWasForwardSlash)
                 {
                     isSingleLineComment = true;
                 }
             }
-            else if (streamReaderWrap.CurrentCharacter == '*')
+            else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '*')
             {
                 if (localPreviousCharWasForwardSlash)
                 {
                     isMultiLineComment = true;
                 }
             }
-            else if (streamReaderWrap.CurrentCharacter == '}')
+            else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '}')
             {
                 if (--braceMatch == 0)
                     break;
             }
-            else if (streamReaderWrap.CurrentCharacter == '{')
+            else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
             {
                 ++braceMatch;
             }
         
-            _ = streamReaderWrap.ReadCharacter();
+            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
         }
 
-        output.ModelModifier.__SetDecorationByteRange(
+        tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
             cSharpStartPosition,
-            streamReaderWrap.PositionIndex,
+            tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
             (byte)GenericDecorationKind.Razor_CSharpMarker);
         
         // The while loop has 2 break cases, thus !IsEof means "*@" was the break cause.
-        if (!streamReaderWrap.IsEof)
+        if (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
         {
-            var closeBraceStartPosition = streamReaderWrap.PositionIndex;
-            var closeBraceStartByte = streamReaderWrap.ByteIndex;
+            var closeBraceStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
+            var closeBraceStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
             
-            _ = streamReaderWrap.ReadCharacter();
-            output.ModelModifier.__SetDecorationByteRange(
+            _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+            tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                 closeBraceStartPosition,
-                streamReaderWrap.PositionIndex,
+                tokenWalkerBuffer.StreamReaderWrap.PositionIndex,
                 (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
         }
     }
-    
-    /*
-        =======================
-        =======================
-        1189 // addTagHelper
-        980 // attribute
-        412 // case
-        534 // class
-        411 // code
-        741 // default
-        211 // do
-        327 // for
-        728 // foreach
-        985 // functions
-        670 // layout
-        425 // lock
-        529 // model
-        413 // page
-        1945 // preservewhitespace
-        207 // if
-        1086 // implements
-        870 // inherits
-        637 // inject
-        941 // namespace
-        !DUPLICATE!:1546/tagHelperPrefix
-            1546 // removeTagHelper
-            1546 // tagHelperPrefix
-        1061 // rendermode
-        757 // section
-        658 // switch
-        351 // try
-        979 // typeparam
-        550 // using
-        537 // while
-        =======================
-        =======================
-    
-        var keywordList = new List<string>
-        {
-            "addTagHelper",
-            "attribute",
-            "case",
-            "class",
-            "code",
-            "default",
-            "do",
-            "for",
-            "foreach",
-            "functions",
-            "layout",
-            "lock",
-            "model",
-            "page",
-            "preservewhitespace",
-            "if",
-            "implements",
-            "inherits",
-            "inject",
-            "namespace",
-            "removeTagHelper",
-            "rendermode",
-            "section",
-            "switch",
-            "tagHelperPrefix",
-            "try",
-            "typeparam",
-            "using",
-            "while",
-        };
-        
-        Console.WriteLine("=======================");
-        Console.WriteLine("=======================");
-        
-        var hashSet = new HashSet<int>();
-        
-        foreach (var keyword in keywordList)
-        {
-            var sum = 0;
-            foreach (var character in keyword)
-            {
-                sum += (int)character;
-            }
-            
-            if (!hashSet.Add(sum))
-            {
-                Console.WriteLine($"!DUPLICATE!:{sum}/{keyword}");
-            }
-            Console.WriteLine($"{sum} // {keyword}");
-        }
-        
-        Console.WriteLine("=======================");
-        Console.WriteLine("=======================");
-        */
-    
-    /*
-        
-        
-            
-        
-            a97 + d100                = 197
-            a97 + t116                = 213
-            c99 + a97                 = 196
-            c99 + l108                = 207
-            c99 + o111                = 210
-            d100 + e101               = 201
-            d100 + o111^              = 211
-            f102 + o111 + r114^       = 327
-            f102 + o111 + r114 + e101 = 428
-            f102 + u117               = 219
-            l108 + a97                = 205
-            l108 + o111               = 219
-            m109                      = 109
-            p112 + a97                = 209
-            p112 + r114               = 226
-            i105 + f102^              = 207
-            i105 + m109               = 214
-            i105 + n110 + h104        = 319
-            i105 + n110 + j106        = 321
-            n110                      = 110
-            r114 + e101 + m109        = 324
-            r114 + e101 + n110        = 325
-            s115 + e101               = 216
-            s115 + w119               = 234
-            t116 + a97                = 213
-            t116 + r114               = 230
-            t116 + y121               = 237
-            u117                      = 117
-            w119                      = 119
-        
-        
-        
-        ================================================
-        ================================================
-        
-        
-        
-        
-        
-            ad
-            at
-            ca
-            cl
-            co
-            de
-            do^
-            for^
-            fore
-            fu
-            la
-            lo
-            m
-            pa
-            pr
-            if^
-            im
-            inh
-            inj
-            n
-            rem
-            ren
-            se
-            sw
-            ta
-            tr
-            ty
-            u
-            w
-        */
-        
-        /*
-            addTagHelper
-            attribute
-            case
-            class
-            code { }
-            default
-            do
-            for
-            foreach
-            functions { }
-            layout
-            lock
-            model
-            page
-            preservewhitespace
-            if
-            implements
-            inherits
-            inject
-            namespace
-            removeTagHelper
-            rendermode
-            section
-            switch
-            tagHelperPrefix
-            try
-            typeparam
-            using
-            while
-        */
-    
-    /*
-    https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-9.0
-    =================================================================================
-    
-    Conditionals: @if, else if, else, and @switch
-    
-    Looping: @for, @foreach, @while, and @do while
-    
-    Compound: @using
-    
-    ...: @try, catch, finally
-    
-    ...: @lock
-    
-    Directives
-    ----------
-    @attribute [Authorize]                    
-    @page "/counter"
-    @code { } // More than one @code block is permissible.
-    @functions { }  // More than one @functions block is permissible.
-    // In Razor components, use @code over @functions to add C# members.
-    @implements IDisposable
-    @inherits TypeNameOfClassToInheritFrom
-    @inherits CustomRazorPage<TModel>
-    @model and @inherits can be used in the same view. @inherits can be in a _ViewImports.cshtml file that the view imports:
-    @inherits CustomRazorPage<TModel>
-    @inject
-    @layout
-    @model // CSHTML
-    @namespace
-    @page
-    @preservewhitespace
-    @rendermode
-    @section
-    @typeparam
-    @using
-    
-    Directive attributes
-    --------------------
-    @attributes
-    @bind
-    @bind:culture
-    @formname
-    @on{EVENT}
-    @on{EVENT}:preventDefault
-    @on{EVENT}:stopPropagation
-    @key
-    @ref
-    
-    Templated Razor delegates
-    -------------------------
-    @<tag>...</tag>
-    @{ Func<dynamic, object> petTemplate = @<p>You have a pet named <strong>@item.Name</strong>.</p>; }
-    
-    Tag Helpers // MVC
-    ------------------
-    @addTagHelper
-    @removeTagHelper
-    @tagHelperPrefix
-    
-    Razor reserved keywords
-    -----------------------
-    page
-    namespace
-    functions
-    inherits
-    model
-    section
-    helper (Not currently supported by ASP.NET Core)
-    // Razor keywords are escaped with @(Razor Keyword) (for example, @(functions)).
-
-    C# Razor keywords
-    -----------------
-    case
-    do
-    default
-    for
-    foreach
-    if
-    else
-    lock
-    switch
-    try
-    catch
-    finally
-    using
-    while
-    C# Razor keywords must be double-escaped with @(@C# Razor Keyword) (for example, @(@case)).
-        The first @ escapes the Razor parser.
-        The second @ escapes the C# parser.
-    
-    Reserved keywords not used by Razor
-    -----------------------------------
-    class
-    
-    Templating methods
-    ------------------
-    
-    Flat A
-    
-    https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-9.0
-    =================================================================================
-    
-    @if, else if, else
-    @switch
-    @for,
-    @foreach,
-    @while,
-    @do while
-    @using
-    @try, catch, finally
-    @lock
-    @attribute [Authorize]                    
-    @page "/counter"
-    @code { } // More than one @code block is permissible.
-    @functions { }  // More than one @functions block is permissible.
-    // In Razor components, use @code over @functions to add C# members.
-    @implements IDisposable
-    @inherits TypeNameOfClassToInheritFrom
-    @inherits CustomRazorPage<TModel>
-    @model and @inherits can be used in the same view. @inherits can be in a _ViewImports.cshtml file that the view imports:
-    @inherits CustomRazorPage<TModel>
-    @inject
-    @layout
-    @model // CSHTML
-    @namespace
-    @page
-    @preservewhitespace
-    @rendermode
-    @section
-    @typeparam
-    @using
-    @<tag>...</tag>
-    @{ Func<dynamic, object> petTemplate = @<p>You have a pet named <strong>@item.Name</strong>.</p>; }
-    @addTagHelper
-    @removeTagHelper
-    @tagHelperPrefix
-    page
-    namespace
-    functions
-    inherits
-    model
-    section
-    helper (Not currently supported by ASP.NET Core)
-    case
-    do
-    default
-    for
-    foreach
-    if
-    else
-    lock
-    switch
-    try
-    catch
-    finally
-    using
-    while
-    class
-    
-    Directive attributes
-    --------------------
-    @attributes
-    @bind
-    @bind:culture
-    @formname
-    @on{EVENT}
-    @on{EVENT}:preventDefault
-    @on{EVENT}:stopPropagation
-    @key
-    @ref
-    
-    Flat B
-    
-    https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-9.0
-    =================================================================================
-    
-    if
-    switch
-    for
-    foreach
-    while
-    do
-    using
-    try
-    lock
-    attribute
-    page
-    code { }
-    functions { }
-    implements
-    inherits
-    inject
-    layout
-    namespace
-    page
-    preservewhitespace
-    rendermode
-    section
-    typeparam
-    using
-    addTagHelper
-    removeTagHelper
-    tagHelperPrefix
-    page
-    namespace
-    functions
-    inherits
-    model
-    section
-    case
-    do
-    default
-    for
-    foreach
-    if
-    else
-    lock
-    switch
-    try
-    catch
-    finally
-    using
-    while
-    class
-    
-    Flat C
-    
-    https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-9.0
-    =================================================================================
-    
-    addTagHelper
-    attribute
-    case
-    class
-    code { }
-    default
-    do
-    for
-    foreach
-    functions { }
-    layout
-    lock
-    model
-    page
-    preservewhitespace
-    if
-    implements
-    inherits
-    inject
-    namespace
-    removeTagHelper
-    rendermode
-    section
-    switch
-    tagHelperPrefix
-    try
-    typeparam
-    using
-    while
-    
-    Flat D
-    
-    https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-9.0
-    =================================================================================
-    
-    a
-     ddTagHelper
-     ttribute
-     
-    c
-     ase
-     lass
-     ode { }
-     
-    d
-     efault
-     o
-     
-    f
-     or
-     oreach
-     unctions { }
-     
-    l
-     ayout
-     ock
-     
-    m
-     odel
-     
-    p
-     age
-     reservewhitespace
-     
-    i
-     f
-     mplements
-     nherits
-     nject
-     
-    n
-     amespace
-     
-    r
-     emoveTagHelper
-     endermode
-     
-    s
-     ection
-     witch
-     
-    t
-     agHelperPrefix
-     ry
-     ypeparam
-     
-    u
-     sing
-     
-    w
-     hile
-    
-    Flat E
-    
-    https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-9.0
-    =================================================================================
-    
-    ad
-      dTagHelper
-    at
-      tribute
-     
-    ca
-      se
-    cl
-      ass
-    co
-      de { }
-     
-    de
-      fault
-    do
-      // 'do' was the word itself
-     
-    fo
-      r
-      reach
-    fu
-      nctions { }
-     
-    la
-      yout
-    lo
-      ck
-     
-    m
-     odel
-     
-    pa
-      ge
-    pr
-      eservewhitespace
-     
-    if
-      // 'if' was the word itself
-    im
-      plements
-    in
-      herits
-      ject
-     
-    n
-     amespace
-     
-    re
-      moveTagHelper
-      ndermode
-     
-    se
-      ction
-    sw
-      itch
-     
-    ta
-      gHelperPrefix
-    tr
-      y
-    ty
-      peparam
-     
-    u
-     sing
-     
-    w
-     hile
-    
-    Flat F
-    
-    https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-9.0
-    =================================================================================
-    
-    ad
-      dTagHelper
-    at
-      tribute
-     
-    ca
-      se
-    cl
-      ass
-    co
-      de { }
-     
-    de
-      fault
-    do
-      // 'do' was the word itself
-     
-    for
-       // 'for' was a word itself
-       each
-    fu
-      nctions { }
-     
-    la
-      yout
-    lo
-      ck
-     
-    m
-     odel
-     
-    pa
-      ge
-    pr
-      eservewhitespace
-     
-    if
-      // 'if' was the word itself
-    im
-      plements
-    inh
-       erits
-    inj
-       ect
-     
-    n
-     amespace
-     
-    rem
-       oveTagHelper
-    ren
-       dermode
-     
-    se
-      ction
-    sw
-      itch
-     
-    ta
-      gHelperPrefix
-    tr
-      y
-    ty
-      peparam
-     
-    u
-     sing
-     
-    w
-     hile
-    
-    Flat G
-            
-    https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-9.0
-    =================================================================================
-    
-    ad
-    at
-     
-    ca
-    cl
-    co
-     
-    de
-    do // 'do' was a word itself
-      
-     
-    for // 'for' was a word itself
-       each
-    fu
-     
-    la
-    lo
-     
-    m
-     
-    pa
-    pr
-     
-    if // 'if' was a word itself
-    im
-    inh
-    inj
-     
-    n
-     
-    rem
-    ren
-     
-    se
-    sw
-     
-    ta
-    tr
-    ty
-     
-    u
-     
-    w
-    
-    Flat H
-            
-    https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-9.0
-    =================================================================================
-    
-    ad
-    at
-    ca
-    cl
-    co
-    de
-    do^
-    for^
-    fore
-    fu
-    la
-    lo
-    m
-    pa
-    pr
-    if^
-    im
-    inh
-    inj
-    n
-    rem
-    ren
-    se
-    sw
-    ta
-    tr
-    ty
-    u
-    w
-    */
 }
-
-
-
-
-
-
-/*switch (binder.CSharpCompilerService.SafeGetText(lexerOutput.ResourceUri.Value, textSpan) ?? string.Empty)
-{
-    // NonContextualKeywords-NonControl
-    // ================================
-    
-    // case "abstract":
-        
-    // case "as":
-        
-    // case "base":
-        
-    // case "bool":
-        
-    // case "byte":
-        
-    // case "catch":
-        
-    // case "char":
-        
-    // case "checked":
-        
-    // case "class":
-        
-    // case "const":
-        
-    // case "decimal":
-        
-    // case "default":
-        
-    // case "delegate":
-        
-    // case "double":
-        
-    // case "enum":
-        
-    // case "event":
-        
-    // case "explicit":
-        
-    // case "extern":
-        
-    // case "false":
-        
-    // case "finally":
-        
-    // case "fixed":
-        
-    // case "float":
-        
-    // case "implicit":
-        
-    // case "in":
-        
-    // case "int":
-        
-    // case "interface":
-        
-    // case "internal":
-        
-    // case "is":
-        
-    // case "lock":
-        
-    // case "long":
-        
-    // case "namespace":
-        
-    // case "new":
-        
-    // case "null":
-        
-    // case "object":
-        
-    // case "operator":
-        
-    // case "out":
-        
-    // case "override":
-        
-    // case "params":
-        
-    // case "private":
-        
-    // case "protected":
-        
-    // case "public":
-        
-    // case "readonly":
-        
-    // case "ref":
-        
-    // case "sbyte":
-        
-    // case "sealed":
-        
-    // case "short":
-        
-    // case "sizeof":
-        
-    // case "stackalloc":
-        
-    // case "static":
-        
-    // case "string":
-        
-    // case "struct":
-        
-    // case "this":
-        
-    // case "true":
-        
-    // case "try":
-        
-    // case "typeof":
-        
-    // case "uint":
-        
-    // case "ulong":
-        
-    // case "unchecked":
-        
-    // case "unsafe":
-        
-    // case "ushort":
-        
-    // case "using":
-        
-    // case "virtual":
-        
-    // case "void":
-        
-    // case "volatile":
-        
-    // NonContextualKeywords-IsControl
-    // ===============================
-    // case "break":
-        
-    // case "case":
-        
-    // case "continue":
-        
-    // case "do":
-        
-    // case "else":
-        
-    // case "for":
-        
-    // case "foreach":
-        
-    // case "goto":
-        
-    // case "if":
-        
-    // case "return":
-        
-    // case "switch":
-        
-    // case "throw":
-        
-    // case "while":
-        
-    // ContextualKeywords-NotControl
-    // =============================
-    // case "add":
-        
-    // case "and":
-        
-    // case "alias":
-        
-    // case "ascending":
-        
-    // case "args":
-        
-    // case "async":
-        
-    // case "await":
-        
-    // case "by":
-        
-    // case "descending":
-        
-    // case "dynamic":
-        
-    // case "equals":
-        
-    // case "file":
-        
-    // case "from":
-        
-    // case "get":
-        
-    // case "global":
-        
-    // case "group":
-        
-    // case "init":
-        
-    // case "into":
-        
-    // case "join":
-        
-    // case "let":
-        
-    // case "managed":
-        
-    // case "nameof":
-        
-    // case "nint":
-        
-    // case "not":
-        
-    // case "notnull":
-        
-    // case "nuint":
-        
-    // case "on":
-        
-    // case "or":
-        
-    // case "orderby":
-        
-    // case "partial":
-        
-    // case "record":
-        
-    // case "remove":
-        
-    // case "required":
-        
-    // case "scoped":
-        
-    // case "select":
-        
-    // case "set":
-        
-    // case "unmanaged":
-        
-    // case "value":
-        
-    // case "var":
-        
-    // case "when":
-        
-    // case "where":
-        
-    // case "with":
-        
-    // ContextualKeywords-IsControl
-    // ============================
-    // case "yield":
-        
-    default:
-        lexerOutput.SyntaxTokenList.Add(new SyntaxToken(SyntaxKind.IdentifierToken, textSpan));
-        return;
-}*/
-
-
-
-
-
-
-
-
-/*
-var keywordList = new List<string>
-        {
-            // NonContextualKeywords-NonControl
-            // ================================
-            "abstract",
-            "as",
-            "base",
-            "bool",
-            "byte",
-            "catch",
-            "char",
-            "checked",
-            "class",
-            "const",
-            "decimal",
-            "default",
-            "delegate",
-            "double",
-            "enum",
-            "event",
-            "explicit",
-            "extern",
-            "false",
-            "finally",
-            "fixed",
-            "float",
-            "implicit",
-            "in",
-            "int",
-            "interface",
-            "internal",
-            "is",
-            "lock",
-            "long",
-            "namespace",
-            "new",
-            "null",
-            "object",
-            "operator",
-            "out",
-            "override",
-            "params",
-            "private",
-            "protected",
-            "public",
-            "readonly",
-            "ref",
-            "sbyte",
-            "sealed",
-            "short",
-            "sizeof",
-            "stackalloc",
-            "static",
-            "string",
-            "struct",
-            "this",
-            "true",
-            "try",
-            "typeof",
-            "uint",
-            "ulong",
-            "unchecked",
-            "unsafe",
-            "ushort",
-            "using",
-            "virtual",
-            "void",
-            "volatile",
-            // NonContextualKeywords-IsControl
-            // ===============================
-            "break",
-            "case",
-            "continue",
-            "do",
-            "else",
-            "for",
-            "foreach",
-            "goto",
-            "if",
-            "return",
-            "switch",
-            "throw",
-            "while",
-            // ContextualKeywords-NotControl
-            // =============================
-            "add",
-            "and",
-            "alias",
-            "ascending",
-            "args",
-            "async",
-            "await",
-            "by",
-            "descending",
-            "dynamic",
-            "equals",
-            "file",
-            "from",
-            "get",
-            "global",
-            "group",
-            "init",
-            "into",
-            "join",
-            "let",
-            "managed",
-            "nameof",
-            "nint",
-            "not",
-            "notnull",
-            "nuint",
-            "on",
-            "or",
-            "orderby",
-            "partial",
-            "record",
-            "remove",
-            "required",
-            "scoped",
-            "select",
-            "set",
-            "unmanaged",
-            "value",
-            "var",
-            "when",
-            "where",
-            "with",
-            // ContextualKeywords-IsControl
-            // ============================
-            "yield",
-        };
-        
-        Console.WriteLine("=======================");
-        Console.WriteLine("=======================");
-        
-        // var hashSet = new HashSet<int>();
-        
-        foreach (var keyword in keywordList)
-        {
-            var sum = 0;
-            foreach (var character in keyword)
-            {
-                sum += (int)character;
-            }
-            
-            // if (!hashSet.Add(sum))
-            // {
-            //    Console.WriteLine($"!DUPLICATE!:{sum}/{keyword}");
-            //}
-            Console.WriteLine($"case {sum}: // {keyword}");
-        }
-        
-        Console.WriteLine("=======================");
-        Console.WriteLine("=======================");
-*/
-
-/*var keywordList = new List<string>
-        {
-            // NonContextualKeywords-NonControl
-            // ================================
-            "abstract",
-            "as",
-            "base",
-            "bool",
-            "byte",
-            "catch",
-            "char",
-            "checked",
-            "class",
-            "const",
-            "decimal",
-            "default",
-            "delegate",
-            "double",
-            "enum",
-            "event",
-            "explicit",
-            "extern",
-            "false",
-            "finally",
-            "fixed",
-            "float",
-            "implicit",
-            "in",
-            "int",
-            "interface",
-            "internal",
-            "is",
-            "lock",
-            "long",
-            "namespace",
-            "new",
-            "null",
-            "object",
-            "operator",
-            "out",
-            "override",
-            "params",
-            "private",
-            "protected",
-            "public",
-            "readonly",
-            "ref",
-            "sbyte",
-            "sealed",
-            "short",
-            "sizeof",
-            "stackalloc",
-            "static",
-            "string",
-            "struct",
-            "this",
-            "true",
-            "try",
-            "typeof",
-            "uint",
-            "ulong",
-            "unchecked",
-            "unsafe",
-            "ushort",
-            "using",
-            "virtual",
-            "void",
-            "volatile",
-            // NonContextualKeywords-IsControl
-            // ===============================
-            "break",
-            "case",
-            "continue",
-            "do",
-            "else",
-            "for",
-            "foreach",
-            "goto",
-            "if",
-            "return",
-            "switch",
-            "throw",
-            "while",
-            // ContextualKeywords-NotControl
-            // =============================
-            "add",
-            "and",
-            "alias",
-            "ascending",
-            "args",
-            "async",
-            "await",
-            "by",
-            "descending",
-            "dynamic",
-            "equals",
-            "file",
-            "from",
-            "get",
-            "global",
-            "group",
-            "init",
-            "into",
-            "join",
-            "let",
-            "managed",
-            "nameof",
-            "nint",
-            "not",
-            "notnull",
-            "nuint",
-            "on",
-            "or",
-            "orderby",
-            "partial",
-            "record",
-            "remove",
-            "required",
-            "scoped",
-            "select",
-            "set",
-            "unmanaged",
-            "value",
-            "var",
-            "when",
-            "where",
-            "with",
-            // ContextualKeywords-IsControl
-            // ============================
-            "yield",
-        };
-        
-        Console.WriteLine("=======================");
-        Console.WriteLine("=======================");
-        
-        // var hashSet = new HashSet<int>();
-        
-        var longestKeyword = string.Empty;
-        
-        foreach (var keyword in keywordList)
-        {
-            if (keyword.Length > longestKeyword.Length)
-                longestKeyword = keyword;
-        
-            var sum = 0;
-            foreach (var character in keyword)
-            {
-                sum += (int)character;
-            }
-            
-            // if (!hashSet.Add(sum))
-            // {
-            //    Console.WriteLine($"!DUPLICATE!:{sum}/{keyword}");
-            //}
-            Console.WriteLine($"case {sum}: // {keyword}");
-        }
-        
-        Console.WriteLine($"{longestKeyword} {longestKeyword.Length}");
-        
-        Console.WriteLine("=======================");
-        Console.WriteLine("=======================");*/
-        
-        
-
-
-
-
-
-
-
-
-
-
-

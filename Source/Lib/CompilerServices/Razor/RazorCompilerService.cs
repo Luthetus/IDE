@@ -1,3 +1,4 @@
+using System.Text;
 using Clair.Common.RazorLib.FileSystems.Models;
 using Clair.Common.RazorLib.Menus.Models;
 using Clair.TextEditor.RazorLib;
@@ -9,18 +10,25 @@ using Clair.TextEditor.RazorLib.TextEditors.Models.Internals;
 using Clair.TextEditor.RazorLib.TextEditors.Displays.Internals;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.CompilerServices.CSharp.CompilerServiceCase;
+using Clair.CompilerServices.CSharp.BinderCase;
+using Clair.Extensions.CompilerServices;
 using Clair.Extensions.CompilerServices.Syntax.Interfaces;
-using Clair.Extensions.CompilerServices.Syntax.NodeReferences;
+using Clair.Extensions.CompilerServices.Syntax.NodeValues;
+using Clair.Extensions.CompilerServices.Syntax.Enums;
 
 namespace Clair.CompilerServices.Razor;
 
-public sealed class RazorCompilerService : ICompilerService
+public sealed class RazorCompilerService : IExtendedCompilerService
 {
-    private readonly TextEditorService _textEditorService;
-    private readonly CSharpCompilerService _cSharpCompilerService;
-    
-    private readonly Dictionary<ResourceUri, RazorResource> _resourceMap = new();
-    private readonly object _resourceMapLock = new();
+    public readonly TextEditorService _textEditorService;
+    public readonly CSharpCompilerService _cSharpCompilerService;
+    private readonly Func<
+        CSharpBinder,
+        TokenWalkerBuffer,
+        //ref TextEditorTextSpan previousEscapeCharacterTextSpan,
+        //ref int interpolatedExpressionUnmatchedBraceCount,
+        byte,// RazorLexerContextKind.Expect_TagOrText
+        SyntaxToken> _lexRazor = new(RazorLexer.Lex);
     
     /// <summary>
     /// Cannot use shared for both the razor and the C#.
@@ -35,30 +43,14 @@ public sealed class RazorCompilerService : ICompilerService
         _cSharpCompilerService = cSharpCompilerService;
     }
 
-    public IReadOnlyList<ICompilerServiceResource> CompilerServiceResources { get; }
-    
-    public IReadOnlyDictionary<string, TypeDefinitionNode> AllTypeDefinitions { get; }
-
     public void RegisterResource(ResourceUri resourceUri, bool shouldTriggerResourceWasModified)
     {
-        lock (_resourceMapLock)
-        {
-            if (_resourceMap.ContainsKey(resourceUri))
-                return;
-
-            _resourceMap.Add(resourceUri, new RazorResource(resourceUri, this));
-        }
-
-        if (shouldTriggerResourceWasModified)
-            ResourceWasModified(resourceUri, Array.Empty<TextEditorTextSpan>());
+        _cSharpCompilerService.RegisterResource(resourceUri, shouldTriggerResourceWasModified: false);
     }
     
     public void DisposeResource(ResourceUri resourceUri)
     {
-        lock (_resourceMapLock)
-        {
-            _resourceMap.Remove(resourceUri);
-        }
+        _cSharpCompilerService.DisposeResource(resourceUri);
     }
 
     public void ResourceWasModified(ResourceUri resourceUri, IReadOnlyList<TextEditorTextSpan> editTextSpansList)
@@ -76,18 +68,7 @@ public sealed class RazorCompilerService : ICompilerService
 
     public ICompilerServiceResource? GetResourceByResourceUri(ResourceUri resourceUri)
     {
-        var model = _textEditorService.Model_GetOrDefault(resourceUri);
-
-        if (model is null)
-            return null;
-
-        lock (_resourceMapLock)
-        {
-            if (!_resourceMap.ContainsKey(resourceUri))
-                return null;
-
-            return _resourceMap[resourceUri];
-        }
+        return _cSharpCompilerService.GetResourceByResourceUri(resourceUri);
     }
     
     public MenuContainer GetContextMenu(TextEditorVirtualizationResult virtualizationResult, ContextMenu contextMenu)
@@ -120,7 +101,17 @@ public sealed class RazorCompilerService : ICompilerService
         TextEditorComponentData componentData,
         ResourceUri resourceUri)
     {
-        return ValueTask.CompletedTask;
+        return _cSharpCompilerService.OnInspect(
+            editContext,
+            modelModifier,
+            viewModelModifier,
+            clientX,
+            clientY,
+            shiftKey,
+            ctrlKey,
+            altKey,
+            componentData,
+            resourceUri);
     }
     
     public ValueTask ShowCallingSignature(
@@ -146,61 +137,131 @@ public sealed class RazorCompilerService : ICompilerService
 
     public ValueTask ParseAsync(TextEditorEditContext editContext, TextEditorModel modelModifier, bool shouldApplySyntaxHighlighting)
     {
-        using StreamReader sr = new StreamReader(modelModifier.PersistentState.ResourceUri.Value);        editContext.TextEditorService.Model_BeginStreamSyntaxHighlighting(
-            editContext,
-            modelModifier);
-
-        var lexerOutput = RazorLexer.Lex(_cSharpCompilerService.__CSharpBinder.KeywordCheckBuffer, new StreamReaderWrap(sr), modelModifier);
+        var resourceUri = modelModifier.PersistentState.ResourceUri;
+        int absolutePathId = _cSharpCompilerService.TryGetFileAbsolutePathToInt(resourceUri.Value);
+        if (absolutePathId == 0)
+            absolutePathId = _cSharpCompilerService.TryAddFileAbsolutePath(resourceUri.Value);
     
-        lock (_resourceMapLock)
-        {
-            if (_resourceMap.ContainsKey(modelModifier.PersistentState.ResourceUri))
-            {
-                var resource = (RazorResource)_resourceMap[modelModifier.PersistentState.ResourceUri];
-                
-                /*resource.CompilationUnit = new RazorCompilationUnit
-                {
-                    TextSpanList = lexerOutput.TextSpanList
-                };*/
-            }
-        }
+        if (!_cSharpCompilerService.__CSharpBinder.__CompilationUnitMap.ContainsKey(absolutePathId))
+            return ValueTask.CompletedTask;
         
-        editContext.TextEditorService.Model_FinalizeStreamSyntaxHighlighting(
-            editContext,
-            modelModifier);
+        var cSharpCompilationUnit = new CSharpCompilationUnit(CompilationUnitKind.IndividualFile_AllData);
+
+        var contentAtRequest = modelModifier.xGetAllText();
+
+        _cSharpCompilerService._currentFileBeingParsedTuple = (absolutePathId, contentAtRequest);
+
+        MemoryStream memoryStream;
+        StreamReaderPooledBuffer? lexer_reader = null;
+        
+        try
+        {
+            // Convert the string to a byte array using a specific encoding
+            memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(contentAtRequest));
+            lexer_reader = _cSharpCompilerService.bbb_Rent_StreamReaderPooledBuffer(memoryStream);
+            
+            if (shouldApplySyntaxHighlighting)
+            {
+                editContext.TextEditorService.Model_BeginStreamSyntaxHighlighting(
+                    editContext,
+                    modelModifier);
+            }
+
+            _cSharpCompilerService._streamReaderWrap.ReInitialize(lexer_reader);
+            
+            _cSharpCompilerService._tokenWalkerBuffer.ReInitialize(
+                _cSharpCompilerService.__CSharpBinder,
+                resourceUri,
+                modelModifier,
+                _cSharpCompilerService._tokenWalkerBuffer,
+                _cSharpCompilerService._streamReaderWrap,
+                shouldUseSharedStringWalker: true,
+                useCSharpLexer: false,
+                lexRazor: _lexRazor);
+            
+            _cSharpCompilerService.__CSharpBinder.StartCompilationUnit(absolutePathId);
+            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
+        }
+        finally
+        {
+            //var diagnosticTextSpans = cSharpCompilationUnit.DiagnosticList
+            //    .Select(x => x.TextSpan)
+            //    .ToList();
+            
+            if (shouldApplySyntaxHighlighting)
+            {
+                editContext.TextEditorService.Model_FinalizeStreamSyntaxHighlighting(
+                    editContext,
+                    modelModifier);
+            }
+
+            _cSharpCompilerService._currentFileBeingParsedTuple = (absolutePathId, null);
+
+            _cSharpCompilerService.FULL_Clear_MAIN_StreamReaderTupleCache();
+            _cSharpCompilerService.FULL_Clear_BACKUP_StreamReaderTupleCache();
+            _cSharpCompilerService._safe_streamReaderPooledBuffer_Pool.Clear();
+            
+            if (lexer_reader is not null)
+                _cSharpCompilerService.Return_StreamReaderPooledBuffer(lexer_reader);
+        
+            _textEditorService.EditContext_GetText_Clear();
+        }
         
         return ValueTask.CompletedTask;
     }
     
     public ValueTask FastParseAsync(TextEditorEditContext editContext, ResourceUri resourceUri, IFileSystemProvider fileSystemProvider, CompilationUnitKind compilationUnitKind)
     {
-        return ValueTask.CompletedTask;
+        throw new NotImplementedException();
     }
     
     public void FastParse(TextEditorEditContext editContext, ResourceUri resourceUri, IFileSystemProvider fileSystemProvider, CompilationUnitKind compilationUnitKind)
     {
-        return;
+        int absolutePathId = _cSharpCompilerService.TryGetFileAbsolutePathToInt(resourceUri.Value);
+        if (absolutePathId == 0)
+            absolutePathId = _cSharpCompilerService.TryAddFileAbsolutePath(resourceUri.Value);
+
+        if (!_cSharpCompilerService.__CSharpBinder.__CompilationUnitMap.ContainsKey(absolutePathId))
+            return;
+    
+        var cSharpCompilationUnit = new CSharpCompilationUnit(compilationUnitKind);
+
+        StreamReaderPooledBuffer? lexer_sr = null;
+        StreamReaderPooledBuffer? parser_sr = null;
+
+        try
+        {
+            lexer_sr = _cSharpCompilerService.aaa_Rent_StreamReaderPooledBuffer(resourceUri.Value);
+            parser_sr = _cSharpCompilerService.aaa_Rent_StreamReaderPooledBuffer(resourceUri.Value);
+
+            _cSharpCompilerService._streamReaderWrap.ReInitialize(lexer_sr);
+
+            _cSharpCompilerService._tokenWalkerBuffer.ReInitialize(
+                _cSharpCompilerService.__CSharpBinder,
+                resourceUri,
+                textEditorModel: null,
+                _cSharpCompilerService._tokenWalkerBuffer,
+                _cSharpCompilerService._streamReaderWrap,
+                shouldUseSharedStringWalker: true,
+                useCSharpLexer: false,
+                lexRazor: _lexRazor);
+
+            _cSharpCompilerService.FastParseTuple = (absolutePathId, parser_sr);
+            _cSharpCompilerService.__CSharpBinder.StartCompilationUnit(absolutePathId);
+            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
+        }
+        finally
+        {
+            if (lexer_sr is not null)
+                _cSharpCompilerService.Return_StreamReaderPooledBuffer(lexer_sr);
+            
+            if (parser_sr is not null)
+                _cSharpCompilerService.Return_StreamReaderPooledBuffer(parser_sr);
+        }
+
+        _cSharpCompilerService.FastParseTuple = (0, null);
     }
     
-    /// <summary>
-    /// Looks up the <see cref="IScope"/> that encompasses the provided positionIndex.
-    ///
-    /// Then, checks the <see cref="IScope"/>.<see cref="IScope.CodeBlockOwner"/>'s children
-    /// to determine which node exists at the positionIndex.
-    ///
-    /// If the <see cref="IScope"/> cannot be found, then as a fallback the provided compilationUnit's
-    /// <see cref="CompilationUnit.RootCodeBlockNode"/> will be treated
-    /// the same as if it were the <see cref="IScope"/>.<see cref="IScope.CodeBlockOwner"/>.
-    ///
-    /// If the provided compilerServiceResource?.CompilationUnit is null, then the fallback step will not occur.
-    /// The fallback step is expected to occur due to the global scope being implemented with a null
-    /// <see cref="IScope"/>.<see cref="IScope.CodeBlockOwner"/> at the time of this comment.
-    /// </summary>
-    public ISyntaxNode? GetSyntaxNode(int positionIndex, ResourceUri resourceUri, ICompilerServiceResource? compilerServiceResource)
-    {
-        return null;
-    }
-
     public ICodeBlockOwner? GetScopeByPositionIndex(ResourceUri resourceUri, int positionIndex)
     {
         return default;
@@ -215,5 +276,69 @@ public sealed class RazorCompilerService : ICompilerService
     public ISyntaxNode? GetDefinitionNode(TextEditorTextSpan textSpan, ICompilerServiceResource compilerServiceResource, Symbol? symbol = null)
     {
         return null;
+    }
+    
+    public int TryAddFileAbsolutePath(string fileAbsolutePath)
+    {
+        return _cSharpCompilerService.TryAddFileAbsolutePath(fileAbsolutePath);
+    }
+
+    public int TryGetFileAbsolutePathToInt(string fileAbsolutePath)
+    {
+        return _cSharpCompilerService.TryGetFileAbsolutePathToInt(fileAbsolutePath);
+    }
+
+    public string? TryGetIntToFileAbsolutePathMap(int intId)
+    {
+        return _cSharpCompilerService.TryGetIntToFileAbsolutePathMap(intId);
+    }
+
+    public ICompilerServiceResource? GetResourceByAbsolutePathId(int absolutePathId)
+    {
+        return _cSharpCompilerService.GetResourceByAbsolutePathId(absolutePathId);
+    }
+
+    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
+    {
+        return _cSharpCompilerService.UnsafeGetText(absolutePathId, textSpan);
+    }
+    
+    public string? UnsafeGetText(string absolutePath, TextEditorTextSpan textSpan)
+    {
+        return _cSharpCompilerService.UnsafeGetText(absolutePath, textSpan);
+    }
+
+    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
+    {
+        return _cSharpCompilerService.SafeGetText(absolutePathId, textSpan);
+    }
+
+    public IReadOnlyList<GenericParameter> GenericParameterEntryList => _cSharpCompilerService.GenericParameterEntryList;
+    public IReadOnlyList<FunctionParameter> FunctionParameterEntryList => _cSharpCompilerService.FunctionParameterEntryList;
+    public IReadOnlyList<FunctionArgument> FunctionArgumentEntryList => _cSharpCompilerService.FunctionArgumentEntryList;
+    
+    public IReadOnlyList<TypeDefinitionTraits> TypeDefinitionTraitsList => _cSharpCompilerService.TypeDefinitionTraitsList;
+    public IReadOnlyList<FunctionDefinitionTraits> FunctionDefinitionTraitsList => _cSharpCompilerService.FunctionDefinitionTraitsList;
+    public IReadOnlyList<VariableDeclarationTraits> VariableDeclarationTraitsList => _cSharpCompilerService.VariableDeclarationTraitsList;
+    public IReadOnlyList<ConstructorDefinitionTraits> ConstructorDefinitionTraitsList => _cSharpCompilerService.ConstructorDefinitionTraitsList;
+
+    public SyntaxNodeValue GetSyntaxNode(int positionIndex, ResourceUri resourceUri, ICompilerServiceResource? compilerServiceResource)
+    {
+        return _cSharpCompilerService.GetSyntaxNode(positionIndex, resourceUri, compilerServiceResource);
+    }
+    
+    public SyntaxNodeValue GetDefinitionNodeValue(TextEditorTextSpan textSpan, int absolutePathId, ICompilerServiceResource compilerServiceResource, Symbol? symbol = null)
+    {
+        return _cSharpCompilerService.GetDefinitionNodeValue(textSpan, absolutePathId, compilerServiceResource, symbol);
+    }
+    
+    public (Scope Scope, SyntaxNodeValue CodeBlockOwner) GetCodeBlockTupleByPositionIndex(int absolutePathId, int positionIndex)
+    {
+        return _cSharpCompilerService.GetCodeBlockTupleByPositionIndex(absolutePathId, positionIndex);
+    }
+    
+    public string GetIdentifierText(ISyntaxNode node, int absolutePathId)
+    {
+        return _cSharpCompilerService.GetIdentifierText(node, absolutePathId);
     }
 }

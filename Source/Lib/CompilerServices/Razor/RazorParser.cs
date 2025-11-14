@@ -1,13 +1,14 @@
 using Clair.Common.RazorLib.FileSystems.Models;
-using Clair.TextEditor.RazorLib.Exceptions;
-using Clair.TextEditor.RazorLib.Lexers.Models;
-using Clair.Extensions.CompilerServices.Syntax;
-using Clair.CompilerServices.CSharp.ParserCase;
-using Clair.CompilerServices.CSharp.ParserCase.Internals;
 using Clair.CompilerServices.CSharp.BinderCase;
 using Clair.CompilerServices.CSharp.CompilerServiceCase;
+using Clair.CompilerServices.CSharp.ParserCase;
+using Clair.CompilerServices.CSharp.ParserCase.Internals;
+using Clair.Extensions.CompilerServices.Syntax;
 using Clair.Extensions.CompilerServices.Syntax.Enums;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
+using Clair.TextEditor.RazorLib.Exceptions;
+using Clair.TextEditor.RazorLib.Lexers.Models;
+using static Clair.CompilerServices.Razor.RazorLexer;
 
 namespace Clair.CompilerServices.Razor;
 
@@ -132,6 +133,7 @@ public static class RazorParser
         
         parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
         var initialToken = parserModel.TokenWalker.Current;
+        parserModel.TokenWalker.IsInitialParse = true;
         while (true)
         {
             switch (parserModel.TokenWalker.Current.SyntaxKind)
@@ -142,22 +144,25 @@ public static class RazorParser
             _ = parserModel.TokenWalker.Consume();
         }
         exitInitialLexing:
-        
+        parserModel.TokenWalker.IsInitialParse = false;
+
         // Random note: consider finding matches by iterating over the scope rather than the scope...
         // ...filtered by SyntaxKind?
         //
         // Or perhaps iterate over all possible scopes but start at the closest ancestor scope.
         // i.e.: something about not invoking those Hierarchical methods that search for a definition
         // over and over. That is a lot of copying of data for the parameters.
-        
+
         tokenWalkerBuffer.Seek_SeekOriginBegin(initialToken, tokenIndex: 0, rootConsumeCounter: 0);
+
+        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
 
         while (true)
         {
             // The last statement in this while loop is conditionally: '_ = parserModel.TokenWalker.Consume();'.
             // Knowing this to be the case is extremely important.
             
-            parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
+            
             
             switch (parserModel.TokenWalker.Current.SyntaxKind)
             {
@@ -180,6 +185,19 @@ public static class RazorParser
                     }
                     break;
                 case SyntaxKind.AtToken:
+
+                    _ = parserModel.TokenWalker.Consume();
+
+                    var identifierOrKeyword = RazorLexer.SkipCSharpdentifierOrKeyword(
+                        binder.KeywordCheckBuffer,
+                        tokenWalkerBuffer,
+                        SyntaxContinuationKind.None);
+
+                    if (identifierOrKeyword.SyntaxKind == SyntaxKind.RazorDirective)
+                    {
+
+                    }
+                    
                     var isRazorDirective = false;
                     if (isRazorDirective)
                     {
@@ -187,8 +205,8 @@ public static class RazorParser
                     }
                     else
                     {
-                        _ = parserModel.TokenWalker.Consume();
                         parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
+                        _ = parserModel.TokenWalker.Consume();
                     }
                     break;
                 case SyntaxKind.IdentifierToken:

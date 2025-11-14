@@ -276,4 +276,6 @@ public enum SyntaxKind : byte
     InjectedLanguageComponentSymbol,
     SourceFileSymbol,
     OnClickSymbol,
+
+    RazorDirective,
 }

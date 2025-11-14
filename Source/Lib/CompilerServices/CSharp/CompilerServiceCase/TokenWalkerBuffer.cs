@@ -74,6 +74,8 @@ public sealed class TokenWalkerBuffer
     public int _peekSize = 0;
 
     private (SyntaxToken SyntaxToken, int PositionIndex) _backtrackTuple;
+
+    public bool IsInitialParse { get; set; }
     
     /// <summary>Scuffed</summary>
     public Func<CSharpBinder, TokenWalkerBuffer, byte/*RazorLexerContextKind.Expect_TagOrText*/, SyntaxToken>? LexRazor { get; private set; } = null;

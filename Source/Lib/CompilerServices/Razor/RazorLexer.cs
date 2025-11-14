@@ -1,6 +1,5 @@
 using Clair.TextEditor.RazorLib.Lexers.Models;
 using Clair.TextEditor.RazorLib.Decorations.Models;
-using Clair.TextEditor.RazorLib.TextEditors.Models;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.CompilerServices.CSharp.BinderCase;
 using Clair.CompilerServices.CSharp.CompilerServiceCase;
@@ -269,7 +268,7 @@ public static class RazorLexer
                                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                                         
                                     LexCSharpCodeBlock(tokenWalkerBuffer);
-                                    if (tokenWalkerBuffer.UseCSharpLexer)
+                                    if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
                                         return default;
                                 }
                                 else
@@ -283,7 +282,9 @@ public static class RazorLexer
                                     var wordStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                                     
                                     var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(binder.KeywordCheckBuffer, tokenWalkerBuffer);
-                                    if (!everythingWasHandledForMe)
+                                    if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                                        return default;
+                                    if (everythingWasHandledForMe.SyntaxKind == SyntaxKind.NotApplicable)
                                     {
                                         tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                             wordStartPosition,
@@ -909,12 +910,12 @@ public static class RazorLexer
     }
     
     /// <summary>
-    /// When this returns true, then the state of the lexer has entirely changed
+    /// When this returns default, then the state of the lexer has entirely changed
     /// and the invoker should disregard any of their previous state and reset it.
     ///
     /// This method when finding a brace deliminated code blocked keyword will entirely lex to the close brace.
     /// </summary>
-    private static bool SkipCSharpdentifierOrKeyword(
+    public static SyntaxToken SkipCSharpdentifierOrKeyword(
         char[] keywordCheckBuffer,
         TokenWalkerBuffer tokenWalkerBuffer,
         SyntaxContinuationKind syntaxContinuationKind = SyntaxContinuationKind.None)
@@ -1088,13 +1089,13 @@ public static class RazorLexer
                 if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                 {
                     LexCSharpCodeBlock(tokenWalkerBuffer);
-                    if (tokenWalkerBuffer.UseCSharpLexer)
-                        return true;
-                    return true;
+                    if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
+                    return new SyntaxToken(SyntaxKind.NotProvided, default); ;
                 }
                 else
                 {
-                    return true;
+                    return new SyntaxToken(SyntaxKind.NotProvided, default); ;
                 }
             case 741: // default
                 if (lengthCharacter == 7 &&
@@ -1133,8 +1134,8 @@ public static class RazorLexer
                         _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                     }
                     LexCSharpCodeBlock(tokenWalkerBuffer);
-                    if (tokenWalkerBuffer.UseCSharpLexer)
-                        return true;
+                    if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                        return new SyntaxToken(SyntaxKind.NotProvided, default); ;
                     
                     // Skip whitespace
                     while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
@@ -1202,13 +1203,13 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
-                        return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default); ;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default); ;
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1269,13 +1270,13 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
-                        return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1341,13 +1342,13 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
-                        return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1402,8 +1403,8 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
                         
                         // Skip whitespace
                         while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
@@ -1418,11 +1419,11 @@ public static class RazorLexer
                             tokenWalkerBuffer,
                             SyntaxContinuationKind.IfStatement);
                         
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1538,8 +1539,8 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
                         
                         // Skip whitespace
                         while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
@@ -1554,11 +1555,11 @@ public static class RazorLexer
                             tokenWalkerBuffer,
                             SyntaxContinuationKind.IfStatement);
                         
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1786,13 +1787,13 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
-                        return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1822,7 +1823,7 @@ public static class RazorLexer
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
                         if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
                         
                         // Skip whitespace
                         while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
@@ -1837,11 +1838,11 @@ public static class RazorLexer
                             tokenWalkerBuffer,
                             SyntaxContinuationKind.TryStatement);
                         
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1901,8 +1902,8 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
                         
                         // Skip whitespace
                         while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
@@ -1917,11 +1918,11 @@ public static class RazorLexer
                             tokenWalkerBuffer,
                             SyntaxContinuationKind.TryStatement);
                         
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -1955,13 +1956,13 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
-                        return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -2010,7 +2011,7 @@ public static class RazorLexer
                     }
                     
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter != '(')
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     
                     // Move one beyond the end of using statement condition
                     var matchParenthesis = 0;
@@ -2043,13 +2044,13 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
-                        return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -2108,9 +2109,9 @@ public static class RazorLexer
                     if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '{')
                     {
                         LexCSharpCodeBlock(tokenWalkerBuffer);
-                        if (tokenWalkerBuffer.UseCSharpLexer)
-                            return true;
-                        return true;
+                        if (tokenWalkerBuffer.UseCSharpLexer && !tokenWalkerBuffer.IsInitialParse)
+                            return new SyntaxToken(SyntaxKind.NotProvided, default);
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == ';')
                     {
@@ -2121,11 +2122,11 @@ public static class RazorLexer
                             tokenWalkerBuffer.StreamReaderWrap.PositionIndex + 1,
                             (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
                         _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     else
                     {
-                        return true;
+                        return new SyntaxToken(SyntaxKind.NotProvided, default);
                     }
                     
                     break;
@@ -2136,7 +2137,7 @@ public static class RazorLexer
                 break;
         }
         
-        return false;
+        return new SyntaxToken(SyntaxKind.NotProvided, default);
     }
     
     /// <summary>

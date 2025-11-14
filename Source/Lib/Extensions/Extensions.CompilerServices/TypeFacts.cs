@@ -67,8 +67,7 @@ public static class TypeFacts
         lengthFunctionArgumentEntryList: 0,
         closeParenthesisToken: default,
         inheritedTypeReference: _notApplicableTypeReference,
-        ResourceUri.EmptyAbsolutePathId,
-        TextSourceKind.Explicit
+        ResourceUri.EmptyAbsolutePathId
         // FindAllReferences
         // , referenceHashSet: new()
         );
@@ -95,8 +94,7 @@ public static class TypeFacts
         lengthFunctionArgumentEntryList: 0,
         closeParenthesisToken: default,
         inheritedTypeReference: _notApplicableTypeReference,
-        ResourceUri.EmptyAbsolutePathId,
-        TextSourceKind.Explicit
+        ResourceUri.EmptyAbsolutePathId
         // FindAllReferences
         // , referenceHashSet: new()
         );
@@ -140,8 +138,7 @@ public static class TypeFacts
         lengthFunctionArgumentEntryList: 0,
         closeParenthesisToken: default,
         inheritedTypeReference: _notApplicableTypeReference,
-        ResourceUri.EmptyAbsolutePathId,
-        TextSourceKind.Explicit
+        ResourceUri.EmptyAbsolutePathId
         // FindAllReferences
         // , referenceHashSet: new()
         );

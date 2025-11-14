@@ -23,8 +23,7 @@ public sealed class TypeDefinitionNode : ICodeBlockOwner, IFunctionDefinitionNod
         int lengthFunctionArgumentEntryList,
         SyntaxToken closeParenthesisToken,
         TypeReferenceValue inheritedTypeReference,
-        int absolutePathId,
-        TextSourceKind textSourceKind)
+        int absolutePathId)
     {
         AccessModifierKind = accessModifierKind;
         HasPartialModifier = hasPartialModifier;
@@ -42,8 +41,6 @@ public sealed class TypeDefinitionNode : ICodeBlockOwner, IFunctionDefinitionNod
         CloseParenthesisToken = closeParenthesisToken;
         InheritedTypeReference = inheritedTypeReference;
         AbsolutePathId = absolutePathId;
-        
-        TextSourceKind = textSourceKind;
     }
 
     public AccessModifierKind AccessModifierKind { get; set; }
@@ -104,7 +101,6 @@ public sealed class TypeDefinitionNode : ICodeBlockOwner, IFunctionDefinitionNod
     /// It feels super hacky, so once I think of a better way to do this I'd like to change it.
     /// </summary>
     public int AbsolutePathId { get; set; }
-    public TextSourceKind TextSourceKind { get; set; }
     public bool IsInterface => StorageModifierKind == StorageModifierKind.Interface;
 
     public bool _isFabricated;

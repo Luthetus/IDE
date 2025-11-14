@@ -8,12 +8,10 @@ namespace Clair.Extensions.CompilerServices.Syntax.NodeValues;
 /// </summary>
 public struct NamespaceContribution
 {
-    public NamespaceContribution(TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public NamespaceContribution(TextEditorTextSpan textSpan)
     {
         TextSpan = textSpan;
-        TextSourceKind = textSourceKind;
     }
 
     public TextEditorTextSpan TextSpan { get; }
-    public TextSourceKind TextSourceKind { get; }
 }

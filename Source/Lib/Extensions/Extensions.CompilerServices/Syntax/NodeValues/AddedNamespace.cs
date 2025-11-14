@@ -9,13 +9,11 @@ namespace Clair.Extensions.CompilerServices.Syntax.NodeValues;
 /// </summary>
 public struct AddedNamespace
 {
-    public AddedNamespace(TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public AddedNamespace(TextEditorTextSpan textSpan)
     {
         TextSpan = textSpan;
-        TextSourceKind = textSourceKind;
     }
 
     public TextEditorTextSpan TextSpan { get; }
-    public TextSourceKind TextSourceKind { get; }
 }
 

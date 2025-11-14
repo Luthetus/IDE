@@ -71,8 +71,7 @@ public sealed partial class CSharpBinder
         TopLevelNamespaceStatementNode = new NamespaceStatementNode(
             new(SyntaxKind.UnrecognizedTokenKeyword, new(0, 0, 0)),
             new(SyntaxKind.IdentifierToken, new(0, 0, 0)),
-            ResourceUri.EmptyAbsolutePathId,
-            TextSourceKind.Explicit);
+            ResourceUri.EmptyAbsolutePathId);
 
         _namespaceGroupList.Add(
             new NamespaceGroup(
@@ -266,8 +265,7 @@ public sealed partial class CSharpBinder
     
     public (NamespaceGroup TargetGroup, int GroupIndex) FindNamespaceGroup_Reversed_WithMatchedIndex(
         int referenceAbsolutePathId,
-        TextEditorTextSpan referenceTextSpan,
-        TextSourceKind referenceTextSourceKind)
+        TextEditorTextSpan referenceTextSpan)
     {
         var findTuple = NamespaceGroup_FindRange(referenceTextSpan);
     
@@ -288,10 +286,8 @@ public sealed partial class CSharpBinder
                 if (CompareNamespaceNames(
                         definitionNamespace.AbsolutePathId,
                         definitionNamespace.IdentifierToken.TextSpan,
-                        definitionNamespace.TextSourceKind,
                         referenceAbsolutePathId,
-                        referenceTextSpan,
-                        referenceTextSourceKind))
+                        referenceTextSpan))
                 {
                     return (targetGroup, groupIndex);
                 }
@@ -391,8 +387,7 @@ public sealed partial class CSharpBinder
     
     public bool CheckAlreadyAddedNamespace(
         int filePathInt,
-        TextEditorTextSpan referenceTextSpan,
-        TextSourceKind referenceTextSourceKind)
+        TextEditorTextSpan referenceTextSpan)
     {
         var findTuple = AddedNamespaceList_FindRange(referenceTextSpan);
 
@@ -409,10 +404,8 @@ public sealed partial class CSharpBinder
             if (CompareNamespaceNames(
                     filePathInt,
                     definitionNamespace.TextSpan,
-                    definitionNamespace.TextSourceKind,
                     filePathInt,
-                    referenceTextSpan,
-                    referenceTextSourceKind))
+                    referenceTextSpan))
             {
                 return true;
             }
@@ -437,15 +430,13 @@ public sealed partial class CSharpBinder
     private bool CompareNamespaceNames(
         int definitionAbsolutePathId,
         TextEditorTextSpan definitionTextSpan,
-        TextSourceKind definitionTextSourceKind,
         int referenceAbsolutePathId,
-        TextEditorTextSpan referenceTextSpan,
-        TextSourceKind referenceTextSourceKind)
+        TextEditorTextSpan referenceTextSpan)
     {
-        if (definitionTextSourceKind == TextSourceKind.Implicit)
+        if (definitionTextSpan.DecorationByte == SyntaxKind.ImplicitTextSource)
         {
             var definitionName = CSharpCompilerService.GetRazorNamespace(definitionAbsolutePathId, isTextEditorContext: false);
-            if (referenceTextSourceKind == TextSourceKind.Implicit)
+            if (referenceTextSpan.DecorationByte == SyntaxKind.ImplicitTextSource)
             {
                 var referenceName = CSharpCompilerService.GetRazorNamespace(referenceAbsolutePathId, isTextEditorContext: false);
                 if (definitionName == referenceName)
@@ -457,7 +448,7 @@ public sealed partial class CSharpBinder
                     return true;
             }
         }
-        else if (referenceTextSourceKind == TextSourceKind.Implicit)
+        else if (referenceTextSpan.DecorationByte == SyntaxKind.ImplicitTextSource)
         {
             var referenceName = CSharpCompilerService.GetRazorNamespace(referenceAbsolutePathId, isTextEditorContext: false);
             if (CSharpCompilerService.SafeCompareText(definitionAbsolutePathId, referenceName, definitionTextSpan, TextSourceKind.Explicit))
@@ -1650,7 +1641,7 @@ public sealed partial class CSharpBinder
         }
     }
     
-    public string GetIdentifierText(ISyntaxNode node, int absolutePathId, CSharpCompilationUnit compilationUnit, TextSourceKind textSourceKind)
+    public string GetIdentifierText(ISyntaxNode node, int absolutePathId, CSharpCompilationUnit compilationUnit)
     {
         string sourceText;
         int resourceUriValue;

@@ -8,19 +8,16 @@ public sealed class NamespaceStatementNode : ICodeBlockOwner
     public NamespaceStatementNode(
         SyntaxToken keywordToken,
         SyntaxToken identifierToken,
-        int absolutePathId,
-        TextSourceKind textSourceKind)
+        int absolutePathId)
     {
         KeywordToken = keywordToken;
         IdentifierToken = identifierToken;
         AbsolutePathId = absolutePathId;
-        TextSourceKind = textSourceKind;
     }
 
     public SyntaxToken KeywordToken { get; set; }
     public SyntaxToken IdentifierToken { get; set; }
     public int AbsolutePathId { get; set; }
-    public TextSourceKind TextSourceKind { get; set; }
 
     public int ParentScopeSubIndex { get; set; } = -1;
     public int SelfScopeSubIndex { get; set; } = -1;

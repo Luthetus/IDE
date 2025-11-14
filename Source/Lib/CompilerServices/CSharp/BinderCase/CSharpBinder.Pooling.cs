@@ -39,8 +39,7 @@ public partial class CSharpBinder
     public NamespaceStatementNode? Pool_NamespaceStatementNode_Instance { get; set; } = new NamespaceStatementNode(
         keywordToken: default,
         identifierToken: default,
-        absolutePathId: default,
-        TextSourceKind.Explicit);
+        absolutePathId: default);
     
     /// <summary>This is only safe to use while parsing</summary>
     public FunctionDefinitionNode? Pool_FunctionDefinitionNode_Instance { get; set; } = new FunctionDefinitionNode(
@@ -72,8 +71,7 @@ public partial class CSharpBinder
         lengthFunctionArgumentEntryList: 0,
         closeParenthesisToken: default,
         inheritedTypeReference: Clair.Extensions.CompilerServices.TypeFacts.NotApplicable.ToTypeReference(),
-        absolutePathId: default,
-        TextSourceKind.Explicit);
+        absolutePathId: default);
 
     /// <summary>This is only safe to use while parsing</summary>
     public ConstructorDefinitionNode? Pool_ConstructorDefinitionNode_Instance { get; set; } = new ConstructorDefinitionNode(

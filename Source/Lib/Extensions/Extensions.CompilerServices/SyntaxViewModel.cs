@@ -131,7 +131,7 @@ public struct SyntaxViewModel
         if (ExtendedCompilerService is IExtendedCompilerService extendedCompilerService)
         {
             var compilationUnit = ExtendedCompilerService.GetResourceByAbsolutePathId(AbsolutePathId);
-            return extendedCompilerService.GetIdentifierText(node, AbsolutePathId, TextSourceKind.Explicit);
+            return extendedCompilerService.GetIdentifierText(node, AbsolutePathId);
         }
         
         return "null";
@@ -145,7 +145,7 @@ public struct SyntaxViewModel
             
             if (compilationUnit is IExtendedCompilationUnit extendedCompilationUnit)
             {
-                return ExtendedCompilerService.UnsafeGetText(AbsolutePathId, textSpan, TextSourceKind.Explicit) ?? string.Empty;
+                return ExtendedCompilerService.UnsafeGetText(AbsolutePathId, textSpan) ?? string.Empty;
             }
         }
         
@@ -161,7 +161,7 @@ public struct SyntaxViewModel
             if (compilationUnit is IExtendedCompilationUnit extendedCompilationUnit)
             {
                 return ExtendedCompilerService
-                    .UnsafeGetText(AbsolutePathId, symbol.ToTextSpan(), TextSourceKind.Explicit) ?? string.Empty;
+                    .UnsafeGetText(AbsolutePathId, symbol.ToTextSpan()) ?? string.Empty;
             }
         }
         

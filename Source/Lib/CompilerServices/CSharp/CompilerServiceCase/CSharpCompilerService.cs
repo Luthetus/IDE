@@ -343,20 +343,20 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
     /// </summary>
-    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
     {
         var absolutePathString = TryGetIntToFileAbsolutePathMap(absolutePathId);
         if (absolutePathString is null)
             return null;
 
-        return UnsafeGetText(absolutePathString, textSpan, textSourceKind);
+        return UnsafeGetText(absolutePathString, textSpan);
     }
 
     /// <summary>
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
     /// </summary>
-    public string? UnsafeGetText(string absolutePathString, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public string? UnsafeGetText(string absolutePathString, TextEditorTextSpan textSpan)
     {
         if (absolutePathString == string.Empty)
         {
@@ -419,7 +419,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
     /// </summary>
-    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan)
     {
         if (textSourceKind == TextSourceKind.Implicit)
         {
@@ -535,7 +535,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         }
     }
     
-    public bool SafeCompareText(int absolutePathId, string value, TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public bool SafeCompareText(int absolutePathId, string value, TextEditorTextSpan textSpan)
     {
         if (value.Length != textSpan.Length)
             return false;
@@ -692,7 +692,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return true;
     }
     
-    public bool SafeCompareTextSpans(int sourceAbsolutePathId, TextEditorTextSpan sourceTextSpan, int otherAbsolutePathId, TextEditorTextSpan otherTextSpan, TextSourceKind textSourceKind)
+    public bool SafeCompareTextSpans(int sourceAbsolutePathId, TextEditorTextSpan sourceTextSpan, int otherAbsolutePathId, TextEditorTextSpan otherTextSpan)
     {
         if (sourceTextSpan.Length != otherTextSpan.Length ||
             sourceTextSpan.CharIntSum != otherTextSpan.CharIntSum)
@@ -2167,7 +2167,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         return default;
     }
     
-    public string GetIdentifierText(ISyntaxNode node, int absolutePathId, TextSourceKind textSourceKind)
+    public string GetIdentifierText(ISyntaxNode node, int absolutePathId)
     {
         if (__CSharpBinder.__CompilationUnitMap.TryGetValue(absolutePathId, out var compilationUnit))
             return __CSharpBinder.GetIdentifierText(node, absolutePathId, compilationUnit, textSourceKind) ?? string.Empty;

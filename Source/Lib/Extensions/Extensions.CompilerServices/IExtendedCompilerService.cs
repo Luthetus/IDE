@@ -42,17 +42,17 @@ public interface IExtendedCompilerService : ICompilerService
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
     /// </summary>
-    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind);
+    public string? UnsafeGetText(int absolutePathId, TextEditorTextSpan textSpan);
     /// <summary>
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
     /// </summary>
-    public string? UnsafeGetText(string absolutePath, TextEditorTextSpan textSpan, TextSourceKind textSourceKind);
+    public string? UnsafeGetText(string absolutePath, TextEditorTextSpan textSpan);
     /// <summary>
     /// unsafe vs safe are duplicates of the same code
     /// Safe implies the "TextEditorEditContext"
     /// </summary>
-    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan, TextSourceKind textSourceKind);
+    public string? SafeGetText(int absolutePathId, TextEditorTextSpan textSpan);
 
     public IReadOnlyList<GenericParameter> GenericParameterEntryList { get; }
     public IReadOnlyList<FunctionParameter> FunctionParameterEntryList { get; }
@@ -66,5 +66,5 @@ public interface IExtendedCompilerService : ICompilerService
     public SyntaxNodeValue GetSyntaxNode(int positionIndex, ResourceUri resourceUri, ICompilerServiceResource? compilerServiceResource);
     public SyntaxNodeValue GetDefinitionNodeValue(TextEditorTextSpan textSpan, int absolutePathId, ICompilerServiceResource compilerServiceResource, Symbol? symbol = null);
     public (Scope Scope, SyntaxNodeValue CodeBlockOwner) GetCodeBlockTupleByPositionIndex(int absolutePathId, int positionIndex);
-    public string GetIdentifierText(ISyntaxNode node, int absolutePathId, TextSourceKind textSourceKind);
+    public string GetIdentifierText(ISyntaxNode node, int absolutePathId);
 }

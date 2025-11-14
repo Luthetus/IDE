@@ -221,14 +221,13 @@ public ref partial struct CSharpParserState
     
     public readonly void BindNamespaceStatementNode(NamespaceStatementNode namespaceStatementNode)
     {
-        var namespaceContributionEntry = new NamespaceContribution(namespaceStatementNode.IdentifierToken.TextSpan, namespaceStatementNode.TextSourceKind);
+        var namespaceContributionEntry = new NamespaceContribution(namespaceStatementNode.IdentifierToken.TextSpan);
         Binder.NamespaceContributionList.Add(namespaceContributionEntry);
         ++Compilation.NamespaceContributionLength;
 
         var tuple = Binder.FindNamespaceGroup_Reversed_WithMatchedIndex(
             AbsolutePathId,
-            namespaceStatementNode.IdentifierToken.TextSpan,
-            namespaceStatementNode.TextSourceKind);
+            namespaceStatementNode.IdentifierToken.TextSpan);
             
         if (tuple.TargetGroup.ConstructorWasInvoked)
         {
@@ -616,7 +615,7 @@ public ref partial struct CSharpParserState
         }
     }
 
-    public readonly void AddNamespaceToCurrentScope(TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public readonly void AddNamespaceToCurrentScope(TextEditorTextSpan textSpan)
     {
         var namespaceContribution = new NamespaceContribution(textSpan, textSourceKind);
 
@@ -778,7 +777,6 @@ public ref partial struct CSharpParserState
         int definitionInitialScopeSubIndex,
         int referenceAbsolutePathId,
         TextEditorTextSpan referenceTextSpan,
-        TextSourceKind referenceTextSourceKind,
         out SyntaxNodeValue typeDefinitionValue)
     {
         var localScope = Binder.GetScopeByOffset(definitionCompilationUnit, definitionInitialScopeSubIndex);
@@ -813,7 +811,6 @@ public ref partial struct CSharpParserState
         int definitionScopeSubIndex,
         int referenceAbsolutePathId,
         TextEditorTextSpan referenceTextSpan,
-        TextSourceKind referenceTextSourceKind,
         out SyntaxNodeValue typeDefinitionValue)
     {
         typeDefinitionValue = default;
@@ -899,8 +896,7 @@ public ref partial struct CSharpParserState
         int definitionAbsolutePathId,
         SyntaxNodeValue definitionValue,
         int referenceAbsolutePathId,
-        TextEditorTextSpan referenceTextSpan,
-        TextSourceKind referenceTextSourceKind)
+        TextEditorTextSpan referenceTextSpan)
     {
         if (Binder.TypeDefinitionTraitsList[definitionValue.TraitsIndex].TextSourceKind == TextSourceKind.Implicit)
         {
@@ -1472,7 +1468,7 @@ public ref partial struct CSharpParserState
         }
     }
     
-    public readonly string GetTextSpanText(TextEditorTextSpan textSpan, TextSourceKind textSourceKind)
+    public readonly string GetTextSpanText(TextEditorTextSpan textSpan)
     {
         return Binder.CSharpCompilerService.SafeGetText(AbsolutePathId, textSpan, textSourceKind) ?? string.Empty;
     }

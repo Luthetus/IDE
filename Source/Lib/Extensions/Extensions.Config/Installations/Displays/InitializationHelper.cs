@@ -46,6 +46,7 @@ public static class InitializationHelper
         var compilerService = DotNetService.IdeService.TextEditorService.GetCompilerService(CommonFacts.C_SHARP_CLASS);
 
         DotNetService.IdeService.TextEditorService.UpsertHeader("cs", typeof(Clair.Extensions.CompilerServices.Displays.TextEditorCompilerServiceHeaderDisplay));
+        DotNetService.IdeService.TextEditorService.UpsertHeader("razor", typeof(Clair.Extensions.CompilerServices.Displays.TextEditorCompilerServiceHeaderDisplay));
 
         var dotNetAppData = await DotNetService.AppDataService
             .ReadAppDataAsync<DotNetAppData>(

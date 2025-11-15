@@ -86,7 +86,7 @@ public sealed class TokenWalkerBuffer
         get => _useCSharpLexer;
         set
         {
-            Console.WriteLine($"\t\t_useCSharpLexer = {value}");
+            Console.WriteLine($"\t\t\t_useCSharpLexer = {value}");
             _useCSharpLexer = value;
         }
     }
@@ -187,7 +187,7 @@ public sealed class TokenWalkerBuffer
         bool useCSharpLexer = true,
         Func<CSharpBinder, TokenWalkerBuffer, byte/*RazorLexerContextKind.Expect_TagOrText*/, SyntaxToken>? lexRazor = null)
     {
-        Console.WriteLine($"{nameof(ReInitialize)}(useCSharpLexer: {useCSharpLexer})");
+        Console.WriteLine($"{nameof(ReInitialize)}(useCSharpLexer: {useCSharpLexer}) | {resourceUri.Value}");
         UseCSharpLexer = useCSharpLexer;
         LexRazor = lexRazor;
         
@@ -262,6 +262,8 @@ public sealed class TokenWalkerBuffer
     /// </summary>
     public SyntaxToken HandleDeferredParsingCloseTokenIndex()
     {
+        Console.WriteLine($"\t\t{nameof(HandleDeferredParsingCloseTokenIndex)}");
+    
         _deferredParsingTupleStack.Pop();
         
         Seek_SeekOriginBegin(_deferredParsingTuple.restoreToken, _deferredParsingTuple.restoreTokenIndex, 1);
@@ -276,26 +278,28 @@ public sealed class TokenWalkerBuffer
         return closeChildScopeToken;
     }
     
-    public void SetUseCSharpLexer(bool useCSharpLexer)
-    {
-        UseCSharpLexer = useCSharpLexer;
-    }
-
     /// <summary>
     /// WARNING: Then ReInitialize method internally will invoke Consume(), if you do not provide the...
     /// ...optional parameter 'bool useCSharpLexer = true', then the first Consume() will be done with C# lexer.
     /// </summary>
     public SyntaxToken Consume()
     {
+        Console.Write($"\t\t{nameof(Consume)} ");
+        
         if (IsCloseTokenIndex)
             return HandleDeferredParsingCloseTokenIndex();
     
         ++ConsumeCounter;
 
         var consumedToken = Current;
+        
+        var debug_current = Current;
+        var debug_positionIndex = StreamReaderWrap.PositionIndex;
     
         if (_peekIndex != -1)
         {
+            Console.WriteLine("Peeked");
+            
             _backtrackTuple = _peekBuffer[_peekIndex++];
 
             if (_peekIndex >= _peekSize)
@@ -329,6 +333,8 @@ public sealed class TokenWalkerBuffer
         {
             if (StreamReaderWrap.IsEof)
             {
+                Console.WriteLine("StreamReaderWrap.IsEof");
+                
                 var endOfFileTextSpan = new TextEditorTextSpan(
                     StreamReaderWrap.PositionIndex,
                     StreamReaderWrap.PositionIndex,
@@ -342,6 +348,7 @@ public sealed class TokenWalkerBuffer
             _backtrackTuple = (_syntaxTokenBuffer[0], Index);
 
             ++_index;
+            Console.WriteLine($"ucsl{UseCSharpLexer}");
             if (UseCSharpLexer)
             {
                 _syntaxTokenBuffer[0] = CSharpLexer.Lex(
@@ -358,6 +365,10 @@ public sealed class TokenWalkerBuffer
                     this,
                     0);
             }
+            
+            Console.WriteLine($"\t\t\t\t{debug_current.SyntaxKind} => {_syntaxTokenBuffer[0].SyntaxKind}");
+            Console.WriteLine($"\t\t\t\t{debug_positionIndex} => {StreamReaderWrap.PositionIndex}");
+            
             // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
             if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
             {

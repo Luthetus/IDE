@@ -2301,7 +2301,7 @@ public static class RazorLexer
     /// </summary>
     private static void LexCSharpCodeBlock(TokenWalkerBuffer tokenWalkerBuffer)
     {
-        tokenWalkerBuffer.SetUseCSharpLexer(useCSharpLexer: true);
+        tokenWalkerBuffer.UseCSharpLexer = true;
         return;
         var openBraceStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
         var openBraceStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;

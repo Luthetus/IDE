@@ -130,7 +130,7 @@ public static class RazorParser
         
         CreateRazorPartialClass(ref parserModel, razorCompilerService);
         
-        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
+        parserModel.TokenWalker.UseCSharpLexer = false;
         var initialToken = parserModel.TokenWalker.Current;
         parserModel.TokenWalker.IsInitialParse = true;
         while (true)
@@ -154,7 +154,7 @@ public static class RazorParser
 
         tokenWalkerBuffer.Seek_SeekOriginBegin(initialToken, tokenIndex: 0, rootConsumeCounter: 0);
 
-        parserModel.TokenWalker.SetUseCSharpLexer(false);
+        parserModel.TokenWalker.UseCSharpLexer = false;
 
         while (true)
         {
@@ -224,7 +224,7 @@ public static class RazorParser
                                     }
                                     _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
                                 }
-                                tokenWalkerBuffer.SetUseCSharpLexer(false);
+                                tokenWalkerBuffer.UseCSharpLexer = false;
                                 tokenWalkerBuffer.Consume();
                                 break;
                         }
@@ -232,7 +232,7 @@ public static class RazorParser
                     
                     if (!isSupportedRazorDirective)
                     {
-                        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
+                        parserModel.TokenWalker.UseCSharpLexer = true;
                         _ = parserModel.TokenWalker.Consume();
                     }
                     break;

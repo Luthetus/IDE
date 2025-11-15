@@ -77,22 +77,6 @@ public sealed class TokenWalkerBuffer
 
     private (SyntaxToken SyntaxToken, int PositionIndex) _backtrackTuple;
 
-    public bool IsInitialParse { get; set; }
-    
-    /// <summary>Scuffed</summary>
-    public Func<CSharpBinder, TokenWalkerBuffer, byte/*RazorLexerContextKind.Expect_TagOrText*/, SyntaxToken>? LexRazor { get; private set; } = null;
-    private bool _useCSharpLexer = true;
-    /// <summary>Scuffed</summary>
-    public bool UseCSharpLexer
-    {
-        get => _useCSharpLexer;
-        set
-        {
-            Console.WriteLine($"\t\t\t_useCSharpLexer = {value}");
-            _useCSharpLexer = value;
-        }
-    }
-
     private int _index;
     public int Index
     {
@@ -185,14 +169,8 @@ public sealed class TokenWalkerBuffer
         TextEditorModel? textEditorModel,
         TokenWalkerBuffer tokenWalkerBuffer,
         StreamReaderPooledBufferWrap streamReaderWrap,
-        bool shouldUseSharedStringWalker,
-        bool useCSharpLexer = true,
-        Func<CSharpBinder, TokenWalkerBuffer, byte/*RazorLexerContextKind.Expect_TagOrText*/, SyntaxToken>? lexRazor = null)
+        bool shouldUseSharedStringWalker)
     {
-        Console.WriteLine($"{nameof(ReInitialize)}(useCSharpLexer: {useCSharpLexer}) | {resourceUri.Value}");
-        UseCSharpLexer = useCSharpLexer;
-        LexRazor = lexRazor;
-        
         _binder = binder;
     
         _index = -1;
@@ -230,8 +208,6 @@ public sealed class TokenWalkerBuffer
     /// <summary>WARNING: code duplication in 'ReInitialize(...)'</summary>
     public void Seek_SeekOriginBegin(SyntaxToken token, int tokenIndex, int rootConsumeCounter)
     {
-        Console.WriteLine($"\t{nameof(Seek_SeekOriginBegin)}");
-        
         StreamReaderWrap.Unsafe_Seek_SeekOriginBegin(token.TextSpan.ByteIndex, token.TextSpan.StartInclusiveIndex, token.TextSpan.Length);
         
         _syntaxTokenBuffer[0] = token;
@@ -264,8 +240,6 @@ public sealed class TokenWalkerBuffer
     /// </summary>
     public SyntaxToken HandleDeferredParsingCloseTokenIndex()
     {
-        Console.WriteLine($"\t\t{nameof(HandleDeferredParsingCloseTokenIndex)}");
-    
         _deferredParsingTupleStack.Pop();
         
         Seek_SeekOriginBegin(_deferredParsingTuple.restoreToken, _deferredParsingTuple.restoreTokenIndex, 1);
@@ -280,14 +254,8 @@ public sealed class TokenWalkerBuffer
         return closeChildScopeToken;
     }
     
-    /// <summary>
-    /// WARNING: Then ReInitialize method internally will invoke Consume(), if you do not provide the...
-    /// ...optional parameter 'bool useCSharpLexer = true', then the first Consume() will be done with C# lexer.
-    /// </summary>
     public SyntaxToken Consume()
     {
-        Console.Write($"\t\t{nameof(Consume)} ");
-        
         if (IsCloseTokenIndex)
             return HandleDeferredParsingCloseTokenIndex();
     
@@ -300,43 +268,18 @@ public sealed class TokenWalkerBuffer
     
         if (_peekIndex != -1)
         {
-            Console.WriteLine("Peeked");
-            
             _backtrackTuple = _peekBuffer[_peekIndex++];
 
             if (_peekIndex >= _peekSize)
             {
                 _peekIndex = -1;
                 _peekSize = 0;
-
-                /*
-                ++_index;
-                if (_useCSharpLexer)
-                {
-                    _syntaxTokenBuffer[0] = CSharpLexer.Lex(
-                        _binder,
-                        MiscTextSpanList,
-                        StreamReaderWrap,
-                        ref _previousEscapeCharacterTextSpan,
-                        ref _interpolatedExpressionUnmatchedBraceCount);
-                    MiscTextSpanList.Add(_syntaxTokenBuffer[0].TextSpan);
-                }
-                else
-                {
-                    _syntaxTokenBuffer[0] = LexRazor.Invoke(
-                        _binder,
-                        this,
-                        StreamReaderWrap);
-                }
-                */
             }
         }
         else
         {
             if (StreamReaderWrap.IsEof)
             {
-                Console.WriteLine("StreamReaderWrap.IsEof");
-                
                 var endOfFileTextSpan = new TextEditorTextSpan(
                     StreamReaderWrap.PositionIndex,
                     StreamReaderWrap.PositionIndex,
@@ -349,36 +292,7 @@ public sealed class TokenWalkerBuffer
             
             _backtrackTuple = (_syntaxTokenBuffer[0], Index);
 
-            ++_index;
-            Console.WriteLine($"ucsl{UseCSharpLexer}");
-            if (UseCSharpLexer)
-            {
-                _syntaxTokenBuffer[0] = CSharpLexer.Lex(
-                    _binder,
-                    this,
-                    StreamReaderWrap,
-                    ref _previousEscapeCharacterTextSpan,
-                    ref _interpolatedExpressionUnmatchedBraceCount);
-            }
-            else
-            {
-                _syntaxTokenBuffer[0] = LexRazor.Invoke(
-                    _binder,
-                    this,
-                    0);
-            }
-            
-            Console.WriteLine($"\t\t\t\t{debug_current.SyntaxKind} => {_syntaxTokenBuffer[0].SyntaxKind}");
-            Console.WriteLine($"\t\t\t\t{debug_positionIndex} => {StreamReaderWrap.PositionIndex}");
-            
-            // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
-            if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
-            {
-                TextEditorModel?.__SetDecorationByteRange(
-                    _syntaxTokenBuffer[0].TextSpan.StartInclusiveIndex,
-                    _syntaxTokenBuffer[0].TextSpan.EndExclusiveIndex,
-                    _syntaxTokenBuffer[0].TextSpan.DecorationByte);
-            }
+            Do_Lex();
         }
 
         return consumedToken;
@@ -458,31 +372,7 @@ public sealed class TokenWalkerBuffer
 
                             // This is duplicated inside the ReadCharacter() code.
 
-                            ++_index;
-                            if (UseCSharpLexer)
-                            {
-                                _syntaxTokenBuffer[0] = CSharpLexer.Lex(
-                                    _binder,
-                                    this,
-                                    StreamReaderWrap,
-                                    ref _previousEscapeCharacterTextSpan,
-                                    ref _interpolatedExpressionUnmatchedBraceCount);
-                            }
-                            else
-                            {
-                                _syntaxTokenBuffer[0] = LexRazor.Invoke(
-                                    _binder,
-                                    this,
-                                    0);
-                            }
-                            // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
-                            if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
-                            {
-                                TextEditorModel?.__SetDecorationByteRange(
-                                    _syntaxTokenBuffer[0].TextSpan.StartInclusiveIndex,
-                                    _syntaxTokenBuffer[0].TextSpan.EndExclusiveIndex,
-                                    _syntaxTokenBuffer[0].TextSpan.DecorationByte);
-                            }
+                            Do_Lex();
                             return _syntaxTokenBuffer[0];
                         }
                     }
@@ -502,36 +392,31 @@ public sealed class TokenWalkerBuffer
 
             // This is duplicated inside the ReadCharacter() code.
 
-            ++_index;
-            if (UseCSharpLexer)
-            {
-                _syntaxTokenBuffer[0] = CSharpLexer.Lex(
-                    _binder,
-                    this,
-                    StreamReaderWrap,
-                    ref _previousEscapeCharacterTextSpan,
-                    ref _interpolatedExpressionUnmatchedBraceCount);
-            }
-            else
-            {
-                _syntaxTokenBuffer[0] = LexRazor.Invoke(
-                    _binder,
-                    this,
-                    0);
-            }
-            // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
-            if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
-            {
-                TextEditorModel?.__SetDecorationByteRange(
-                    _syntaxTokenBuffer[0].TextSpan.StartInclusiveIndex,
-                    _syntaxTokenBuffer[0].TextSpan.EndExclusiveIndex,
-                    _syntaxTokenBuffer[0].TextSpan.DecorationByte);
-            }
+            Do_Lex();
         }
 
         // TODO: Peek EOF
         // TODO: Peek overlap EOF
         return _syntaxTokenBuffer[0];
+    }
+    
+    private void Do_Lex()
+    {
+        ++_index;
+        _syntaxTokenBuffer[0] = CSharpLexer.Lex(
+            _binder,
+            this,
+            StreamReaderWrap,
+            ref _previousEscapeCharacterTextSpan,
+            ref _interpolatedExpressionUnmatchedBraceCount);
+        // String literals need to "slice" for syntax highlighting escaped-characters / interpolated expressions.
+        if (_syntaxTokenBuffer[0].SyntaxKind != SyntaxKind.StringLiteralToken)
+        {
+            TextEditorModel?.__SetDecorationByteRange(
+                _syntaxTokenBuffer[0].TextSpan.StartInclusiveIndex,
+                _syntaxTokenBuffer[0].TextSpan.EndExclusiveIndex,
+                _syntaxTokenBuffer[0].TextSpan.DecorationByte);
+        }
     }
 
     /// <summary>

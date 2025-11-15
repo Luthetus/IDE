@@ -163,6 +163,9 @@ public static class RazorParser
         // You have to lex token by token and track which lexer has control then the while loop is at the
         // Razor parser level and everyloop it tells one or the other lexers to lex the next token.
         //
+        // There is no initial loop.
+        // Loop once and try defer parsing any C# you find.
+        //
                 
         
         while (!parserModel.TokenWalker.IsEof)

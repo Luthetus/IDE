@@ -177,6 +177,9 @@ public static class RazorParser
         //
         // Then for the parsing the first solution could be to defer parse ALL C# code
         // and you prioritize the @code blocks then @function blocks then go textually top to bottom.
+        //
+        // You gotta put a max-capacity on the Queues that are used to pool the nodes.
+        // When you return if statement whether at capacity before adding back to the pool.
                 
         
         while (!parserModel.TokenWalker.IsEof)

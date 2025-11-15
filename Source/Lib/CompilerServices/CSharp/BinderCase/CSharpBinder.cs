@@ -498,88 +498,7 @@ public sealed partial class CSharpBinder
     /// <summary><see cref="StartCompilationUnit"/></summary>
     public void FinalizeCompilationUnit(int absolutePathId, CSharpCompilationUnit compilationUnit)
     {
-        UpsertCompilationUnit(absolutePathId, compilationUnit);
-        
-        while (Pool_VariableDeclarationNode_Queue.Count > POOL_VARIABLE_DECLARATION_NODE_MAX_COUNT)
-        {
-            _ = Pool_VariableDeclarationNode_Queue.Dequeue();
-        }
-        
-        while (Pool_LiteralExpressionNode_Queue.Count > POOL_LITERAL_EXPRESSION_NODE_MAX_COUNT)
-        {
-            _ = Pool_LiteralExpressionNode_Queue.Dequeue();
-        }
-        
-        while (Pool_BinaryExpressionNode_Queue.Count > POOL_BINARY_EXPRESSION_NODE_MAX_COUNT)
-        {
-            _ = Pool_BinaryExpressionNode_Queue.Dequeue();
-        }
-        
-        while (Pool_TypeClauseNode_Queue.Count > POOL_TYPE_CLAUSE_NODE_MAX_COUNT)
-        {
-            _ = Pool_TypeClauseNode_Queue.Dequeue();
-        }
-        
-        while (Pool_VariableReferenceNode_Queue.Count > POOL_VARIABLE_REFERENCE_NODE_MAX_COUNT)
-        {
-            _  = Pool_VariableReferenceNode_Queue.Dequeue();
-        }
-        
-        while (Pool_NamespaceClauseNode_Queue.Count > POOL_NAMESPACE_CLAUSE_NODE_MAX_COUNT)
-        {
-            _  = Pool_NamespaceClauseNode_Queue.Dequeue();
-        }
-        
-        while (Pool_AmbiguousIdentifierNode_Queue.Count > POOL_AMBIGUOUS_IDENTIFIER_NODE_MAX_COUNT)
-        {
-            _  = Pool_AmbiguousIdentifierNode_Queue.Dequeue();
-        }
-        
-        while (Pool_FunctionInvocationNode_Queue.Count > POOL_FUNCTION_INVOCATION_NODE_MAX_COUNT)
-        {
-            _  = Pool_FunctionInvocationNode_Queue.Dequeue();
-        }
-        
-        while (Pool_ConstructorInvocationExpressionNode_Queue.Count > POOL_CONSTRUCTOR_INVOCATION_EXPRESSION_NODE_MAX_COUNT)
-        {
-            _  = Pool_ConstructorInvocationExpressionNode_Queue.Dequeue();
-        }
-        
-        /*
-        Console.WriteLine(nameof(PartialTypeDefinitionList));
-        for (int i = 0; i < PartialTypeDefinitionList.Count; i++)
-        {
-            Console.WriteLine($"\t{i}");
-            var partial = PartialTypeDefinitionList[i];
-            
-            Console.WriteLine($"\t\tAPI_{partial.AbsolutePathId}");
-            Console.WriteLine($"\t\tISG_{partial.IndexStartGroup}");
-            Console.WriteLine($"\t\tSSI_{partial.ScopeSubIndex}");
-            Console.WriteLine($"\t\tTSK_{partial.TextSourceKind}");
-        }
-        */
-        
-        /*
-        Console.WriteLine("\n\n=================");
-        Console.WriteLine($"_namespaceGroupList.Count:{_namespaceGroupList.Count}");
-        foreach (var namespaceGroup in _namespaceGroupList)
-        {
-            Console.WriteLine($"\tcis:{namespaceGroup.CharIntSum} NStatementValueList.Count:{namespaceGroup.NamespaceStatementValueList.Count}");
-            foreach (var statement in namespaceGroup.NamespaceStatementValueList)
-            {
-                //Console.WriteLine($"\t\tKT:{statement.KeywordToken}");
-                
-                Console.WriteLine($"\t\tIT:{statement.IdentifierToken}");
-                Console.WriteLine($"\t\t\tIT_TS_CIS:{statement.IdentifierToken.TextSpan.CharIntSum}");
-                
-                var aaa = CSharpCompilerService.TryGetIntToFileAbsolutePathMap(statement.AbsolutePathId);
-                Console.WriteLine($"\t\tABI:{statement.AbsolutePathId}|{aaa ?? "null"}");
-                Console.WriteLine($"\t\tPSI:{statement.ParentScopeSubIndex}");
-                Console.WriteLine($"\t\tSSI:{statement.SelfScopeSubIndex}");
-            }
-        }
-        Console.WriteLine("=================\n");
-        */
+        UpMapCompilationUnit(absolutePathId, compilationUnit);
     }
     
     /// <summary>This also clears any pooled lists.</summary>
@@ -595,7 +514,7 @@ public sealed partial class CSharpBinder
     }
     
     /// <summary>TextEditorEditContext is required for thread safety.</summary>
-    public void UpsertCompilationUnit(int absolutePathId, CSharpCompilationUnit compilationUnit)
+    public void UpMapCompilationUnit(int absolutePathId, CSharpCompilationUnit compilationUnit)
     {
         if (__CompilationUnitMap.ContainsKey(absolutePathId))
             __CompilationUnitMap[absolutePathId] = compilationUnit;

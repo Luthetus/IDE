@@ -8,6 +8,7 @@ using Clair.Extensions.CompilerServices.Syntax.Enums;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.TextEditor.RazorLib.Exceptions;
 using Clair.TextEditor.RazorLib.Lexers.Models;
+using Clair.TextEditor.RazorLib.TextEditors.Models;
 using static Clair.CompilerServices.Razor.RazorLexer;
 
 namespace Clair.CompilerServices.Razor;
@@ -17,43 +18,27 @@ public static class RazorParser
     public static void Parse(
         int absolutePathId,
         TokenWalkerBuffer tokenWalkerBuffer,
+        StreamReaderPooledBufferWrap streamReaderWrap,
+        TextEditorModel textEditorModel,
         ref CSharpCompilationUnit compilationUnit,
         CSharpBinder binder,
         RazorCompilerService razorCompilerService)
     {
-        // Remove RazorParserState
-        // Only need CSharpParserState
-        //
-        // Difference is that the Razor parser also needs to invoke Razor Lexer
-        //
-        // CSharp static methods for parsing will exit and return to the razor statement loop.
-        // Razor statement loop then delegates either the CSharpLexer.Lex or RazorLexer.Lex
-        //
-        // Short circuit C# expression on unmatched '<' (also maybe '@')
-        //
-        // Probably let the Razor lexer just run until it is necessary to short circuit for language transition to C#.
-        //
-        // Long term perhaps can use HtmlLexer and drop RazorLexer entirely, for now though I'm not getting involved in that.
-        //
-        // Might have to delete RazorTokenWalkerBuffer and pass a delegate to TokenWalker.
-        // Or add a parameter then if statement.
-        //
-        // Optionally parameter have it default to C# lexer so the C# code can stay unchanged.
-        // Then the RazorParser can explicitly ask for the Razor lexer to be invoked.
-        //
-        // I don't want to use inheritance nor an interface because then each invocation of the
-        // TokenWalker has overhead on each invocation of Consume().
-        // Also I'm not sure but I think inheritance or interfaces would
-        // impact whether the Consume() method is inlined.
-        //
-        // What is the overhead of invoking a delegate vs a static method?
-    
         /*
         Any state that is "pooled" and cleared at the start of every Parse(...) invocation
         should be changed.
         
         Clear them inside CSharpBinder.FinalizeCompilationUnit(...) so that they aren't "dangling"
         in between Parse(...) invocations.
+        */
+        
+        /*
+        You could have initially, that the lexing only tracks the @code and @functions blocks
+        and then defer parses them.
+        
+        This then would permit C# to know everything it needs to about the razor markup
+        (short of I guess if you can make a public variable / static variable
+         outside of @code / @functions?).
         */
         
         compilationUnit.ScopeOffset = binder.ScopeList.Count;
@@ -91,21 +76,14 @@ public static class RazorParser
         {
             charIntSum += (int)c;
         }
-        // bathroom then compare if implicit vs explicit
-        // then
-        // search for @code section first (can there be more than 1?)
-        // then for @functions (can there be more than 1?)
-        // can you have @code and @functions?
-        //
-        // Parse those first,
-        // then open a method scope and reset the seek position.
+        
         var namespaceIdentifier = new SyntaxToken(
             SyntaxKind.IdentifierToken,
             new TextEditorTextSpan(
                 startInclusiveIndex: 0,
                 endExclusiveIndex: namespaceString.Length,
                 decorationByte: (byte)SyntaxKind.ImplicitTextSource,
-                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
+                byteIndex: streamReaderWrap.ByteIndex,
                 charIntSum));
         var namespaceStatementNode = parserModel.Rent_NamespaceStatementNode();
         namespaceStatementNode.KeywordToken = default;
@@ -115,7 +93,7 @@ public static class RazorParser
         parserModel.RegisterScope(
         	new Scope(
         		ScopeDirectionKind.Both,
-        		scope_StartInclusiveIndex: parserModel.TokenWalker.Current.TextSpan.StartInclusiveIndex,
+        		scope_StartInclusiveIndex: 0,
         		scope_EndExclusiveIndex: -1,
         		codeBlock_StartInclusiveIndex: -1,
         		codeBlock_EndExclusiveIndex: -1,
@@ -128,224 +106,24 @@ public static class RazorParser
     	    namespaceStatementNode);
         parserModel.Return_NamespaceStatementNode(namespaceStatementNode);
         
-        CreateRazorPartialClass(ref parserModel, razorCompilerService);
+        CreateRazorPartialClass(streamReaderWrap, ref parserModel, razorCompilerService);
         
-        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
-        var initialToken = parserModel.TokenWalker.Current;
-        parserModel.TokenWalker.IsInitialParse = true;
-        while (true)
-        {
-            switch (parserModel.TokenWalker.Current.SyntaxKind)
-            {
-                case SyntaxKind.EndOfFileToken:
-                    goto exitInitialLexing;
-            }
-            _ = parserModel.TokenWalker.Consume();
-        }
-        exitInitialLexing:
-        parserModel.TokenWalker.IsInitialParse = false;
-
+        _ = RazorLexer.Lex(
+            binder.KeywordCheckBuffer,
+            streamReaderWrap,
+            textEditorModel);
+        
+        parserModel.Binder.FinalizeCompilationUnit(parserModel.AbsolutePathId, compilationUnit);
+        
         // Random note: consider finding matches by iterating over the scope rather than the scope...
         // ...filtered by SyntaxKind?
         //
         // Or perhaps iterate over all possible scopes but start at the closest ancestor scope.
         // i.e.: something about not invoking those Hierarchical methods that search for a definition
         // over and over. That is a lot of copying of data for the parameters.
-
-        //parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
-        tokenWalkerBuffer.Seek_SeekOriginBegin(initialToken, tokenIndex: 0, rootConsumeCounter: 0);
-
-        while (true)
-        {
-            // The last statement in this while loop is conditionally: '_ = parserModel.TokenWalker.Consume();'.
-            // Knowing this to be the case is extremely important.
-
-            //parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: false);
-
-            switch (parserModel.TokenWalker.Current.SyntaxKind)
-            {
-                case SyntaxKind.NumericLiteralToken:
-                case SyntaxKind.CharLiteralToken:
-                case SyntaxKind.StringLiteralToken:
-                case SyntaxKind.StringInterpolatedStartToken:
-                case SyntaxKind.PlusToken:
-                case SyntaxKind.PlusPlusToken:
-                case SyntaxKind.MinusToken:
-                case SyntaxKind.StarToken:
-                case SyntaxKind.DollarSignToken:
-                    if (parserModel.StatementBuilder.StatementIsEmpty)
-                    {
-                        _ = Parser.ParseExpression(ref parserModel);
-                    }
-                    else
-                    {
-                        parserModel.StatementBuilder.MostRecentNode = Parser.ParseExpression(ref parserModel);
-                    }
-                    break;
-                case SyntaxKind.AtToken:
-                    var identifierOrKeyword = RazorLexer.SkipCSharpdentifierOrKeyword(
-                        binder.KeywordCheckBuffer,
-                        tokenWalkerBuffer,
-                        SyntaxContinuationKind.None);
-
-                    var isSupportedRazorDirective = false;
-
-                    if (identifierOrKeyword.SyntaxKind == SyntaxKind.RazorDirective)
-                    {
-                        if (identifierOrKeyword.TextSpan.CharIntSum == 413) // page
-                        {
-                            isSupportedRazorDirective = true;
-                        }
-                    }
-                    
-                    if (!isSupportedRazorDirective)
-                    {
-                        parserModel.TokenWalker.SetUseCSharpLexer(useCSharpLexer: true);
-                        _ = parserModel.TokenWalker.Consume();
-                    }
-                    break;
-                case SyntaxKind.IdentifierToken:
-                    Parser.ParseIdentifierToken(ref parserModel);
-                    break;
-                case SyntaxKind.OpenBraceToken:
-                {
-                    var deferredParsingOccurred = parserModel.StatementBuilder.FinishStatement(parserModel.TokenWalker.Index, parserModel.TokenWalker.Current, ref parserModel);
-                    if (deferredParsingOccurred)
-                        break;
-
-                    Parser.ParseOpenBraceToken(ref parserModel);
-                    break;
-                }
-                case SyntaxKind.CloseBraceToken:
-                {
-                    var deferredParsingOccurred = parserModel.StatementBuilder.FinishStatement(parserModel.TokenWalker.Index, parserModel.TokenWalker.Current, ref parserModel);
-                    if (deferredParsingOccurred)
-                        break;
-                    
-                    // When consuming a 'CloseBraceToken' it is possible for the TokenWalker to change the 'Index'
-                    // to a value that is more than 1 larger than the current index.
-                    //
-                    // This is an issue because some code presumes that 'parserModel.TokenWalker.Index - 1'
-                    // will always give them the index of the previous token.
-                    //
-                    // So, the ParseCloseBraceToken(...) method needs to be passed the index that was consumed
-                    // in order to get the CloseBraceToken.
-                    var closeBraceTokenIndex = parserModel.TokenWalker.Index;
-                    
-                    if (parserModel.ParseChildScopeStack.Count > 0 &&
-                        parserModel.ParseChildScopeStack.Peek().ScopeSubIndex == parserModel.ScopeCurrentSubIndex)
-                    {
-                        parserModel.TokenWalker.SetNullDeferredParsingTuple();
-                    }
-                    
-                    Parser.ParseCloseBraceToken(closeBraceTokenIndex, ref parserModel);
-                    break;
-                }
-                case SyntaxKind.OpenParenthesisToken:
-                    Parser.ParseOpenParenthesisToken(ref parserModel);
-                    break;
-                case SyntaxKind.OpenSquareBracketToken:
-                    Parser.ParseOpenSquareBracketToken(ref parserModel);
-                    break;
-                case SyntaxKind.OpenAngleBracketToken:
-                    if (parserModel.StatementBuilder.StatementIsEmpty)
-                        _ = Parser.ParseExpression(ref parserModel);
-                    else
-                        _ = parserModel.TokenWalker.Consume();
-                    break;
-                case SyntaxKind.PreprocessorDirectiveToken:
-                case SyntaxKind.CloseParenthesisToken:
-                case SyntaxKind.CloseAngleBracketToken:
-                case SyntaxKind.CloseSquareBracketToken:
-                case SyntaxKind.ColonToken:
-                case SyntaxKind.MemberAccessToken:
-                    _ = parserModel.TokenWalker.Consume();
-                    break;
-                case SyntaxKind.EqualsToken:
-                    Parser.ParseEqualsToken(ref parserModel);
-                    break;
-                case SyntaxKind.EqualsCloseAngleBracketToken:
-                {
-                    _ = parserModel.TokenWalker.Consume(); // Consume 'EqualsCloseAngleBracketToken'
-                    parserModel.Return_Helper(Parser.ParseExpression(ref parserModel));
-                    break;
-                }
-                case SyntaxKind.StatementDelimiterToken:
-                {
-                    var deferredParsingOccurred = parserModel.StatementBuilder.FinishStatement(parserModel.TokenWalker.Index, parserModel.TokenWalker.Current, ref parserModel);
-                    if (deferredParsingOccurred)
-                        break;
-
-                    Parser.ParseStatementDelimiterToken(ref parserModel);
-                    break;
-                }
-                case SyntaxKind.EndOfFileToken:
-                    break;
-                default:
-                    if (UtilityApi.IsContextualKeywordSyntaxKind(parserModel.TokenWalker.Current.SyntaxKind))
-                        Parser.ParseKeywordContextualToken(ref parserModel);
-                    else if (UtilityApi.IsKeywordSyntaxKind(parserModel.TokenWalker.Current.SyntaxKind))
-                        Parser.ParseKeywordToken(ref parserModel);
-                    break;
-            }
-
-            if (parserModel.TokenWalker.Current.SyntaxKind == SyntaxKind.EndOfFileToken)
-            {
-                bool deferredParsingOccurred = false;
-                
-                if (parserModel.ParseChildScopeStack.Count > 0)
-                {
-                    var tuple = parserModel.ParseChildScopeStack.Peek();
-                    
-                    if (tuple.ScopeSubIndex == parserModel.ScopeCurrentSubIndex)
-                    {
-                        tuple = parserModel.ParseChildScopeStack.Pop();
-                        tuple.DeferredChildScope.PrepareMainParserLoop(
-                            parserModel.TokenWalker.Index,
-                            parserModel.TokenWalker.Current,
-                            ref parserModel);
-                        deferredParsingOccurred = true;
-                    }
-                }
-                
-                if (!deferredParsingOccurred)
-                {
-                    // This second 'deferredParsingOccurred' is for any lambda expressions with one or many statements in its body.
-                    deferredParsingOccurred = parserModel.StatementBuilder.FinishStatement(parserModel.TokenWalker.Index, parserModel.TokenWalker.Current, ref parserModel);
-                    if (!deferredParsingOccurred)
-                        break;
-                }
-            }
-            
-            if (parserModel.TokenWalker.ConsumeCounter == 0)
-            {
-                // This means either:
-                //     - None of the methods for syntax could make sense of the token, so they didn't consume it.
-                //     - For whatever reason the method that handled the syntax made sense of the token, but never consumed it.
-                //     - The token was consumed, then for some reason a backtrack occurred.
-                //
-                // To avoid an infinite loop, this will ensure at least 1 token is consumed each iteration of the while loop.
-                // 
-                // (and that the token index increased by at least 1 from the previous loop; this is implicitly what is implied).
-                _ = parserModel.TokenWalker.Consume();
-            }
-            else if (parserModel.TokenWalker.ConsumeCounter < 0)
-            {
-                // This means that a syntax invoked 'parserModel.TokenWalker.Backtrack()'.
-                // Without invoking an equal amount of 'parserModel.TokenWalker.Consume()' to avoid an infinite loop.
-                throw new ClairTextEditorException($"parserModel.TokenWalker.ConsumeCounter:{parserModel.TokenWalker.ConsumeCounter} < 0");
-            }
-            
-            parserModel.TokenWalker.ConsumeCounterReset();
-        }
-
-        if (!parserModel.GetParent(parserModel.ScopeCurrent.ParentScopeSubIndex, compilationUnit).IsDefault())
-            parserModel.CloseScope(parserModel.TokenWalker.Current.TextSpan); // The current token here would be the EOF token.
-        
-        parserModel.Binder.FinalizeCompilationUnit(parserModel.AbsolutePathId, compilationUnit);
     }
     
-    public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
+    public static void CreateRazorPartialClass(StreamReaderPooledBufferWrap streamReaderWrap, ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
     {
         var componentName = razorCompilerService._cSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId);
         
@@ -358,10 +136,10 @@ public static class RazorParser
         var identifierToken = new SyntaxToken(
             SyntaxKind.IdentifierToken,
             new TextEditorTextSpan(
-                startInclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex,
-                endExclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex + componentName.Length/* + 1*/,
+                startInclusiveIndex: 0,
+                endExclusiveIndex: streamReaderWrap.PositionIndex + componentName.Length/* + 1*/,
                 decorationByte: (byte)SyntaxKind.ImplicitTextSource,
-                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
+                byteIndex: streamReaderWrap.ByteIndex,
                 charIntSum));
         var typeDefinitionNode = parserModel.Rent_TypeDefinitionNode();
         
@@ -400,7 +178,7 @@ public static class RazorParser
         parserModel.RegisterScope(
         	new Scope(
         		ScopeDirectionKind.Both,
-        		scope_StartInclusiveIndex: parserModel.TokenWalker.Current.TextSpan.StartInclusiveIndex,
+        		scope_StartInclusiveIndex: 0,
         		scope_EndExclusiveIndex: -1,
         		codeBlock_StartInclusiveIndex: -1,
         		codeBlock_EndExclusiveIndex: -1,

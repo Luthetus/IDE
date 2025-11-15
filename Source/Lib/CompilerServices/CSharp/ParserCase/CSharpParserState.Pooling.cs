@@ -1,4 +1,5 @@
 using Clair.CompilerServices.CSharp.Facts;
+using Clair.CompilerServices.CSharp.BinderCase;
 using Clair.Extensions.CompilerServices;
 using Clair.Extensions.CompilerServices.Syntax;
 using Clair.Extensions.CompilerServices.Syntax.Enums;
@@ -83,6 +84,9 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_LiteralExpressionNode(LiteralExpressionNode literalExpressionNode)
     {
+        if (Binder.Pool_LiteralExpressionNode_Queue.Count >= CSharpBinder.POOL_LITERAL_EXPRESSION_NODE_MAX_COUNT)
+            return;
+    
         //++POOL_RETURN;
         
         literalExpressionNode.LiteralSyntaxToken = default;
@@ -121,6 +125,9 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_BinaryExpressionNode(BinaryExpressionNode binaryExpressionNode)
     {
+        if (Binder.Pool_BinaryExpressionNode_Queue.Count > CSharpBinder.POOL_BINARY_EXPRESSION_NODE_MAX_COUNT)
+            return;
+    
         binaryExpressionNode._isFabricated = false;
 
         binaryExpressionNode.LeftOperandTypeReference = default;
@@ -163,6 +170,9 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_TypeClauseNode(TypeClauseNode typeClauseNode)
     {
+        if (Binder.Pool_TypeClauseNode_Queue.Count >= CSharpBinder.POOL_TYPE_CLAUSE_NODE_MAX_COUNT)
+            return;
+    
         typeClauseNode.OpenAngleBracketToken = default;
         typeClauseNode.OffsetGenericParameterEntryList = -1;
         typeClauseNode.LengthGenericParameterEntryList = 0;
@@ -209,8 +219,6 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_ExplicitCastNode(ExplicitCastNode explicitCastNode)
     {
-        //++POOL_RETURN;
-
         explicitCastNode.OpenParenthesisToken = default;
         explicitCastNode.ResultTypeReference = CSharpFacts.Types.VoidTypeReferenceValue;
         explicitCastNode.CloseParenthesisToken = default;
@@ -508,7 +516,8 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_VariableDeclarationNode(VariableDeclarationNode variableDeclarationNode)
     {
-        //++POOL_RETURN;
+        if (Binder.Pool_VariableDeclarationNode_Queue.Count >= CSharpBinder.POOL_VARIABLE_DECLARATION_NODE_MAX_COUNT)
+            return;
     
         variableDeclarationNode.TypeReference = default;
         variableDeclarationNode.IdentifierToken = default;
@@ -550,6 +559,9 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_VariableReferenceNode(VariableReferenceNode variableReferenceNode)
     {
+        if (Binder.Pool_VariableReferenceNode_Queue.Count >= CSharpBinder.POOL_VARIABLE_REFERENCE_NODE_MAX_COUNT)
+            return;
+    
         variableReferenceNode.ResultTypeReference = TypeFacts.Empty.ToTypeReference();
         variableReferenceNode._isFabricated = false;
 
@@ -591,6 +603,9 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_NamespaceClauseNode(NamespaceClauseNode namespaceClauseNode)
     {
+        if (Binder.Pool_NamespaceClauseNode_Queue.Count >= CSharpBinder.POOL_NAMESPACE_CLAUSE_NODE_MAX_COUNT)
+            return;
+    
         // IsFabricated is not currently being used for this type, so the pooling logic doesn't need to reset it.
         //namespaceClauseNode._isFabricated = false;
 
@@ -633,7 +648,8 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_AmbiguousIdentifierNode(AmbiguousIdentifierNode ambiguousIdentifierNode)
     {
-        //++POOL_RETURN;
+        if (Binder.Pool_AmbiguousIdentifierNode_Queue.Count >= CSharpBinder.POOL_AMBIGUOUS_IDENTIFIER_NODE_MAX_COUNT)
+            return;
         
         ambiguousIdentifierNode.OpenAngleBracketToken = default;
         ambiguousIdentifierNode.OffsetGenericParameterEntryList = -1;
@@ -678,6 +694,9 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_FunctionInvocationNode(FunctionInvocationNode functionInvocationNode)
     {
+        if (Binder.Pool_FunctionInvocationNode_Queue.Count >= CSharpBinder.POOL_FUNCTION_INVOCATION_NODE_MAX_COUNT)
+            return;
+    
         functionInvocationNode.OpenAngleBracketToken = default;
         functionInvocationNode.OffsetGenericParameterEntryList = -1;
         functionInvocationNode.LengthGenericParameterEntryList = 0;
@@ -730,6 +749,9 @@ public ref partial struct CSharpParserState
     /// </summary>
     public readonly void Return_ConstructorInvocationExpressionNode(ConstructorInvocationNode constructorInvocationExpressionNode)
     {
+        if (Binder.Pool_ConstructorInvocationExpressionNode_Queue.Count >= CSharpBinder.POOL_CONSTRUCTOR_INVOCATION_EXPRESSION_NODE_MAX_COUNT)
+            return;
+    
         constructorInvocationExpressionNode.ResultTypeReference = default;
 
         constructorInvocationExpressionNode.OpenParenthesisToken = default;

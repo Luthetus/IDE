@@ -393,7 +393,7 @@ public sealed class TokenWalkerBuffer
     
     /// <summary>
     /// I have no idea what I'm doing will this inline?
-    /// 
+    /// Also my hospital roommate has pneumonia is that contagious?
     /// </summary>
     private void Do_Lex()
     {

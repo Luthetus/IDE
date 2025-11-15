@@ -8,6 +8,7 @@ using Clair.Extensions.CompilerServices.Syntax.Enums;
 using Clair.Extensions.CompilerServices.Syntax.NodeValues;
 using Clair.TextEditor.RazorLib.Exceptions;
 using Clair.TextEditor.RazorLib.Lexers.Models;
+using Clair.TextEditor.RazorLib.TextEditors.Models;
 using static Clair.CompilerServices.Razor.RazorLexer;
 
 namespace Clair.CompilerServices.Razor;
@@ -17,6 +18,8 @@ public static class RazorParser
     public static void Parse(
         int absolutePathId,
         TokenWalkerBuffer tokenWalkerBuffer,
+        StreamReaderPooledBufferWrap streamReaderWrap,
+        TextEditorModel textEditorModel,
         ref CSharpCompilationUnit compilationUnit,
         CSharpBinder binder,
         RazorCompilerService razorCompilerService)
@@ -27,6 +30,15 @@ public static class RazorParser
         
         Clear them inside CSharpBinder.FinalizeCompilationUnit(...) so that they aren't "dangling"
         in between Parse(...) invocations.
+        */
+        
+        /*
+        You could have initially, that the lexing only tracks the @code and @functions blocks
+        and then defer parses them.
+        
+        This then would permit C# to know everything it needs to about the razor markup
+        (short of I guess if you can make a public variable / static variable
+         outside of @code / @functions?).
         */
         
         compilationUnit.ScopeOffset = binder.ScopeList.Count;
@@ -71,7 +83,7 @@ public static class RazorParser
                 startInclusiveIndex: 0,
                 endExclusiveIndex: namespaceString.Length,
                 decorationByte: (byte)SyntaxKind.ImplicitTextSource,
-                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
+                byteIndex: streamReaderWrap.ByteIndex,
                 charIntSum));
         var namespaceStatementNode = parserModel.Rent_NamespaceStatementNode();
         namespaceStatementNode.KeywordToken = default;
@@ -81,7 +93,7 @@ public static class RazorParser
         parserModel.RegisterScope(
         	new Scope(
         		ScopeDirectionKind.Both,
-        		scope_StartInclusiveIndex: parserModel.TokenWalker.Current.TextSpan.StartInclusiveIndex,
+        		scope_StartInclusiveIndex: 0,
         		scope_EndExclusiveIndex: -1,
         		codeBlock_StartInclusiveIndex: -1,
         		codeBlock_EndExclusiveIndex: -1,
@@ -94,77 +106,24 @@ public static class RazorParser
     	    namespaceStatementNode);
         parserModel.Return_NamespaceStatementNode(namespaceStatementNode);
         
-        CreateRazorPartialClass(ref parserModel, razorCompilerService);
-
-        // A major issue is this first "initial parse" where the razor lexer just runs
-        // because you need to swap to the CSharpLexer in order to find the start and end points
-        // of implicit expressions that use member access.
-        //
-        // (Or you can duplicate the C# identifier logic in the razor)
-        // food
+        CreateRazorPartialClass(streamReaderWrap, ref parserModel, razorCompilerService);
         
-        // Need to try putting HTML where the text contains nothing that will trigger C# langauge transition.
-        // This should pass through correctly without issues.
-        //
-        //
-        // Also, the "first parse" idea came from me not wanting to parse the C#
-        // initially, because the @code/@functions might be located textually
-        // towards the end of the file.
-        //
-        // But I'm wondering if I'd like to enqueue all C# code
-        // (explicit or implicit) to deferred parsing.
-        //
-        // I still have to swap between Razor and C# Lexer so that I can
-        // have markup that contains C# that contains markup and any level of "recursion" from there.
-        // The Lexer will outline where the C# ends even if I don't interact with the Binder at all.
-        // 
-        // If you don't parse the expressions how would you short circuit at unmatched '<'
-        // to enter Razor.
-        //
-        // You have to lex token by token and track which lexer has control then the while loop is at the
-        // Razor parser level and everyloop it tells one or the other lexers to lex the next token.
-        //
-        // There is no initial loop.
-        // Loop once and try defer parsing any C# you find.
-        //
-        // Being in the hospital for cellulitis is starting to hit my morale.
-        // I pushed through it the first like 6 days but... not quite as much energy left.
-        // I have nearly 0 caffeine too while I'm here lol. *sigh*
-        //
-        // Focus on lexing.
-        // Completely "ignore" parsing.
-        //
-        // Once you've done the recursive lexing of the markup into C# into markup into etc...
-        //
-        // Then for the parsing the first solution could be to defer parse ALL C# code
-        // and you prioritize the @code blocks then @function blocks then go textually top to bottom.
-        //
-        // You gotta put a max-capacity on the Queues that are used to pool the nodes.
-        // When you return if statement whether at capacity before adding back to the pool.
+        _ = RazorLexer.Lex(
+            binder.KeywordCheckBuffer,
+            streamReaderWrap,
+            textEditorModel);
         
-        while (!parserModel.TokenWalker.IsEof)
-        {
-            switch (parserModel.TokenWalker.Current.SyntaxKind)
-            {
-                case SyntaxKind.EndOfFileToken:
-                    goto exitInitialLexing;
-            }
-            _ = parserModel.TokenWalker.Consume();
-        }
-        exitInitialLexing:
-        parserModel.TokenWalker.IsInitialParse = false;
-
+        parserModel.Binder.FinalizeCompilationUnit(parserModel.AbsolutePathId, compilationUnit);
+        
         // Random note: consider finding matches by iterating over the scope rather than the scope...
         // ...filtered by SyntaxKind?
         //
         // Or perhaps iterate over all possible scopes but start at the closest ancestor scope.
         // i.e.: something about not invoking those Hierarchical methods that search for a definition
         // over and over. That is a lot of copying of data for the parameters.
-
-        parserModel.Binder.FinalizeCompilationUnit(parserModel.AbsolutePathId, compilationUnit);
     }
     
-    public static void CreateRazorPartialClass(ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
+    public static void CreateRazorPartialClass(StreamReaderPooledBufferWrap streamReaderWrap, ref CSharpParserState parserModel, RazorCompilerService razorCompilerService)
     {
         var componentName = razorCompilerService._cSharpCompilerService.GetRazorComponentName(parserModel.AbsolutePathId);
         
@@ -177,10 +136,10 @@ public static class RazorParser
         var identifierToken = new SyntaxToken(
             SyntaxKind.IdentifierToken,
             new TextEditorTextSpan(
-                startInclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex,
-                endExclusiveIndex: parserModel.TokenWalker.StreamReaderWrap.PositionIndex + componentName.Length/* + 1*/,
+                startInclusiveIndex: 0,
+                endExclusiveIndex: streamReaderWrap.PositionIndex + componentName.Length/* + 1*/,
                 decorationByte: (byte)SyntaxKind.ImplicitTextSource,
-                byteIndex: parserModel.TokenWalker.StreamReaderWrap.ByteIndex,
+                byteIndex: streamReaderWrap.ByteIndex,
                 charIntSum));
         var typeDefinitionNode = parserModel.Rent_TypeDefinitionNode();
         
@@ -219,7 +178,7 @@ public static class RazorParser
         parserModel.RegisterScope(
         	new Scope(
         		ScopeDirectionKind.Both,
-        		scope_StartInclusiveIndex: parserModel.TokenWalker.Current.TextSpan.StartInclusiveIndex,
+        		scope_StartInclusiveIndex: 0,
         		scope_EndExclusiveIndex: -1,
         		codeBlock_StartInclusiveIndex: -1,
         		codeBlock_EndExclusiveIndex: -1,

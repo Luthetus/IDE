@@ -22,13 +22,6 @@ public sealed class RazorCompilerService : IExtendedCompilerService
 {
     public readonly TextEditorService _textEditorService;
     public readonly CSharpCompilerService _cSharpCompilerService;
-    private readonly Func<
-        CSharpBinder,
-        TokenWalkerBuffer,
-        //ref TextEditorTextSpan previousEscapeCharacterTextSpan,
-        //ref int interpolatedExpressionUnmatchedBraceCount,
-        byte,// RazorLexerContextKind.Expect_TagOrText
-        SyntaxToken> _lexRazor = new(RazorLexer.Lex);
     
     /// <summary>
     /// Cannot use shared for both the razor and the C#.
@@ -168,19 +161,24 @@ public sealed class RazorCompilerService : IExtendedCompilerService
             }
 
             _cSharpCompilerService._streamReaderWrap.ReInitialize(lexer_reader);
-            
+            /*
             _cSharpCompilerService._tokenWalkerBuffer.ReInitialize(
                 _cSharpCompilerService.__CSharpBinder,
                 resourceUri,
                 modelModifier,
                 _cSharpCompilerService._tokenWalkerBuffer,
                 _cSharpCompilerService._streamReaderWrap,
-                shouldUseSharedStringWalker: true,
-                useCSharpLexer: false,
-                lexRazor: _lexRazor);
-            
+                shouldUseSharedStringWalker: true);
+            */
             _cSharpCompilerService.__CSharpBinder.StartCompilationUnit(absolutePathId);
-            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
+            RazorParser.Parse(
+                absolutePathId,
+                _cSharpCompilerService._tokenWalkerBuffer,
+                _cSharpCompilerService._streamReaderWrap,
+                modelModifier,
+                ref cSharpCompilationUnit,
+                _cSharpCompilerService.__CSharpBinder,
+                this);
         }
         finally
         {
@@ -236,19 +234,26 @@ public sealed class RazorCompilerService : IExtendedCompilerService
 
             _cSharpCompilerService._streamReaderWrap.ReInitialize(lexer_sr);
 
+            /*
             _cSharpCompilerService._tokenWalkerBuffer.ReInitialize(
                 _cSharpCompilerService.__CSharpBinder,
                 resourceUri,
                 textEditorModel: null,
                 _cSharpCompilerService._tokenWalkerBuffer,
                 _cSharpCompilerService._streamReaderWrap,
-                shouldUseSharedStringWalker: true,
-                useCSharpLexer: false,
-                lexRazor: _lexRazor);
-
+                shouldUseSharedStringWalker: true);
+            */
             _cSharpCompilerService.FastParseTuple = (absolutePathId, parser_sr);
+            
             _cSharpCompilerService.__CSharpBinder.StartCompilationUnit(absolutePathId);
-            RazorParser.Parse(absolutePathId, _cSharpCompilerService._tokenWalkerBuffer, ref cSharpCompilationUnit, _cSharpCompilerService.__CSharpBinder, this);
+            RazorParser.Parse(
+                absolutePathId,
+                _cSharpCompilerService._tokenWalkerBuffer,
+                _cSharpCompilerService._streamReaderWrap,
+                textEditorModel: null,
+                ref cSharpCompilationUnit,
+                _cSharpCompilerService.__CSharpBinder,
+                this);
         }
         finally
         {

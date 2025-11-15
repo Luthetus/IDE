@@ -14,7 +14,7 @@ public static class RazorLexer
         Expect_AttributeValue,
     }
 
-    public static RazorLexerOutput Lex(char[] keywordCheckBuffer, StreamReaderWrap streamReaderWrap, TextEditorModel modelModifier)
+    public static RazorLexerOutput Lex(char[] keywordCheckBuffer, StreamReaderPooledBufferWrap streamReaderWrap, TextEditorModel modelModifier)
     {
         var context = RazorLexerContextKind.Expect_TagOrText;
         var output = new RazorLexerOutput(modelModifier);
@@ -96,7 +96,7 @@ public static class RazorLexer
                             _ = streamReaderWrap.ReadCharacter();
                             // Attribute skips HTML identifier because ':' example: 'onclick:stopPropagation="true"'
                             SkipHtmlIdentifier(streamReaderWrap);
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 atCharStartPosition,
                                 streamReaderWrap.PositionIndex,
                                 (byte)GenericDecorationKind.Razor_AttributeNameInjectedLanguageFragment);
@@ -120,7 +120,7 @@ public static class RazorLexer
                                 _ = streamReaderWrap.ReadCharacter();
                             }
 
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 attributeNameStartPosition,
                                 streamReaderWrap.PositionIndex,
                                 (byte)GenericDecorationKind.Razor_AttributeName);
@@ -163,7 +163,7 @@ public static class RazorLexer
                                 SkipCSharpdentifier(streamReaderWrap);
                             }
                             
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 atCharStartPosition,
                                 streamReaderWrap.PositionIndex,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInjectedLanguageFragment);
@@ -186,7 +186,7 @@ public static class RazorLexer
                                 }
                                 _ = streamReaderWrap.ReadCharacter();
                             }
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
                                 streamReaderWrap.PositionIndex,
                                 (byte)GenericDecorationKind.Razor_AttributeValue);
@@ -207,7 +207,7 @@ public static class RazorLexer
                             }
                             else if (streamReaderWrap.CurrentCharacter == '@')
                             {
-                                output.ModelModifier.__SetDecorationByteRange(
+                                output.ModelModifier?.__SetDecorationByteRange(
                                     textStartPosition,
                                     streamReaderWrap.PositionIndex,
                                     (byte)GenericDecorationKind.Razor_Text);
@@ -218,7 +218,7 @@ public static class RazorLexer
                                 if (streamReaderWrap.CurrentCharacter == '*')
                                 {
                                     _ = streamReaderWrap.ReadCharacter();
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    output.ModelModifier?.__SetDecorationByteRange(
                                         atCharStartPosition,
                                         streamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -234,7 +234,7 @@ public static class RazorLexer
                                         _ = streamReaderWrap.ReadCharacter();
                                     }
                                     
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    output.ModelModifier?.__SetDecorationByteRange(
                                         commentStartPosition,
                                         streamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_Comment);
@@ -247,7 +247,7 @@ public static class RazorLexer
                                         
                                         _ = streamReaderWrap.ReadCharacter();
                                         _ = streamReaderWrap.ReadCharacter();
-                                        output.ModelModifier.__SetDecorationByteRange(
+                                        output.ModelModifier?.__SetDecorationByteRange(
                                             starStartPosition,
                                             streamReaderWrap.PositionIndex,
                                             (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -255,7 +255,7 @@ public static class RazorLexer
                                 }
                                 else if (streamReaderWrap.CurrentCharacter == '{')
                                 {
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    output.ModelModifier?.__SetDecorationByteRange(
                                         atCharStartPosition,
                                         streamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -264,7 +264,7 @@ public static class RazorLexer
                                 }
                                 else
                                 {
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    output.ModelModifier?.__SetDecorationByteRange(
                                         atCharStartPosition,
                                         streamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -275,7 +275,7 @@ public static class RazorLexer
                                     var everythingWasHandledForMe = SkipCSharpdentifierOrKeyword(keywordCheckBuffer, streamReaderWrap, output);
                                     if (!everythingWasHandledForMe)
                                     {
-                                        output.ModelModifier.__SetDecorationByteRange(
+                                        output.ModelModifier?.__SetDecorationByteRange(
                                             wordStartPosition,
                                             streamReaderWrap.PositionIndex,
                                             (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -288,7 +288,7 @@ public static class RazorLexer
                             }
                             _ = streamReaderWrap.ReadCharacter();
                         }
-                        output.ModelModifier.__SetDecorationByteRange(
+                        output.ModelModifier?.__SetDecorationByteRange(
                             textStartPosition,
                             streamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_Text);
@@ -322,7 +322,7 @@ public static class RazorLexer
                             }
                             _ = streamReaderWrap.ReadCharacter();
                         }
-                        output.ModelModifier.__SetDecorationByteRange(
+                        output.ModelModifier?.__SetDecorationByteRange(
                             attributeValueStartPosition,
                             streamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeValue);
@@ -337,7 +337,7 @@ public static class RazorLexer
                         var delimiterStartPosition = streamReaderWrap.PositionIndex;
                         var delimiterStartByte = streamReaderWrap.ByteIndex;
                         _ = streamReaderWrap.ReadCharacter();
-                        output.ModelModifier.__SetDecorationByteRange(
+                        output.ModelModifier?.__SetDecorationByteRange(
                             delimiterStartPosition,
                             streamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeDelimiter);
@@ -361,14 +361,14 @@ public static class RazorLexer
                                 if (!hasSeenInterpolation)
                                 {
                                     hasSeenInterpolation = true;
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    output.ModelModifier?.__SetDecorationByteRange(
                                         attributeValueStartPosition,
                                         streamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_AttributeValueInterpolationStart);
                                 }
                                 else
                                 {
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    output.ModelModifier?.__SetDecorationByteRange(
                                         attributeValueStartPosition,
                                         streamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_AttributeValueInterpolationContinue);
@@ -404,7 +404,7 @@ public static class RazorLexer
                                     SkipCSharpdentifier(streamReaderWrap);
                                 }
                                 
-                                output.ModelModifier.__SetDecorationByteRange(
+                                output.ModelModifier?.__SetDecorationByteRange(
                                     interpolationStartPosition,
                                     streamReaderWrap.PositionIndex,
                                     (byte)GenericDecorationKind.Razor_AttributeValueInjectedLanguageFragment);
@@ -418,25 +418,25 @@ public static class RazorLexer
                         
                         if (hasSeenInterpolation)
                         {
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
                                 attributeValueEnd,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInterpolationContinue);
                         
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 delimiterStartPosition,
                                 delimiterStartPosition,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInterpolationEnd);
                         }
                         else
                         {
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
                                 attributeValueEnd,
                                 (byte)GenericDecorationKind.Razor_AttributeValue);
                         }
                         
-                        output.ModelModifier.__SetDecorationByteRange(
+                        output.ModelModifier?.__SetDecorationByteRange(
                             delimiterStartPosition,
                             streamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeDelimiter);
@@ -451,7 +451,7 @@ public static class RazorLexer
                         var delimiterStartPosition = streamReaderWrap.PositionIndex;
                         var delimiterStartByte = streamReaderWrap.ByteIndex;
                         _ = streamReaderWrap.ReadCharacter();
-                        output.ModelModifier.__SetDecorationByteRange(
+                        output.ModelModifier?.__SetDecorationByteRange(
                             delimiterStartPosition,
                             streamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeDelimiter);
@@ -475,14 +475,14 @@ public static class RazorLexer
                                 if (!hasSeenInterpolation)
                                 {
                                     hasSeenInterpolation = true;
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    output.ModelModifier?.__SetDecorationByteRange(
                                         attributeValueStartPosition,
                                         streamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_AttributeValueInterpolationStart);
                                 }
                                 else
                                 {
-                                    output.ModelModifier.__SetDecorationByteRange(
+                                    output.ModelModifier?.__SetDecorationByteRange(
                                         attributeValueStartPosition,
                                         streamReaderWrap.PositionIndex,
                                         (byte)GenericDecorationKind.Razor_AttributeValueInterpolationContinue);
@@ -518,7 +518,7 @@ public static class RazorLexer
                                     SkipCSharpdentifier(streamReaderWrap);
                                 }
                                 
-                                output.ModelModifier.__SetDecorationByteRange(
+                                output.ModelModifier?.__SetDecorationByteRange(
                                     interpolationStartPosition,
                                     streamReaderWrap.PositionIndex,
                                     (byte)GenericDecorationKind.Razor_AttributeValueInjectedLanguageFragment);
@@ -532,25 +532,25 @@ public static class RazorLexer
                         
                         if (hasSeenInterpolation)
                         {
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
                                 attributeValueEnd,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInterpolationContinue);
                         
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 delimiterStartPosition,
                                 delimiterStartPosition,
                                 (byte)GenericDecorationKind.Razor_AttributeValueInterpolationEnd);
                         }
                         else
                         {
-                            output.ModelModifier.__SetDecorationByteRange(
+                            output.ModelModifier?.__SetDecorationByteRange(
                                 attributeValueStartPosition,
                                 attributeValueEnd,
                                 (byte)GenericDecorationKind.Razor_AttributeValue);
                         }
                         
-                        output.ModelModifier.__SetDecorationByteRange(
+                        output.ModelModifier?.__SetDecorationByteRange(
                             delimiterStartPosition,
                             streamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeDelimiter);
@@ -616,7 +616,7 @@ public static class RazorLexer
                         var attributeValueStartPosition = streamReaderWrap.PositionIndex;
                         var attributeValueStartByte = streamReaderWrap.ByteIndex;
                         _ = streamReaderWrap.ReadCharacter();
-                        output.ModelModifier.__SetDecorationByteRange(
+                        output.ModelModifier?.__SetDecorationByteRange(
                             attributeValueStartPosition,
                             streamReaderWrap.PositionIndex,
                             (byte)GenericDecorationKind.Razor_AttributeOperator);
@@ -754,7 +754,7 @@ public static class RazorLexer
                         {
                             textSpanOfMostRecentTagOpen = textSpan;
                         }
-                        output.ModelModifier.__SetDecorationByteRange(
+                        output.ModelModifier?.__SetDecorationByteRange(
                             textSpan.StartInclusiveIndex,
                             textSpan.EndExclusiveIndex,
                             textSpan.DecorationByte);
@@ -856,7 +856,7 @@ public static class RazorLexer
         return output;
     }
     
-    private static void SkipHtmlIdentifier(StreamReaderWrap streamReaderWrap)
+    private static void SkipHtmlIdentifier(StreamReaderPooledBufferWrap streamReaderWrap)
     {
         while (!streamReaderWrap.IsEof)
         {
@@ -871,7 +871,7 @@ public static class RazorLexer
         }
     }
     
-    private static void SkipCSharpdentifier(StreamReaderWrap streamReaderWrap)
+    private static void SkipCSharpdentifier(StreamReaderPooledBufferWrap streamReaderWrap)
     {
         while (!streamReaderWrap.IsEof)
         {
@@ -904,7 +904,7 @@ public static class RazorLexer
     /// </summary>
     private static bool SkipCSharpdentifierOrKeyword(
         char[] keywordCheckBuffer,
-        StreamReaderWrap streamReaderWrap,
+        StreamReaderPooledBufferWrap streamReaderWrap,
         RazorLexerOutput output,
         SyntaxContinuationKind syntaxContinuationKind = SyntaxContinuationKind.None)
     {
@@ -969,7 +969,7 @@ public static class RazorLexer
                     keywordCheckBuffer[10] == 'e' &&
                     keywordCheckBuffer[11] == 'r')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -989,7 +989,7 @@ public static class RazorLexer
                     keywordCheckBuffer[7] ==  't' &&
                     keywordCheckBuffer[8] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1004,7 +1004,7 @@ public static class RazorLexer
                     keywordCheckBuffer[2] ==  's' &&
                     keywordCheckBuffer[3] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1020,7 +1020,7 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  's' &&
                     keywordCheckBuffer[4] ==  's')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1059,7 +1059,7 @@ public static class RazorLexer
                 if (!isCode && !isFunctions)
                     goto default;
             
-                output.ModelModifier.__SetDecorationByteRange(
+                output.ModelModifier?.__SetDecorationByteRange(
                     wordStartPosition,
                     streamReaderWrap.PositionIndex,
                     (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1093,7 +1093,7 @@ public static class RazorLexer
                     keywordCheckBuffer[5] ==  'l' &&
                     keywordCheckBuffer[6] ==  't')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1106,7 +1106,7 @@ public static class RazorLexer
                     keywordCheckBuffer[0] ==  'd' &&
                     keywordCheckBuffer[1] ==  'o')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1144,7 +1144,7 @@ public static class RazorLexer
                     keywordCheckBuffer[1] ==  'o' &&
                     keywordCheckBuffer[2] ==  'r')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1209,7 +1209,7 @@ public static class RazorLexer
                     keywordCheckBuffer[5] ==  'c' &&
                     keywordCheckBuffer[6] ==  'h')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1273,7 +1273,7 @@ public static class RazorLexer
                     keywordCheckBuffer[4] ==  'u' &&
                     keywordCheckBuffer[5] ==  't')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1292,7 +1292,7 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'e')
                 {
                     // else
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1339,7 +1339,7 @@ public static class RazorLexer
                          keywordCheckBuffer[3] ==  'k')
                 {
                     // lock
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1417,7 +1417,7 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'e' &&
                     keywordCheckBuffer[4] ==  'l')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1432,7 +1432,7 @@ public static class RazorLexer
                     keywordCheckBuffer[2] ==  'g' &&
                     keywordCheckBuffer[3] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1461,7 +1461,7 @@ public static class RazorLexer
                     keywordCheckBuffer[16] ==  'c' &&
                     keywordCheckBuffer[17] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1474,7 +1474,7 @@ public static class RazorLexer
                     keywordCheckBuffer[0] ==  'i' &&
                     keywordCheckBuffer[1] ==  'f')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1557,7 +1557,7 @@ public static class RazorLexer
                     keywordCheckBuffer[8] ==  't' &&
                     keywordCheckBuffer[9] ==  's')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1576,7 +1576,7 @@ public static class RazorLexer
                     keywordCheckBuffer[6] ==  't' &&
                     keywordCheckBuffer[7] ==  's')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1593,7 +1593,7 @@ public static class RazorLexer
                     keywordCheckBuffer[4] ==  'c' &&
                     keywordCheckBuffer[5] ==  't')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1613,7 +1613,7 @@ public static class RazorLexer
                     keywordCheckBuffer[7] ==  'c' &&
                     keywordCheckBuffer[8] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1642,7 +1642,7 @@ public static class RazorLexer
                     keywordCheckBuffer[14] ==  'r')
                 {
                     // removeTagHelper
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1665,7 +1665,7 @@ public static class RazorLexer
                          keywordCheckBuffer[14] ==  'x')
                 {
                     // tagHelperPrefix
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1686,7 +1686,7 @@ public static class RazorLexer
                     keywordCheckBuffer[8] ==  'd' &&
                     keywordCheckBuffer[9] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1704,7 +1704,7 @@ public static class RazorLexer
                     keywordCheckBuffer[5] ==  'o' &&
                     keywordCheckBuffer[6] ==  'n')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1721,7 +1721,7 @@ public static class RazorLexer
                     keywordCheckBuffer[4] ==  'c' &&
                     keywordCheckBuffer[5] ==  'h')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1782,7 +1782,7 @@ public static class RazorLexer
                     keywordCheckBuffer[1] ==  'r' &&
                     keywordCheckBuffer[2] ==  'y')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1833,7 +1833,7 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'c' &&
                     keywordCheckBuffer[4] ==  'h')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1914,7 +1914,7 @@ public static class RazorLexer
                     keywordCheckBuffer[5] ==  'l' &&
                     keywordCheckBuffer[6] ==  'y')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1953,7 +1953,7 @@ public static class RazorLexer
                     keywordCheckBuffer[7] ==  'a' &&
                     keywordCheckBuffer[8] ==  'm')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -1969,7 +1969,7 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'n' &&
                     keywordCheckBuffer[4] ==  'g')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -2035,7 +2035,7 @@ public static class RazorLexer
                     keywordCheckBuffer[3] ==  'l' &&
                     keywordCheckBuffer[4] ==  'e')
                 {
-                    output.ModelModifier.__SetDecorationByteRange(
+                    output.ModelModifier?.__SetDecorationByteRange(
                         wordStartPosition,
                         streamReaderWrap.PositionIndex,
                         (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -2085,7 +2085,7 @@ public static class RazorLexer
                     {
                         // This is convenient for the 'do-while' case.
                         // Albeit probably invalid when it is the 'while' case.
-                        output.ModelModifier.__SetDecorationByteRange(
+                        output.ModelModifier?.__SetDecorationByteRange(
                             streamReaderWrap.PositionIndex,
                             streamReaderWrap.PositionIndex + 1,
                             (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -2122,12 +2122,12 @@ public static class RazorLexer
     ///
     /// This method returns 1 character after the close brace, or EOF.
     /// </summary>
-    private static void LexCSharpCodeBlock(StreamReaderWrap streamReaderWrap, RazorLexerOutput output)
+    private static void LexCSharpCodeBlock(StreamReaderPooledBufferWrap streamReaderWrap, RazorLexerOutput output)
     {
         var openBraceStartPosition = streamReaderWrap.PositionIndex;
         var openBraceStartByte = streamReaderWrap.ByteIndex;
         _ = streamReaderWrap.ReadCharacter();
-        output.ModelModifier.__SetDecorationByteRange(
+        output.ModelModifier?.__SetDecorationByteRange(
             openBraceStartPosition,
             streamReaderWrap.PositionIndex,
             (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);
@@ -2212,7 +2212,7 @@ public static class RazorLexer
             _ = streamReaderWrap.ReadCharacter();
         }
 
-        output.ModelModifier.__SetDecorationByteRange(
+        output.ModelModifier?.__SetDecorationByteRange(
             cSharpStartPosition,
             streamReaderWrap.PositionIndex,
             (byte)GenericDecorationKind.Razor_CSharpMarker);
@@ -2224,7 +2224,7 @@ public static class RazorLexer
             var closeBraceStartByte = streamReaderWrap.ByteIndex;
             
             _ = streamReaderWrap.ReadCharacter();
-            output.ModelModifier.__SetDecorationByteRange(
+            output.ModelModifier?.__SetDecorationByteRange(
                 closeBraceStartPosition,
                 streamReaderWrap.PositionIndex,
                 (byte)GenericDecorationKind.Razor_InjectedLanguageFragment);

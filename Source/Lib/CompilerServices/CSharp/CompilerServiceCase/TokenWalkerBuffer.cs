@@ -391,6 +391,10 @@ public sealed class TokenWalkerBuffer
         return _syntaxTokenBuffer[0];
     }
     
+    /// <summary>
+    /// I have no idea what I'm doing will this inline?
+    /// 
+    /// </summary>
     private void Do_Lex()
     {
         ++_index;

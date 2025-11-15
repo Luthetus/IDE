@@ -184,7 +184,6 @@ public static class RazorParser
         
         while (!parserModel.TokenWalker.IsEof)
         {
-            Console.WriteLine($"ilc:{++initialLoopCount}_{parserModel.TokenWalker.Current.SyntaxKind}");
             switch (parserModel.TokenWalker.Current.SyntaxKind)
             {
                 case SyntaxKind.EndOfFileToken:
@@ -210,8 +209,6 @@ public static class RazorParser
 
         while (true)
         {
-            Console.WriteLine($"olc:{++otherLoopCount}");
-        
             // The last statement in this while loop is conditionally: '_ = parserModel.TokenWalker.Consume();'.
             // Knowing this to be the case is extremely important.
 
@@ -241,8 +238,6 @@ public static class RazorParser
                 
                     // Backtracking???
                     // Using a StreamReader for two reason concurrently?
-                    
-                    Console.WriteLine("case SyntaxKind.AtToken:");
                     
                     var identifierOrKeyword = RazorLexer.SkipCSharpdentifierOrKeyword(
                         binder.KeywordCheckBuffer,

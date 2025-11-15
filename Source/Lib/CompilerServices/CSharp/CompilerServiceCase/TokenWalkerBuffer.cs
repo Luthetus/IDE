@@ -213,8 +213,6 @@ public sealed class TokenWalkerBuffer
         _syntaxTokenBuffer[0] = token;
         _index = tokenIndex;
         ConsumeCounter = rootConsumeCounter;
-        //SetNullDeferredParsingTuple();
-        //_deferredParsingTupleStack.Clear();
 
         _previousEscapeCharacterTextSpan = new TextEditorTextSpan(
             0,
@@ -262,9 +260,6 @@ public sealed class TokenWalkerBuffer
         ++ConsumeCounter;
 
         var consumedToken = Current;
-        
-        var debug_current = Current;
-        var debug_positionIndex = StreamReaderWrap.PositionIndex;
     
         if (_peekIndex != -1)
         {
@@ -288,10 +283,8 @@ public sealed class TokenWalkerBuffer
                 _syntaxTokenBuffer[0] = new SyntaxToken(SyntaxKind.EndOfFileToken, endOfFileTextSpan);
                 return consumedToken;
             }
-            // This is duplicated more than once inside the Peek(int) code.
             
             _backtrackTuple = (_syntaxTokenBuffer[0], Index);
-
             Do_Lex();
         }
 
@@ -389,8 +382,6 @@ public sealed class TokenWalkerBuffer
             _peekBuffer[i] = (_syntaxTokenBuffer[0], Index);
             _peekIndex++;
             _peekSize++;
-
-            // This is duplicated inside the ReadCharacter() code.
 
             Do_Lex();
         }

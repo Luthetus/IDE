@@ -69,8 +69,6 @@ public sealed class CSharpStatementBuilder
     /// </summary>
     public bool FinishStatement(int restoreTokenIndex, SyntaxToken restoreToken, ref CSharpParserState parserModel)
     {
-        Console.WriteLine($"\t\t\t{nameof(FinishStatement)}");
-    
         parserModel.Return_Helper(MostRecentNode);
     
         MostRecentNode = EmptyExpressionNode.Empty;

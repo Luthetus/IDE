@@ -166,6 +166,9 @@ public static class RazorParser
         // There is no initial loop.
         // Loop once and try defer parsing any C# you find.
         //
+        // Being in the hospital for cellulitis is starting to hit my morale.
+        // I pushed through it the first like 6 days but... not quite as much energy left.
+        // I have nearly 0 caffeine too while I'm here lol. *sigh*
                 
         
         while (!parserModel.TokenWalker.IsEof)

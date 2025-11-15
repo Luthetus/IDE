@@ -290,7 +290,7 @@ public static partial class Parser
                 ref parserModel);
             parserModel.Return_AmbiguousIdentifierNode(ambiguousIdentifierNode);
             /*
-            I'd like to share a poem for comfort in these dark times.
+            But just because I'd like to doesn't mean I will xDDDDDDZDDXDXDXDXDASLFMAOEJFPAIEJAOIJGELOLOLOLAOFLMAOAMLAOMALM
             */
         }
         

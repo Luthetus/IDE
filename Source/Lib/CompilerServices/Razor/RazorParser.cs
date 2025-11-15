@@ -41,6 +41,16 @@ public static class RazorParser
          outside of @code / @functions?).
         */
         
+        // The UseRazorShortcircuits isn't necessary because you
+        // are going to first try:
+        // - lexing all the razor
+        //     - This will NOT initially include recursive scenarios
+        //       i.e.: html -> C# which contains more html and that contains C# etc...
+        // - tracking the @code and @functions blocks
+        // Give @code and @functions to the C# parser with strick start and end indices
+        // What if the @code or @functions contains templated logic that writes
+        // like razor (html with C#)?
+        
         compilationUnit.ScopeOffset = binder.ScopeList.Count;
         compilationUnit.NamespaceContributionOffset = binder.NamespaceContributionList.Count;
 

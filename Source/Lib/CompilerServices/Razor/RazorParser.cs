@@ -152,10 +152,7 @@ public static class RazorParser
         // i.e.: something about not invoking those Hierarchical methods that search for a definition
         // over and over. That is a lot of copying of data for the parameters.
 
-        
-        Console.WriteLine($"be_{parserModel.TokenWalker.UseCSharpLexer}");
         tokenWalkerBuffer.Seek_SeekOriginBegin(initialToken, tokenIndex: 0, rootConsumeCounter: 0);
-        Console.WriteLine($"af_{parserModel.TokenWalker.UseCSharpLexer}");
 
         parserModel.TokenWalker.SetUseCSharpLexer(false);
 
@@ -190,8 +187,6 @@ public static class RazorParser
                 
                     // Backtracking???
                     // Using a StreamReader for two reason concurrently?
-
-                    Console.WriteLine($"at_{tokenWalkerBuffer.UseCSharpLexer}");
                     
                     var identifierOrKeyword = RazorLexer.SkipCSharpdentifierOrKeyword(
                         binder.KeywordCheckBuffer,

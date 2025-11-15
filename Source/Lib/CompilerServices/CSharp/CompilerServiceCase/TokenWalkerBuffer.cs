@@ -79,8 +79,17 @@ public sealed class TokenWalkerBuffer
     
     /// <summary>Scuffed</summary>
     public Func<CSharpBinder, TokenWalkerBuffer, byte/*RazorLexerContextKind.Expect_TagOrText*/, SyntaxToken>? LexRazor { get; private set; } = null;
+    private bool _useCSharpLexer = true;
     /// <summary>Scuffed</summary>
-    public bool UseCSharpLexer { get; private set; } = true;
+    public bool UseCSharpLexer
+    {
+        get => _useCSharpLexer;
+        set
+        {
+            Console.WriteLine($"\t\t_useCSharpLexer = {value}");
+            _useCSharpLexer = value;
+        }
+    }
 
     private int _index;
     public int Index
@@ -178,6 +187,7 @@ public sealed class TokenWalkerBuffer
         bool useCSharpLexer = true,
         Func<CSharpBinder, TokenWalkerBuffer, byte/*RazorLexerContextKind.Expect_TagOrText*/, SyntaxToken>? lexRazor = null)
     {
+        Console.WriteLine($"{nameof(ReInitialize)}(useCSharpLexer: {useCSharpLexer})");
         UseCSharpLexer = useCSharpLexer;
         LexRazor = lexRazor;
         
@@ -218,6 +228,8 @@ public sealed class TokenWalkerBuffer
     /// <summary>WARNING: code duplication in 'ReInitialize(...)'</summary>
     public void Seek_SeekOriginBegin(SyntaxToken token, int tokenIndex, int rootConsumeCounter)
     {
+        Console.WriteLine($"\t{nameof(Seek_SeekOriginBegin)}");
+        
         StreamReaderWrap.Unsafe_Seek_SeekOriginBegin(token.TextSpan.ByteIndex, token.TextSpan.StartInclusiveIndex, token.TextSpan.Length);
         
         _syntaxTokenBuffer[0] = token;

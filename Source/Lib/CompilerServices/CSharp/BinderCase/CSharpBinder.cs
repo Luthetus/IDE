@@ -544,42 +544,6 @@ public sealed partial class CSharpBinder
         {
             _  = Pool_ConstructorInvocationExpressionNode_Queue.Dequeue();
         }
-        
-        /*
-        Console.WriteLine(nameof(PartialTypeDefinitionList));
-        for (int i = 0; i < PartialTypeDefinitionList.Count; i++)
-        {
-            Console.WriteLine($"\t{i}");
-            var partial = PartialTypeDefinitionList[i];
-            
-            Console.WriteLine($"\t\tAPI_{partial.AbsolutePathId}");
-            Console.WriteLine($"\t\tISG_{partial.IndexStartGroup}");
-            Console.WriteLine($"\t\tSSI_{partial.ScopeSubIndex}");
-            Console.WriteLine($"\t\tTSK_{partial.TextSourceKind}");
-        }
-        */
-        
-        /*
-        Console.WriteLine("\n\n=================");
-        Console.WriteLine($"_namespaceGroupList.Count:{_namespaceGroupList.Count}");
-        foreach (var namespaceGroup in _namespaceGroupList)
-        {
-            Console.WriteLine($"\tcis:{namespaceGroup.CharIntSum} NStatementValueList.Count:{namespaceGroup.NamespaceStatementValueList.Count}");
-            foreach (var statement in namespaceGroup.NamespaceStatementValueList)
-            {
-                //Console.WriteLine($"\t\tKT:{statement.KeywordToken}");
-                
-                Console.WriteLine($"\t\tIT:{statement.IdentifierToken}");
-                Console.WriteLine($"\t\t\tIT_TS_CIS:{statement.IdentifierToken.TextSpan.CharIntSum}");
-                
-                var aaa = CSharpCompilerService.TryGetIntToFileAbsolutePathMap(statement.AbsolutePathId);
-                Console.WriteLine($"\t\tABI:{statement.AbsolutePathId}|{aaa ?? "null"}");
-                Console.WriteLine($"\t\tPSI:{statement.ParentScopeSubIndex}");
-                Console.WriteLine($"\t\tSSI:{statement.SelfScopeSubIndex}");
-            }
-        }
-        Console.WriteLine("=================\n");
-        */
     }
     
     /// <summary>This also clears any pooled lists.</summary>

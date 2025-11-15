@@ -50,6 +50,12 @@ public static class RazorParser
         // Give @code and @functions to the C# parser with strick start and end indices
         // What if the @code or @functions contains templated logic that writes
         // like razor (html with C#)?
+        //
+        // You can defer parse the splits. So if @code contains template logic
+        // then have the first parse go from start of block until template logic
+        // 
+        // Then do a second parse that starts AFTER the template logic until the end of the block?
+        //
         
         compilationUnit.ScopeOffset = binder.ScopeList.Count;
         compilationUnit.NamespaceContributionOffset = binder.NamespaceContributionList.Count;

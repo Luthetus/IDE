@@ -169,6 +169,14 @@ public static class RazorParser
         // Being in the hospital for cellulitis is starting to hit my morale.
         // I pushed through it the first like 6 days but... not quite as much energy left.
         // I have nearly 0 caffeine too while I'm here lol. *sigh*
+        //
+        // Focus on lexing.
+        // Completely "ignore" parsing.
+        //
+        // Once you've done the recursive lexing of the markup into C# into markup into etc...
+        //
+        // Then for the parsing the first solution could be to defer parse ALL C# code
+        // and you prioritize the @code blocks then @function blocks then go textually top to bottom.
                 
         
         while (!parserModel.TokenWalker.IsEof)

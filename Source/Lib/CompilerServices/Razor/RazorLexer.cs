@@ -19,8 +19,6 @@ public static class RazorLexer
     public static SyntaxToken Lex(
         CSharpBinder binder,
         TokenWalkerBuffer tokenWalkerBuffer,
-        //ref TextEditorTextSpan previousEscapeCharacterTextSpan,
-        //ref int interpolatedExpressionUnmatchedBraceCount,
         byte contextKindByte = 0/*RazorLexerContextKind.Expect_TagOrText*/)
     {
         var context = (RazorLexerContextKind)contextKindByte;
@@ -94,6 +92,8 @@ public static class RazorLexer
                 case '_':
                 /* At */
                 case '@':
+                    Console.WriteLine("RL_case '@':");
+                    Console.WriteLine(context);
                     if (context == RazorLexerContextKind.Expect_AttributeName)
                     {
                         if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
@@ -204,12 +204,15 @@ public static class RazorLexer
                     }
                     else if (context == RazorLexerContextKind.Expect_TagOrText)
                     {
+                        Console.WriteLine("else if (context == RazorLexerContextKind.Expect_TagOrText)");
                         if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '@')
                         {
                             var startInclusiveIndex = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
                             var byteIndex = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
 
+                            Console.WriteLine("a" + tokenWalkerBuffer.StreamReaderWrap.PositionIndex);
                             _ = tokenWalkerBuffer.StreamReaderWrap.ReadCharacter();
+                            Console.WriteLine("b" + tokenWalkerBuffer.StreamReaderWrap.PositionIndex);
 
                             tokenWalkerBuffer.TextEditorModel?.__SetDecorationByteRange(
                                 startInclusiveIndex,
@@ -225,11 +228,16 @@ public static class RazorLexer
                                     byteIndex,
                                     charIntSum: 64));
                         }
+                        
+                        Console.WriteLine("a" + tokenWalkerBuffer.StreamReaderWrap.PositionIndex);
+                        //Console.WriteLine("a" + tokenWalkerBuffer.StreamReaderWrap.PositionIndex);
 
                         var textStartPosition = tokenWalkerBuffer.StreamReaderWrap.PositionIndex;
                         var textStartByte = tokenWalkerBuffer.StreamReaderWrap.ByteIndex;
                         while (!tokenWalkerBuffer.StreamReaderWrap.IsEof)
                         {
+                            Console.WriteLine("L=" + tokenWalkerBuffer.StreamReaderWrap.PositionIndex);
+                            
                             if (tokenWalkerBuffer.StreamReaderWrap.CurrentCharacter == '<')
                             {
                                 break;

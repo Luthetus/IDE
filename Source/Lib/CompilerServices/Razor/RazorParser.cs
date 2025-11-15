@@ -134,9 +134,18 @@ public static class RazorParser
         var initialToken = parserModel.TokenWalker.Current;
         parserModel.TokenWalker.IsInitialParse = true;
         var initialLoopCount = 0;
-        while (true)
+        
+        // A major issue is this first "initial parse" where the razor lexer just runs
+        // because you need to swap to the CSharpLexer in order to find the start and end points
+        // of implicit expressions that use member access.
+        //
+        // (Or you can duplicate the C# identifier logic in the razor)
+        // food
+                
+        
+        while (!parserModel.TokenWalker.IsEof)
         {
-            Console.WriteLine($"ilc:{++initialLoopCount}");
+            Console.WriteLine($"ilc:{++initialLoopCount}_{parserModel.TokenWalker.Current.SyntaxKind}");
             switch (parserModel.TokenWalker.Current.SyntaxKind)
             {
                 case SyntaxKind.EndOfFileToken:
@@ -193,6 +202,8 @@ public static class RazorParser
                 
                     // Backtracking???
                     // Using a StreamReader for two reason concurrently?
+                    
+                    Console.WriteLine("case SyntaxKind.AtToken:");
                     
                     var identifierOrKeyword = RazorLexer.SkipCSharpdentifierOrKeyword(
                         binder.KeywordCheckBuffer,

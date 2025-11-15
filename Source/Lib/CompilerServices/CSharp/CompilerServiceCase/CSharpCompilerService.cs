@@ -48,7 +48,7 @@ public sealed class CSharpCompilerService : IExtendedCompilerService
         
         var primitiveKeywordsTextFile = new CSharpCompilationUnit(CompilationUnitKind.IndividualFile_AllData);
         
-        __CSharpBinder.UpsertCompilationUnit(1, primitiveKeywordsTextFile);
+        __CSharpBinder.UpMapCompilationUnit(1, primitiveKeywordsTextFile);
 
         _safeOnlyUTF8Encoding = new SafeOnlyUTF8Encoding();
 

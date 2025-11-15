@@ -289,9 +289,6 @@ public static partial class Parser
                 ambiguousIdentifierNode,
                 ref parserModel);
             parserModel.Return_AmbiguousIdentifierNode(ambiguousIdentifierNode);
-            /*
-            But just because I'd like to doesn't mean I will xDDDDDDZDDXDXDXDXDASLFMAOEJFPAIEJAOIJGELOLOLOLAOFLMAOAMLAOMALM
-            */
         }
         
         return parserModel.ExpressionPrimary;

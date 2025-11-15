@@ -141,6 +141,28 @@ public static class RazorParser
         //
         // (Or you can duplicate the C# identifier logic in the razor)
         // food
+        
+        // Need to try putting HTML where the text contains nothing that will trigger C# langauge transition.
+        // This should pass through correctly without issues.
+        //
+        //
+        // Also, the "first parse" idea came from me not wanting to parse the C#
+        // initially, because the @code/@functions might be located textually
+        // towards the end of the file.
+        //
+        // But I'm wondering if I'd like to enqueue all C# code
+        // (explicit or implicit) to deferred parsing.
+        //
+        // I still have to swap between Razor and C# Lexer so that I can
+        // have markup that contains C# that contains markup and any level of "recursion" from there.
+        // The Lexer will outline where the C# ends even if I don't interact with the Binder at all.
+        // 
+        // If you don't parse the expressions how would you short circuit at unmatched '<'
+        // to enter Razor.
+        //
+        // You have to lex token by token and track which lexer has control then the while loop is at the
+        // Razor parser level and everyloop it tells one or the other lexers to lex the next token.
+        //
                 
         
         while (!parserModel.TokenWalker.IsEof)

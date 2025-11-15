@@ -391,10 +391,6 @@ public sealed class TokenWalkerBuffer
         return _syntaxTokenBuffer[0];
     }
     
-    /// <summary>
-    /// I have no idea what I'm doing will this inline?
-    /// Also my hospital roommate has pneumonia is that contagious?
-    /// </summary>
     private void Do_Lex()
     {
         ++_index;

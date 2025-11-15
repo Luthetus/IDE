@@ -133,8 +133,10 @@ public static class RazorParser
         parserModel.TokenWalker.UseCSharpLexer = false;
         var initialToken = parserModel.TokenWalker.Current;
         parserModel.TokenWalker.IsInitialParse = true;
+        var initialLoopCount = 0;
         while (true)
         {
+            Console.WriteLine($"ilc:{++initialLoopCount}");
             switch (parserModel.TokenWalker.Current.SyntaxKind)
             {
                 case SyntaxKind.EndOfFileToken:
@@ -156,8 +158,12 @@ public static class RazorParser
 
         parserModel.TokenWalker.UseCSharpLexer = false;
 
+        var otherLoopCount = 0;
+
         while (true)
         {
+            Console.WriteLine($"olc:{++otherLoopCount}");
+        
             // The last statement in this while loop is conditionally: '_ = parserModel.TokenWalker.Consume();'.
             // Knowing this to be the case is extremely important.
 
